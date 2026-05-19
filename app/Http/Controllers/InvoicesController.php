@@ -246,6 +246,35 @@ class NumberToWord
 
 class InvoicesController extends Controller
 {
+        public function previousSales_not_sended_Invoices()
+    {
+        return view('previousSales_not_sended_Invoices');
+
+
+    }
+
+    public function previousSales_sended_Invoices()
+    {
+
+        return view('previousSales_sended_Invoices');
+
+    }
+
+    public function getAllinvicesajax_send_zatca()
+    {
+        app()->setLocale(LaravelLocalization::getCurrentLocale());
+        $data = invoices::where('branchs_id', Auth()->user()->branchs_id)->where('save', 1)->where('sent_to_zatca', 1)->where('status', 0)->orderby('id', 'desc')->paginate(40);
+        return view('ajax_Recent_Invoices_send_or_not', compact('data'));
+    }
+
+
+    public function getAllinvicesajax_send_zatca_not()
+    {
+        app()->setLocale(LaravelLocalization::getCurrentLocale());
+        $data = invoices::where('branchs_id', Auth()->user()->branchs_id)->where('save', 1)->where('sent_to_zatca', 0)->where('status', 0)->orderby('id', 'desc')->paginate(40);
+        return view('ajax_Recent_Invoices_send_or_not', compact('data'));
+    }
+
 public function previousSales_not_sended_Invoices_all_branchs()
 {
     return view('previousSales_not_sended_Invoices_all_branchs');

@@ -42,8 +42,9 @@
 </body>
 
 </html>
-
+<script src="{{ asset('assets/js/share-modal.js') }}"></script>
 <script>
+
 setInterval(myTimer, 1000);
 
 function myTimer() {

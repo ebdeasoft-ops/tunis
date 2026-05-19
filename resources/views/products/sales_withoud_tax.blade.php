@@ -1334,31 +1334,8 @@ td .d-flex {
 
 @endsection
 @section('js')
-<!-- Internal Data tables -->
 
-<!-- Internal Data tables -->
-<!-- Internal Data tables -->
-<!--Internal  Datatable js -->
-<!--Internal  Datatable js -->
-<script src="{{ URL::asset('assets/js/table-data.js') }}"></script>
-<!--Internal  Datatable js -->
-<script src="{{ URL::asset('assets/plugins/jquery-ui/ui/widgets/datepicker.js') }}"></script>
-<!--Internal  jquery.maskedinput js -->
-<script src="{{ URL::asset('assets/plugins/jquery.maskedinput/jquery.maskedinput.js') }}"></script>
-<!--Internal  spectrum-colorpicker js -->
-<!-- Internal Select2.min js -->
-<script src="{{ URL::asset('assets/plugins/select2/js/select2.min.js') }}"></script>
-<!--Internal Ion.rangeSlider.min js -->
-<script src="{{ URL::asset('assets/plugins/ion-rangeslider/js/ion.rangeSlider.min.js') }}"></script>
-<!--Internal  jquery-simple-datetimepicker js -->
-<script src="{{ URL::asset('assets/plugins/amazeui-datetimepicker/js/amazeui.datetimepicker.min.js') }}"></script>
-<!-- Ionicons js -->
-<script src="{{ URL::asset('assets/plugins/jquery-simple-datetimepicker/jquery.simple-dtpicker.js') }}"></script>
-<!--Internal  pickerjs js -->
-<script src="{{ URL::asset('assets/plugins/pickerjs/picker.min.js') }}"></script>
-<!-- Internal form-elements js -->
-<script src="{{ URL::asset('assets/js/form-elements.js') }}"></script>
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
 <script src="{{ URL::asset('assets/plugins/bootstrap/js/bootstrap.min.js') }}"></script>
 
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>

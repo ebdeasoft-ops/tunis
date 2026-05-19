@@ -23,10 +23,6 @@
         }
     </style>
 </head>
-
-
-
-
 <body class="main-body app sidebar-mini master" style="direction:{{ App::getLocale()=='ar' ? 'rtl' : 'ltr' }}">
     <div id="global-loader">
         <img src="{{ URL::asset('assets/img/loader.svg') }}" class="loader-img" alt="Loader">

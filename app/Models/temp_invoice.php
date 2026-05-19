@@ -1,0 +1,51 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+
+class temp_invoice extends Model
+{
+    use HasFactory;
+    protected $fillable = [
+        'customer_id'
+       ,'user_id',
+         'Price',
+         'discountOnInvoice',
+         'branchs_id',
+          'Pay',
+          'status',
+          'save',
+          'morepayment_way',
+          'creaditamount',
+          'bankamount',
+          'cashamount',
+          'discountOnProduct',
+          'note',
+          'Bank_transfer',
+        'Added_Value',
+        'discount',
+        'user_id',
+        'Number_of_Quantity'
+      , 'created_at',
+      'update_invoice',
+             'p_o',
+             'pending_invoice'
+
+];
+
+
+    public function user()
+    {
+        return $this->belongsTo(User::class,'user_id');
+    }
+    public function branch()
+    {
+        return $this->belongsTo(branchs::class,'branchs_id');
+    }
+    public function customer()
+{
+    return $this->belongsTo(customers::class,'customer_id');
+}
+}

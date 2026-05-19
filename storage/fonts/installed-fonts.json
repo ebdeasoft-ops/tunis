@@ -1,0 +1,20 @@
+{
+    "cairo": {
+        "normal": "C:\\xampp\\htdocs\\export_pdf_ebdea_demoo\\storage\\fonts\/cairo_normal_040a14ebcb2e69e83169c84ef0a92e85",
+        "200": "C:\\xampp\\htdocs\\export_pdf_ebdea_demoo\\storage\\fonts\/cairo_200_016e91f80693ea9a39f3f8b45871b529",
+        "300": "C:\\xampp\\htdocs\\export_pdf_ebdea_demoo\\storage\\fonts\/cairo_300_adebfb94605daa8752959c1403988edc",
+        "500": "C:\\xampp\\htdocs\\export_pdf_ebdea_demoo\\storage\\fonts\/cairo_500_21457be9154c30da4f489b9d34583858",
+        "600": "C:\\xampp\\htdocs\\export_pdf_ebdea_demoo\\storage\\fonts\/cairo_600_c4edbe142aaa1d274fb274a9a7754ee7",
+        "bold": "C:\\xampp\\htdocs\\export_pdf_ebdea_demoo\\storage\\fonts\/cairo_bold_a802969112dc5002963c9b3638d30968",
+        "800": "C:\\xampp\\htdocs\\export_pdf_ebdea_demoo\\storage\\fonts\/cairo_800_346855acbaec7cc011e8311ff6179ca4",
+        "900": "cairo_900_6f19b0b0462c8d77af13d2d4d9663041"
+    },
+    "open sans": {
+        "300_italic": "C:\\xampp\\htdocs\\export_pdf_ebdea_demoo\\storage\\fonts\/open_sans_300_italic_945d8dd4a3efccc1bb28c16b6242db51",
+        "italic": "C:\\xampp\\htdocs\\export_pdf_ebdea_demoo\\storage\\fonts\/open_sans_italic_877b1c2661afb6fd8801d8d676e92166",
+        "bold_italic": "C:\\xampp\\htdocs\\export_pdf_ebdea_demoo\\storage\\fonts\/open_sans_bold_italic_f909b48de15edc7e40c0cecc141c2730",
+        "300": "C:\\xampp\\htdocs\\export_pdf_ebdea_demoo\\storage\\fonts\/open_sans_300_8513b9024ad211a10e857eba11f0f357",
+        "normal": "C:\\xampp\\htdocs\\export_pdf_ebdea_demoo\\storage\\fonts\/open_sans_normal_2bf6e8a03908d49a7fa7b1094b0c2804",
+        "bold": "open_sans_bold_0e7196744e416eea97ecd5b9781a44c2"
+    }
+}

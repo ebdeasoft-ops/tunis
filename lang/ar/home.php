@@ -135,7 +135,7 @@ return [
     'credit' => 'دائن',
     'analytical_note' => 'البيان التحليلي',
     'delete' => 'حذف',
-    'total' => 'الإجمالي:',
+    'total' => 'الإجمالي',
     'balanced' => 'متزن ✅',
     'unbalanced' => 'غير متزن ❌',
     'save_changes' => 'حفظ التعديلات',

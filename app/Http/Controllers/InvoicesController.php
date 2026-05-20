@@ -246,7 +246,49 @@ class NumberToWord
 
 class InvoicesController extends Controller
 {
-        public function previousSales_not_sended_Invoices()
+
+  public function generate_return_sale_pdf  ($request) {
+        
+
+        $saleData = return_sales::where("invoice_id", $request)->get();
+        $InvoiceData = invoices::find($request);
+        $data = [
+
+            'salesData' => $saleData,
+            'invoiceData' =>  $InvoiceData,
+        ];
+
+         $tran = ['data'=>$data];
+        // Get the current date and time.
+        $dateTime = now();
+
+        // Generate a unique filename.
+    //   return view('pdf.salereturn', compact('data'));
+
+        $fileName = $dateTime->format('Y-m-d H:i:s') ;
+        $html = view('pdf.salereturn', $tran)->toArabicHTML();
+        
+        $pdf = PDF::loadHTML($html)->output();
+        
+        //Generate the pdf file
+        $headers = array(
+            "Content-type" => "application/pdf",
+        );
+        
+        // Create a stream response as a file download
+        return response()->streamDownload(
+            fn () => print($pdf), // add the content to the stream
+            "Invoice_No_".$request."_". $fileName.".pdf", // the name of the file/stream
+            $headers
+        );
+
+
+       
+        
+    }
+    
+
+public function previousSales_not_sended_Invoices()
     {
         return view('previousSales_not_sended_Invoices');
 

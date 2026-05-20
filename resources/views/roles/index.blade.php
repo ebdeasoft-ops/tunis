@@ -96,7 +96,7 @@
                             </thead>
                             <tbody>
                                 @foreach ($roles as $key => $role)
-                                @if($role->name!='Admin')
+                                <!-- @if($role->name!='Admin') -->
                                     <tr>
                                         <td>{{ ++$i }}</td>
                                         <td>{{ $role->name }}</td>

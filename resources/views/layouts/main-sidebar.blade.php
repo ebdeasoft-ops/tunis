@@ -496,11 +496,7 @@
                                 </li>
                             @endcan
 
-                            @can('List of suppliers')
-                                <li>
-                                    <a class="slide-item" href="{{ url('/supplierlist') }}">{{ __('report.Listofsupplier') }}</a>
-                                </li>
-                            @endcan
+                         
 
                             @can('Transfer to main branch')
                                 <li>

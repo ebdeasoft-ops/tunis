@@ -207,13 +207,7 @@ class DliveryController extends Controller
             }
 
             // معالجة حساب مصلحة الضرائب والزكاة (حساب 102)
-            $acc102 = financial_accounts::lockForUpdate()->find(102);
-            $acc102->update([
-                'current_balance'  => $acc102->current_balance - $vat_value, 
-                'creditor_current' => $acc102->creditor_current + $vat_value,
-            ]);
-            $this->createTransaction($userId, 102, $vat_value, $branchId, $paymentMethod, $invoiceNo, $acc102->current_balance, $vat_value, 0, $currentTime, 1, $customerdata);
-
+    
             $subAcc102 = financial_accounts::where('parent_account_number', 102)->where('branchs_id', $branchId)->first();
             if ($subAcc102) {
                 $subAcc102->update([
@@ -224,13 +218,7 @@ class DliveryController extends Controller
             }
 
             // معالجة حساب المبيعات (حساب 112)
-            $acc112 = financial_accounts::lockForUpdate()->find(112);
-            $acc112->update([
-                'current_balance'  => $acc112->current_balance - $net_sales_without_vat,
-                'creditor_current' => $acc112->creditor_current + $net_sales_without_vat,
-            ]);
-            $this->createTransaction($userId, 112, $net_sales_without_vat, $branchId, $paymentMethod, $invoiceNo, $acc112->current_balance, $net_sales_without_vat, 0, $currentTime);
-
+     
             $subAcc112 = financial_accounts::where('parent_account_number', 112)->where('branchs_id', $branchId)->first();
             if ($subAcc112) {
                 $subAcc112->update([
@@ -241,13 +229,7 @@ class DliveryController extends Controller
             }
 
             // معالجة حساب تكلفة البضاعة المباعة (حساب 183)
-            $acc183 = financial_accounts::lockForUpdate()->find(183);
-            $acc183->update([
-                'current_balance' => $acc183->current_balance + $total_actual_cost,
-                'debtor_current'  => $acc183->debtor_current + $total_actual_cost,
-            ]);
-            $this->createTransaction($userId, 183, $total_actual_cost, $branchId, $paymentMethod, $invoiceNo, $acc183->current_balance, 0, $total_actual_cost, $currentTime);
-
+    
             $subAcc183 = financial_accounts::where('parent_account_number', 183)->where('branchs_id', $branchId)->first();
             if ($subAcc183) {
                 $subAcc183->update([
@@ -258,13 +240,7 @@ class DliveryController extends Controller
             }
 
             // معالجة حساب المخزون السلعي (حساب 181)
-            $acc181 = financial_accounts::lockForUpdate()->find(181);
-            $acc181->update([
-                'current_balance'  => $acc181->current_balance - $total_actual_cost,
-                'creditor_current' => $acc181->creditor_current + $total_actual_cost,
-            ]);
-            $this->createTransaction($userId, 181, $total_actual_cost, $branchId, $paymentMethod, $invoiceNo, $acc181->current_balance, $total_actual_cost, 0, $currentTime);
-
+      
             $subAcc181 = financial_accounts::where('parent_account_number', 181)->where('branchs_id', $branchId)->first();
             if ($subAcc181) {
                 $subAcc181->update([

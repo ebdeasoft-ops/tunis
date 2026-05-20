@@ -71,8 +71,9 @@ class SupprocessesController extends Controller
             session()->flash('notcreate', 'حدثت مشكلة اثناء انشاء مركز التكلفة');
         }
 
-        return redirect()->route('expenses.reason.index'); // الحماية من الـ Double Submission
-    }
+return redirect()->back();
+
+}
 
     /**
      * دالة رفع الصور المحسنة والمؤمنة

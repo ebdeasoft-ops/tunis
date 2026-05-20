@@ -20,9 +20,14 @@ class financial_accounts extends Model
         'creditor_current',
         'debtor_opening',
         'creditor_opening',
-        'branchs_id'
+        'branchs_id',
+        'tax_no'
         ];
-
+public function credittransactions()
+{
+    // customer_id هو العمود الذي يربط العمليات بالحساب المالي
+    return $this->hasMany(credittransactions::class, 'customer_id');
+}
         public function acounts_type()
         {
             return $this->belongsTo(acounts_type::class,'account_type');

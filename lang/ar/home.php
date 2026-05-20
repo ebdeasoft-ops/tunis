@@ -12,6 +12,7 @@ return [
     | you want to customize your views to better match your application.
     |
     */
+    'customer_supplier_account'=>"حسابات العملاءو الموردين",
         'Roken_Section'=>"شركة ركن المعدات",
         "confirm_purchase"=>"تاكيد مشتريات",
 
@@ -366,7 +367,7 @@ return [
     'region' => 'الحي',
     'city' => 'المدينة',
 
-    'onbourding' => 'إعدادات الربط مع الزكاة',
+    'onbourding' => 'إعدادات الربط الزكاة',
     'Linkage_with_zakat' => 'الربط مع الزكاة',
     'reciptprinter' => "طابعة رول ",
     'supplierinvoicenumber' => "فاتورة المورد",
@@ -500,10 +501,10 @@ return [
     'TOTAL_purchases_Month' => 'تكلفة عمليات المشتريات الشهر الجاري ',
     'purchases_number_SOLD' => ' عدد عمليات الشراء لشهر الجاري',
     "employee" => 'اسم الموظف',
-    'Human Resource Management' => 'إدارة الموارد البشرية',
+    'Human Resource Management' => ' الموارد البشرية',
     'Subprocesses' => 'الاضافة',
-    'For communication and technical support' => '  لتواصل و الدعم الفني',
-    'connectwithebdeasoft' => 'التواصل مع إبداع سوفت',
+    'For communication and technical support' => '    الدعم الفني',
+    'connectwithebdeasoft' => '  إبداع سوفت',
     'addnewcustomer' => ' عميل جديد',
     'addnewsupplier' => ' مورد جديد',
     'Quotations' => 'التسعيرات',

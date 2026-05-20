@@ -207,7 +207,6 @@
 @endsection
 @section('js')
 <script src="{{ URL::asset('assets/plugins/jquery-ui/ui/widgets/datepicker.js') }}"></script>
-<script src="{{ URL::asset('assets/plugins/select2/js/select2.min.js') }}"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script src="{{URL::asset('assets/plugins/select2/js/select2.min.js')}}"></script>
 <script>
@@ -301,7 +300,6 @@ $(document).on('click', '.view-statement', function(e) {
             $('#modalBody').html(response);
         },
         error: function(xhr) {
-            console.error(xhr.responseText); // لمساعدتك في معرفة الخطأ في الكونسول
             $('#modalBody').html('<div class="alert alert-danger text-center">حدث خطأ أثناء جلب البيانات، تأكد من الروابط وصلاحية التوكن</div>');
         }
     });
@@ -482,7 +480,6 @@ if (!text || text.trim() === "") {
             },
             dataType: "html",
             success: function(data) {
-                console.log(data)
                 $("#ajax_responce_allinvoicesDiv").html(data).css('opacity', '1');
                 
                 // تحديث رابط الإكسل فوراً

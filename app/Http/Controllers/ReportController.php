@@ -1665,7 +1665,29 @@ public function search_product_sales_purchases(Request $request)
     public function TransFerCashTothenNextDay() { app()->setLocale(LaravelLocalization::getCurrentLocale()); return view('reports.TransFerCashTothenNextDay'); }
     public function print_supplierList() { app()->setLocale(LaravelLocalization::getCurrentLocale()); return view('reports.print_supplierList'); }
     public function print_customeList() { app()->setLocale(LaravelLocalization::getCurrentLocale()); return view('reports.print_customeList'); }
-    public function Customerlist() { app()->setLocale(LaravelLocalization::getCurrentLocale()); return view('reports.customerList'); }
+    public function Customerlist() {
+    app()->setLocale(LaravelLocalization::getCurrentLocale());
+
+    // تحديد تاريخ البداية (أول السنة) وتاريخ النهاية (اليوم)
+    $startDate ='2025'. '-01-01';
+    $endDate = date('Y-m-d');
+
+    $customers = financial_accounts::whereIn('orginal_type', [1, 2])
+        // 1. مجموع الدائن (Credit)
+        ->withSum(['credittransactions as total_credit' => function($query) use ($startDate, $endDate) {
+            $query->where('save', 1)
+                  ->whereBetween('created_at', [$startDate, $endDate]);
+        }], 'creditor')
+        // 2. مجموع المدين (Debit)
+        ->withSum(['credittransactions as total_debit' => function($query) use ($startDate, $endDate) {
+            $query->where('save', 1)
+                  ->whereBetween('created_at', [$startDate, $endDate]);
+        }], 'debtor') // تأكد أن اسم الحقل في جدول العمليات هو 'debtor'
+        ->get();
+
+    return view('reports.customerList', compact('customers'));
+
+    }
     public function customerـpurchases() { app()->setLocale(LaravelLocalization::getCurrentLocale()); return view('reports.customerpurchases'); }
     public function purchasproducttocustomer() { app()->setLocale(LaravelLocalization::getCurrentLocale()); return view('reports.purchasproducttocustomer'); }
     public function credit_collection() { app()->setLocale(LaravelLocalization::getCurrentLocale()); return view('reports.credit_collection'); }

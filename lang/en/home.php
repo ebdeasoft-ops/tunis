@@ -9,6 +9,7 @@ return [
     */
 
     // --- التعديلات الأخيرة ---
+    'customer_supplier_account' => "Customer & Supplier Accounts",
     'sel_product_withoud_tax' => "Deliver product",
     'previous_deliver_Invoices' => 'Previous Delivery Invoices',
     'monthly_deliveries' => "Monthly Deliveries",

@@ -530,15 +530,10 @@
             @endcan
          
             @can('List of customers')
-            <li><a class="slide-item" href="{{ url('/' . ($page = 'Customerlist')) }}">{{__('home.customerList')}} </a>
+            <li><a class="slide-item" href="{{ url('/' . ($page = 'Customerlist')) }}">{{__('home.customer_supplier_account')}} </a>
             </li>
             @endcan
-            @can('List of suppliers')
-            <li><a class="slide-item" href="{{ url('/' . ($page = 'supplierlist')) }}">{{__('report.Listofsupplier')}}
-                </a>
-            </li>
-            @endcan
-
+    
 
             @can('Transfer to main branch')
 

@@ -513,7 +513,7 @@
                             @endcan
                         </ul>
                     </li>
-            @endcan
+            
 
 
 

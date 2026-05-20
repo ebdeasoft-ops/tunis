@@ -170,13 +170,7 @@ class DliveryController extends Controller
 
             // معالجة الحساب رقم 5 (الصندوق الرئيسي وصندوق الفرع)
             if ($cashamount > 0) {
-                $acc5 = financial_accounts::lockForUpdate()->find(5);
-                $acc5->update([
-                    'current_balance' => $acc5->current_balance + $cashamount,
-                    'debtor_current'  => $acc5->debtor_current + $cashamount,
-                ]);
-                $this->createTransaction($userId, 5, $cashamount, $branchId, $paymentMethod, $invoiceNo, $acc5->current_balance, 0, $cashamount, $currentTime);
-
+       
                 $subAcc5 = financial_accounts::where('parent_account_number', 5)->where('branchs_id', $branchId)->first();
                 if ($subAcc5) {
                     $subAcc5->update([
@@ -189,13 +183,7 @@ class DliveryController extends Controller
 
             // معالجة الحساب رقم 4 (البنك وشبكة التحويل)
             if ($Bank_transfer > 0) {
-                $acc4 = financial_accounts::lockForUpdate()->find(4);
-                $acc4->update([
-                    'current_balance' => $acc4->current_balance + $Bank_transfer,
-                    'debtor_current'  => $acc4->debtor_current + $Bank_transfer,
-                ]);
-                $this->createTransaction($userId, 4, $Bank_transfer, $branchId, $paymentMethod, $invoiceNo, $acc4->current_balance, 0, $Bank_transfer, $currentTime);
-
+           
                 $subAcc4 = financial_accounts::where('parent_account_number', 4)->where('branchs_id', $branchId)->first();
                 if ($subAcc4) {
                     $subAcc4->update([

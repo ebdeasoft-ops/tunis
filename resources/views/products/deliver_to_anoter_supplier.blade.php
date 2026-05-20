@@ -535,567 +535,300 @@
 @endsection
 @section('js')
 <script>
-    document.addEventListener('keydown', (e) => {
+// دالة موحدة لبناء وتنظيف جداول الفواتير تلقائيًا ومنع تكرار الكود
+function renderInvoiceTable(data) {
+    let table = document.getElementById("example");
+    var tableHeaderRowCount = 1;
+    var rowCount = table.rows.length;
 
-// this would test for whichever key is 40 (down arrow) and the ctrl key at the same time
-if (e.ctrlKey && e.keyCode == '38') {
-    // call your function to do the thing
+    // تفريغ الجدول القديم
+    for (var i = tableHeaderRowCount; i < rowCount; i++) {
+        table.deleteRow(tableHeaderRowCount);
+    }
 
-    $('#SearchProduct').modal().show();
-    
-}
-})
+    var total_purchases = 0;
+    var totaldiscount = 0;
+    var temp = 0;
+    var total_purchases_AddedValue = 0;
 
-document.addEventListener('keydown', (e) => {
+    data.forEach(async (product) => {
+        if (product['count'] == 1) {
+            $('#orderNo').val(product['order_id']);
+            $('#OrderNoprint').val(product['order_id']);
+        }
 
-// this would test for whichever key is 40 (down arrow) and the ctrl key at the same time
-if (e.ctrlKey && e.code === 'ArrowDown') {
-    // call your function to do the thing
+        temp = product['discount'];
+        total_purchases = total_purchases + (product['sale_price'] * product['quantity']);
+        totaldiscount = totaldiscount + product['discount'];
+        total_purchases_AddedValue = total_purchases_AddedValue + ((product['sale_price'] * product['quantity']) - product['discount']) * $('#avt_value').val();
 
+        var count1 = product['count'];
+        var product_code = product['productCode'];
+        var product_name = product['productName'];
+        var quentity = product['quantity'];
+        var price = product['sale_price'];
+        var discount = product['discount'];
+        var id = product['id'];
 
-    event.preventDefault();
+        if (quentity > 0) {
+            // تصحيح الأقواس الزائدة وإضافة علامات تنصيص لبيانات الـ data-attributes
+            var update = ' <a style="width:40px;height:20px" class="modal-effect btn btn-sm btn-warning mb-1" data-effect="effect-scale" data-id="' + id + '" data-section_name="' + product_name + '" data-section_price="' + price + '" data-section_discount="' + discount + '" data-return_quentity="' + quentity + '" data-toggle="modal" href="#increaseProduct" title="تعديل"><i class="las la-align-justify"></i></a>';
+            var result3 = ' <a style="width:40px;height:20px" class="modal-effect btn btn-sm btn-danger mb-1" data-effect="effect-scale" data-id="' + id + '" data-section_name="' + product_name + '" data-return_quentity="' + quentity + '" data-toggle="modal" href="#modaldemo9" title="حذف"><i class="las la-trash"></i></a>';
 
-let table = document.getElementById("example");
-
-
-var _token = $("#token_search").val();
-
-var url = " {{ URL::to('Addproduct_to_dlivery_supplier') }}";
-
-
-clientnamesearch = $('#clientnamesearch').val();
-token_search = $('#token_search').val();
-productNo = $('#productNo').val();
-orderNo = $('#orderNo').val();
-discount = $('#product_price_after_dis').val() * $('#quantity').val();
-quantity = $('#quantity').val();
-product_price = $('#product_price').val()
-notes = $('#notes').val()
-
-console.log('++++++++++MOHAMED+++++++++')
-
-console.log(clientnamesearch)
-console.log(productNo)
-console.log(orderNo)
-console.log(quantity)
-console.log(discount)
-console.log(product_price)
-console.log(_token);
-
-console.log('+++++++++++++++++++')
-
-
-
-if (clientnamesearch == '-') {
-    alert("{{ __('home.pleasechooseClient') }}")
-
-} else if (productNo == '') {
-    alert("{{ __('home.pleaseSelectProduct') }}")
-
-} else if (quantity == '') {
-    alert("{{ __('home.pleaseenterquantity') }}")
-
-} else {
-    $('#product_price_after_dis').val(0);
-    $('#quantity').val(1);
-    $('#avaliable_quentity').val('');
-    $('#product_location').val('');
-    $('#product_price').val('');
-    $('#purchase_price').val('');
-    $('#product_name').val('');
-
-    $.ajax({
-        url: url,
-        type: 'post',
-        cache: false,
-
-        data: {
-            "_token": _token,
-            "clientnamesearch": clientnamesearch,
-            "productNo": productNo,
-            "quentity": quantity,
-            "saleprice": product_price,
-            "orderNo": orderNo,
-            'discount': discount,
-            "notes": notes
-
-        },
-
-
-        success: function(data) {
-
-
-            // const map =(JSON.parse(response));
-            console.log('++++++')
-
-            $('#quentity').val('');
-            $('#productnameshow').val('');
-
-            console.log('++++++')
-            console.log(data)
-            let table = document.getElementById("example");
-            console.log('+++AFTER TABLE+++')
-
-
-
-            var tableHeaderRowCount = 1;
-
-            var rowCount = table.rows.length;
-            console.log('+++AFTER 3 TABLE+++')
-
-            for (var i = tableHeaderRowCount; i < rowCount; i++) {
-                table.deleteRow(tableHeaderRowCount);
-            }
-            console.log('+++AFTER 4 TABLE+++')
-
-            total_purchases = 0;
-            totaldiscount = 0;
-            temp = 0;
-            total_purchases_AddedValue = 0;
-            data.forEach(async (product) => {
-                if (product['count'] == 1) {
-                    $('#orderNo').val(product['order_id']);
-                    $('#OrderNoprint').val(product['order_id']);
-
-                }
-
-                temp = product['discount'];
-                total_purchases = total_purchases + (product['sale_price'] * product['quantity']);
-                totaldiscount = totaldiscount + product['discount'];
-                total_purchases_AddedValue = total_purchases_AddedValue + ((product['sale_price'] * product['quantity']) - product['discount']) * $('#avt_value').val();
-
-                count1 = product['count'],
-                    product_code = product['productCode']
-                product_name = product['productName']
-                quentity = product['quantity']
-                price = product['sale_price']
-                added_value = product['added_value']
-                discount = product['discount']
-                id = product['id']
-
-                if (quentity > 0) {
-                    update =
-                        ' <a style="width:40px;height:20px" class="modal-effect btn btn-sm btn-warning mb-1" data-effect="effect-scale" data-id='
-                    update = update.concat(id, "  ", "data-section_name=", product_name, "  ", "data-section_price=", price, "  ", "data-section_discount=", discount,
-                        "  ", "data-return_quentity=", quentity, '  ',
-                        '  data-toggle="modal"   href="#increaseProduct"   title="تعديل"><i class="las la-align-justify"></i></a>'
-                    )
-                    text2 =
-                        ' <a style="width:40px;height:20px" class="modal-effect btn btn-sm btn-danger mb-1" data-effect="effect-scale" data-id='
-                    result3 = text2.concat(id, "  ", "data-section_name=", product_name,
-                        "  ", "data-return_quentity=", quentity, '  ',
-                        '  data-toggle="modal"   href="#modaldemo9"   title="حذف"><i class="las la-trash"></i></a>'
-                    )
-
-
-                    console.log('+++AFTER 5 TABLE+++')
-
-                    let row = table.insertRow(-
-                        1); // We are adding at the end
-                    console.log('+++AFTER 5 TABLE+++')
-
-                let c1 = row.insertCell(0);
-                                let c2 = row.insertCell(1);
-                                let c3 = row.insertCell(2);
-                                let c4 = row.insertCell(3);
-                                let c5 = row.insertCell(4);
-                                let c6 = row.insertCell(5);
-                                let c7 = row.insertCell(6);
-                                let c8 = row.insertCell(7);
-                                let c9 = row.insertCell(8);
-                                let c10 = row.insertCell(9);
-                                let c11 = row.insertCell(10);
-                                let c12 = row.insertCell(11);
-
-                                console.log('+++AFTER 6 TABLE+++')
-                                console.log(price)
-
-                                // Add data to c1 and c2
-
-                                c1.innerText = count1
-                                c2.innerHTML = ' <span dir=ltr>' +product_code + '</span>'
-                                c3.innerText = product_name
-                                c4.innerText = product['Product_Location']
-                                c5.innerText = price
-                                c6.innerText = quentity
-                                c7.innerText = quentity * price
-                                c8.innerText = discount
-                                c9.innerText = (quentity * price) - discount
-                                tax = Math.round(((price * quentity) -discount) * 0.15 * 100) / 100
-                                c10.innerText = tax
-                                c11.innerText = Math.round(((price *quentity) + tax - discount) *100) / 100
-                                c12.innerHTML =result3+'  '+update
-
-
-                }
-
-
-            });
-
-
-            totaldiscount = totaldiscount + temp;
-            let tableTotalPrice = document.getElementById("tableTotalPrice");
-            var tableHeaderRowCount = 1;
-
-            var rowCount = tableTotalPrice.rows.length;
-
-            for (var i = tableHeaderRowCount; i < rowCount; i++) {
-                tableTotalPrice.deleteRow(tableHeaderRowCount);
-            }
-            let row = tableTotalPrice.insertRow(-1); // We are adding at the end
+            let row = table.insertRow(-1);
 
             let c1 = row.insertCell(0);
             let c2 = row.insertCell(1);
             let c3 = row.insertCell(2);
             let c4 = row.insertCell(3);
+            let c5 = row.insertCell(4);
+            let c6 = row.insertCell(5);
+            let c7 = row.insertCell(6);
+            let c8 = row.insertCell(7);
+            let c9 = row.insertCell(8);
+            let c10 = row.insertCell(9);
+            let c11 = row.insertCell(10);
+            let c12 = row.insertCell(11);
 
-
-            // Add data to c1 and c2
-
-            c1.innerText = ((Math.round(total_purchases * 100) / 100).toFixed(2))
-            c2.innerText = ((Math.round(totaldiscount * 100) / 100).toFixed(2))
-            c3.innerText = ((Math.round(total_purchases_AddedValue * 100) / 100).toFixed(2))
-            c4.innerText = ((Math.round((total_purchases - totaldiscount + total_purchases_AddedValue) * 100)) / 100).toFixed(2)
-
-
-
-
-
-
-        },
-        error: function(response) {
-            console.log(response)
-            alert("{{ __('home.sorryerror') }}")
-
+            c1.innerText = count1;
+            c2.innerHTML = ' <span dir=ltr>' + product_code + '</span>';
+            c3.innerText = product_name;
+            c4.innerText = product['Product_Location'];
+            c5.innerText = price;
+            c6.innerText = quentity;
+            c7.innerText = quentity * price;
+            c8.innerText = discount;
+            c9.innerText = (quentity * price) - discount;
+            
+            var tax = Math.round(((price * quentity) - discount) * 0.15 * 100) / 100;
+            c10.innerText = tax;
+            c11.innerText = Math.round(((price * quentity) + tax - discount) * 100) / 100;
+            c12.innerHTML = result3 + '  ' + update;
         }
     });
-}    
+
+    totaldiscount = totaldiscount + temp;
+    
+    // تحديث جدول الإجماليات السفلي
+    let tableTotalPrice = document.getElementById("tableTotalPrice");
+    var rowCountTotal = tableTotalPrice.rows.length;
+
+    for (var i = tableHeaderRowCount; i < rowCountTotal; i++) {
+        tableTotalPrice.deleteRow(tableHeaderRowCount);
+    }
+    
+    let rowTotal = tableTotalPrice.insertRow(-1);
+    let tc1 = rowTotal.insertCell(0);
+    let tc2 = rowTotal.insertCell(1);
+    let tc3 = rowTotal.insertCell(2);
+    let tc4 = rowTotal.insertCell(3);
+
+    tc1.innerText = ((Math.round(total_purchases * 100) / 100).toFixed(2));
+    tc2.innerText = ((Math.round(totaldiscount * 100) / 100).toFixed(2));
+    tc3.innerText = ((Math.round(total_purchases_AddedValue * 100) / 100).toFixed(2));
+    tc4.innerText = ((Math.round((total_purchases - totaldiscount + total_purchases_AddedValue) * 100)) / 100).toFixed(2);
 }
-})
 
-    $('#increaseProduct').on('show.bs.modal', function(event) {
-        var button = $(event.relatedTarget)
-        var id = button.data('id')
-        var section_name = button.data('section_name')
-        var return_quentity = button.data('return_quentity')
-        var price = button.data('section_price')
-        var discount = button.data('section_discount')
-        var modal = $(this)
-        section_name = section_name.replaceAll("?", " ")
-
-        avtsale = $('#avtValue').val();
-
-        modal.find('.modal-body #id_update').val(id);
-        modal.find('.modal-body #product_name_update').val(section_name);
-        modal.find('.modal-body #product_price_update').val(price);
-        modal.find('.modal-body #avt_update').val(Math.round((price * avtsale) * 1000, 2) / 1000);
-        modal.find('.modal-body #quantity_update').val(return_quentity);
-        modal.find('.modal-body #product_price_after_dis_update').val(discount / return_quentity);
-        modal.find('.modal-body #priceWithTax_update').val((price * 1) + Math.round((price * avtsale) * 1000, 2) / 1000);
-    })
-</script>
-<script>
-    function makeDiscountInvoice() {
-
-
-        totaldicount = $('#totaldicount').val()
-        $('#totaldicount').val('')
-        orderNo = $('#orderNo').val();
-
-        $.ajax({
-            url: "{{ URL::to('/makeTotalDiscontOferprice') }}/" + orderNo + "/" + totaldicount,
-            type: "GET",
-            dataType: "json",
-            success: function(data) {
-                console.log("success");
-                if (data) {
-
-                    let tableTotalPrice = document.getElementById("tableTotalPrice");
-                    var tableHeaderRowCount = 1;
-
-                    var rowCount = tableTotalPrice.rows.length;
-
-                    for (var i = tableHeaderRowCount; i < rowCount; i++) {
-                        tableTotalPrice.deleteRow(tableHeaderRowCount);
-                    }
-                    let row = tableTotalPrice.insertRow(-1); // We are adding at the end
-
-                    let c1 = row.insertCell(0);
-                    let c2 = row.insertCell(1);
-                    let c3 = row.insertCell(2);
-                    let c4 = row.insertCell(3);
-
-
-                    // Add data to c1 and c2
-
-                    total_purchases = data['total_purchases']
-                    totaldiscount = data['totaldiscount']
-                    total_purchases_AddedValue = data['total_purchases_AddedValue']
-
-                    c1.innerText = total_purchases
-                    c2.innerText = totaldiscount
-                    c3.innerText = total_purchases_AddedValue
-                    c4.innerText = (total_purchases - totaldiscount) + (total_purchases_AddedValue * 1)
-
-
-
-
-                } else {
-                    alert("{{ __('home.sorryerror') }}")
-                }
-            },
-        });
-
-
-
-
-
-
-
-
+// الـ Listeners الخاصة بـ الاختصارات والأحداث
+document.addEventListener('keydown', (e) => {
+    if (e.ctrlKey && e.keyCode == '38') {
+        $('#SearchProduct').modal().show();
     }
+});
 
- 
+document.addEventListener('keydown', (e) => {
+    if (e.ctrlKey && e.code === 'ArrowDown') {
+        e.preventDefault(); // تصحيح الخطأ هنا من event إلى e
 
-    function changePriceWithTax() {
-        console.log("erweeweeweww - - - - -")
-        price = $('#priceWithTax').val();
-
-        avtvalue = (price * 100) / 115
-        rountavt = Math.round((avtvalue * 100), 2) / 100;
-
-        $('#avt').val(Math.round(((price - rountavt) * 100), 2) / 100);
-        $('#product_price').val(rountavt.toFixed(2));
-
-
-
-
-    }
-
-
-
-
-
-    document.addEventListener('keydown', (e) => {
-
-        if (e.key === "Enter") {
-            searchtext = $('#product_code').val();
-            $('#searchaboutproduct').val(searchtext);
-            // document.getElementById("searchaboutproduct").focus();
-            $('#SearchProduct').modal().show();
-
-
-
-        }
-    })
-    $('#SearchProduct').on('shown.bs.modal', function() {
-        $('#searchaboutproduct').focus();
-    })
-    $("#updateproductalldata").click(function(e) {
-
-        event.preventDefault();
-        $('#increaseProduct').modal('hide');
-
-        var url = $(this).attr('data-action');
         let table = document.getElementById("example");
+        var _token = $("#token_search").val();
+        var url = " {{ URL::to('Addproduct_to_dlivery_supplier') }}";
 
-
-        var token_search = $("#token_search").val();
-
-        var url = " {{ URL::to('updateproductallDatadelivery') }}";
+        clientnamesearch = $('#clientnamesearch').val();
         token_search = $('#token_search').val();
-        id = $('#id_update').val();
-        quentity = $('#quantity_update').val();
-        discount = $('#product_price_after_dis_update').val() * $('#quantity_update').val();
-        price = $('#product_price_update').val();
-        $.ajax({
-            url: url,
-            type: 'post',
-            cache: false,
+        productNo = $('#productNo').val();
+        orderNo = $('#orderNo').val();
+        discount = $('#product_price_after_dis').val() * $('#quantity').val();
+        quantity = $('#quantity').val();
+        product_price = $('#product_price').val();
+        notes = $('#notes').val();
 
-            data: {
-                _token: token_search,
-                id: id,
-                quentity: quentity,
-                discount: discount,
-                price: price
-            },
+        if (clientnamesearch == '-') {
+            alert("{{ __('home.pleasechooseClient') }}");
+        } else if (productNo == '') {
+            alert("{{ __('home.pleaseSelectProduct') }}");
+        } else if (quantity == '') {
+            alert("{{ __('home.pleaseenterquantity') }}");
+        } else {
+            $('#product_price_after_dis').val(0);
+            $('#quantity').val(1);
+            $('#avaliable_quentity').val('');
+            $('#product_location').val('');
+            $('#product_price').val('');
+            $('#purchase_price').val('');
+            $('#product_name').val('');
 
-            success: function(data) {
-
-
-                // const map =(JSON.parse(response));
-                console.log('++++++')
-
-                $('#quentity').val('');
-                $('#productnameshow').val('');
-
-                console.log('++++++')
-                console.log(data)
-                let table = document.getElementById("example");
-                console.log('+++AFTER TABLE+++')
-
-
-
-                var tableHeaderRowCount = 1;
-
-                var rowCount = table.rows.length;
-                console.log('+++AFTER 3 TABLE+++')
-
-                for (var i = tableHeaderRowCount; i < rowCount; i++) {
-                    table.deleteRow(tableHeaderRowCount);
+            $.ajax({
+                url: url,
+                type: 'post',
+                cache: false,
+                data: {
+                    "_token": _token,
+                    "clientnamesearch": clientnamesearch,
+                    "productNo": productNo,
+                    "quentity": quantity,
+                    "saleprice": product_price,
+                    "orderNo": orderNo,
+                    'discount': discount,
+                    "notes": notes
+                },
+                success: function(data) {
+                    $('#quentity').val('');
+                    $('#productnameshow').val('');
+                    renderInvoiceTable(data); // استدعاء الدالة الموحدة
+                },
+                error: function(response) {
+                    console.log(response);
+                    alert("{{ __('home.sorryerror') }}");
                 }
-                console.log('+++AFTER 4 TABLE+++')
+            });
+        }    
+    }
+});
 
-                total_purchases = 0;
-                totaldiscount = 0;
-                temp = 0;
-                total_purchases_AddedValue = 0;
-                data.forEach(async (product) => {
-                    if (product['count'] == 1) {
-                        $('#orderNo').val(product['order_id']);
-                        $('#OrderNoprint').val(product['order_id']);
+$('#increaseProduct').on('show.bs.modal', function(event) {
+    var button = $(event.relatedTarget);
+    var id = button.data('id');
+    var section_name = button.data('section_name');
+    var return_quentity = button.data('return_quentity');
+    var price = button.data('section_price');
+    var discount = button.data('section_discount');
+    var modal = $(this);
+    
+    if(section_name) {
+        section_name = section_name.replaceAll("?", " ");
+    }
 
-                    }
+    avtsale = $('#avtValue').val();
 
-                    temp = product['discount'];
-                    total_purchases = total_purchases + (product['sale_price'] * product['quantity']);
-                    totaldiscount = totaldiscount + product['discount'];
-                    total_purchases_AddedValue = total_purchases_AddedValue + ((product['sale_price'] * product['quantity']) - product['discount']) * $('#avt_value').val();
+    modal.find('.modal-body #id_update').val(id);
+    modal.find('.modal-body #product_name_update').val(section_name);
+    modal.find('.modal-body #product_price_update').val(price);
+    modal.find('.modal-body #avt_update').val(Math.round((price * avtsale) * 1000, 2) / 1000);
+    modal.find('.modal-body #quantity_update').val(return_quentity);
+    modal.find('.modal-body #product_price_after_dis_update').val(discount / return_quentity);
+    modal.find('.modal-body #priceWithTax_update').val((price * 1) + Math.round((price * avtsale) * 1000, 2) / 1000);
+});
+</script>
 
-                    count1 = product['count'],
-                        product_code = product['productCode']
-                    product_name = product['productName']
-                    quentity = product['quantity']
-                    price = product['sale_price']
-                    added_value = product['added_value']
-                    discount = product['discount']
-                    id = product['id']
+<script>
+function makeDiscountInvoice() {
+    totaldicount = $('#totaldicount').val();
+    $('#totaldicount').val('');
+    orderNo = $('#orderNo').val();
 
-                    if (quentity > 0) {
-                             update =
-                            ' <a style="width:40px;height:20px" class="modal-effect btn btn-sm btn-warning mb-1" data-effect="effect-scale" data-id='
-                        update = update.concat(id, "  ", "data-section_name=", product_name, "  ", "data-section_price=", price, "  ", "data-section_discount=", discount,
-                            "  ", "data-return_quentity=", quentity, '  ',
-                            '  data-toggle="modal"   href="#increaseProduct"   title="تعديل"><i class="las la-align-justify"></i></a>'
-                        )
-                        text2 =
-                            ' <a style="width:40px;height:20px" class="modal-effect btn btn-sm btn-danger mb-1" data-effect="effect-scale" data-id='
-                        result3 = text2.concat(id, "  ", "data-section_name=", product_name,
-                            "  ", "data-return_quentity=", quentity, '  ',
-                            '  data-toggle="modal"   href="#modaldemo9"   title="حذف"><i class="las la-trash"></i></a>'
-                        )
-
-
-                        console.log('+++AFTER 5 TABLE+++')
-
-                        let row = table.insertRow(-
-                            1); // We are adding at the end
-                        console.log('+++AFTER 5 TABLE+++')
-
-                                let c1 = row.insertCell(0);
-                                let c2 = row.insertCell(1);
-                                let c3 = row.insertCell(2);
-                                let c4 = row.insertCell(3);
-                                let c5 = row.insertCell(4);
-                                let c6 = row.insertCell(5);
-                                let c7 = row.insertCell(6);
-                                let c8 = row.insertCell(7);
-                                let c9 = row.insertCell(8);
-                                let c10 = row.insertCell(9);
-                                let c11 = row.insertCell(10);
-                                let c12 = row.insertCell(11);
-
-                                console.log('+++AFTER 6 TABLE+++')
-                                console.log(price)
-
-                                // Add data to c1 and c2
-
-          
-                                c1.innerText = count1
-                                c2.innerHTML = ' <span dir=ltr>' +product_code + '</span>'
-                                c3.innerText = product_name
-                                c4.innerText = product['Product_Location']
-                                c5.innerText = price
-                                c6.innerText = quentity
-                                c7.innerText = quentity * price
-                                c8.innerText = discount
-                                c9.innerText = (quentity * price) - discount
-                                tax = Math.round(((price * quentity) -discount) * 0.15 * 100) / 100
-                                c10.innerText = tax
-                                c11.innerText = Math.round(((price *quentity) + tax - discount) *100) / 100
-                                c12.innerHTML =result3+'  '+update
-
-                    }
-
-
-                });
-
-
-                totaldiscount = totaldiscount + temp;
+    $.ajax({
+        url: "{{ URL::to('/makeTotalDiscontOferprice') }}/" + orderNo + "/" + totaldicount,
+        type: "GET",
+        dataType: "json",
+        success: function(data) {
+            console.log("success");
+            if (data) {
                 let tableTotalPrice = document.getElementById("tableTotalPrice");
                 var tableHeaderRowCount = 1;
-
                 var rowCount = tableTotalPrice.rows.length;
 
                 for (var i = tableHeaderRowCount; i < rowCount; i++) {
                     tableTotalPrice.deleteRow(tableHeaderRowCount);
                 }
-                let row = tableTotalPrice.insertRow(-1); // We are adding at the end
+                let row = tableTotalPrice.insertRow(-1);
 
                 let c1 = row.insertCell(0);
                 let c2 = row.insertCell(1);
                 let c3 = row.insertCell(2);
                 let c4 = row.insertCell(3);
 
+                total_purchases = data['total_purchases'];
+                totaldiscount = data['totaldiscount'];
+                total_purchases_AddedValue = data['total_purchases_AddedValue'];
 
-                // Add data to c1 and c2
-
-                c1.innerText = ((Math.round(total_purchases * 100) / 100).toFixed(2))
-                c2.innerText = ((Math.round(totaldiscount * 100) / 100).toFixed(2))
-                c3.innerText = ((Math.round(total_purchases_AddedValue * 100) / 100).toFixed(2))
-                c4.innerText = ((Math.round((total_purchases - totaldiscount + total_purchases_AddedValue) * 100)) / 100).toFixed(2)
-
-
-
-
-
-
+                c1.innerText = total_purchases;
+                c2.innerText = totaldiscount;
+                c3.innerText = total_purchases_AddedValue;
+                c4.innerText = (total_purchases - totaldiscount) + (total_purchases_AddedValue * 1);
+            } else {
+                alert("{{ __('home.sorryerror') }}");
             }
-        });
-    })
+        },
+    });
+}
 
+function changePriceWithTax() {
+    price = $('#priceWithTax').val();
+    avtvalue = (price * 100) / 115;
+    rountavt = Math.round((avtvalue * 100), 2) / 100;
 
+    $('#avt').val(Math.round(((price - rountavt) * 100), 2) / 100);
+    $('#product_price').val(rountavt.toFixed(2));
+}
 
-
-    function changeAvtValuempdale(avt) {
-        price = $('#product_price_update').val();
-        avt = $('#avtValue').val();
-
-        $('#avt_update').val(Math.round((price * avt) * 1000) / 1000);
-
-
-
+document.addEventListener('keydown', (e) => {
+    if (e.key === "Enter") {
+        searchtext = $('#product_code').val();
+        $('#searchaboutproduct').val(searchtext);
+        $('#SearchProduct').modal().show();
     }
+});
+
+$('#SearchProduct').on('shown.bs.modal', function() {
+    $('#searchaboutproduct').focus();
+});
+
+$("#updateproductalldata").click(function(e) {
+    e.preventDefault(); // تم استخدام e بدل event هنا أيضاً للأمان
+    $('#increaseProduct').modal('hide');
+
+    var token_search = $("#token_search").val();
+    var url = " {{ URL::to('updateproductallDatadelivery') }}";
+    
+    id = $('#id_update').val();
+    quentity = $('#quantity_update').val();
+    discount = $('#product_price_after_dis_update').val() * $('#quantity_update').val();
+    price = $('#product_price_update').val();
+
+    $.ajax({
+        url: url,
+        type: 'post',
+        cache: false,
+        data: {
+            _token: token_search,
+            id: id,
+            quentity: quentity,
+            discount: discount,
+            price: price
+        },
+        success: function(data) {
+            $('#quentity').val('');
+            $('#productnameshow').val('');
+            renderInvoiceTable(data); // استدعاء الدالة الموحدة لمنع التكرار والأخطاء
+        }
+    });
+});
+
+function changeAvtValuempdale(avt) {
+    price = $('#product_price_update').val();
+    avt = $('#avtValue').val();
+    $('#avt_update').val(Math.round((price * avt) * 1000) / 1000);
+}
 </script>
-<!--Internal  Datepicker js -->
-<script src="{{ URL::asset('assets/plugins/jquery-ui/ui/widgets/datepicker.js') }}"></script>
-<!--Internal  jquery.maskedinput js -->
-<script src="{{ URL::asset('assets/plugins/jquery.maskedinput/jquery.maskedinput.js') }}"></script>
-<!--Internal  spectrum-colorpicker js -->
-<script src="{{ URL::asset('assets/plugins/spectrum-colorpicker/spectrum.js') }}"></script>
-<!-- Internal Select2.min js -->
-<script src="{{ URL::asset('assets/plugins/select2/js/select2.min.js') }}"></script>
-<!--Internal Ion.rangeSlider.min js -->
-<script src="{{ URL::asset('assets/plugins/ion-rangeslider/js/ion.rangeSlider.min.js') }}"></script>
-<!--Internal  jquery-simple-datetimepicker js -->
-<script src="{{ URL::asset('assets/plugins/amazeui-datetimepicker/js/amazeui.datetimepicker.min.js') }}"></script>
-<!-- Ionicons js -->
-<script src="{{ URL::asset('assets/plugins/jquery-simple-datetimepicker/jquery.simple-dtpicker.js') }}"></script>
-<!--Internal  pickerjs js -->
-<script src="{{ URL::asset('assets/plugins/pickerjs/picker.min.js') }}"></script>
-<!-- Internal form-elements js -->
-<script src="{{ URL::asset('assets/js/form-elements.js') }}"></script>
+
+
+
+
+
+
+
+
 <script>
     $("#deleteproduct").click(function(e) {
         event.preventDefault();
@@ -1255,9 +988,7 @@ if (clientnamesearch == '-') {
 
         }
     })
-    var date = $('.fc-datepicker').datepicker({
-        dateFormat: 'yy-mm-dd'
-    }).val();
+
 </script>
 <script>
     function quantityconvertToNumber() {

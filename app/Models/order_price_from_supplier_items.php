@@ -22,4 +22,9 @@ class order_price_from_supplier_items extends Model
        {
            return $this->belongsTo(products::class,'product_id');
        }
+       
+       public function product()
+       {
+           return $this->belongsTo(products::class,'product_id');
+       }
 }

@@ -395,7 +395,7 @@ return [
     'welcome' => 'مرحبا بك ',
     'home' => 'الرئيسية',
     'transactions' => 'العمليات',
-    'Requestـpricesـofـproducts' => 'طلب أسعار المنتجات من المورد',
+    'Requestـpricesـofـproducts' => 'طلب أسعار من المورد',
     'Purchase_order_of_resources' => ' امر شراء إلي المورد',
     'purchases' => '  مشتريات',
     'Offerـpricesـtoـcustomer' => ' عرض تسعيرة للعميل',

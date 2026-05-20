@@ -19,18 +19,20 @@
 
 
 <style>
-/* زر الحفظ الأساسي */
+    /* زر الحفظ الأساسي */
     .btn-main-action {
         background-color: #419BB2 !important;
         color: white !important;
         border: none;
-        border-radius: 50px; /* شكل بيضاوي عصري */
+        border-radius: 50px;
+        /* شكل بيضاوي عصري */
         transition: all 0.3s ease;
     }
 
     .btn-main-action:hover {
         background-color: #358094 !important;
-        transform: scale(1.05); /* تكبير بسيط عند الحفظ */
+        transform: scale(1.05);
+        /* تكبير بسيط عند الحفظ */
         box-shadow: 0 6px 15px rgba(65, 155, 178, 0.3) !important;
     }
 
@@ -60,10 +62,11 @@
     .shadow-md {
         box-shadow: 0 4px 10px rgba(0, 0, 0, 0.12);
     }
-    
+
     .gap-3 {
         gap: 1rem;
     }
+
     /* ألوان مخصصة لتناسب هويتك */
     .btn-primary-custom {
         background-color: #419BB2 !important;
@@ -72,49 +75,62 @@
         border-radius: 8px;
         transition: all 0.3s ease;
     }
+
     .btn-primary-custom:hover {
         background-color: #358094 !important;
         transform: translateY(-2px);
     }
 
     .btn-secondary-custom {
-        background-color: #2c3e50 !important; /* لون داكن للـ PDF لتمييزه */
+        background-color: #2c3e50 !important;
+        /* لون داكن للـ PDF لتمييزه */
         border: none;
         color: white;
         border-radius: 8px;
         transition: all 0.3s ease;
     }
+
     .btn-secondary-custom:hover {
         background-color: #1a252f !important;
         transform: translateY(-2px);
     }
 
-    .gap-3 { gap: 1rem !important; }
-    
+    .gap-3 {
+        gap: 1rem !important;
+    }
+
     /* تنسيق الحاوية */
     .bg-light-custom {
         background-color: #f8f9fa;
         border-radius: 12px;
-        border: 1px dashed #419BB2; /* إطار خفيف لتمييز منطقة الأكشن */
+        border: 1px dashed #419BB2;
+        /* إطار خفيف لتمييز منطقة الأكشن */
     }
-.addProductBtn:hover {
-        background-color: #358094 !important; /* لون أغمق قليلاً عند التمرير */
-        transform: translateY(-2px); /* حركة بسيطة للأعلى */
-        box-shadow: 0 4px 8px rgba(0,0,0,0.15) !important;
+
+    .addProductBtn:hover {
+        background-color: #358094 !important;
+        /* لون أغمق قليلاً عند التمرير */
+        transform: translateY(-2px);
+        /* حركة بسيطة للأعلى */
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15) !important;
     }
+
     .addProductBtn:active {
         transform: translateY(0);
     }
-        /* تحسين شكل الـ select2 ليتناسب مع الـ input group */
+
+    /* تحسين شكل الـ select2 ليتناسب مع الـ input group */
     .select2-container--default .select2-selection--single {
         border-radius: 5px !important;
         height: 38px !important;
         border: 1px solid #e1e5ef !important;
     }
+
     .select2-container--default .select2-selection--single .select2-selection__rendered {
         line-height: 35px !important;
         padding-right: 15px !important;
     }
+
     /* =========================
    Modern UI + Inner Borders
    ========================= */
@@ -323,11 +339,12 @@
                     <?php
     $avtSaleRate = App\Models\Avt::find(1);
     $avtSaleRate = $avtSaleRate->AVT;
-                $system_settings = App\Models\system_setting::find(1);
+    $system_settings = App\Models\system_setting::find(1);
 
-        $discound_allow = $system_settings->discount_on_invoice;
-                                                                            ?>
-<input hidden=true class="form-control" id="discound_allow" name="discound_allow" value="{{ $discound_allow/100 }}">
+    $discound_allow = $system_settings->discount_on_invoice;
+                                                                                ?>
+                    <input hidden=true class="form-control" id="discound_allow" name="discound_allow"
+                        value="{{ $discound_allow / 100 }}">
 
                     <form enctype="multipart/form-data" method="POST" role="search" name="form-name" id='formdata'
                         autocomplete="off">
@@ -375,22 +392,22 @@
                                         </tr>
                                     </thead>
                                 <tbody id="productsTableBody">
-                                 
+
                                 </tbody>
                             </table>
 
-                         <button type="button" class="btn addProductBtn shadow-sm text-white" 
-        style="background-color: #419BB2; border-radius: 8px; padding: 8px 20px; border: none; transition: all 0.3s ease;"
-        onclick="addRow()">
-    <i class="fas fa-plus-circle me-1"></i> {{ __('supprocesses.addproduct') }}
-</button>
+                            <button type="button" class="btn addProductBtn shadow-sm text-white"
+                                style="background-color: #419BB2; border-radius: 8px; padding: 8px 20px; border: none; transition: all 0.3s ease;"
+                                onclick="addRow()">
+                                <i class="fas fa-plus-circle me-1"></i> {{ __('supprocesses.addproduct') }}
+                            </button>
                             <br>
                             <div class="row mt-3 p-3"
                                 style="background-color: #fcfcfc; border: 1px solid #e1e1e1; border-radius: 8px; justify-content: space-between; align-items: flex-end;">
 
                                 <div class="col-md-2"><label class="form-label">{{ __('home.discound_on_invoice') }}
-                                    </label><input type="text" id="discound_on_invoice" name="discound_on_invoice"
-                                   readonly     oninput='calculateTotalDiscount()' class="form-control"></div>
+                                    </label><input type="text" id="discound_on_invoice" name="discound_on_invoice" readonly
+                                        oninput='calculateTotalDiscount()' class="form-control"></div>
 
                                 <div class="col-lg-4">
                                     <label for="last_supplier_cost" class="control-label parent-label"
@@ -403,43 +420,46 @@
                                     </select>
                                 </div>
                             </div>
-  <div class="row mt-4">
-    <div class="col-md-3">
-        <div class="card bd-0 bg-light p-3 text-center shadow-sm">
-            <label class="form-label fw-bold text-muted mb-1">{{ __('home.the amount') }}</label>
-            <input readonly type="text" id="totalSum" name="totalSum" 
-                   class="form-control text-center border-0 bg-transparent fw-bold tx-20" 
-                   style="color: #444;" value="0.00">
-        </div>
-    </div>
+                            <div class="row mt-4">
+                                <div class="col-md-3">
+                                    <div class="card bd-0 bg-light p-3 text-center shadow-sm">
+                                        <label
+                                            class="form-label fw-bold text-muted mb-1">{{ __('home.the amount') }}</label>
+                                        <input readonly type="text" id="totalSum" name="totalSum"
+                                            class="form-control text-center border-0 bg-transparent fw-bold tx-20"
+                                            style="color: #444;" value="0.00">
+                                    </div>
+                                </div>
 
-    <div class="col-md-3">
-        <div class="card bd-0 bg-danger-light p-3 text-center shadow-sm">
-            <label class="form-label fw-bold text-danger mb-1">{{ __('home.discount') }}</label>
-            <input type="text" id="totaldiscound" name="totaldiscound" readonly 
-                   class="form-control text-center border-0 bg-transparent fw-bold text-danger tx-20" 
-                   value="0.00">
-        </div>
-    </div>
+                                <div class="col-md-3">
+                                    <div class="card bd-0 bg-danger-light p-3 text-center shadow-sm">
+                                        <label class="form-label fw-bold text-danger mb-1">{{ __('home.discount') }}</label>
+                                        <input type="text" id="totaldiscound" name="totaldiscound" readonly
+                                            class="form-control text-center border-0 bg-transparent fw-bold text-danger tx-20"
+                                            value="0.00">
+                                    </div>
+                                </div>
 
-    <div class="col-md-3">
-        <div class="card bd-0 bg-primary-light p-3 text-center shadow-sm">
-            <label class="form-label fw-bold text-primary mb-1">{{ __('home.addedValue') }}</label>
-            <input type="text" id="totalTax" name="totalTax" readonly 
-                   class="form-control text-center border-0 bg-transparent fw-bold text-primary tx-20" 
-                   value="0.00">
-        </div>
-    </div>
+                                <div class="col-md-3">
+                                    <div class="card bd-0 bg-primary-light p-3 text-center shadow-sm">
+                                        <label
+                                            class="form-label fw-bold text-primary mb-1">{{ __('home.addedValue') }}</label>
+                                        <input type="text" id="totalTax" name="totalTax" readonly
+                                            class="form-control text-center border-0 bg-transparent fw-bold text-primary tx-20"
+                                            value="0.00">
+                                    </div>
+                                </div>
 
-    <div class="col-md-3">
-        <div class="card bd-0 bg-success p-3 text-center shadow-sm border-2">
-            <label class="form-label fw-bold text-white mb-1" style="font-size: 1.1rem;">{{ __('home.total') }}</label>
-            <input type="text" id="grandTotal" name="grandTotal" readonly 
-                   class="form-control text-center border-0 bg-transparent fw-bold text-white tx-24" 
-                   value="0.00">
-        </div>
-    </div>
-</div>
+                                <div class="col-md-3">
+                                    <div class="card bd-0 bg-success p-3 text-center shadow-sm border-2">
+                                        <label class="form-label fw-bold text-white mb-1"
+                                            style="font-size: 1.1rem;">{{ __('home.total') }}</label>
+                                        <input type="text" id="grandTotal" name="grandTotal" readonly
+                                            class="form-control text-center border-0 bg-transparent fw-bold text-white tx-24"
+                                            value="0.00">
+                                    </div>
+                                </div>
+                            </div>
 
 
 
@@ -450,142 +470,140 @@
 
 
 
-             <div class="row row-sm align-items-end">
-    <div class="col-lg-4 mg-t-10">
-        <label for="clientnamesearch" class="form-label fw-bold text-muted">
-            <i class="fas fa-user-tag me-1 text-primary"></i> {{ __('home.chooseclient') }}
-        </label>
-        <select class="form-control select2 shadow-sm" name="clientnamesearch" id="clientnamesearch">
-            @foreach (App\Models\customers::where('id','>',0)->get() as $customer)
-                <option value="{{ $customer->id }}">
-                    {{-- عرض الاسم والرقم الضريبي بشكل منسق --}}
-                    @if(App::getLocale() == 'ar')
-                        {{ $customer->name }} {{ $customer->tax_no ? '(الرقم الضريبي: ' . $customer->tax_no . ')' : '' }}
-                    @else
-                        {{ $customer->comp_name }} {{ $customer->tax_no ? '(VAT: ' . $customer->tax_no . ')' : '' }}
-                    @endif
-                </option>
-            @endforeach
-        </select>
-    </div>
+                            <div class="row row-sm align-items-end">
+                          <div class="col-lg-4 mg-lg-t-10">
+                                <label for="inputName" class="form-label">{{ __('home.chooseclient') }}</label>
 
-    <div class="col-lg-8 mg-t-10">
-        <label for="notes" class="form-label fw-bold text-muted">
-            <i class="fas fa-sticky-note me-1 text-warning"></i> {{ __('home.notesClient') }}
-        </label>
-        <div class="input-group shadow-sm">
-            <span class="input-group-text bg-white border-end-0">
-                <i class="fas fa-pen-nib text-muted tx-12"></i>
-            </span>
-            <input autocomplete="off" type="text" 
-                   class="form-control parent-input border-start-0 ps-0" 
-                   id="notes" name="notes" 
-                   onchange="makenoteoninvoice()" 
-                   value="-" 
-                   placeholder="{{ __('home.enter_notes_here') }}">
-        </div>
-    </div>
-</div>
+                                
+                                
+                                           <select style="width:100%!important" name="clientnamesearch" id="clientnamesearch" class="form-control select2">
+                                    <option  value=1 >عميل نقدي CASH CUSTOMER</option>
+
+
+                            </select>
+                            </div>
+
+                                <div class="col-lg-8 mg-t-10">
+                                    <label for="notes" class="form-label fw-bold text-muted">
+                                        <i class="fas fa-sticky-note me-1 text-warning"></i> {{ __('home.notesClient') }}
+                                    </label>
+                                    <div class="input-group shadow-sm">
+                                        <span class="input-group-text bg-white border-end-0">
+                                            <i class="fas fa-pen-nib text-muted tx-12"></i>
+                                        </span>
+                                        <input autocomplete="off" type="text"
+                                            class="form-control parent-input border-start-0 ps-0" id="notes" name="notes"
+                                            onchange="makenoteoninvoice()" value="-"
+                                            placeholder="{{ __('home.enter_notes_here') }}">
+                                    </div>
+                                </div>
+                            </div>
 
 
 
-                                <input type="hidden" id="token_search" value="{{ csrf_token() }}">
-                                <div class="col-lg-4 mg-t-20 mg-lg-t-0">
-                                    <input type="text" hidden=true class="form-control" id="invoice_number"
-                                        name="invoice_number" value="{{ $data['invoice_id'] ?? '' }}">
+                            <input type="hidden" id="token_search" value="{{ csrf_token() }}">
+                            <div class="col-lg-4 mg-t-20 mg-lg-t-0">
+                                <input type="text" hidden=true class="form-control" id="invoice_number"
+                                    name="invoice_number" value="{{ $data['invoice_id'] ?? '' }}">
 
-                                    <input type="text" hidden=true class="form-control" id="saveinvice" name="saveinvice"
-                                        value=0>
+                                <input type="text" hidden=true class="form-control" id="saveinvice" name="saveinvice"
+                                    value=0>
 
-                                    <input hidden=true class="form-control" id="branchs_id" name="branchs_id"
-                                        value="{{Auth()->user()->branchs_id}}">
-                                    <input hidden=true class="form-control" id="user_id" name="user_id"
-                                        value="{{Auth()->user()->discount_allow_limit}}">
-                                    <?php
+                                <input hidden=true class="form-control" id="branchs_id" name="branchs_id"
+                                    value="{{Auth()->user()->branchs_id}}">
+                                <input hidden=true class="form-control" id="user_id" name="user_id"
+                                    value="{{Auth()->user()->discount_allow_limit}}">
+                                <?php
 
     $rate_discount = App\Models\system_setting::find(1);
     $rate_system = $rate_discount->discount_on_invoice;
-                                                                                ?>
-                                    <input hidden=true class="form-control" id="rate_system" name="rate_system"
-                                        value="{{$rate_system}}">
-                                    <input hidden=true class="form-control" id="shownumberproduct" name="shownumberproduct"
-                                        value="1">
-                                <br>
-                                <br>
-    <div class="d-flex justify-content-center">
-    
-    <button type="submit" id="saveInvoice" name="saveInvoice" 
-            class="btn btn-main-action shadow-md px-5 py-2 d-flex align-items-center">
-        <span class="fw-bold tx-18">                            {{ __('supprocesses.save_data') }}
-</span>
-        <svg class="ms-2 svg-white" viewBox="0 0 24 24" style="width: 22px; height: 22px;">
-            <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"></path>
-        </svg>
-    </button>
+                                                                                    ?>
+                                <input hidden=true class="form-control" id="rate_system" name="rate_system"
+                                    value="{{$rate_system}}">
+                                <input hidden=true class="form-control" id="shownumberproduct" name="shownumberproduct"
+                                    value="1">
+                            </div>
+                        </div>
+                        <br>
+                        <div class="d-flex justify-content-center">
+
+                            <button type="submit" id="saveInvoice" name="saveInvoice"
+                                class="btn btn-main-action shadow-md px-5 py-2 d-flex align-items-center">
+                                <span class="fw-bold tx-18"> {{ __('supprocesses.save_data') }}
+                                </span>
+                                <svg class="ms-2 svg-white" viewBox="0 0 24 24" style="width: 22px; height: 22px;">
+                                    <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"></path>
+                                </svg>
+                            </button>
 
 
 
-</div>
-         </form>
+                        </div>
+                        <br>
+
+                    </form>
+
+
+                    <input type="text" class="form-control " name="show_invoice_number" id="show_invoice_number"
+                        title=" رقم الفاتورة " hidden>
+
+                    <center>
+                        <div class=" justify-content-center" id="printdiv">
+                            <form
+                                action="{{ url(Mcamara\LaravelLocalization\Facades\LaravelLocalization::getCurrentLocale() . '/' . 'print_order_perice_to_customer') }}"
+                                method="POST" role="search" autocomplete="off">
+                                @csrf
+
+                                <div class="card bd-0 shadow-none bg-light-custom p-3">
+                                    <div class="row row-sm justify-content-center text-center">
+
+                                        <input type="hidden" name="OrderNoprint" id="OrderNoprint">
+
+                                        <div class="col-md-12 d-flex flex-wrap justify-content-center gap-3">
+
+                                            <button type="submit" id="print_qoute"
+                                                class="btn btn-primary-custom shadow-sm d-flex align-items-center px-4 py-2">
+                                                <span class="fw-bold">{{ __('home.print') }}</span>
+                                                <svg class="ms-2" style="width: 20px; height: 20px; fill: white;"
+                                                    viewBox="0 0 24 24">
+                                                    <path
+                                                        d="M19 8H5c-1.66 0-3 1.34-3 3v6h4v4h12v-4h4v-6c0-1.66-1.34-3-3-3zm-3 11H8v-5h8v5zm3-7c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm-1-9H6v4h12V3z" />
+                                                </svg>
+                                            </button>
+
+                                            <a href="javascript:void(0);" id="generate_pdf" target="_blank"
+                                                class="btn btn-secondary-custom shadow-sm d-flex align-items-center px-4 py-2">
+                                                <span class="fw-bold">{{ __('home.dwonloadpdf') }}</span>
+                                                <i class="fa-solid fa-file-pdf ms-2"></i>
+                                            </a>
+
+                                        </div>
+                                    </div>
+                                </div>
+                            </form>
+
+
+                        </div>
+
+
+
+                    </center>
 
                 </div>
 
-                <input type="text" class="form-control " name="show_invoice_number" id="show_invoice_number"
-                    title=" رقم الفاتورة " hidden>
-
-                <center>
-                    <div class=" justify-content-center" id="printdiv">
-<form action="{{ url(Mcamara\LaravelLocalization\Facades\LaravelLocalization::getCurrentLocale() . '/' . 'print_order_perice_to_customer') }}"
-      method="POST" role="search" autocomplete="off">
-    @csrf
-
-    <div class="card bd-0 shadow-none bg-light-custom p-3">
-        <div class="row row-sm justify-content-center text-center">
-            
-            <input type="hidden" name="OrderNoprint" id="OrderNoprint">
-
-            <div class="col-md-12 d-flex flex-wrap justify-content-center gap-3">
-                
-                <button type="submit" id="print_qoute" class="btn btn-primary-custom shadow-sm d-flex align-items-center px-4 py-2">
-                    <span class="fw-bold">{{ __('home.print') }}</span>
-                    <svg class="ms-2" style="width: 20px; height: 20px; fill: white;" viewBox="0 0 24 24">
-                        <path d="M19 8H5c-1.66 0-3 1.34-3 3v6h4v4h12v-4h4v-6c0-1.66-1.34-3-3-3zm-3 11H8v-5h8v5zm3-7c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm-1-9H6v4h12V3z"/>
-                    </svg>
-                </button>
-
-                <a href="javascript:void(0);" id="generate_pdf" target="_blank" 
-                   class="btn btn-secondary-custom shadow-sm d-flex align-items-center px-4 py-2">
-                    <span class="fw-bold">{{ __('home.dwonloadpdf') }}</span>
-                    <i class="fa-solid fa-file-pdf ms-2"></i>
-                </a>
-
             </div>
-        </div>
-    </div>
-</form>
-
 
         </div>
 
 
 
-        </center>
-
-    </div>
-
-    </div>
-
-    </div>
 
 
 
 
 
 
-
-
-
-    <!-- row closed -->
+        <!-- row closed -->
     </div>
     <!-- Container closed -->
     </div>
@@ -750,7 +768,7 @@
     <?php
     $avtSaleRate = App\Models\Avt::find(1);
     $avtSaleRate = $avtSaleRate->AVT;
-                                            ?>
+                                                ?>
     <input type="text" class="form-control " id="avtValue" name="avtValue" value="{{$avtSaleRate}}" hidden>
     {{-- End Update ( 24/4/2023 ) --}}
 
@@ -788,11 +806,11 @@
                                 title="{{ __('supprocesses.email') }}" value='Example@gmail.com'>
                         </div>
                         <!-- <div class="col-lg-3 col-md-3">
-                                            <label for="inputName" class="control-label parent-label"> {{ __('home.current balance') }} </label>
-                                            <input type="text" class="parent-input form-control" id="balance" name="balance"
-                                                title="يرجي ادخال الكمية  " value="{{ $data['customer']->Balance ?? '0' }}"
-                                                >
-                                        </div> -->
+                                                <label for="inputName" class="control-label parent-label"> {{ __('home.current balance') }} </label>
+                                                <input type="text" class="parent-input form-control" id="balance" name="balance"
+                                                    title="يرجي ادخال الكمية  " value="{{ $data['customer']->Balance ?? '0' }}"
+                                                    >
+                                            </div> -->
                     </div>
 
                     {{-- 2 --}}
@@ -1082,59 +1100,59 @@
 
                     {{-- 3 --}}
 
-                                                  @if(Auth()->user()->id==30||Auth()->user()->id==17)
+                    @if(Auth()->user()->id == 30 || Auth()->user()->id == 17)
 
 
-                    <div class="row">
-                        <div class="col-lg-4">
-                            <label for="inputName" class="control-label parent-label"> {{ __('home.purachesepice') }}
-                            </label>
-                            <input autocomplete="off" type="text" class="form-control parent-input" id="cost_price"
-                                name="cost_price" value=0 onkeyup="convertToNumberpurchasersPrice()">
-                        </div>
-                        <div class="col-lg-4">
-                            <label for="inputName" class="control-label parent-label" required>{{ __('home.salepice') }}
-                            </label>
-                            <input autocomplete="off" type="text" class="form-control parent-input" id="sale_price_create"
-                                value=0 name="sale_price_create" onkeyup="convertToNumbersalePrice()">
-                        </div>
-                        <div class="col-lg-4">
-                            <label for="inputName" class="control-label parent-label" required>{{ __('home.quantity') }}
-                            </label>
-                            <input autocomplete="off" type="text" class="form-control parent-input" id="quantity_create"
-                                value=0 name="quantity_create" onkeyup="convertToNumbersalePrice()">
+                        <div class="row">
+                            <div class="col-lg-4">
+                                <label for="inputName" class="control-label parent-label"> {{ __('home.purachesepice') }}
+                                </label>
+                                <input autocomplete="off" type="text" class="form-control parent-input" id="cost_price"
+                                    name="cost_price" value=0 onkeyup="convertToNumberpurchasersPrice()">
+                            </div>
+                            <div class="col-lg-4">
+                                <label for="inputName" class="control-label parent-label" required>{{ __('home.salepice') }}
+                                </label>
+                                <input autocomplete="off" type="text" class="form-control parent-input" id="sale_price_create"
+                                    value=0 name="sale_price_create" onkeyup="convertToNumbersalePrice()">
+                            </div>
+                            <div class="col-lg-4">
+                                <label for="inputName" class="control-label parent-label" required>{{ __('home.quantity') }}
+                                </label>
+                                <input autocomplete="off" type="text" class="form-control parent-input" id="quantity_create"
+                                    value=0 name="quantity_create" onkeyup="convertToNumbersalePrice()">
+                            </div>
+
                         </div>
 
-                    </div>
-                    
-                    
+
                     @else
-                    
-                                <div class="row">
-                        <div class="col-lg-4">
-                            <label for="inputName" class="control-label parent-label"> {{ __('home.purachesepice') }}
-                            </label>
-                            <input autocomplete="off" type="text" class="form-control parent-input" id="cost_price" readonly
-                                name="cost_price" value=0 onkeyup="convertToNumberpurchasersPrice()">
-                        </div>
-                        <div class="col-lg-4">
-                            <label for="inputName" class="control-label parent-label" required>{{ __('home.salepice') }} 
-                            </label>
-                            <input autocomplete="off" type="text" class="form-control parent-input" id="sale_price_create" readonly
-                                value=0 name="sale_price_create" onkeyup="convertToNumbersalePrice()">
-                        </div>
-                        <div class="col-lg-4">
-                            <label for="inputName" class="control-label parent-label" required>{{ __('home.quantity') }} 
-                            </label>
-                            <input autocomplete="off" type="text" class="form-control parent-input" id="quantity_create" readonly
-                                value=0 name="quantity_create" onkeyup="convertToNumbersalePrice()">
+
+                        <div class="row">
+                            <div class="col-lg-4">
+                                <label for="inputName" class="control-label parent-label"> {{ __('home.purachesepice') }}
+                                </label>
+                                <input autocomplete="off" type="text" class="form-control parent-input" id="cost_price" readonly
+                                    name="cost_price" value=0 onkeyup="convertToNumberpurchasersPrice()">
+                            </div>
+                            <div class="col-lg-4">
+                                <label for="inputName" class="control-label parent-label" required>{{ __('home.salepice') }}
+                                </label>
+                                <input autocomplete="off" type="text" class="form-control parent-input" id="sale_price_create"
+                                    readonly value=0 name="sale_price_create" onkeyup="convertToNumbersalePrice()">
+                            </div>
+                            <div class="col-lg-4">
+                                <label for="inputName" class="control-label parent-label" required>{{ __('home.quantity') }}
+                                </label>
+                                <input autocomplete="off" type="text" class="form-control parent-input" id="quantity_create"
+                                    readonly value=0 name="quantity_create" onkeyup="convertToNumbersalePrice()">
+                            </div>
+
                         </div>
 
-                    </div>
-                    
-                    
-                    
-                                       @endif
+
+
+                    @endif
 
                     {{-- 5 --}}
                     <div class="row mb-2">
@@ -1249,125 +1267,140 @@
 @endsection
 @section('js')
     <!-- Internal Data tables -->
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <!-- Internal Data tables -->
-    <!-- Internal Data tables -->
-    <!--Internal  Datatable js -->
-    <!--Internal  Datatable js -->
-    <script src="{{ URL::asset('assets/js/table-data.js') }}"></script>
-    <!--Internal  Datatable js -->
-    <script src="{{ URL::asset('assets/plugins/jquery-ui/ui/widgets/datepicker.js') }}"></script>
-    <!--Internal  jquery.maskedinput js -->
-    <script src="{{ URL::asset('assets/plugins/jquery.maskedinput/jquery.maskedinput.js') }}"></script>
-    <!--Internal  spectrum-colorpicker js -->
-    <script src="{{ URL::asset('assets/plugins/spectrum-colorpicker/spectrum.js') }}"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
     <!-- Internal Select2.min js -->
     <script src="{{ URL::asset('assets/plugins/select2/js/select2.min.js') }}"></script>
-    <!--Internal Ion.rangeSlider.min js -->
-    <script src="{{ URL::asset('assets/plugins/ion-rangeslider/js/ion.rangeSlider.min.js') }}"></script>
-    <!--Internal  jquery-simple-datetimepicker js -->
-    <script src="{{ URL::asset('assets/plugins/amazeui-datetimepicker/js/amazeui.datetimepicker.min.js') }}"></script>
-    <!-- Ionicons js -->
-    <script src="{{ URL::asset('assets/plugins/jquery-simple-datetimepicker/jquery.simple-dtpicker.js') }}"></script>
-    <!--Internal  pickerjs js -->
-    <script src="{{ URL::asset('assets/plugins/pickerjs/picker.min.js') }}"></script>
-    <!-- Internal form-elements js -->
-    <script src="{{ URL::asset('assets/js/form-elements.js') }}"></script>
+
 
     <script>
-    
+      $('#clientnamesearch').select2({
+        placeholder: 'ابحث عن المنتج',
+        allowClear: true,
+        minimumInputLength: 2,
+        ajax: {
+            url: "{{ route('clientnamesearch.search') }}",
+            dataType: 'json',
+            delay: 300,
+            data: function (params) {
+                searchText=params.term 
+                return { q: params.term };
+            },
+            processResults: function (data) {
+                    if (!data || data.length === 0) {
+        // 👇 الكود اللي عايز يتنفّذ
+        console.log('مفيش بيانات راجعة');
+        $('#name').val( searchText)
 
-function calculateTotals_with_tax() {
-    let total = 0, taxTotal = 0, discountTotal = 0, grand = 0;
-    let avtsale = parseFloat($('#avtValue').val()) || 0;
-    let taxFactor = avtsale > 1 ? (avtsale / 100) : avtsale;
+                $('#clientnamesearch').select2('close');
 
-    document.querySelectorAll('#productsTableBody tr').forEach(r => {
-        let tax_with_price = parseFloat(r.querySelector('.product-price-tax').value) || 0;
-        let cost = parseFloat(r.querySelector('.product_cost').value) || 0;
-        let qty = parseFloat(r.querySelector('.product-quentity').value) || 0;
 
-        // استخراج السعر قبل الضريبة للمقارنة
-        let price = tax_with_price / (1 + taxFactor);
-
-        // --- فحص التكلفة ---
-        if (tax_with_price > 0 && price < cost) {
-Swal.fire({
-    icon: 'error',
-    title: 'تنبيه: خطأ في سعر البيع <br> <small>Warning: Sales Price Error</small>',
-    html: `
-        <div style="direction: rtl; text-align: center;">
-            <p style="font-weight: bold; color: #d33;">السعر المدخل أقل من سعر البيع المعتمد في النظام!</p>
-            <p dir="ltr">The entered price is lower than the registered selling price!</p>
-            <hr>
-            <div style="background: #f8f9fa; padding: 10px; border-radius: 5px;">
-                <strong>سعر النظام | System Price:</strong> 
-                <span style="color: #28a745; font-size: 1.2em;">${cost}</span>
-            </div>
-        </div>
-    `,
-    position: 'center',
-    showConfirmButton: true,
-    confirmButtonText: 'موافق | OK',
-    confirmButtonColor: '#3085d6',
-    timer: 6000,
-    timerProgressBar: true
-});
-           r.querySelector('.product-price-tax').style.borderColor = 'red';
-            // إجبار السعر ليكون التكلفة + الضريبة
-            tax_with_price = cost * (1 + taxFactor);
-            r.querySelector('.product-price-tax').value = tax_with_price.toFixed(2);
-            price = cost;
-        } else {
-            r.querySelector('.product-price-tax').style.borderColor = '';
+        $('#createcustomer').modal().show();
+        return { results: [] };
+    }
+else{
+                return {
+                    results: data.map(item => ({
+                        id: item.id,
+                    text: item.name + ' :-' + item.tax_no
+                    }))
+                };
+            }
+            }
         }
-        let discound = parseFloat(r.querySelector('.product-discound').value) || 0;
-        let discound_allow_Input = parseFloat($('#discound_allow').val()) || 0.15;
+    });
 
-if (discound > (qty*price) * discound_allow_Input) {
-    Swal.fire({
-        icon: 'error',
-        title: 'تنبيه: تجاوز حد الخصم <br> <small>Warning: Discount Limit Exceeded</small>',
-        html: `
+        function calculateTotals_with_tax() {
+            let total = 0, taxTotal = 0, discountTotal = 0, grand = 0;
+            let avtsale = parseFloat($('#avtValue').val()) || 0;
+            let taxFactor = avtsale > 1 ? (avtsale / 100) : avtsale;
+
+            document.querySelectorAll('#productsTableBody tr').forEach(r => {
+                let tax_with_price = parseFloat(r.querySelector('.product-price-tax').value) || 0;
+                let cost = parseFloat(r.querySelector('.product_cost').value) || 0;
+                let qty = parseFloat(r.querySelector('.product-quentity').value) || 0;
+
+                // استخراج السعر قبل الضريبة للمقارنة
+                let price = tax_with_price / (1 + taxFactor);
+
+                // --- فحص التكلفة ---
+                if (tax_with_price > 0 && price < cost) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'تنبيه: خطأ في سعر البيع <br> <small>Warning: Sales Price Error</small>',
+                        html: `
             <div style="direction: rtl; text-align: center;">
-                <p>لقد تخطيت الخصم المسموح به لهذا المنتج!</p>
-                <p dir="ltr">You have exceeded the allowed discount for this product!</p>
+                <p style="font-weight: bold; color: #d33;">السعر المدخل أقل من سعر البيع المعتمد في النظام!</p>
+                <p dir="ltr">The entered price is lower than the registered selling price!</p>
                 <hr>
-                <strong>الحد المسموح | Allowed Limit:</strong> ${cost * discound_allow_Input}
+                <div style="background: #f8f9fa; padding: 10px; border-radius: 5px;">
+                    <strong>سعر النظام | System Price:</strong> 
+                    <span style="color: #28a745; font-size: 1.2em;">${cost}</span>
+                </div>
             </div>
         `,
-        position: 'center',
-        showConfirmButton: true,
-        confirmButtonText: 'موافق | OK',
-        confirmButtonColor: '#d33',
-        timer: 6000,
-        timerProgressBar: true
-    });
-}
-        let subtotal = price * qty;
-        let tax = (subtotal - discound) * taxFactor;
-        let totalRow = subtotal - discound + tax;
+                        position: 'center',
+                        showConfirmButton: true,
+                        confirmButtonText: 'موافق | OK',
+                        confirmButtonColor: '#3085d6',
+                        timer: 6000,
+                        timerProgressBar: true
+                    });
+                    r.querySelector('.product-price-tax').style.borderColor = 'red';
+                    // إجبار السعر ليكون التكلفة + الضريبة
+                    tax_with_price = cost * (1 + taxFactor);
+                    r.querySelector('.product-price-tax').value = tax_with_price.toFixed(2);
+                    price = cost;
+                } else {
+                    r.querySelector('.product-price-tax').style.borderColor = '';
+                }
+                let discound = parseFloat(r.querySelector('.product-discound').value) || 0;
+                let discound_allow_Input = parseFloat($('#discound_allow').val()) || 0.15;
 
-        r.querySelector('.product-price').value = price.toFixed(2);
-        r.querySelector('.product-totalprice_withodtax').value = subtotal.toFixed(2);
-        r.querySelector('.product-tax').value = tax.toFixed(2);
-        r.querySelector('.product-total').value = totalRow.toFixed(2);
+                if (discound > (qty * price) * discound_allow_Input) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'تنبيه: تجاوز حد الخصم <br> <small>Warning: Discount Limit Exceeded</small>',
+                        html: `
+                <div style="direction: rtl; text-align: center;">
+                    <p>لقد تخطيت الخصم المسموح به لهذا المنتج!</p>
+                    <p dir="ltr">You have exceeded the allowed discount for this product!</p>
+                    <hr>
+                    <strong>الحد المسموح | Allowed Limit:</strong> ${cost * discound_allow_Input}
+                </div>
+            `,
+                        position: 'center',
+                        showConfirmButton: true,
+                        confirmButtonText: 'موافق | OK',
+                        confirmButtonColor: '#d33',
+                        timer: 6000,
+                        timerProgressBar: true
+                    });
+                }
+                let subtotal = price * qty;
+                let tax = (subtotal - discound) * taxFactor;
+                let totalRow = subtotal - discound + tax;
 
-        total += subtotal;
-        taxTotal += tax;
-        grand += totalRow;
-        discountTotal += discound;
+                r.querySelector('.product-price').value = price.toFixed(2);
+                r.querySelector('.product-totalprice_withodtax').value = subtotal.toFixed(2);
+                r.querySelector('.product-tax').value = tax.toFixed(2);
+                r.querySelector('.product-total').value = totalRow.toFixed(2);
 
-        // حساب الربح للسطر الحالي
-        let profit = price - cost;
-        $('#profit').val(profit.toFixed(2));
-    });
+                total += subtotal;
+                taxTotal += tax;
+                grand += totalRow;
+                discountTotal += discound;
 
-    document.getElementById('totalSum').value = total.toFixed(2);
-    document.getElementById('totaldiscound').value = discountTotal.toFixed(2);
-    document.getElementById('totalTax').value = taxTotal.toFixed(2);
-    document.getElementById('grandTotal').value = grand.toFixed(2);
-}
+                // حساب الربح للسطر الحالي
+                let profit = price - cost;
+                $('#profit').val(profit.toFixed(2));
+            });
+
+            document.getElementById('totalSum').value = total.toFixed(2);
+            document.getElementById('totaldiscound').value = discountTotal.toFixed(2);
+            document.getElementById('totalTax').value = taxTotal.toFixed(2);
+            document.getElementById('grandTotal').value = grand.toFixed(2);
+        }
 
 
 
@@ -1401,47 +1434,47 @@ if (discound > (qty*price) * discound_allow_Input) {
 
         let rowIndex = 1;
         function calculateTotalDiscount() {
-    // 1. جلب القيم وتحويلها لأرقام بدقة عالية
-    let discountOnInvoice = parseFloat($('#discound_on_invoice').val() || 0); // القيمة 5
-    let totalSum = parseFloat(document.getElementById('totalSum').value || 0); // القيمة 35
-    let avtsale = parseFloat($('#avtValue').val() || 0.15); // نسبة الضريبة
+            // 1. جلب القيم وتحويلها لأرقام بدقة عالية
+            let discountOnInvoice = parseFloat($('#discound_on_invoice').val() || 0); // القيمة 5
+            let totalSum = parseFloat(document.getElementById('totalSum').value || 0); // القيمة 35
+            let avtsale = parseFloat($('#avtValue').val() || 0.15); // نسبة الضريبة
 
-    // 2. حساب الخصم الصافي (قبل الضريبة) بدون تقريب وسيط
-    // 5 / 1.15 = 4.347826086956522...
-    let amountBeforeTax = discountOnInvoice / (1 + avtsale);
+            // 2. حساب الخصم الصافي (قبل الضريبة) بدون تقريب وسيط
+            // 5 / 1.15 = 4.347826086956522...
+            let amountBeforeTax = discountOnInvoice / (1 + avtsale);
 
-    // 3. حساب إجمالي الخصومات من الجدول (إن وجدت)
-    let tableDiscountTotal = 0;
-    document.querySelectorAll('#productsTableBody tr').forEach(r => {
-        let discound = parseFloat(r.querySelector('.product-discound').value) || 0;
-        tableDiscountTotal += discound;
-    });
+            // 3. حساب إجمالي الخصومات من الجدول (إن وجدت)
+            let tableDiscountTotal = 0;
+            document.querySelectorAll('#productsTableBody tr').forEach(r => {
+                let discound = parseFloat(r.querySelector('.product-discound').value) || 0;
+                tableDiscountTotal += discound;
+            });
 
-    // 4. إجمالي الخصم الكلي (خام)
-    let finalDiscountTotal = tableDiscountTotal + amountBeforeTax;
+            // 4. إجمالي الخصم الكلي (خام)
+            let finalDiscountTotal = tableDiscountTotal + amountBeforeTax;
 
-    // 5. الحسابات النهائية:
-    // الصافي = 35 - 4.347826... = 30.652173...
-    let netTotal = totalSum - finalDiscountTotal;
-    
-    // الضريبة = 30.652173... * 0.15 = 4.597826...
-    let taxTotal = netTotal * avtsale;
+            // 5. الحسابات النهائية:
+            // الصافي = 35 - 4.347826... = 30.652173...
+            let netTotal = totalSum - finalDiscountTotal;
 
-    // الإجمالي النهائي = 30.652173... + 4.597826... = 35.25 (تقريباً)
-    // لكن بما أن الخصم الإجمالي شامل الضريبة هو 5، فالصافي المطلوب هو 30 تماماً
-    let grandTotal = netTotal + taxTotal;
+            // الضريبة = 30.652173... * 0.15 = 4.597826...
+            let taxTotal = netTotal * avtsale;
 
-    // 6. العرض في الحقول مع التقريب لخانة واحدة فقط إذا لزم الأمر أو خانتين
-    // لجعلها 30.00 بالضبط:
-    document.getElementById('totaldiscound').value = finalDiscountTotal.toFixed(2);
-    document.getElementById('totalTax').value = taxTotal.toFixed(2);
-    document.getElementById('grandTotal').value = Math.round(grandTotal * 100) / 100; // حل مشكلة 29.99
-    
-    // تأكيد إضافي إذا كان الفرق ضئيل جداً نتيجة تقريب المتصفح
-    if (Math.abs(grandTotal - 30) < 0.01) {
-        document.getElementById('grandTotal').value = "30.00";
-    }
-}
+            // الإجمالي النهائي = 30.652173... + 4.597826... = 35.25 (تقريباً)
+            // لكن بما أن الخصم الإجمالي شامل الضريبة هو 5، فالصافي المطلوب هو 30 تماماً
+            let grandTotal = netTotal + taxTotal;
+
+            // 6. العرض في الحقول مع التقريب لخانة واحدة فقط إذا لزم الأمر أو خانتين
+            // لجعلها 30.00 بالضبط:
+            document.getElementById('totaldiscound').value = finalDiscountTotal.toFixed(2);
+            document.getElementById('totalTax').value = taxTotal.toFixed(2);
+            document.getElementById('grandTotal').value = Math.round(grandTotal * 100) / 100; // حل مشكلة 29.99
+
+            // تأكيد إضافي إذا كان الفرق ضئيل جداً نتيجة تقريب المتصفح
+            if (Math.abs(grandTotal - 30) < 0.01) {
+                document.getElementById('grandTotal').value = "30.00";
+            }
+        }
 
         $("#updateinvoicebyidforsaleupdate").click(function (e) {
 
@@ -1471,7 +1504,7 @@ if (discound > (qty*price) * discound_allow_Input) {
                     document.getElementById("productsTableBody").innerHTML = "";
 
                     data['product'].forEach(async (product) => {
-                        
+
                         quentity = product['quantity']
 
                         let index = rowIndex - 1
@@ -1481,66 +1514,66 @@ if (discound > (qty*price) * discound_allow_Input) {
 
 
                             let row = `
-                <tr data-index="${index}">
-                    <td><input type="hidden" name="products[${index}][product_id]" class="product-id form-control">
-                                            <input type="hidden" name="products[${index}][product_cost]" class="product_cost">
+                    <tr data-index="${index}">
+                        <td><input type="hidden" name="products[${index}][product_id]" class="product-id form-control">
+                                                <input type="hidden" name="products[${index}][product_cost]" class="product_cost">
 
-                    </td>
-                    <td class="align-middle text-center">${index + 1}</td>
+                        </td>
+                        <td class="align-middle text-center">${index + 1}</td>
 
-                    <td class="text-start">
-                        <div class="d-flex gap-2">
-                            <input type="text" class="form-control product-code" placeholder="اختر منتج" readonly>
-                            <button type="button" class="btn btn-sm btn-info p-1"
-                                    style="background-color: #FBA10F;font-size:13px;width:40px"
-                                    onclick="openProductModal(${index})">   <svg style="width: 16px;height:16px" xmlns="http://www.w3.org/2000/svg"
-                                                                class="icon icon-tabler icon-tabler-search" width="24" height="24"
-                                                                viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"
-                                                                fill="none" stroke-linecap="round" stroke-linejoin="round">
-                                                                <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
-                                                                <path d="M10 10m-7 0a7 7 0 1 0 14 0a7 7 0 1 0 -14 0"></path>
-                                                                <path d="M21 21l-6 -6"></path>
-                                                            </svg></button>
-                        </div>
-                    </td>
+                        <td class="text-start">
+                            <div class="d-flex gap-2">
+                                <input type="text" class="form-control product-code" placeholder="اختر منتج" readonly>
+                                <button type="button" class="btn btn-sm btn-info p-1"
+                                        style="background-color: #FBA10F;font-size:13px;width:40px"
+                                        onclick="openProductModal(${index})">   <svg style="width: 16px;height:16px" xmlns="http://www.w3.org/2000/svg"
+                                                                    class="icon icon-tabler icon-tabler-search" width="24" height="24"
+                                                                    viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"
+                                                                    fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                                                    <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+                                                                    <path d="M10 10m-7 0a7 7 0 1 0 14 0a7 7 0 1 0 -14 0"></path>
+                                                                    <path d="M21 21l-6 -6"></path>
+                                                                </svg></button>
+                            </div>
+                        </td>
 
-                    <td class="text-start">
-                        <div class="d-flex gap-2">
-                            <input type="text" class="form-control product-name" placeholder="اختر منتج" readonly>
-                            <button type="button" class="btn btn-sm btn-info p-1"
-                                    style="background-color: #FBA10F;font-size:13px;width:40px"
-                                    onclick="openProductModal(${index})">   <svg style="width: 16px;height:16px" xmlns="http://www.w3.org/2000/svg"
-                                                                class="icon icon-tabler icon-tabler-search" width="24" height="24"
-                                                                viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"
-                                                                fill="none" stroke-linecap="round" stroke-linejoin="round">
-                                                                <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
-                                                                <path d="M10 10m-7 0a7 7 0 1 0 14 0a7 7 0 1 0 -14 0"></path>
-                                                                <path d="M21 21l-6 -6"></path>
-                                                            </svg></button>
-                        </div>
-                    </td>
-        <td><input type="text" name="products[${index}][price-tax]"
-                    class="form-control product-price-tax" value="0" min="0" onchange="calculateTotals_with_tax()"></td>
-                    <td><input type="text" name="products[${index}][price]"
-                            class="form-control product-price" value="0" min="0" onchange="calculateTotals()"></td>
+                        <td class="text-start">
+                            <div class="d-flex gap-2">
+                                <input type="text" class="form-control product-name" placeholder="اختر منتج" readonly>
+                                <button type="button" class="btn btn-sm btn-info p-1"
+                                        style="background-color: #FBA10F;font-size:13px;width:40px"
+                                        onclick="openProductModal(${index})">   <svg style="width: 16px;height:16px" xmlns="http://www.w3.org/2000/svg"
+                                                                    class="icon icon-tabler icon-tabler-search" width="24" height="24"
+                                                                    viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"
+                                                                    fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                                                    <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+                                                                    <path d="M10 10m-7 0a7 7 0 1 0 14 0a7 7 0 1 0 -14 0"></path>
+                                                                    <path d="M21 21l-6 -6"></path>
+                                                                </svg></button>
+                            </div>
+                        </td>
+            <td><input type="text" name="products[${index}][price-tax]"
+                        class="form-control product-price-tax" value="0" min="0" onchange="calculateTotals_with_tax()"></td>
+                        <td><input type="text" name="products[${index}][price]"
+                                class="form-control product-price" value="0" min="0" onchange="calculateTotals()"></td>
 
-                    <td><input type="text" name="products[${index}][quentity]"
-                            class="form-control product-quentity" oninput='calculateTotals()' value=1></td>
+                        <td><input type="text" name="products[${index}][quentity]"
+                                class="form-control product-quentity" oninput='calculateTotals()' value=1></td>
 
-                    <td><input type="text" name="products[${index}][totalprice_withodtax]"
-                            class="form-control product-totalprice_withodtax"  readonly value="0" min="0" oninput="calculateTotals()"></td>
+                        <td><input type="text" name="products[${index}][totalprice_withodtax]"
+                                class="form-control product-totalprice_withodtax"  readonly value="0" min="0" oninput="calculateTotals()"></td>
 
-                    <td><input type="text" name="products[${index}][discound]"
-                            class="form-control product-discound" value="0" onchange='calculateTotals()' min="0"></td>
+                        <td><input type="text" name="products[${index}][discound]"
+                                class="form-control product-discound" value="0" onchange='calculateTotals()' min="0"></td>
 
-                    <td><input type="text" name="products[${index}][tax]" class="form-control product-tax" value="0" readonly></td>
+                        <td><input type="text" name="products[${index}][tax]" class="form-control product-tax" value="0" readonly></td>
 
-                    <td><input type="text" class="form-control product-total" readonly value="0"></td>
+                        <td><input type="text" class="form-control product-total" readonly value="0"></td>
 
-                    <td>
-                        <button type="button" class="btn btn-danger btn-sm" onclick="removeRow(this)">{{ __('home.delete') }}</button>
-                    </td>
-                </tr>`;
+                        <td>
+                            <button type="button" class="btn btn-danger btn-sm" onclick="removeRow(this)">{{ __('home.delete') }}</button>
+                        </td>
+                    </tr>`;
 
                             table.insertAdjacentHTML("beforeend", row);
 
@@ -1568,9 +1601,9 @@ if (discound > (qty*price) * discound_allow_Input) {
                         window.currentRow = index;
 
                     });
-                                        calculateTotals()
+                    calculateTotals()
 
-           $('#discound_on_invoice').val(data['discound']).trigger('input');
+                    $('#discound_on_invoice').val(data['discound']).trigger('input');
                     try {
                         $('#clientnamesearch').append(
                             $('<option>', { value: data['customer']['id'], text: data['customer']['name'] })
@@ -1659,6 +1692,7 @@ if (discound > (qty*price) * discound_allow_Input) {
                             }, 1000);
 
                         },
+
                     }
                 });
 
@@ -1810,6 +1844,7 @@ if (discound > (qty*price) * discound_allow_Input) {
                         }, 500);
                     },
                     error: function (response) {
+                        console.log(response)
                         alert("{{ __('home.sorryerror') }}")
 
                     }
@@ -1865,148 +1900,159 @@ if (discound > (qty*price) * discound_allow_Input) {
         })
 
 
-$("#formdata").on('submit', function (e) {
-    e.preventDefault();
+        $("#formdata").on('submit', function (e) {
+            e.preventDefault();
 
-    // 1. التحقق من صحة المدخلات (المنتج، السعر، والكمية)
-    let isValid = true;
-    let errorMessage = "";
+            // 1. التحقق من صحة المدخلات (المنتج، السعر، والكمية)
+            let isValid = true;
+            let errorMessage = "";
 
-    $('#productsTableBody tr').each(function() {
-        let row = $(this);
-        let productId = row.find('.product-id').val(); // فحص ID المنتج
-        let price = row.find('.product-price').val();
-        let qty = row.find('.product-quentity').val();
-        let productName = row.find('.product-name').val();
+            $('#productsTableBody tr').each(function () {
+                let row = $(this);
+                let productId = row.find('.product-id').val(); // فحص ID المنتج
+                let price = row.find('.product-price').val();
+                let qty = row.find('.product-quentity').val();
+                let productName = row.find('.product-name').val();
 
-        // أ. التأكد من اختيار صنف (ليس فارغاً)
-        if (!productId || productId === "" || productId === "0") {
-            row.css('background-color', '#fff3cd'); 
-            isValid = false;
-            errorMessage = "يرجى اختيار صنف صحيح في جميع الصفوف";
-            return false; 
-        }
+                // أ. التأكد من اختيار صنف (ليس فارغاً)
+                if (!productId || productId === "" || productId === "0") {
+                    row.css('background-color', '#fff3cd');
+                    isValid = false;
+                    errorMessage = "يرجى اختيار صنف صحيح في جميع الصفوف";
+                    return false;
+                }
 
-        // ب. التأكد من السعر والكمية
-        if (price === "" || parseFloat(price) <= 0 || qty === "" || parseFloat(qty) <= 0) {
-            row.find('.product-price, .product-quentity').css('border', '2px solid red');
-            isValid = false;
-            errorMessage = "يوجد نقص في سعر أو كمية المنتج: " + (productName || "غير محدد");
-            return false;
-        } else {
-            row.find('.product-price, .product-quentity').css('border', '');
-            row.css('background-color', '');
-        }
-    });
-
-    if (!isValid) {
-        Swal.fire({
-            icon: 'error',
-            title: 'بيانات غير مكتملة',
-            text: errorMessage,
-            confirmButtonText: 'موافق'
-        });
-        return; 
-    }
-
-    // 2. إذا كانت البيانات سليمة، ننتقل لنافذة التأكيد
-    var clientName = $("#clientnamesearch option:selected").text().trim();
-    var form = this;
-
-    Swal.fire({
-        title: 'تأكيد حفظ عرض السعر | Confirm Quotation',
-        html: `<b>هل أنت متأكد من حفظ عرض السعر للعميل؟</b><br><span style="color: #007bff;">${clientName}</span>`,
-        icon: 'info',
-        showCancelButton: true,
-        confirmButtonText: 'نعم، حفظ | Yes, Save',
-        cancelButtonText: 'إلغاء | Cancel',
-        reverseButtons: true
-    }).then((result) => {
-        if (result.isConfirmed) {
-            $('#massagesave').modal('show');
-            var url = "{{ URL::to('save_invoice_qutation') }}";
-            
-            $.ajax({
-                url: url,
-                type: 'post',
-                data: new FormData(form),
-                cache: false,
-                contentType: false,
-                processData: false,
-                success: function (data) {
-                    if (data >= 1) {
-                        $('#show_invoice_number').val(data);
-                        $('#OrderNoprint').val(data);
-                        document.getElementById('printdiv').hidden = false;
-                        $('#saveInvoice').addClass('d-none');
-                                     let link = "{{ URL::to('generate_pdf_qoute') }}/" + data;
-                                    $('#generate_pdf').attr('href', link);
-
-                        setTimeout(() => {
-                            $('#massagesave').modal('hide');
-                            Swal.fire({ icon: 'success', title: 'تم الحفظ بنجاح', timer: 1500, showConfirmButton: false });
-                        }, 1000);
-                    } else {
-                        $('#massagesave').modal('hide');
-                        Swal.fire('خطأ', 'حدثت مشكلة أثناء الحفظ', 'error');
-                    }
-                },
-                error: function() {
-                    $('#massagesave').modal('hide');
-                    Swal.fire('خطأ', 'فشل الاتصال بالسيرفر', 'error');
+                // ب. التأكد من السعر والكمية
+                if (price === "" || parseFloat(price) <= 0 || qty === "" || parseFloat(qty) <= 0) {
+                    row.find('.product-price, .product-quentity').css('border', '2px solid red');
+                    isValid = false;
+                    errorMessage = "يوجد نقص في سعر أو كمية المنتج: " + (productName || "غير محدد");
+                    return false;
+                } else {
+                    row.find('.product-price, .product-quentity').css('border', '');
+                    row.css('background-color', '');
                 }
             });
-        }
-    });
-});
 
+            // إذا كانت البيانات غير سليمة، نظهر الخطأ ونوقف الدالة (الزر لم يتأثر بعد)
+            if (!isValid) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'بيانات غير مكتملة',
+                    text: errorMessage,
+                    confirmButtonText: 'موافق'
+                });
+                return;
+            }
 
+            // 2. إذا كانت البيانات سليمة، ننتقل لنافذة التأكيد
+            var clientName = $("#clientnamesearch option:selected").text().trim();
+            var form = this;
 
-function reorderRows() {
-    // جلب كل الصفوف داخل جسم الجدول
-    const rows = document.querySelectorAll('#productsTableBody tr');
-    
-    rows.forEach((tr, i) => {
-        // 1. تحديث رقم التسلسل الظاهري في العمود الثاني
-        const rowNumberCell = tr.querySelector('td:nth-child(2)');
-        if (rowNumberCell) {
-            rowNumberCell.innerText = i + 1;
-        }
+            Swal.fire({
+                title: 'تأكيد حفظ عرض السعر | Confirm Quotation',
+                html: `<b>هل أنت متأكد من حفظ عرض السعر للعميل؟</b><br><span style="color: #007bff;">${clientName}</span>`,
+                icon: 'info',
+                showCancelButton: true,
+                confirmButtonText: 'نعم، حفظ | Yes, Save',
+                cancelButtonText: 'إلغاء | Cancel',
+                reverseButtons: true
+            }).then((result) => {
+                if (result.isConfirmed) {
 
-        // 2. تحديث خاصية data-index للصف
-        tr.setAttribute('data-index', i);
+                    // المكان الصحيح: يتم تعطيل الزر وتحويله لـ Spinner فور تأكيد المستخدم والرغبة في الإرسال الفعلي
+                    $('#saveInvoice').prop('disabled', true)
+                        .html('<span class="spinner-border spinner-border-sm ml-2" role="status" aria-hidden="true"></span> جاري الحفظ...');
 
-        // 3. تحديث الـ onclick في أزرار البحث لترسل الـ index الجديد
-        const searchButtons = tr.querySelectorAll('button[onclick^="openProductModal"]');
-        searchButtons.forEach(btn => {
-            btn.setAttribute('onclick', `openProductModal(${i})`);
+                    $('#massagesave').modal('show');
+                    var url = "{{ URL::to('save_invoice_qutation') }}";
+
+                    $.ajax({
+                        url: url,
+                        type: 'post',
+                        data: new FormData(form),
+                        cache: false,
+                        contentType: false,
+                        processData: false,
+                        success: function (data) {
+
+                            if (data >= 1) {
+                                $('#show_invoice_number').val(data);
+                                $('#OrderNoprint').val(data);
+                                document.getElementById('printdiv').hidden = false;
+
+                                // 🌟 الحل الجذري: إخفاء الزر قسرياً باستخدام CSS المباشر لتخطي أي !important في القالب
+                                $('#saveInvoice').css('display', 'none', 'important').hide();
+                                let link = "{{ URL::to('generate_pdf_qoute') }}/" + data;
+                                $('#generate_pdf').attr('href', link);
+
+                                setTimeout(() => {
+                                    $('#massagesave').modal('hide');
+                                    Swal.fire({ icon: 'success', title: 'تم الحفظ بنجاح', timer: 1500, showConfirmButton: false });
+                                }, 1000);
+                            } else {
+                                // إعادة تفعيل الزر في حال رجع السيرفر استجابة غير متوقعة
+                                $('#saveInvoice').prop('disabled', false).html('<span class="fw-bold tx-18">{{ __("supprocesses.save_data") }}</span>');
+                                $('#massagesave').modal('hide');
+                                Swal.fire('خطأ', 'حدثت مشكلة أثناء الحفظ', 'error');
+                            }
+                        },
+                        error: function () {
+                            // إعادة تفعيل الزر في حال فشل الاتصال بالسيرفر تماماً
+                            $('#saveInvoice').prop('disabled', false).html('<span class="fw-bold tx-18">{{ __("supprocesses.save_data") }}</span>');
+                            $('#massagesave').modal('hide');
+                            Swal.fire('خطأ', 'فشل الاتصال بالسيرفر', 'error');
+                        }
+                    });
+                }
+            });
         });
 
-        // 4. أهم خطوة: تحديث الـ name لكل الـ inputs لضمان ترتيب المصفوفة المرسلة للسيرفر
-        // نبحث عن أي input يحتوي اسمه على كلمة products[رقم]
-        const inputs = tr.querySelectorAll('input[name*="products"]');
-        inputs.forEach(input => {
-            let name = input.getAttribute('name');
-            // تغيير الرقم بين الأقواس المربعة ليكون i الحالي
-            // products[0][price] -> products[1][price] وهكذا
-            let newName = name.replace(/products\[\d+\]/, `products[${i}]`);
-            input.setAttribute('name', newName);
-        });
-    });
+        function reorderRows() {
+            // جلب كل الصفوف داخل جسم الجدول
+            const rows = document.querySelectorAll('#productsTableBody tr');
 
-    // تحديث عداد الصفوف العالمي إذا كنت تستخدمه
-    if (typeof rowCounter !== 'undefined') {
-        rowCounter = rows.length;
-    }
-}
+            rows.forEach((tr, i) => {
+                // 1. تحديث رقم التسلسل الظاهري في العمود الثاني
+                const rowNumberCell = tr.querySelector('td:nth-child(2)');
+                if (rowNumberCell) {
+                    rowNumberCell.innerText = i + 1;
+                }
 
-function removeRow(btn) {
-    btn.closest('tr').remove();
-                calculateTotals()
-                    reorderRows();
+                // 2. تحديث خاصية data-index للصف
+                tr.setAttribute('data-index', i);
+
+                // 3. تحديث الـ onclick في أزرار البحث لترسل الـ index الجديد
+                const searchButtons = tr.querySelectorAll('button[onclick^="openProductModal"]');
+                searchButtons.forEach(btn => {
+                    btn.setAttribute('onclick', `openProductModal(${i})`);
+                });
+
+                // 4. أهم خطوة: تحديث الـ name لكل الـ inputs لضمان ترتيب المصفوفة المرسلة للسيرفر
+                // نبحث عن أي input يحتوي اسمه على كلمة products[رقم]
+                const inputs = tr.querySelectorAll('input[name*="products"]');
+                inputs.forEach(input => {
+                    let name = input.getAttribute('name');
+                    // تغيير الرقم بين الأقواس المربعة ليكون i الحالي
+                    // products[0][price] -> products[1][price] وهكذا
+                    let newName = name.replace(/products\[\d+\]/, `products[${i}]`);
+                    input.setAttribute('name', newName);
+                });
+            });
+
+            // تحديث عداد الصفوف العالمي إذا كنت تستخدمه
+            if (typeof rowCounter !== 'undefined') {
+                rowCounter = rows.length;
+            }
+        }
+
+        function removeRow(btn) {
+            btn.closest('tr').remove();
+            calculateTotals()
+            reorderRows();
 
 
-}
+        }
 
         let rowCounter = 0;
 
@@ -2018,72 +2064,72 @@ function removeRow(btn) {
         }
 
         function addRow() {
-                                reorderRows();
+            reorderRows();
 
             let table = document.getElementById('productsTableBody');
             let index = table.querySelectorAll('tr').length;
 
-              let row = `
-                <tr data-index="${index}">
-                    <td><input type="hidden" name="products[${index}][product_id]" class="product-id form-control">
-                    <input type="hidden" name="products[${index}][product_cost]" class="product_cost">
+            let row = `
+                    <tr data-index="${index}">
+                        <td><input type="hidden" name="products[${index}][product_id]" class="product-id form-control">
+                        <input type="hidden" name="products[${index}][product_cost]" class="product_cost">
 
-                    </td>
-                    <td class="align-middle text-center">${index + 1}</td>
+                        </td>
+                        <td class="align-middle text-center">${index + 1}</td>
 
-                    <td class="text-start">
-                        <div class="d-flex gap-2">
-                            <input type="text" class="form-control product-code" placeholder="اختر منتج" readonly>
-                            <button type="button" class="btn btn-sm btn-info p-1"
-                                    style="background-color: #FBA10F;font-size:13px;width:40px"
-                                    onclick="openProductModal(${index})">   <svg style="width: 16px;height:16px" xmlns="http://www.w3.org/2000/svg"
-                                                                class="icon icon-tabler icon-tabler-search" width="24" height="24"
-                                                                viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"
-                                                                fill="none" stroke-linecap="round" stroke-linejoin="round">
-                                                                <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
-                                                                <path d="M10 10m-7 0a7 7 0 1 0 14 0a7 7 0 1 0 -14 0"></path>
-                                                                <path d="M21 21l-6 -6"></path>
-                                                            </svg></button>
-                        </div>
-                    </td>
+                        <td class="text-start">
+                            <div class="d-flex gap-2">
+                                <input type="text" class="form-control product-code" placeholder="اختر منتج" readonly>
+                                <button type="button" class="btn btn-sm btn-info p-1"
+                                        style="background-color: #FBA10F;font-size:13px;width:40px"
+                                        onclick="openProductModal(${index})">   <svg style="width: 16px;height:16px" xmlns="http://www.w3.org/2000/svg"
+                                                                    class="icon icon-tabler icon-tabler-search" width="24" height="24"
+                                                                    viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"
+                                                                    fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                                                    <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+                                                                    <path d="M10 10m-7 0a7 7 0 1 0 14 0a7 7 0 1 0 -14 0"></path>
+                                                                    <path d="M21 21l-6 -6"></path>
+                                                                </svg></button>
+                            </div>
+                        </td>
 
-                    <td class="text-start">
-                        <div class="d-flex gap-2">
-                            <input type="text" class="form-control product-name" placeholder="اختر منتج" readonly>
-                            <button type="button" class="btn btn-sm btn-info p-1"
-                                    style="background-color: #FBA10F;font-size:13px;width:40px"
-                                    onclick="openProductModal(${index})">   <svg style="width: 16px;height:16px" xmlns="http://www.w3.org/2000/svg"
-                                                                class="icon icon-tabler icon-tabler-search" width="24" height="24"
-                                                                viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"
-                                                                fill="none" stroke-linecap="round" stroke-linejoin="round">
-                                                                <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
-                                                                <path d="M10 10m-7 0a7 7 0 1 0 14 0a7 7 0 1 0 -14 0"></path>
-                                                                <path d="M21 21l-6 -6"></path>
-                                                            </svg></button>
-                        </div>
-                    </td>
-        <td><input type="text" name="products[${index}][price-tax]"
-                    class="form-control product-price-tax" value="0" min="0" onchange="calculateTotals_with_tax()"></td>
-                    <td><input type="text" name="products[${index}][price]"
-                            class="form-control product-price" value="0" min="0" onchange="calculateTotals()"></td>
+                        <td class="text-start">
+                            <div class="d-flex gap-2">
+                                <input type="text" class="form-control product-name" placeholder="اختر منتج" readonly>
+                                <button type="button" class="btn btn-sm btn-info p-1"
+                                        style="background-color: #FBA10F;font-size:13px;width:40px"
+                                        onclick="openProductModal(${index})">   <svg style="width: 16px;height:16px" xmlns="http://www.w3.org/2000/svg"
+                                                                    class="icon icon-tabler icon-tabler-search" width="24" height="24"
+                                                                    viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"
+                                                                    fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                                                    <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+                                                                    <path d="M10 10m-7 0a7 7 0 1 0 14 0a7 7 0 1 0 -14 0"></path>
+                                                                    <path d="M21 21l-6 -6"></path>
+                                                                </svg></button>
+                            </div>
+                        </td>
+            <td><input type="text" name="products[${index}][price-tax]"
+                        class="form-control product-price-tax" value="0" min="0" onchange="calculateTotals_with_tax()"></td>
+                        <td><input type="text" name="products[${index}][price]"
+                                class="form-control product-price" value="0" min="0" onchange="calculateTotals()"></td>
 
-                    <td><input type="text" name="products[${index}][quentity]"
-                            class="form-control product-quentity" oninput='calculateTotals()' value=1></td>
+                        <td><input type="text" name="products[${index}][quentity]"
+                                class="form-control product-quentity" oninput='calculateTotals()' value=1></td>
 
-                    <td><input type="text" name="products[${index}][totalprice_withodtax]"
-                            class="form-control product-totalprice_withodtax"  readonly value="0" min="0" oninput="calculateTotals()"></td>
+                        <td><input type="text" name="products[${index}][totalprice_withodtax]"
+                                class="form-control product-totalprice_withodtax"  readonly value="0" min="0" oninput="calculateTotals()"></td>
 
-                    <td><input type="text" name="products[${index}][discound]"
-                            class="form-control product-discound" value="0" onchange='calculateTotals()' min="0"></td>
+                        <td><input type="text" name="products[${index}][discound]"
+                                class="form-control product-discound" value="0" onchange='calculateTotals()' min="0"></td>
 
-                    <td><input type="text" name="products[${index}][tax]" class="form-control product-tax" value="0" readonly></td>
+                        <td><input type="text" name="products[${index}][tax]" class="form-control product-tax" value="0" readonly></td>
 
-                    <td><input type="text" class="form-control product-total" readonly value="0"></td>
+                        <td><input type="text" class="form-control product-total" readonly value="0"></td>
 
-                    <td>
-                        <button type="button" class="btn btn-danger btn-sm" onclick="removeRow(this)">{{ __('home.delete') }}</button>
-                    </td>
-                </tr>`;
+                        <td>
+                            <button type="button" class="btn btn-danger btn-sm" onclick="removeRow(this)">{{ __('home.delete') }}</button>
+                        </td>
+                    </tr>`;
 
 
             table.insertAdjacentHTML("beforeend", row);
@@ -2127,92 +2173,92 @@ function removeRow(btn) {
             });
         });
 
-function calculateTotals() {
-    let total = 0, taxTotal = 0, discountTotal = 0, grand = 0;
-    let taxInput = parseFloat($('#avtValue').val()) || 0;
-    let avtsale = taxInput > 1 ? taxInput / 100 : taxInput;
+        function calculateTotals() {
+            let total = 0, taxTotal = 0, discountTotal = 0, grand = 0;
+            let taxInput = parseFloat($('#avtValue').val()) || 0;
+            let avtsale = taxInput > 1 ? taxInput / 100 : taxInput;
 
-    document.querySelectorAll('#productsTableBody tr').forEach(r => {
-        let price = parseFloat(r.querySelector('.product-price').value) || 0;
-        let cost = parseFloat(r.querySelector('.product_cost').value) || 0; // جلب التكلفة من الحقل المخفي
-        let qty = parseFloat(r.querySelector('.product-quentity').value) || 0;
+            document.querySelectorAll('#productsTableBody tr').forEach(r => {
+                let price = parseFloat(r.querySelector('.product-price').value) || 0;
+                let cost = parseFloat(r.querySelector('.product_cost').value) || 0; // جلب التكلفة من الحقل المخفي
+                let qty = parseFloat(r.querySelector('.product-quentity').value) || 0;
 
-        // --- فحص التكلفة ---
-        if (price > 0 && price < cost) {
-Swal.fire({
-    icon: 'error',
-    title: 'تنبيه: خطأ في سعر البيع <br> <small>Warning: Sales Price Error</small>',
-    html: `
-        <div style="direction: rtl; text-align: center;">
-            <p style="font-weight: bold; color: #d33;">السعر المدخل أقل من سعر البيع المعتمد في النظام!</p>
-            <p dir="ltr">The entered price is lower than the registered selling price!</p>
-            <hr>
-            <div style="background: #f8f9fa; padding: 10px; border-radius: 5px;">
-                <strong>سعر النظام | System Price:</strong> 
-                <span style="color: #28a745; font-size: 1.2em;">${cost}</span>
+                // --- فحص التكلفة ---
+                if (price > 0 && price < cost) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'تنبيه: خطأ في سعر البيع <br> <small>Warning: Sales Price Error</small>',
+                        html: `
+            <div style="direction: rtl; text-align: center;">
+                <p style="font-weight: bold; color: #d33;">السعر المدخل أقل من سعر البيع المعتمد في النظام!</p>
+                <p dir="ltr">The entered price is lower than the registered selling price!</p>
+                <hr>
+                <div style="background: #f8f9fa; padding: 10px; border-radius: 5px;">
+                    <strong>سعر النظام | System Price:</strong> 
+                    <span style="color: #28a745; font-size: 1.2em;">${cost}</span>
+                </div>
             </div>
-        </div>
-    `,
-    position: 'center',
-    showConfirmButton: true,
-    confirmButtonText: 'موافق | OK',
-    confirmButtonColor: '#3085d6',
-    timer: 6000,
-    timerProgressBar: true
-});
+        `,
+                        position: 'center',
+                        showConfirmButton: true,
+                        confirmButtonText: 'موافق | OK',
+                        confirmButtonColor: '#3085d6',
+                        timer: 6000,
+                        timerProgressBar: true
+                    });
 
-            r.querySelector('.product-price').classList.add('is-invalid');
-            r.querySelector('.product-price').style.borderColor = 'red';
-            price = cost; // إجبار السعر ليكون مساوياً للتكلفة (اختياري)
-            r.querySelector('.product-price').value = cost.toFixed(2);
-        } else {
-            r.querySelector('.product-price').classList.remove('is-invalid');
-            r.querySelector('.product-price').style.borderColor = '';
+                    r.querySelector('.product-price').classList.add('is-invalid');
+                    r.querySelector('.product-price').style.borderColor = 'red';
+                    price = cost; // إجبار السعر ليكون مساوياً للتكلفة (اختياري)
+                    r.querySelector('.product-price').value = cost.toFixed(2);
+                } else {
+                    r.querySelector('.product-price').classList.remove('is-invalid');
+                    r.querySelector('.product-price').style.borderColor = '';
+                }
+
+
+
+                let discound_allow_Input = parseFloat($('#discound_allow').val()) || 0.15;
+                let discountInput = parseFloat(r.querySelector('.product-discound').value) || 0;
+
+                if (discountInput > (qty * price) * discound_allow_Input) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'تجاوز حد الخصم | Discount Limit Exceeded',
+                        text: 'لقد تخطيت الخصم المسموح به | You have exceeded the allowed discount',
+                        position: 'center',
+                        showConfirmButton: true,
+                        confirmButtonText: 'موافق | OK',
+                        confirmButtonColor: '#d33',
+                        timer: 5000,
+                        timerProgressBar: true
+                    });
+                    r.querySelector('.product-discound').value = 0
+                }
+
+
+                let subtotal = price * qty;
+                let discountAmount = discountInput;
+                let taxableAmount = subtotal - discountAmount;
+                let tax = taxableAmount * avtsale;
+                let totalRow = taxableAmount + tax;
+
+                r.querySelector('.product-totalprice_withodtax').value = subtotal.toFixed(2);
+                r.querySelector('.product-tax').value = tax.toFixed(2);
+                r.querySelector('.product-total').value = totalRow.toFixed(2);
+                r.querySelector('.product-price-tax').value = (price * (1 + avtsale)).toFixed(2);
+
+                total += subtotal;
+                taxTotal += tax;
+                grand += totalRow;
+                discountTotal += discountAmount;
+            });
+
+            document.getElementById('totalSum').value = total.toFixed(2);
+            document.getElementById('totaldiscound').value = discountTotal.toFixed(2);
+            document.getElementById('totalTax').value = taxTotal.toFixed(2);
+            document.getElementById('grandTotal').value = grand.toFixed(2);
         }
-
-
-
-    let discound_allow_Input = parseFloat($('#discound_allow').val()) || 0.15;
-    let discountInput = parseFloat(r.querySelector('.product-discound').value) || 0;
-
-if (discountInput > (qty*price) * discound_allow_Input) {
-    Swal.fire({
-        icon: 'error',
-        title: 'تجاوز حد الخصم | Discount Limit Exceeded',
-        text: 'لقد تخطيت الخصم المسموح به | You have exceeded the allowed discount',
-        position: 'center',
-        showConfirmButton: true,
-        confirmButtonText: 'موافق | OK',
-        confirmButtonColor: '#d33',
-        timer: 5000,
-        timerProgressBar: true
-    });
-r.querySelector('.product-discound').value=0
-}
-
-
-        let subtotal = price * qty;
-        let discountAmount= discountInput;
-        let taxableAmount = subtotal - discountAmount;
-        let tax = taxableAmount * avtsale;
-        let totalRow = taxableAmount + tax;
-
-        r.querySelector('.product-totalprice_withodtax').value = subtotal.toFixed(2);
-        r.querySelector('.product-tax').value = tax.toFixed(2);
-        r.querySelector('.product-total').value = totalRow.toFixed(2);
-        r.querySelector('.product-price-tax').value = (price * (1 + avtsale)).toFixed(2);
-
-        total += subtotal;
-        taxTotal += tax;
-        grand += totalRow;
-        discountTotal += discountAmount;
-    });
-
-    document.getElementById('totalSum').value = total.toFixed(2);
-    document.getElementById('totaldiscound').value = discountTotal.toFixed(2);
-    document.getElementById('totalTax').value = taxTotal.toFixed(2);
-    document.getElementById('grandTotal').value = grand.toFixed(2);
-}
         function searchaboutproductfunction() {
             searchtext = $('#searchaboutproduct').val();
             branchs_id = $('#branchs_id').val();
@@ -2299,17 +2345,17 @@ r.querySelector('.product-discound').value=0
             row.querySelector('.product-code').value = productcode;
             row.querySelector('.product-price').value = sale_price;
             row.querySelector('.product-discound').value = 0;
-    if($('#branchs_id').val()==1){
+            if ($('#branchs_id').val() == 1) {
 
-    row.querySelector('.product_cost').value = cost;
+                row.querySelector('.product_cost').value = cost;
 
-    }else{
-    row.querySelector('.product_cost').value = cost;
+            } else {
+                row.querySelector('.product_cost').value = cost;
 
-    }
+            }
             calculateTotals()
             window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
-            console.log("{{ URL::to('/getlastprice_offer_price') }}/" + code+ "/" + $('#clientnamesearch').val());
+            console.log("{{ URL::to('/getlastprice_offer_price') }}/" + code + "/" + $('#clientnamesearch').val());
 
             $.ajax({
                 url: "{{ URL::to('/getlastprice_offer_price') }}/" + code + "/" + $('#clientnamesearch').val(),

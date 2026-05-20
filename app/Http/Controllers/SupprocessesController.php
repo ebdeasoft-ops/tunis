@@ -385,12 +385,10 @@ class SupprocessesController extends Controller
         DB::transaction(function () use ($request) {
             supllier::where('id', $request->clientnamesearch)->update([
                 'name'       => $request->name,
-                'name_en'    => $request->name_en,
                 'phone'      => $request->phone,
                 'comp_name'  => $request->name,
                 'email'      => $request->email ?? "supplier@gmail.com",
                 'location'   => $request->loction,
-                'notes'      => $request->notes ?? "لا توجد",
                 'TaxـNumber' => $request->TaxـNumber ?? '0'
             ]);
 

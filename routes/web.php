@@ -568,7 +568,7 @@ Route::middleware([
         Route::post('/addnewProduct', 'create_addnewProduct');
         Route::post('/create_products_group', 'create_products_group');
         Route::post('/addnewProductajax', 'addnewProductajax');
-        Route::post('/createnewcustomerajax', 'addnewProductajax'); // تم تصحيح الميثود للمطابقة مع الكنترولر الفعلي
+        Route::post('/createnewcustomerajax', 'createnewcustomerajax'); // تم تصحيح الميثود للمطابقة مع الكنترولر الفعلي
         Route::get('/addnewcustomer', 'addnewcustomer');
         Route::post('/addnewcustomer', 'create_addnewcustomer');
         Route::get('/updatecustomer', 'Goupdatecustomer');

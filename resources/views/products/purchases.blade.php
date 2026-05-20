@@ -1148,27 +1148,18 @@
 @endsection
 @section('js')
 <!-- 1) jQuery أولاً -->
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
-<!-- 2) Bootstrap JS بعد jQuery -->
-<script src="{{ URL::asset('assets/plugins/bootstrap/js/bootstrap.min.js') }}"></script>
 
 <!-- 3) Select2 (مرة واحدة فقط) -->
 <script src="{{ URL::asset('assets/plugins/select2/js/select2.min.js') }}"></script>
 
 <!-- 4) DataTables -->
-<script src="{{ URL::asset('assets/js/table-data.js') }}"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <!-- 5) Plugins أخرى -->
 <script src="{{ URL::asset('assets/plugins/jquery-ui/ui/widgets/datepicker.js') }}"></script>
-<script src="{{ URL::asset('assets/plugins/jquery.maskedinput/jquery.maskedinput.js') }}"></script>
-<script src="{{ URL::asset('assets/plugins/ion-rangeslider/js/ion.rangeSlider.min.js') }}"></script>
-<script src="{{ URL::asset('assets/plugins/amazeui-datetimepicker/js/amazeui.datetimepicker.min.js') }}"></script>
-<script src="{{ URL::asset('assets/plugins/jquery-simple-datetimepicker/jquery.simple-dtpicker.js') }}"></script>
-<script src="{{ URL::asset('assets/plugins/pickerjs/picker.min.js') }}"></script>
+
 
 <!-- 6) Custom form elements -->
-<script src="{{ URL::asset('assets/js/form-elements.js') }}"></script>
 
 
 {{-- Select2 --}}

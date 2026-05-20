@@ -293,7 +293,6 @@
 @section('js')
 <!-- Internal Select2 js-->
 {{-- jQuery (مرة واحدة فقط – غالبًا موجود في layout، لو موجود هناك احذف ده) --}}
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
 {{-- Select2 --}}
 <script src="{{ URL::asset('assets/plugins/select2/js/select2.min.js') }}"></script>
@@ -424,9 +423,6 @@ console.log(response)
 
 function translateNameToEnglish(){}
 
-    var date = $('.fc-datepicker').datepicker({
-        dateFormat: 'yy-mm-dd'
-    }).val();
 </script>
 <script>
     function minmum_quantity_stock_alartConvert() {

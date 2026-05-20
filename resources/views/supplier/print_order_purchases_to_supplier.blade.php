@@ -23,16 +23,24 @@
             margin-top: 50px;
             padding-right: 20px;
         }
+        .invoice-header-box {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+        }
         
         /* التحكم بمظهر الصفحة أثناء الطباعة */
         @media print {
-            #print_Button, .print-style {
+            #print_Button, .print-style, .main-header, .sidebar-nav, .footer {
                 display: none !important;
             }
             body {
                 background-color: #fff;
                 color: #000;
                 direction: rtl;
+                padding: 0;
+                margin: 0;
             }
             .card {
                 border: none !important;
@@ -40,6 +48,10 @@
             }
             .table-bordered th, .table-bordered td {
                 border: 1px solid #000 !important;
+            }
+            .main-content-body-invoice {
+                padding: 0 !important;
+                margin: 0 !important;
             }
         }
     </style>
@@ -50,7 +62,7 @@
 @endsection
 
 @section('page-header')
-    @endsection
+@endsection
 
 @section('content')
     <div class="row row-sm">
@@ -65,31 +77,36 @@
                             </button>
                         </div>
 
-                        <div class="invoice-header" style="display: flex; justify-content: space-between; align-items: center; width: 100%; border-bottom: 1px solid #e1e6f1; padding-bottom: 15px;" dir="rtl">
-                            
-                            <div class="billed-from" style="width: 35%; text-align: right;">
-                                <h5 class="tx-18 thick mb-1">{{ Namear ?? Namear }}</h5>
-                                <p class="tx-14 text-muted mb-1">{{ describtionar ?? describtionar }}</p>
-                                <p class="tx-13 mb-1"><b>الرقم الضريبي:</b> {{ Taxar ?? Taxar }}</p>
-                                <p class="tx-13 mb-0">{{ STar ?? STar }}</p>
+                        <div class="invoice-header-box" dir="rtl">
+                            <div class="billed-from" style="width:33%; text-align: center;">
+                                <span class="thick" style="font-size:18px">{{ $data['company_data']->Namear ?? '' }}</span>
+                                <p class="tx-14 thick mb-1">{{ $data['company_data']->describtionar ?? '' }}</p>
+                                <p class="tx-14 thick mb-1">{{ $data['company_data']->STar ?? '' }}</p>
+                                <p class="tx-14 thick mb-0">{{ $data['company_data']->Taxar ?? '' }}</p>
                             </div>
 
-                            <div class="text-center" style="width: 30%;">
+                            <div class="text-center" style="width: 34%;">
                                 @php $logo = defined('camplogo') ? camplogo : 'logo.png'; @endphp
-                                <a href="https://ebdeasoft.com/">
-                                    <img src="{{ asset('assets/img/brand/' . $logo) }}" class="logo-1" alt="logo" style="max-width: 120px; height: auto;">
-                                </a>
+                                <img src="{{ asset('assets/img/brand/'.$logo) }}" style="max-width: 130px; height: auto; margin-bottom: 10px;" alt="logo">
+                                <div class="invoice-title-box">
+                                    <h4 class="mb-0 font-weight-bold" style="color: #419BB2;">
+                                        فاتورة مشتريات
+                                        <div style="font-size: 12px; font-weight: normal; letter-spacing: 1px; color: #555;">PURCHASE INVOICE</div>
+                                    </h4>
+                                </div>
                             </div>
 
-                            <div class="billed-from" style="width: 35%; text-align: left;" dir="ltr">
-                                <h5 class="tx-18 thick mb-1">{{ Nameen ?? Nameen }}</h5>
-                                <p class="tx-14 text-muted mb-1">{{ describtionen ?? describtionen }}</p>
-                                <p class="tx-13 mb-1"><b>VAT No:</b> {{ Taxen ?? Taxen }}</p>
-                                <p class="tx-13 mb-0">{{ STen ?? STen }}</p>
+                            <div class="billed-from" style="width:33%; text-align: center;" dir="ltr">
+                                <span class="thick" style="font-size:18px">{{ $data['company_data']->Nameen ?? '' }}</span>
+                                <p class="tx-14 thick mb-1">{{ $data['company_data']->describtionen ?? '' }}</p>
+                                <p class="tx-14 thick mb-1">{{ $data['company_data']->STen ?? '' }}</p>
+                                <p class="tx-14 thick mb-0">{{ $data['company_data']->Taxen ?? '' }}</p>
                             </div>
                         </div>
 
-                        <div class="text-center my-4">
+                        <hr class="my-3">
+
+                        <div class="text-center my-3">
                             <span class="invoice-title px-4">{{ __('home.Purchase_order_of_resources') }}</span>
                         </div>
 
@@ -100,23 +117,25 @@
                                         <tbody>
                                             <tr>
                                                 <td class="bg-light thick" style="width: 40%;">{{ __('home.Invoice_no') }}</td>
-                                                <td class="thick text-danger">{{ $data['productsdata'][0]->order_owner ?? $data['productsdata'][0]->supllier->id }}</td>
+                                                <td class="thick text-danger">
+                                                    {{ $data['productsdata'][0]->order_owner ?? ($data['productsdata'][0]->supplier_id ?? '-') }}
+                                                </td>
                                             </tr>
                                             <tr>
                                                 <td class="bg-light thick">{{ __('home.date') }}</td>
-                                                <td>{{ date("Y-m-d H:i") }}</td>
+                                                <td dir="ltr">{{ date("Y-m-d H:i") }}</td>
                                             </tr>
                                             <tr>
                                                 <td class="bg-light thick">{{ __('home.suppliername') }}</td>
-                                                <td class="thick">{{ $data['supllierdata']->name }}</td>
+                                                <td class="thick">{{ $data['supllierdata']->name ?? '' }}</td>
                                             </tr>
                                             <tr>
                                                 <td class="bg-light thick">{{ __('supprocesses.Location') }}</td>
-                                                <td>{{ $data['supllierdata']->location }}</td>
+                                                <td>{{ $data['supllierdata']->location ?? '' }}</td>
                                             </tr>
                                             <tr>
                                                 <td class="bg-light thick">{{ __('supprocesses.phone') }}</td>
-                                                <td>{{ $data['supllierdata']->phone }}</td>
+                                                <td dir="ltr">{{ $data['supllierdata']->phone ?? '' }}</td>
                                             </tr>
                                         </tbody>
                                     </table>
@@ -145,21 +164,25 @@
                                     @endphp
 
                                     @foreach ($data['productsdata'] as $product)
-                                        @if($product->numberofpice != 0)
+                                        @if(isset($product->numberofpice) && $product->numberofpice != 0)
                                             @php 
                                                 $i++;
-                                                $rowPrice = $product->purchasingـprice * $product->numberofpice;
-                                                $rowTax = $product->Added_Value * $product->numberofpice;
+                                                $purchasingPrice = $product->purchasingـprice ?? 0;
+                                                $addedValue = $product->Added_Value ?? 0;
+                                                
+                                                $rowPrice = $purchasingPrice * $product->numberofpice;
+                                                $rowTax = $addedValue * $product->numberofpice;
+                                                
                                                 $totalprice += $rowPrice;
                                                 $totalAddedvalue += $rowTax;
                                             @endphp
                                             <tr>
                                                 <td>{{ $i }}</td>
-                                                <td dir="ltr" class="text-monospace">{{ $product->productData->Product_Code }}</td>
-                                                <td class="text-right px-3">{{ $product->productData->product_name }}</td>
+                                                <td dir="ltr" class="text-monospace">{{ $product->productData->Product_Code ?? '' }}</td>
+                                                <td class="text-right px-3">{{ $product->productData->product_name ?? '' }}</td>
                                                 <td>{{ $product->numberofpice }}</td>
-                                                <td>{{ number_format($product->purchasingـprice, 2) }}</td>
-                                                <td>{{ number_format($product->Added_Value, 2) }}</td>
+                                                <td>{{ number_format($purchasingPrice, 2) }}</td>
+                                                <td>{{ number_format($addedValue, 2) }}</td>
                                                 <td class="thick">{{ number_format($rowPrice + $rowTax, 2) }}</td>
                                             </tr>
                                         @endif
@@ -201,8 +224,9 @@
                     </div>
                 </div>
             </div>
-        </div></div>
-    @endsection
+        </div>
+    </div>
+@endsection
 
 @section('js')
     <script src="{{ URL::asset('assets/plugins/chart.js/Chart.bundle.min.js') }}"></script>
@@ -216,7 +240,7 @@
             window.print();
             document.body.innerHTML = originalContents;
             
-            // إعادة تحميل الصفحة لضمان استقرار لغة الواجهة وأكواد الجافا سكريبت بعد الطباعة
+            // إعادة تحميل الصفحة للحفاظ على سلامة الـ DOM واللغة بعد الخروج من نافذة الطباعة
             location.reload();
         }
     </script>

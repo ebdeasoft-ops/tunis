@@ -421,155 +421,115 @@
 
 @endsection
 @section('js')
-<!-- Internal Data tables -->
 
-<script src="{{ URL::asset('assets/js/table-data.js') }}"></script>
-
-<!--Internal  Datepicker js -->
-<script src="{{ URL::asset('assets/plugins/jquery-ui/ui/widgets/datepicker.js') }}"></script>
-<!--Internal  jquery.maskedinput js -->
-<script src="{{ URL::asset('assets/plugins/jquery.maskedinput/jquery.maskedinput.js') }}"></script>
-<!--Internal  spectrum-colorpicker js -->
-<script src="{{ URL::asset('assets/plugins/spectrum-colorpicker/spectrum.js') }}"></script>
-<!-- Internal Select2.min js -->
 <script src="{{ URL::asset('assets/plugins/select2/js/select2.min.js') }}"></script>
-<!--Internal Ion.rangeSlider.min js -->
-<script src="{{ URL::asset('assets/plugins/ion-rangeslider/js/ion.rangeSlider.min.js') }}"></script>
-<!--Internal  jquery-simple-datetimepicker js -->
-<script src="{{ URL::asset('assets/plugins/amazeui-datetimepicker/js/amazeui.datetimepicker.min.js') }}"></script>
-<!-- Ionicons js -->
-<script src="{{ URL::asset('assets/plugins/jquery-simple-datetimepicker/jquery.simple-dtpicker.js') }}"></script>
-<!--Internal  pickerjs js -->
-<script src="{{ URL::asset('assets/plugins/pickerjs/picker.min.js') }}"></script>
-<!-- Internal form-elements js -->
-<script src="{{ URL::asset('assets/js/form-elements.js') }}"></script>
+
 <script>
-    var date = $('.fc-datepicker').datepicker({
-        dateFormat: 'yy-mm-dd'
-    }).val();
-</script>
-<script>
- document.addEventListener('keydown', (e) => {
-    if (e.key === "F9") {
-        $('#SearchProduct').modal().show();
+    // 1. تجميع وإدارة كل اختصارات لوحة المفاتيح (Shortcuts) في مكان واحد
+    document.addEventListener('keydown', function(e) {
+        // اختصار F9 لفتح المودال
+        if (e.key === "F9") {
+            e.preventDefault();
+            $('#SearchProduct').modal('show');
+        }
 
-    }})
-     document.addEventListener('keydown', (e) => {
-    searchtext = $('#product_code').val();
-
-    if (e.key === "Enter") {
-                searchtext = $('#product_code').val();
-$('#searchaboutproduct').val(searchtext);
-// document.getElementById("searchaboutproduct").focus();
-$('#SearchProduct').modal().show();
-
-        
-
-    }})
-    $('#SearchProduct').on('shown.bs.modal', function () {
-    $('#searchaboutproduct').focus();
-}) 
-    function getproduct() {
-        searchtext = $('#productcode').val();
-        branchs_id = $('#branchs_id').val();
-
-if(searchtext!=''){
-     
-        jQuery.ajax({
-            url: " {{URL::to('detproductbycode')}}/" + searchtext + "/" + branchs_id,
-            type: 'get',
-            cache: false,
-                            dataType: "json",
-
-
-            success: function(data) {
-                if (data != 0) {
-
-                    name=data['product_name']
-                     location1=data['Product_Location']
-                    availablequantity=data['numberofpice']
-                    price=data['purchasingـprice']
-                    sale_price=data['sale_price']
-                    code=data['id']
-                  $('#product_name').val(name);
-                 $('#thecostProduct').val(sale_price);
-
-        $('#product_no').val(code);
-        // $('#productcode').val(product_code);
-     
-
-                }
-            },
-            error: function() {
-
+        // اختصار Enter عند الكتابة في باركود المنتج
+        if (e.key === "Enter" && document.activeElement.id === 'product_code') {
+            e.preventDefault();
+            let searchtext = $('#product_code').val();
+            if(searchtext !== '') {
+                $('#searchaboutproduct').val(searchtext);
+                $('#SearchProduct').modal('show');
             }
-        });
-}
+        }
 
-    }
-    
+        // اختصار Ctrl + ArrowDown لفتح المودال
+        if (e.ctrlKey && e.code === 'ArrowDown') {
+            e.preventDefault();
+            $('#SearchProduct').modal('show');
+        }
 
-    
-    function searchaboutproductfunction() {
-        searchtext = $('#searchaboutproduct').val();
-        branchs_id = $('#branchs_id').val();
+        // اختصار زر الزائد (+) لإرسال المنتج مباشرة
+        if (e.key === "+") {
+            e.preventDefault();
+            sendProductAjax();
+        }
+    });
 
+    // أحداث المودال (الفوكس التلقائي والبحث)
+    $('#SearchProduct').on('shown.bs.modal', function () {
+        let searchInput = $('#searchaboutproduct');
+        searchInput.focus();
+        searchInput.val($('#productcode').val());
+        searchaboutproductfunction(); // استدعاء مباشر بدلاً من keyup الوميضية
+    });
 
-        branchs_id = $('#branchs_id').val();
-        console.log(branchs_id)
+    $('#SearchProduct').on('show.bs.modal', function() {
+        let branchs_id = $('#branchs_id').val();
         jQuery.ajax({
-            url: " {{URL::to('searchChooseProductpaginatenew')}}/" + searchtext + "/" + branchs_id,
+            url: "{{ URL::to('ChooseProductpaginatenew') }}/" + branchs_id,
             type: 'get',
             dataType: 'html',
             cache: false,
-
             success: function(data) {
-                console.log('done')
                 $("#ajax_responce_serarchDiv").html(data);
-            },
-            error: function() {
-
             }
         });
+    });
 
+    // جلب المنتج من خلال الباركود السريع
+    function getproduct() {
+        let searchtext = $('#productcode').val();
+        let branchs_id = $('#branchs_id').val();
+
+        if (searchtext != '') {
+            jQuery.ajax({
+                url: "{{ URL::to('detproductbycode') }}/" + searchtext + "/" + branchs_id,
+                type: 'get',
+                cache: false,
+                dataType: "json",
+                success: function(data) {
+                    if (data != 0) {
+                        $('#product_name').val(data['product_name']);
+                        $('#thecostProduct').val(data['sale_price']);
+                        $('#product_no').val(data['id']);
+                    }
+                }
+            });
+        }
     }
-    
-    
-    
-        
-        function doc_keyUp(e) {
 
-    // this would test for whichever key is 40 (down arrow) and the ctrl key at the same time
-    if (e.ctrlKey && e.code === 'ArrowDown') {
-        // call your function to do the thing
+    // البحث النصي داخل المودال
+    function searchaboutproductfunction() {
+        let searchtext = $('#searchaboutproduct').val();
+        let branchs_id = $('#branchs_id').val();
 
-        $('#SearchProduct').modal().show();
-        
+        jQuery.ajax({
+            url: "{{ URL::to('searchChooseProductpaginatenew') }}/" + searchtext + "/" + branchs_id,
+            type: 'get',
+            dataType: 'html',
+            cache: false,
+            success: function(data) {
+                $("#ajax_responce_serarchDiv").html(data);
+            }
+        });
     }
-}
-// register the handler 
-document.addEventListener('keyup', doc_keyUp, false);
 
+    // عند اختيار منتج من جدول البحث
+    function chooseProduct(code, name, price, sale_price, product_code, availablequantity) {
+        $('#SearchProduct').modal('hide');
+        $('#product_name').val(name);
+        $('#thecostProduct').val(sale_price);
+        $('#product_no').val(code);
+        $('#productcode').val(product_code);
+    }
 
-
-
-    $('#SearchProduct').on('shown.bs.modal', function () {
-
-    $('#searchaboutproduct').focus();
-    $('#searchaboutproduct').val($('#productcode').val());
-           $('#searchaboutproduct').keyup()
-
-
-
-}) 
-
-
-
-    $(document).on('click', '#ajax_pagination_in_search a ', function(e) {
+    // التنقيل بين صفحات الـ Pagination بالـ Ajax
+    $(document).on('click', '#ajax_pagination_in_search a', function(e) {
         e.preventDefault();
-        var search_by_text = $("#search_by_text").val();
-        var url = $(this).attr("href");
-        var token_search = $("#token_search").val();
+        let search_by_text = $("#search_by_text").val();
+        let url = $(this).attr("href");
+        let token_search = $("#token_search").val();
 
         jQuery.ajax({
             url: url,
@@ -582,599 +542,164 @@ document.addEventListener('keyup', doc_keyUp, false);
             },
             success: function(data) {
                 $("#ajax_responce_serarchDiv").html(data);
-            },
-            error: function() {
-
             }
         });
     });
-    $('#SearchProduct').on('show.bs.modal', function(event) {
-        branchs_id = $('#branchs_id').val();
-        console.log(branchs_id)
-        jQuery.ajax({
-            url: " {{URL::to('ChooseProductpaginatenew')}}/" + branchs_id,
-            type: 'get',
-            dataType: 'html',
-            cache: false,
 
-            success: function(data) {
-                console.log('done')
-                $("#ajax_responce_serarchDiv").html(data);
-            },
-            error: function() {
-
-            }
-        });
-
-    })
-</script>
-
-<script>
+    // مودال الحذف وتجهيز البيانات
     $('#modaldemo9').on('show.bs.modal', function(event) {
-        var button = $(event.relatedTarget)
-        var id = button.data('id')
-        var section_name = button.data('section_name')
-        section_name = section_name.replaceAll("?", " ")
+        let button = $(event.relatedTarget);
+        let id = button.data('id');
+        let section_name = button.data('section_name').toString().replaceAll("?", " ");
 
-        console.log('lololoooo')
-        console.log(id)
-        console.log('lololoooo')
-        var modal = $(this)
+        let modal = $(this);
         modal.find('.modal-body #id_delete').val(id);
         modal.find('.modal-body #product_name').val(section_name);
-        console.log('lololoooo')
-    })
-</script>
-<script>
-    function chooseProduct(code, name, price, sale_price, product_code, availablequantity, productcode) {
-        $('#SearchProduct').modal().hide();
-
-
-        var Product_Code = code
-        var product_name = name
-        var product_sale_pice = price
-        $('#product_name').val(name);
-        $('#thecostProduct').val(sale_price);
-
-        $('#product_no').val(code);
-        $('#productcode').val(product_code);
-
-    }
-</script>
-
-<script>
-    $(document).ready(function() {
-        document.getElementById("productcode").focus();
-document.addEventListener('keydown', (e) => {
-        if (e.key === "+") {
-            event.preventDefault()
-            
-            
-            event.preventDefault();
-
-            var url = $(this).attr('data-action');
-            let table = document.getElementById("example");
-
-
-            var token_search = $("#token_search").val();
-
-            console.log(" {{ URL::to('create_sendProduct') }}");
-
-            var url = " {{ URL::to('create_sendProduct') }}";
-            token_search = $('#token_search').val();
-            productNo = $('#product_no').val();
-            order_id = $('#showInvoiceNumber').val();
-            product_name = $('#product_name').val();
-            branchto = $('#branch').val();
-            userto = $('#userfrom').val();
-            quantity = $('#quentity').val();
-            cost_price = $('#thecostProduct').val();
-
-            if (product_name == '') {
-                alert("{{ __('home.pleaseChooseProduct') }}")
-
-            }  else if (quantity == '') {
-                alert("{{ __('home.quantity') }}")
-
-            } else {
-                $.ajax({
-                    url: url,
-                    type: 'post',
-                    cache: false,
-
-                    data: {
-
-                        _token: token_search,
-                        order_id: order_id,
-                        product_name: product_name,
-                        branch: branchto,
-                        userfrom: userto,
-                        quentity: quantity,
-                        thecostProduct: cost_price,
-                        product_no: productNo,
-                        reciveInvoiceNumber:0
-
-
-                    },
-
-
-                    success: function(data) {
-                        $('#showInvoiceNumber').val(data['orderData']['id']);
-                        $('#sprint_invoice_number').val(data['orderData']['id']);
-                        $('#productcode').val('');
-                        $('#thecostProduct').val('');
-                        $('#current_location').val('');
-                        $('#product_name').val('');
-                        $('#quentity').val('');
-
-                        console.log(data)
-                        console.log('-=--------------IDS--------------------')
-                        console.log(data['orderItems'])
-                        console.log(data['orderData']['id'])
-                        if (data == []) {
-                            alert("{{ __('home.stocknotAvailable') }}");
-                        } else {
-
-                            let table = document.getElementById("example");
-
-
-
-
-                            var tableHeaderRowCount = 1;
-
-                            var rowCount = table.rows.length;
-
-                            for (var i = tableHeaderRowCount; i < rowCount; i++) {
-                                table.deleteRow(tableHeaderRowCount);
-                            }
-                            count1 = 0;
-                            added_value_total = 0;
-                            total_sales = 0;
-
-                            data['orderItems'].forEach(async (product) => {
-                                product_code = product['product_code'],
-                                    count1 = product['count'],
-                                    product_name = product['productname']
-                                quentity = product['quantity']
-                                price = product['cost']
-                                total = product['total']
-                                console.log(price)
-                                console.log(total)
-                                console.log(quentity)
-                                sales_id = product['details_items_no']
-                                $('#order_id').val(product['details_items_no']);
-
-                                product_name_update = product_name.replaceAll(" ", "?")
-                                text2 =
-                                    ' <a style="width:40px;height:20px" class="modal-effect btn btn-sm btn-danger mb-1" data-effect="effect-scale" data-id='
-                                result2 = text2.concat(sales_id, "  ", "data-section_name=", product_name_update,
-                                    "  ", "data-return_quentity=", quentity, '  ',
-                                    '  data-toggle="modal"   href="#modaldemo9"   title="حذف"><i class="las la-trash"></i></a>'
-                                )
-
-
-
-
-                                if (quentity > 0) {
-
-
-                                    let row = table.insertRow(-1); // We are adding at the end
-
-                                    let c1 = row.insertCell(0);
-                                    let c2 = row.insertCell(1);
-                                    let c3 = row.insertCell(2);
-                                    let c4 = row.insertCell(3);
-                                    let c5 = row.insertCell(4);
-                                    let c6 = row.insertCell(5);
-                                    let c7 = row.insertCell(6);
-
-
-                                    // Add data to c1 and c2
-
-                                    c1.innerText = count1
-                                    c2.innerHTML = ' <span dir=ltr>' + product_code + '</span>'
-                                    c3.innerText = product_name
-                                    c4.innerText = quentity
-                                    c5.innerText = price
-                                    c6.innerText = total
-                                    c7.innerHTML = result2
-
-
-
-
-
-
-
-                                }
-
-
-                            });
-
-
-                            //    update3/3/2023
-
-
-
-
-
-
-
-
-
-
-
-                      
-                            $('#productNo').val("__('home.searchbyproductnumber')");
-
-                        }
-
-
-
-      $('#product_name').val('');
-                            $('#product_price_after_dis').val(0);
-                            $('#quantity').val(1);
-                            $('#avaliable_quentity').val('');
-                            $('#product_location').val('');
-                            $('#product_price').val('');
-                            $('#purchase_price').val('');
-                                  $('#productcode').val('');
-
-                    },
-                    error: function(response) {
-                        alert("{{ __('home.sorryerror') }}")
-
-                    }
-                    
-                });
-            }
-        
-            
-            
-        }})
-        $("#button_1").click(function(e) {
-                  document.getElementById("button_1").style.display = "none";
-
-            event.preventDefault();
-
-            var url = $(this).attr('data-action');
-            let table = document.getElementById("example");
-
-
-            var token_search = $("#token_search").val();
-
-            console.log(" {{ URL::to('create_sendProduct') }}");
-
-            var url = " {{ URL::to('create_sendProduct') }}";
-            token_search = $('#token_search').val();
-            productNo = $('#product_no').val();
-            order_id = $('#showInvoiceNumber').val();
-            product_name = $('#product_name').val();
-            branchto = $('#branch').val();
-            userto = $('#userfrom').val();
-            quantity = $('#quentity').val();
-            cost_price = $('#thecostProduct').val();
-          $('#productcode').val('');
-                        $('#thecostProduct').val('');
-                        $('#current_location').val('');
-                        $('#product_name').val('');
-                        $('#quentity').val('');
-            if (product_name == '') {
-                alert("{{ __('home.pleaseChooseProduct') }}")
-
-            }  else if (quantity == '') {
-                alert("{{ __('home.quantity') }}")
-
-            } else {
-                $.ajax({
-                    url: url,
-                    type: 'post',
-                    cache: false,
-
-                    data: {
-
-                        _token: token_search,
-                        order_id: order_id,
-                        product_name: product_name,
-                        branch: branchto,
-                        userfrom: userto,
-                        quentity: quantity,
-                        thecostProduct: cost_price,
-                        product_no: productNo,
-                        reciveInvoiceNumber:0
-
-                    },
-
-
-                    success: function(data) {
-                        $('#showInvoiceNumber').val(data['orderData']['id']);
-                        $('#sprint_invoice_number').val(data['orderData']['id']);
-                        $('#productcode').val('');
-                        $('#thecostProduct').val('');
-                        $('#current_location').val('');
-                        $('#product_name').val('');
-                        $('#quentity').val('');
-
-                        console.log(data)
-                        console.log('-=--------------IDS--------------------')
-                        console.log(data['orderItems'])
-                        console.log(data['orderData']['id'])
-                        if (data == []) {
-                            alert("{{ __('home.stocknotAvailable') }}");
-                        } else {
-
-                            let table = document.getElementById("example");
-
-
-
-
-                            var tableHeaderRowCount = 1;
-
-                            var rowCount = table.rows.length;
-
-                            for (var i = tableHeaderRowCount; i < rowCount; i++) {
-                                table.deleteRow(tableHeaderRowCount);
-                            }
-                            count1 = 0;
-                            added_value_total = 0;
-                            total_sales = 0;
-
-                            data['orderItems'].forEach(async (product) => {
-                                product_code = product['product_code'],
-                                    count1 = product['count'],
-                                    product_name = product['productname']
-                                quentity = product['quantity']
-                                price = product['cost']
-                                total = product['total']
-                                console.log(price)
-                                console.log(total)
-                                console.log(quentity)
-                                sales_id = product['details_items_no']
-                                $('#order_id').val(product['details_items_no']);
-
-                                product_name_update = product_name.replaceAll(" ", "?")
-                                text2 =
-                                    ' <a style="width:40px;height:20px" class="modal-effect btn btn-sm btn-danger mb-1" data-effect="effect-scale" data-id='
-                                result2 = text2.concat(sales_id, "  ", "data-section_name=", product_name_update,
-                                    "  ", "data-return_quentity=", quentity, '  ',
-                                    '  data-toggle="modal"   href="#modaldemo9"   title="حذف"><i class="las la-trash"></i></a>'
-                                )
-
-
-
-
-                                if (quentity > 0) {
-
-
-                                    let row = table.insertRow(-1); // We are adding at the end
-
-                                    let c1 = row.insertCell(0);
-                                    let c2 = row.insertCell(1);
-                                    let c3 = row.insertCell(2);
-                                    let c4 = row.insertCell(3);
-                                    let c5 = row.insertCell(4);
-                                    let c6 = row.insertCell(5);
-                                    let c7 = row.insertCell(6);
-
-
-                                    // Add data to c1 and c2
-
-                                    c1.innerText = count1
-                                    c2.innerHTML = ' <span dir=ltr>' + product_code + '</span>'
-                                    c3.innerText = product_name
-                                    c4.innerText = quentity
-                                    c5.innerText = price
-                                    c6.innerText = total
-                                    c7.innerHTML = result2
-
-
-
-
-
-
-
-                                }
-
-
-                            });
-
-
-                            //    update3/3/2023
-
-
-
-
-
-
-
-
-
-
-
-                            $('#product_name').val('');
-                            $('#product_price_after_dis').val(0);
-                            $('#quantity').val(1);
-                            $('#avaliable_quentity').val('');
-                            $('#product_location').val('');
-                            $('#product_price').val('');
-                            $('#purchase_price').val('');
-                            $('#productNo').val("__('home.searchbyproductnumber')");
-
-                        }
-
-      $('#product_name').val('');
-      $('#productcode').val('');
-                            $('#product_price_after_dis').val(0);
-                            $('#quantity').val(1);
-                            $('#avaliable_quentity').val('');
-                            $('#product_location').val('');
-                            $('#product_price').val('');
-                            $('#purchase_price').val('');
-
-
-                    },
-                    error: function(response) {
-                        console.log(response)
-                        alert("{{ __('home.sorryerror') }}")
-
-                    }
-                });
-            }
-            
-document.getElementById("button_1").style.display = "block";
-
-        });
-
-
-
-
-        $("#deleteproduct").click(function(e) {
-            event.preventDefault();
-            $('#modaldemo9').modal('hide');
-            var url = $(this).attr('data-action');
-            let table = document.getElementById("example");
-            var token_search = $("#token_search").val();
-            id = $('#id_delete').val();
-
-            var url = " {{ URL::to('deleteproduct') }}" + "/" + id;
-            token_search = $('#token_search').val();
-            console.log('+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++');
-            console.log(id);
-            $.ajax({
-                url: url,
-                type: 'get',
-                cache: false,
-                success: function(data) {
+    });
+
+    // 2. دالة إرسال وحفظ المنتج المشتركة (تمنع تكرار الكود)
+    function sendProductAjax() {
+        let product_name = $('#product_name').val();
+        let quantity = $('#quentity').val();
+
+        if (product_name == '') {
+            alert("{{ __('home.pleaseChooseProduct') }}");
+            return;
+        }
+        if (quantity == '') {
+            alert("{{ __('home.quantity') }}");
+            return;
+        }
+
+        if($("#button_1").length) document.getElementById("button_1").style.display = "none";
+
+        jQuery.ajax({
+            url: "{{ URL::to('create_sendProduct') }}",
+            type: 'post',
+            cache: false,
+            data: {
+                _token: $('#token_search').val(),
+                order_id: $('#showInvoiceNumber').val(),
+                product_name: product_name,
+                branch: $('#branch').val(),
+                userfrom: $('#userfrom').val(),
+                quentity: quantity,
+                thecostProduct: $('#thecostProduct').val(),
+                product_no: $('#product_no').val(),
+                reciveInvoiceNumber: 0
+            },
+            success: function(data) {
+             if (!data || data.length === 0) {   
+                     alert("{{ __('home.stocknotAvailable') }}");
+                } else {
                     $('#showInvoiceNumber').val(data['orderData']['id']);
-
-                    console.log(data)
-                    console.log('-=--------------IDS--------------------')
-                    console.log(data['orderItems'])
-                    console.log(data['orderData']['id'])
-                    if (data == []) {
-                        alert("{{ __('home.stocknotAvailable') }}");
-                    } else {
-
-                        let table = document.getElementById("example");
-
-
-
-
-                        var tableHeaderRowCount = 1;
-
-                        var rowCount = table.rows.length;
-
-                        for (var i = tableHeaderRowCount; i < rowCount; i++) {
-                            table.deleteRow(tableHeaderRowCount);
-                        }
-                        count1 = 0;
-                        added_value_total = 0;
-                        total_sales = 0;
-
-                        data['orderItems'].forEach(async (product) => {
-                            product_code = product['product_code'],
-                                count1 = product['count'],
-                                product_name = product['productname']
-                            quentity = product['quantity']
-                            price = product['cost']
-                            total = product['total']
-                            console.log(price)
-                            console.log(total)
-                            console.log(quentity)
-                            sales_id = product['details_items_no']
-                            $('#order_id').val(product['details_items_no']);
-
-                            product_name_update = product_name.replaceAll(" ", "?")
-                            text2 =
-                                ' <a style="width:40px;height:20px" class="modal-effect btn btn-sm btn-danger mb-1" data-effect="effect-scale" data-id='
-                            result2 = text2.concat(sales_id, "  ", "data-section_name=", product_name_update,
-                                "  ", "data-return_quentity=", quentity, '  ',
-                                '  data-toggle="modal"   href="#modaldemo9"   title="حذف"><i class="las la-trash"></i></a>'
-                            )
-
-
-
-
-                            if (quentity > 0) {
-
-
-                                let row = table.insertRow(-1); // We are adding at the end
-
-                                let c1 = row.insertCell(0);
-                                let c2 = row.insertCell(1);
-                                let c3 = row.insertCell(2);
-                                let c4 = row.insertCell(3);
-                                let c5 = row.insertCell(4);
-                                let c6 = row.insertCell(5);
-                                let c7 = row.insertCell(6);
-
-
-                                // Add data to c1 and c2
-
-                                c1.innerText = count1
-                                c2.innerHTML = ' <span dir=ltr>' + product_code + '</span>'
-                                c3.innerText = product_name
-                                c4.innerText = quentity
-                                c5.innerText = price
-                                c6.innerText = total
-                                c7.innerHTML = result2
-
-
-
-
-
-
-
-                            }
-
-
-                        });
-
-
-                        //    update3/3/2023
-
-
-
-
-
-
-
-
-
-
-
-                        $('#product_name').val('');
-                        $('#product_price_after_dis').val(0);
-                        $('#quantity').val(1);
-                        $('#avaliable_quentity').val('');
-                        $('#product_location').val('');
-                        $('#product_price').val('');
-                        $('#purchase_price').val('');
-                        $('#productNo').val("__('home.searchbyproductnumber')");
-
-                    }
-
-
-
-
-                },
-                error: function(response) {
-                    alert("{{ __('home.sorryerror') }}")
+                    $('#sprint_invoice_number').val(data['orderData']['id']);
+                    
+                    // تحديث الجدول الديناميكي
+                    renderInvoiceTable(data['orderItems']);
+                    clearInputFields();
                 }
-            });
+            },
+            error: function() {
+                alert("{{ __('home.sorryerror') }}");
+            },
+            complete: function() {
+                if($("#button_1").length) document.getElementById("button_1").style.display = "block";
+            }
         });
+    }
 
+    // دالة حذف منتج من الفاتورة
+    $("#deleteproduct").click(function(e) {
+        e.preventDefault();
+        $('#modaldemo9').modal('hide');
+        let id = $('#id_delete').val();
 
-        $(function() {
-            var timeout = 4000; // in miliseconds (3*1000)
-            $('.alert').delay(timeout).fadeOut(500);
+        jQuery.ajax({
+            url: "{{ URL::to('deleteproduct') }}/" + id,
+            type: 'get',
+            cache: false,
+            success: function(data) {
+                if (data != 0) {
+                    $('#showInvoiceNumber').val(data['orderData']['id']);
+                    renderInvoiceTable(data['orderItems']);
+                    clearInputFields();
+                }
+            },
+            error: function() {
+                alert("{{ __('home.sorryerror') }}");
+            }
         });
+    });
 
+    // دالة بناء أسطر الجدول بسلاسة لمنع التكرار البصري
+    function renderInvoiceTable(items) {
+        let table = document.getElementById("example");
+        if(!table) return;
+
+        // مسح الأسطر القديمة باستثناء الهيدر
+        while(table.rows.length > 1) {
+            table.deleteRow(1);
+        }
+
+        items.forEach(function(product) {
+            if (product['quantity'] > 0) {
+                let row = table.insertRow(-1);
+                let product_name_update = product['productname'].replaceAll(" ", "?");
+                
+                let actionBtn = `<a style="width:40px; height:20px" class="modal-effect btn btn-sm btn-danger mb-1" 
+                                    data-effect="effect-scale" 
+                                    data-id="${product['details_items_no']}" 
+                                    data-section_name="${product_name_update}" 
+                                    data-return_quentity="${product['quantity']}" 
+                                    data-toggle="modal" href="#modaldemo9" title="حذف">
+                                    <i class="las la-trash"></i>
+                                 </a>`;
+
+                row.insertCell(0).innerText = product['count'];
+                row.insertCell(1).innerHTML = `<span dir="ltr">${product['product_code']}</span>`;
+                row.insertCell(2).innerText = product['productname'];
+                row.insertCell(3).innerText = product['quantity'];
+                row.insertCell(4).innerText = product['cost'];
+                row.insertCell(5).innerText = product['total'];
+                row.insertCell(6).innerHTML = actionBtn;
+            }
+        });
+    }
+
+    // تفريغ الحقول بعد الحفظ أو الإضافة لتهيئة الإدخال التالي
+    function clearInputFields() {
+        $('#productcode').val('');
+        $('#thecostProduct').val('');
+        $('#current_location').val('');
+        $('#product_name').val('');
+        $('#quentity').val('');
+        $('#product_price_after_dis').val(0);
+        $('#quantity').val(1);
+        $('#avaliable_quentity').val('');
+        $('#product_location').val('');
+        $('#product_price').val('');
+        $('#purchase_price').val('');
+        $('#productNo').val("{{ __('home.searchbyproductnumber') }}");
+    }
+
+    // عند تحميل الصفحة بالكامل
+    $(document).ready(function() {
+        if(document.getElementById("productcode")) {
+            document.getElementById("productcode").focus();
+        }
+
+        // إخفاء رسائل التنبيه بعد 4 ثواني تلقائياً
+        setTimeout(function() {
+            $('.alert').fadeOut(500);
+        }, 4000);
+    });
+
+    // ربط كليك الزر العادي بدالة الـ Ajax الموحدة
+    $("#button_1").click(function(e) {
+        e.preventDefault();
+        sendProductAjax();
     });
 </script>
-
-
-
-
-
 
 @endsection

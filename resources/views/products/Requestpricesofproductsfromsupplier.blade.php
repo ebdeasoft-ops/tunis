@@ -19,25 +19,23 @@
 @endsection
 @section('page-header')
 <div class="main-parent">
-    <!-- breadcrumb -->
     <div class="breadcrumb-header justify-content-between parent-heading">
         <div class="my-auto">
             <div class="d-flex">
-                <h4 class="content-title mb-0 my-auto">{{ __('home.Requestـpricesـofـproducts') }}</h4><span class="text-muted mt-1 tx-13 mr-2 mb-0">
-                </span>
+                <h4 class="content-title mb-0 my-auto">{{ __('home.Requestـpricesـofـproducts') }}</h4>
+                <span class="text-muted mt-1 tx-13 mr-2 mb-0"></span>
             </div>
         </div>
-         <div class="col-lg-3 mg-t-20 mg-lg-t-0">
-                                    <button style="background-color: #FF4F1F;" class="modal-effect btn btn-sm btn-info p-2 m-1 button-eng" data-effect="effect-scale" data-toggle="modal" href="#updateinvoicebyidmodale" title="تحديد"><i style=" height:80;font-weight:400 !important;
-                                                 width: 115px;
-                                                 font-size:13px" class="las"> {{ __('home.update_qutation') }}</i>
-                                     
-                                    </button>
-                       
-                                </div>
-      
+        <div class="col-lg-3 mg-t-20 mg-lg-t-0 text-left">
+            <button style="background-color: #FF4F1F; font-size: 13px;" class="modal-effect btn btn-sm btn-info p-2 m-1 button-eng" data-effect="effect-scale" data-toggle="modal" href="#updateinvoicebyidmodale" title="تحديد">
+                <i class="las la-edit"></i> {{ __('home.update_qutation') }}
+            </button>
+        </div>
     </div>
-    <!-- breadcrumb -->
+
+    </div> 
+
+
     @endsection
     @section('content')
 
@@ -362,27 +360,9 @@
 @endsection
 @section('js')
 
-<!--Internal  Datatable js -->
-<script src="{{ URL::asset('assets/js/table-data.js') }}"></script>
 
-<!--Internal  Datepicker js -->
-<script src="{{ URL::asset('assets/plugins/jquery-ui/ui/widgets/datepicker.js') }}"></script>
-<!--Internal  jquery.maskedinput js -->
-<script src="{{ URL::asset('assets/plugins/jquery.maskedinput/jquery.maskedinput.js') }}"></script>
-<!--Internal  spectrum-colorpicker js -->
-<script src="{{ URL::asset('assets/plugins/spectrum-colorpicker/spectrum.js') }}"></script>
-<!-- Internal Select2.min js -->
 <script src="{{ URL::asset('assets/plugins/select2/js/select2.min.js') }}"></script>
 <!--Internal Ion.rangeSlider.min js -->
-<script src="{{ URL::asset('assets/plugins/ion-rangeslider/js/ion.rangeSlider.min.js') }}"></script>
-<!--Internal  jquery-simple-datetimepicker js -->
-<script src="{{ URL::asset('assets/plugins/amazeui-datetimepicker/js/amazeui.datetimepicker.min.js') }}"></script>
-<!-- Ionicons js -->
-<script src="{{ URL::asset('assets/plugins/jquery-simple-datetimepicker/jquery.simple-dtpicker.js') }}"></script>
-<!--Internal  pickerjs js -->
-<script src="{{ URL::asset('assets/plugins/pickerjs/picker.min.js') }}"></script>
-<!-- Internal form-elements js -->
-<script src="{{ URL::asset('assets/js/form-elements.js') }}"></script>
 
 
 
@@ -561,12 +541,6 @@ if(searchtext!=''){
         //  strNum = strNum.replace(/[^\d]/g, '');
         return strNum;
     }
-</script>
-
-<script>
-    var date = $('.fc-datepicker').datepicker({
-        dateFormat: 'yy-mm-dd'
-    }).val();
 </script>
 
 
@@ -939,6 +913,7 @@ alert("{{ __('home.sorryerror') }}")
 
                     },
                     error: function(response) {
+                        console.log(response)
                         alert("{{ __('home.sorryerror') }}")
 
                     }

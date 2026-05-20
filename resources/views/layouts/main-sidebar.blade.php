@@ -472,33 +472,35 @@
                                 </li>
                             @endcan
 
-            <li><a class="slide-item" href="{{ url('/' . ($page = 'Opening_entry')) }}">{{__('home.Opening_entry')}}</a>
-            </li>
-            <li><a class="slide-item" href="{{ url('/' . ($page = 'Daily_record')) }}">{{__( 'home.Daily_record')}} </a>
-            </li>
-            @can('Voucher')
+                            @can('Add new account')
+                                <li>
+                                    <a class="slide-item" href="{{ url('/create_acount') }}">{{ __('home.add_new_account') }}</a>
+                                </li>
+                            @endcan
 
-            <li><a class="slide-item" href="{{ url('/' . ($page = 'voncher')) }}"> {{__('home.voucher')}} </a></li>
-            <li><a class="slide-item"
-                    href="{{ url('/' . ($page = 'reciept_decoument')) }}">{{__('home.Receipt document')}} </a></li>
+                            @can('Account tree')
+                                <li>
+                                    <a class="slide-item" href="{{ url('/tree') }}">{{ __('home.tree') }}</a>
+                                </li>
+                            @endcan
 
-            @endcan
-            <li><a class="slide-item" href="{{ url('/' . ($page = 'create_acount')) }}">{{__( 'home.add_new_account')}}
-                </a></li>
-            </li>
-            </li>
-            <li><a class="slide-item" href="{{ url('/' . ($page = 'tree')) }}">{{__( 'home.tree')}} </a></li>
-            </li>
-            <li><a class="slide-item"
-                    href="{{ url('/' . ($page = 'financial_accounts')) }}">{{__( 'home.Financial_accounts')}} </a></li>
-            </li>
-            @endcan
+                            @can('Financial accounts')
+                                <li>
+                                    <a class="slide-item" href="{{ url('/financial_accounts') }}">{{ __('home.Financial_accounts') }}</a>
+                                </li>
+                            @endcan
 
-            @can('List of customers')
-            <li><a class="slide-item" href="{{ url('/' . ($page = 'Customerlist')) }}">{{__('home.customer_supplier_account')}} </a>
-            </li>
-            @endcan
+                            @can('List of customers')
+                                <li>
+                                    <a class="slide-item" href="{{ url('/Customerlist') }}">{{ __('home.customer_supplier_account') }}</a>
+                                </li>
+                            @endcan
 
+                            @can('List of suppliers')
+                                <li>
+                                    <a class="slide-item" href="{{ url('/supplierlist') }}">{{ __('report.Listofsupplier') }}</a>
+                                </li>
+                            @endcan
 
                             @can('Transfer to main branch')
                                 <li>
@@ -513,7 +515,8 @@
                             @endcan
                         </ul>
                     </li>
-            
+            @endcan
+
 
 
 

@@ -30,7 +30,7 @@ class ProductMovementAnotherBranchController extends Controller
     {
         $this->validate($request, [
             'product_no' => 'required|exists:products,id',
-            'branch' => 'required',
+            'branch_reciver' => 'required',
             'quentity' => 'required|numeric|min:0.01',
             'thecostProduct' => 'required|numeric',
             'order_id' => 'required|numeric'
@@ -46,10 +46,10 @@ class ProductMovementAnotherBranchController extends Controller
                 // إنشاء فاتورة تحويل جديدة
                 $movement = product_movement_another_branch::create([
                     'branch_from' => Auth::user()->branchs_id,
-                    'branch_to' => $request->branch,
+                    'branch_to' => $request->branch_reciver,
                     'user_from' => Auth::id(),
                     'reciveInvoiceNumber' => $request->reciveInvoiceNumber,
-                    'user_to' => $request->userfrom,
+                    'user_to' => $request->employeereciver,
                     'Totalcost' => $request->thecostProduct * $request->quentity,
                     'cost_withod_tax' => $product->purchasingـprice * $request->quentity,
                     'created_at' => $now,
@@ -107,7 +107,7 @@ class ProductMovementAnotherBranchController extends Controller
         ]);
 
         $data = DB::transaction(function () use ($request) {
-            $mainInvoice = product_movement_another_branch::lockForUpdate()->find($request->invoiceId);
+            $mainInvoice = product_movement_another_branch::find($request->invoiceId);
 
             if (!$mainInvoice || $mainInvoice->reciveInvoiceNumber == 10) {
                 return [
@@ -118,14 +118,14 @@ class ProductMovementAnotherBranchController extends Controller
 
             $notregisterproductCount = 0;
             $now = Carbon::now();
-            $currentBranchId = Auth::user()->branchs_id;
+            $currentBranchId = $mainInvoice->branch_to;
 
             // استخدام Eager Loading لتفادي مشكلة N+1 Queries أثناء جلب عناصر الحركة
             $items = product_movement_another_branch_items::where('order_id', $mainInvoice->id)->get();
 
             foreach ($items as $item) {
                 $productSender = products::findOrFail($item->product_id);
-                
+
                 // البحث عن المنتج في الفرع المستلِم بواسطة الـ Product_Code
                 $productReceiver = products::where('branchs_id', $currentBranchId)
                     ->where('Product_Code', $productSender->Product_Code)
@@ -179,8 +179,8 @@ class ProductMovementAnotherBranchController extends Controller
 
             $isAr = LaravelLocalization::getCurrentLocale() == 'ar';
             if ($notregisterproductCount > 0) {
-                $message = $isAr 
-                    ? "تم تزويد المخزون بنجاح وتحديث الأسعار. تم إنشاء {$notregisterproductCount} أصناف جديدة لعدم توفر أكوادها بالفرع." 
+                $message = $isAr
+                    ? "تم تزويد المخزون بنجاح وتحديث الأسعار. تم إنشاء {$notregisterproductCount} أصناف جديدة لعدم توفر أكوادها بالفرع."
                     : "Inventory replenished successfully. Created {$notregisterproductCount} new items as their codes weren't found in this branch.";
                 session()->flash('createnewproduct', $message);
             } else {
@@ -237,7 +237,7 @@ class ProductMovementAnotherBranchController extends Controller
     public function findinvoiceMovmevt($id)
     {
         $result = product_movement_another_branch::with(['branchfrom', 'userfrom'])->findOrFail($id);
-        
+
         $senderData = [
             'barnch_id' => $result->branchfrom->id ?? null,
             'barnch_name' => $result->branchfrom->name ?? '',
@@ -249,7 +249,7 @@ class ProductMovementAnotherBranchController extends Controller
         // جلب العناصر مع المنتج الخاص بها لتفادي الـ N+1 Queries
         $items = product_movement_another_branch_items::with('product')->where('order_id', $id)->get();
         $dataitems = [];
-        
+
         foreach ($items as $count => $item) {
             $dataitems[] = [
                 "count" => $count + 1,
@@ -304,7 +304,7 @@ class ProductMovementAnotherBranchController extends Controller
     {
         $order = product_movement_another_branch::find($orderId);
         $items = product_movement_another_branch_items::with('product')->where('order_id', $orderId)->get();
-        
+
         $dataitems = [];
         foreach ($items as $index => $item) {
             $dataitems[] = [

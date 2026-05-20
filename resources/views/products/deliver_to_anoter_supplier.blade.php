@@ -818,9 +818,7 @@ $('#increaseProduct').on('show.bs.modal', function(event) {
     var discount = button.data('section_discount');
     var modal = $(this);
 
-    if (section_name) {
-        section_name = section_name.replaceAll("?", " ");
-    }
+ 
 
     avtsale = $('#avtValue').val();
 
@@ -1480,7 +1478,6 @@ $(document).ready(function() {
         var id = button.data('id')
         var return_quentity = button.data('return_quentity')
         var section_name = button.data('section_name')
-        section_name = section_name.replaceAll("?", " ")
         var modal = $(this)
         modal.find('.modal-body #id_delete').val(id);
         modal.find('.modal-body #return_quentity_delete').val(return_quentity);

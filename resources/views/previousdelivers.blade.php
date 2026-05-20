@@ -80,8 +80,6 @@
     <div class="col-xl-12">
         <div class="card mg-b-20">
             <div class="card-header pb-0">
-                <form action="{{ url(Mcamara\LaravelLocalization\Facades\LaravelLocalization::getCurrentLocale() . '/' . ($page = 'printavaliableproduct')) }}" method="POST" role="search" autocomplete="off">
-                    {{ csrf_field() }}
                     <br>
                     <div class="row">
                         <div class="col-lg-4" id="start_at">
@@ -127,7 +125,6 @@
                         </div>
                         <br />
                     </div>
-                </form>
             </div>
         </div>
     </div>

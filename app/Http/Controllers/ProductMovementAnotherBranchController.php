@@ -103,7 +103,7 @@ class ProductMovementAnotherBranchController extends Controller
     public function store(Request $request)
     {
         $this->validate($request, [
-            'invoiceId' => 'required|exists:product_movement_another_branch,id'
+            'invoiceId' => 'required'
         ]);
 
         $data = DB::transaction(function () use ($request) {

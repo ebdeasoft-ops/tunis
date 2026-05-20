@@ -329,8 +329,7 @@ td .d-flex {
                 <?php
         $avtSaleRate = App\Models\Avt::find(1);
         $avtSaleRate = $avtSaleRate->AVT;
-                $system_settings = App\Models\system_setting::find(1);
-
+        $system_settings = App\Models\system_setting::find(1);
         $discound_allow = $system_settings->discount_on_invoice;
 
                                                                     ?>
@@ -1397,16 +1396,19 @@ td .d-flex {
 @endsection
 @section('js')
 
+<!-- 1. استدعاء مكتبة jQuery (ضرورية جداً قبل أي ملف آخر) -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<!-- 2. ملفات الإضافات (Plugins) -->
 <script src="{{ URL::asset('assets/plugins/select2/js/select2.min.js') }}"></script>
-<!--Internal Ion.rangeSlider.min js -->
 <script src="{{ URL::asset('assets/plugins/ion-rangeslider/js/ion.rangeSlider.min.js') }}"></script>
 
+<!-- 3. ملف البوتستراب (يأتي بعد الـ jQuery دائماً) -->
 <script src="{{ URL::asset('assets/plugins/bootstrap/js/bootstrap.min.js') }}"></script>
+
+<!-- 4. ملف الـ SweetAlert -->
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
-
-{{-- Select2 --}}
-<script src="{{ URL::asset('assets/plugins/select2/js/select2.min.js') }}"></script>
 <script>
 
 $("#getinvoiceupdate").click(function(e) {

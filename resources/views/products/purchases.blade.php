@@ -175,42 +175,51 @@
     @stop
 @endsection
 @section('page-header')
-    <!-- breadcrumb -->
-<div class="main-parent">
-    <div class="breadcrumb-header justify-content-between" 
+  <div class="main-parent">
+    <div class="breadcrumb-header justify-content-between"
          style="display: flex; align-items: center; background-color: #f8f9fa; padding: 10px 20px; border-bottom: 2px solid #23395D; margin-bottom: 20px; width: 100%; border-radius: 4px 4px 0 0;">
-        
+
         <div class="my-auto">
             <h4 class="content-title mb-0" style="color: #23395D; font-weight: bold; font-size: 18px;">{{ __('home.purchases') }}</h4>
         </div>
 
         <div class="d-flex flex-wrap align-items-center" style="gap: 5px;">
-            
-            <a href="{{ url('/' . ($page = 'previousPurchasesInvoices')) }}" 
-               class="btn btn-sm text-white" 
+
+            {{-- 1. زر فواتير المشتريات السابقة --}}
+            @can('View Previous Purchases')
+            <a href="{{ url('/' . ($page = 'previousPurchasesInvoices')) }}"
+               class="btn btn-sm text-white"
                style="background-color: #23395D; border: 1px solid #1a2a44; border-radius: 3px; padding: 6px 14px; font-size: 11px; white-space: nowrap; font-weight: 500;">
                <i class="fa fa-history" style="margin-left: 5px;"></i> {{ __('home.previousPurchasesInvoices') }}
             </a>
+            @endcan
 
-            @can('purchase return')
-            <button class="btn btn-sm text-white" 
-                    style="background-color: #23395D; border: 1px solid #1a2a44; border-radius: 3px; padding: 6px 14px; font-size: 11px; white-space: nowrap; font-weight: 500;" 
+            {{-- 2. زر مرتجع وتعديل فاتورة مشتريات --}}
+            @can('invoice_purchase_update')
+            <button class="btn btn-sm text-white"
+                    style="background-color: #23395D; border: 1px solid #1a2a44; border-radius: 3px; padding: 6px 14px; font-size: 11px; white-space: nowrap; font-weight: 500;"
                     data-toggle="modal" href="#updateinvoicebyidmodale">
                 <i class="fa fa-edit" style="margin-left: 5px;"></i> {{ __('home.invoice_purchase_update') }}
             </button>
             @endcan
 
-            <button class="btn btn-sm text-white" 
-                    style="background-color: #23395D; border: 1px solid #1a2a44; border-radius: 3px; padding: 6px 14px; font-size: 11px; white-space: nowrap; font-weight: 500;" 
+            {{-- 3. زر إضافة مورد جديد --}}
+            @can('Add Supplier')
+            <button class="btn btn-sm text-white"
+                    style="background-color: #23395D; border: 1px solid #1a2a44; border-radius: 3px; padding: 6px 14px; font-size: 11px; white-space: nowrap; font-weight: 500;"
                     data-toggle="modal" href="#createsupplier">
                 <i class="fa fa-user-plus" style="margin-left: 5px;"></i> {{__('home.addnewsupplier')}}
             </button>
+            @endcan
 
-            <button class="btn btn-sm text-white" 
-                    style="background-color: #23395D; border: 1px solid #1a2a44; border-radius: 3px; padding: 6px 14px; font-size: 11px; white-space: nowrap; font-weight: 500;" 
+            {{-- 4. زر إضافة منتج جديد من شاشة المشتريات --}}
+            @can('Add Product')
+            <button class="btn btn-sm text-white"
+                    style="background-color: #23395D; border: 1px solid #1a2a44; border-radius: 3px; padding: 6px 14px; font-size: 11px; white-space: nowrap; font-weight: 500;"
                     data-toggle="modal" href="#createproduct">
                 <i class="fa fa-plus" style="margin-left: 5px;"></i> {{ __('supprocesses.addproduct') }}
             </button>
+            @endcan
         </div>
     </div>
 </div>
@@ -347,9 +356,9 @@
 </div>
                             <?php $i = 0; ?>
 <div class="d-flex align-items-center justify-content-start mb-3 gap-2 flex-wrap">
-    
+
     <!-- زر تحميل النموذج -->
-    <a href="{{ route('purchases.download_template') }}" 
+    <a href="{{ route('purchases.download_template') }}"
        class="btn btn-outline-success btn-sm d-flex align-items-center shadow-sm px-3">
         <i class="fas fa-file-excel mr-2"></i>
         <span>  EXCEL</span>
@@ -358,8 +367,8 @@
     <!-- زر رفع الملف (الحاوية) -->
     <div class="upload-btn-wrapper">
         <input type="file" id="excel_file" style="display:none;" accept=".xlsx, .xls">
-        <button type="button" 
-                class="btn btn-primary btn-sm d-flex align-items-center shadow-sm px-3" 
+        <button type="button"
+                class="btn btn-primary btn-sm d-flex align-items-center shadow-sm px-3"
                 onclick="document.getElementById('excel_file').click();">
             <i class="fas fa-upload mr-2"></i>
             <span> EXCEL  </span>
@@ -402,16 +411,16 @@
                                         </tr>
                                     </thead>
                                 <tbody id="productsTableBody">
-                                  
+
                                 </tbody>
                             </table>
     <input type="hidden" name="branchs_id" id="mySelectHidden"
                                     value="{{ Auth()->user()->branch->id }}">
 
              <div class="row align-items-end mb-4 p-3 shadow-sm" style="background-color: #fcfcfc; border-radius: 12px; border: 1px solid #eef0f7;">
-    
+
     <div class="col-lg-3">
-        <button type="button" class="btn w-100 shadow-sm d-flex align-items-center justify-content-center fw-bold" 
+        <button type="button" class="btn w-100 shadow-sm d-flex align-items-center justify-content-center fw-bold"
                 style="background-color: #419BB2; color: white; height: 45px; border-radius: 8px; border: none;"
                 onclick="addRow()">
             <i class="fas fa-plus-circle me-2"></i> {{ __('supprocesses.addproduct') }}
@@ -423,7 +432,7 @@
             <i class="fas fa-percentage me-1 text-danger"></i> {{ __('home.discound_on_invoice') }}
         </label>
         <input type="text" id="discound_on_invoice" name="discound_on_invoice"
-               oninput='calculateTotalDiscount()' class="form-control text-center fw-bold border-danger-light" 
+               oninput='calculateTotalDiscount()' class="form-control text-center fw-bold border-danger-light"
                style="height: 45px; border-radius: 8px; color: #d32f2f;" placeholder="0.00">
     </div>
 
@@ -466,7 +475,7 @@
     <div class="col-md-3 mb-3">
         <div class="card bd-0 shadow-sm p-3 text-center" style="background-color: #419BB2; border-radius: 8px;">
             <label class="small fw-bold custom-select-green mb-1">{{ __('home.total') }}</label>
-            <input type="text" id="grandTotal" name="grandTotal" readonly 
+            <input type="text" id="grandTotal" name="grandTotal" readonly
                    class="form-control text-center border-0 bg-transparent fw-bold fs-4 p-0 " style="color:green">
         </div>
     </div>
@@ -538,7 +547,7 @@
 
 
                                         <div class='col ' id="printdiv">
-                     <div >  
+                     <div >
 </div>
 <br>
                                             <input type="text" class="form-control " name="show_invoice_number" id="show_invoice_number" title=" رقم الفاتورة " readonly required hidden>
@@ -969,7 +978,7 @@
                                 @endforeach
                             </select>
                         </div>
-                        
+
                         <div class="col-lg-3 mb-2">
                             <label for="inputName" class="control-label parent-label">{{ __('home.groups') }}</label>
                             <select style="width:100%!important" name="product_group" id="product_group"
@@ -1010,7 +1019,7 @@
 
 
                     {{-- 3 --}}
-                    
+
                                                             @if(Auth()->user()->id==30||Auth()->user()->id==17)
 
 
@@ -1035,10 +1044,10 @@
                         </div>
 
                     </div>
-                    
-                    
+
+
                     @else
-                    
+
                                 <div class="row">
                         <div class="col-lg-4">
                             <label for="inputName" class="control-label parent-label"> {{ __('home.purachesepice') }}
@@ -1047,22 +1056,22 @@
                                 name="cost_price" value=0 onkeyup="convertToNumberpurchasersPrice()">
                         </div>
                         <div class="col-lg-4">
-                            <label for="inputName" class="control-label parent-label" required>{{ __('home.salepice') }} 
+                            <label for="inputName" class="control-label parent-label" required>{{ __('home.salepice') }}
                             </label>
                             <input autocomplete="off" type="text" class="form-control parent-input" id="sale_price_create" readonly
                                 value=0 name="sale_price_create" onkeyup="convertToNumbersalePrice()">
                         </div>
                         <div class="col-lg-4">
-                            <label for="inputName" class="control-label parent-label" required>{{ __('home.quantity') }} 
+                            <label for="inputName" class="control-label parent-label" required>{{ __('home.quantity') }}
                             </label>
                             <input autocomplete="off" type="text" class="form-control parent-input" id="quantity_create" readonly
                                 value=0 name="quantity_create" onkeyup="convertToNumbersalePrice()">
                         </div>
 
                     </div>
-                    
-                    
-                    
+
+
+
                                        @endif
 
 
@@ -1294,11 +1303,11 @@ function renderExcelProducts(productsList) {
                 dataType: 'json',
                 cache: false,
 
-             
+
                 success: function(data) {
 
 
-                
+
 
                     $('#orderNo').val(data['orderNo'])
                     $('#Purchase_invoice_number_supplier').val(data['Purchase_invoice_number_supplier'])
@@ -1380,12 +1389,12 @@ function renderExcelProducts(productsList) {
                     <button type="button" class="btn btn-danger btn-sm" onclick="removeRow(this)">{{ __('home.delete') }}</button>
                 </td>
             </tr>`;
-            
+
               table.insertAdjacentHTML("beforeend", row);
 
-            
 
-            
+
+
                         product_code = product['Product_Code']
                         product_name = product['product_name']
                         purchasingـprice = product['purchasingـprice']
@@ -1405,9 +1414,9 @@ function renderExcelProducts(productsList) {
 
 
                     });
-                   
-                   
-                   
+
+
+
                     $("#shippingfee").val( data['shipping_fee']);
 
               calculateTotals()
@@ -1423,11 +1432,11 @@ function renderExcelProducts(productsList) {
                     alert("{{ __('home.sorryerror') }}")
 
                 }
-                
+
             })
-            
+
        })
- 
+
 function createnewproductajax() {
     var url = " {{ URL::to('addnewProductajax') }}";
     var token_search = $("#token_search").val();
@@ -1440,8 +1449,8 @@ function createnewproductajax() {
     if ($('#product_name_ar').val() == '') {
         Swal.fire({ icon: 'warning', title: 'تنبيه', text: "{{ __('supprocesses.product_name_ar') }}" });
         return;
-    } 
-    
+    }
+
     if ($('#product_location_create').val() == '') {
         Swal.fire({ icon: 'warning', title: 'تنبيه', text: "{{ __('supprocesses.product_location') }}" });
         return;
@@ -1484,9 +1493,9 @@ function createnewproductajax() {
 
             // حالة 2: نجاح الإضافة
             successAudio.play(); // تشغيل صوت النجاح
-            
+
             $('#createcustomer').modal('hide');
-            
+
             // تصفير الحقول
             $('#quantity_create, #cost_price, #sale_price_create').val(0);
             $('#product_location_create, #product_name_ar, #product_notes, #product_code_create').val('');
@@ -1868,7 +1877,7 @@ $("#formdata").on('submit', function (e) {
             $('#orderId').val(data);
             document.getElementById('printdiv').hidden = false;
             document.getElementById('saveInvoice').hidden = true;
-            
+
             setTimeout(() => { $('#massagesave').modal('hide'); }, 1000);
         },
         error: function(respose) {
@@ -1888,7 +1897,7 @@ $("#formdata").on('submit', function (e) {
             window.currentRow = index;
             $('#SearchProduct').modal().show();
             $('#searchaboutproduct').focus();
-            // $('#branchs_id').attr("disabled", true); 
+            // $('#branchs_id').attr("disabled", true);
             document.getElementById("branchs_id").disabled = true;
 
         }

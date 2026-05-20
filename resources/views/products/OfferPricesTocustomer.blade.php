@@ -275,46 +275,56 @@
     @stop
 @endsection
 @section('page-header')
-    <!-- breadcrumb -->
-    <div class="main-parent">
-        <div class="breadcrumb-header justify-content-between"
-            style="display: flex; align-items: center; background-color: #f8f9fa; padding: 10px 20px; border-bottom: 2px solid #23395D; margin-bottom: 20px; width: 100%; border-radius: 4px 4px 0 0;">
+   <div class="main-parent">
+    <div class="breadcrumb-header justify-content-between"
+        style="display: flex; align-items: center; background-color: #f8f9fa; padding: 10px 20px; border-bottom: 2px solid #23395D; margin-bottom: 20px; width: 100%; border-radius: 4px 4px 0 0;">
 
-            <div class="my-auto">
-                <h4 class="content-title mb-0" style="color: #23395D; font-weight: bold; font-size: 18px; margin: 0;">
-                    {{ __('home.Offerـpricesـtoـcustomer') }}
-                </h4>
+        <div class="my-auto">
+            <h4 class="content-title mb-0" style="color: #23395D; font-weight: bold; font-size: 18px; margin: 0;">
+                {{ __('home.Offerـpricesـtoـcustomer') }}
+            </h4>
+        </div>
+
+        <div class="d-flex flex-wrap align-items-center" style="gap: 8px;">
+
+            {{-- خيار التحكم في إظهار الرقم --}}
+            <div style="min-width: 150px;">
+                <select class="form-control select2" name="numbershowstatus" id="numbershowstatus" required>
+                    <option value="1">{{__('home.shownumberselect')}}</option>
+                    <option value="0">{{__('home.notshow')}}</option>
+                </select>
             </div>
 
-            <div class="d-flex flex-wrap align-items-center" style="gap: 8px;">
+            {{-- زر إضافة عميل جديد --}}
+            @can('Add Customer')
+            <button class="modal-effect btn btn-sm text-white"
+                style="background-color: #23395D; border: 1px solid #1a2a44; border-radius: 3px; padding: 6px 14px; font-size: 11px; white-space: nowrap;"
+                data-toggle="modal" href="#createcustomer">
+                <i class="fa fa-user-plus" style="margin-left: 5px;"></i> {{ __('home.addnewcustomer') }}
+            </button>
+            @endcan
 
-                <div style="min-width: 150px;">
-                    <select class="form-control select2" name="numbershowstatus" id="numbershowstatus" required>
-                        <option value="1">{{__('home.shownumberselect')}}</option>
-                        <option value="0">{{__('home.notshow')}}</option>
-                    </select>
-                </div>
+            {{-- زر إضافة منتج جديد --}}
+            @can('Add Product')
+            <button class="modal-effect btn btn-sm text-white"
+                style="background-color: #23395D; border: 1px solid #1a2a44; border-radius: 3px; padding: 6px 14px; font-size: 11px; white-space: nowrap;"
+                data-toggle="modal" href="#createproduct">
+                <i class="fa fa-plus" style="margin-left: 5px;"></i> {{ __('supprocesses.addproduct') }}
+            </button>
+            @endcan
 
-                <button class="modal-effect btn btn-sm text-white"
-                    style="background-color: #23395D; border: 1px solid #1a2a44; border-radius: 3px; padding: 6px 14px; font-size: 11px; white-space: nowrap;"
-                    data-toggle="modal" href="#createcustomer">
-                    <i class="fa fa-user-plus" style="margin-left: 5px;"></i> {{ __('home.addnewcustomer') }}
-                </button>
+            {{-- زر تحديث عرض السعر --}}
+            @can('Update Quotation')
+            <button class="modal-effect btn btn-sm text-white"
+                style="background-color: #28a745; border: 1px solid #1e7e34; border-radius: 3px; padding: 6px 14px; font-size: 11px; white-space: nowrap;"
+                data-toggle="modal" href="#updateinvoicefromsale">
+                <i class="fa fa-truck" style="margin-left: 5px;"></i> {{ __('home.update_qutation') }}
+            </button>
+            @endcan
 
-                <button class="modal-effect btn btn-sm text-white"
-                    style="background-color: #23395D; border: 1px solid #1a2a44; border-radius: 3px; padding: 6px 14px; font-size: 11px; white-space: nowrap;"
-                    data-toggle="modal" href="#createproduct">
-                    <i class="fa fa-plus" style="margin-left: 5px;"></i> {{ __('supprocesses.addproduct') }}
-                </button>
-
-                <button class="modal-effect btn btn-sm text-white"
-                    style="background-color: #28a745; border: 1px solid #1e7e34; border-radius: 3px; padding: 6px 14px; font-size: 11px; white-space: nowrap;"
-                    data-toggle="modal" href="#updateinvoicefromsale">
-                    <i class="fa fa-truck" style="margin-left: 5px;"></i> {{ __('home.update_qutation') }}
-                </button>
-            </div>
         </div>
     </div>
+</div>
 
 
 
@@ -474,8 +484,8 @@
                           <div class="col-lg-4 mg-lg-t-10">
                                 <label for="inputName" class="form-label">{{ __('home.chooseclient') }}</label>
 
-                                
-                                
+
+
                                            <select style="width:100%!important" name="clientnamesearch" id="clientnamesearch" class="form-control select2">
                                     <option  value=1 >عميل نقدي CASH CUSTOMER</option>
 
@@ -1283,7 +1293,7 @@
             dataType: 'json',
             delay: 300,
             data: function (params) {
-                searchText=params.term 
+                searchText=params.term
                 return { q: params.term };
             },
             processResults: function (data) {
@@ -1334,7 +1344,7 @@ else{
                 <p dir="ltr">The entered price is lower than the registered selling price!</p>
                 <hr>
                 <div style="background: #f8f9fa; padding: 10px; border-radius: 5px;">
-                    <strong>سعر النظام | System Price:</strong> 
+                    <strong>سعر النظام | System Price:</strong>
                     <span style="color: #28a745; font-size: 1.2em;">${cost}</span>
                 </div>
             </div>
@@ -2194,7 +2204,7 @@ else{
                 <p dir="ltr">The entered price is lower than the registered selling price!</p>
                 <hr>
                 <div style="background: #f8f9fa; padding: 10px; border-radius: 5px;">
-                    <strong>سعر النظام | System Price:</strong> 
+                    <strong>سعر النظام | System Price:</strong>
                     <span style="color: #28a745; font-size: 1.2em;">${cost}</span>
                 </div>
             </div>

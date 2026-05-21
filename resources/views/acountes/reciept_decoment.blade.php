@@ -101,7 +101,7 @@
                                             <select class="form-control select2" name="items[0][client_account_id]"
                                                 id="item_account_0" required>
                                                 <option value="">{{ __('home.Choose account') }}</option>
-                                                @foreach (App\Models\financial_accounts::all() as $acc)
+                                                @foreach (App\Models\financial_accounts::where('active', 1)->where('is_parent', 0)->get() as $acc)
                                                     <option value="{{ $acc->id }}">{{ $acc->name }}</option>
                                                 @endforeach
                                             </select>
@@ -190,7 +190,7 @@
                 <td>${i + 1}</td>
                 <td><select class="form-control select2" name="items[${i}][client_account_id]" required>
                     <option value="">{{ __('home.Choose account') }}</option>
-                    @foreach (App\Models\financial_accounts::all() as $acc)
+                    @foreach (App\Models\financial_accounts::where('active', 1)->where('is_parent', 0)->get() as $acc)
                         <option value="{{ $acc->id }}">{{ $acc->name }}</option>
                     @endforeach
                 </select></td>

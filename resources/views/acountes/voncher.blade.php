@@ -82,7 +82,6 @@
                             <input type="date" name="date" id="date_input" class="form-control" value="{{ date('Y-m-d') }}">
                         </div>
                     </div>
-
                     <div class="table-responsive">
                         <table class="table table-bordered text-center" id="receipt_table">
                             <thead>

@@ -160,7 +160,7 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <script>
-    const accounts = @json(App\Models\financial_accounts::where('active',1)->get());
+const accounts = @json(\App\Models\financial_accounts::where('active', 1)->where('is_parent', 0)->get());
     const centers = @json(App\Models\Cost_centers::all());
     let count = 0;
 

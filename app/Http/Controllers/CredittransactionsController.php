@@ -34,7 +34,7 @@ class CredittransactionsController extends Controller
                 // عكس القيد: نطرح ما تم إضافته سابقاً للحساب
                 $account->decrement('debtor_current', $old_tx->debtor);
                 $account->decrement('creditor_current', $old_tx->creditor);
-                
+
                 // تحديث الرصيد الحالي للحساب
                 $account->update([
                     'current_balance' => $account->debtor_current - $account->creditor_current
@@ -59,7 +59,7 @@ class CredittransactionsController extends Controller
      */
     public function updateAllVoucher(Request $request)
     {
-        $payment_name = $request->pay_method_type; 
+        $payment_name = $request->pay_method_type;
         $user_id = auth()->id();
 
         $request->validate([
@@ -85,10 +85,11 @@ class CredittransactionsController extends Controller
             // الطرف الدائن (الحسابات الفرعية)
             foreach ($request->items as $item) {
                 $amount = $item['amount'];
-                if ($amount <= 0) continue;
+                if ($amount <= 0)
+                    continue;
 
                 $total_receipt_amount += $amount;
-                $sub_account = financial_accounts::find($item['client_account_id']); 
+                $sub_account = financial_accounts::find($item['client_account_id']);
 
                 if ($sub_account) {
                     $sub_account->increment('creditor_current', $amount);
@@ -107,7 +108,7 @@ class CredittransactionsController extends Controller
                         'Pay_Method_Name' => $payment_name,
                         'note' => ($item['note'] ?? '') . ' | تعديل سند قبض رقم: ' . $sent_count,
                         'currentblance' => $sub_account->current_balance,
-                        'type_decument' => 1, 
+                        'type_decument' => 1,
                         'created_at' => now(),
                         'branchs_id' => Auth::user()->branchs_id ?? 1,
                         'recive_amount' => $amount,
@@ -152,7 +153,7 @@ class CredittransactionsController extends Controller
         }
     }
 
-    
+
     /**
      * حفظ سند قبض جديد
      */
@@ -161,10 +162,10 @@ class CredittransactionsController extends Controller
         $payment_name = $request->payment_method;
 
         $request->validate([
-            'main_account_id' => 'required', 
+            'main_account_id' => 'required',
             'date' => 'required|date',
-            'items' => 'required|array|min:1', 
-            'items.*.account_id' => 'required', 
+            'items' => 'required|array|min:1',
+            'items.*.account_id' => 'required',
             'items.*.amount' => 'required|numeric|min:0',
         ]);
 
@@ -188,7 +189,8 @@ class CredittransactionsController extends Controller
 
             foreach ($request->items as $item) {
                 $amount = $item['amount'];
-                if ($amount <= 0) continue; 
+                if ($amount <= 0)
+                    continue;
 
                 $total_receipt_amount += $amount;
                 $sub_account = financial_accounts::find($item['account_id']);
@@ -216,7 +218,7 @@ class CredittransactionsController extends Controller
                         'Pay_Method_Name' => $payment_name,
                         'type_decument' => 1,
                     ]);
-                    
+
                     $createTransactionId = $tx->id;
                     $this->syncExternalBalances($sub_account);
                 }
@@ -241,7 +243,7 @@ class CredittransactionsController extends Controller
                     'debtor' => $total_receipt_amount,
                     'creditor' => 0,
                     'sent_abd_count' => $sent_abd_count,
-                    'decument_id' => $createTransactionId, 
+                    'decument_id' => $createTransactionId,
                     'currentblance' => $main_account->current_balance,
                     'Pay_Method_Name' => $payment_name,
                     'pay_method' => $payment_name,
@@ -249,11 +251,11 @@ class CredittransactionsController extends Controller
                 ]);
             }
 
-            DB::commit(); 
+            DB::commit();
             return response()->json(['status' => 'success', 'message' => 'تم حفظ سند القبض بنجاح', 'count' => $sent_abd_count]);
 
         } catch (\Exception $e) {
-            DB::rollback(); 
+            DB::rollback();
             return response()->json(['status' => 'error', 'message' => 'خطأ في الحفظ: ' . $e->getMessage()], 500);
         }
     }
@@ -278,7 +280,8 @@ class CredittransactionsController extends Controller
 
             // إضافة الأسطر الجديدة مع معالجة الأرصدة
             foreach ($request->amounts as $key => $val) {
-                if ($val <= 0) continue;
+                if ($val <= 0)
+                    continue;
 
                 $account = financial_accounts::find($request->account_ids[$key]);
                 if ($account) {
@@ -328,7 +331,7 @@ class CredittransactionsController extends Controller
                 DB::commit();
                 return response()->json(['status' => 'success', 'message' => 'تم حذف السند وتصفير الحسابات المرتبطة بنجاح']);
             }
-            
+
             DB::rollback();
             return response()->json(['status' => 'error', 'message' => 'السند غير موجود']);
         } catch (\Exception $e) {
@@ -434,7 +437,7 @@ class CredittransactionsController extends Controller
                     'branchs_id' => $main_payment_acc->branchs_id,
                     'pay_method' => $main_payment_acc->name,
                     'Pay_Method_Name' => $payment_name,
-                    'note' => $item['notes'] . ' | سند صرف رقم: '  . $serf_count,
+                    'note' => $item['notes'] . ' | سند صرف رقم: ' . $serf_count,
                     'date_export' => $request->date,
                     'created_at' => $request->date . ' ' . now()->format('H:i:s'),
                     'debtor' => $amount,
@@ -443,37 +446,37 @@ class CredittransactionsController extends Controller
                     'sent_serf_count' => $serf_count,
                     'type' => $request->pay_method_type,
                     'cost_center' => $item['cost_center'],
-                    'orginal_type'=>$target_acc->orginal_type??0,
-                    'orginal_id'=>$target_acc->orginal_id??0,
+                    'orginal_type' => $target_acc->orginal_type ?? 0,
+                    'orginal_id' => $target_acc->orginal_id ?? 0,
                 ]);
-                
-                                           if($target_acc->orginal_type==3){
-   
-    $reason_data=Expenses_reasons::find($target_acc->orginal_id);
+
+                if ($target_acc->orginal_type == 3) {
+
+                    $reason_data = Expenses_reasons::find($target_acc->orginal_id);
 
 
-  $expense=  expenses::create([
-            'user_id'=>Auth()->user()->id,
-            'Pay_Method_Name'=>$request->pay_method_type,
-            'branchs_id' =>  $main_payment_acc->branchs_id,
-            'Reasonforspendingmoney'=>$reason_data->expenses_reason,
-            'reasonId_id'=>$target_acc->orginal_id,
-             'notes' => $item['notes'] . ' | تعديل سند رقم: ' . $serf_count,
-            'expensesAvt'=>$reason_data->expensesAvt ,
-                    'created_at' => $request->date . ' ' . now()->format('H:i:s'),
-            'date_export'  =>  $request->date,
-            'updated_at'  =>  \Carbon\Carbon::now()->addHours(3), 
-            'Theـamountـpaid'=>$amount,
-            'type'=>2,
+                    $expense = expenses::create([
+                        'user_id' => Auth()->user()->id,
+                        'Pay_Method_Name' => $request->pay_method_type,
+                        'branchs_id' => $main_payment_acc->branchs_id,
+                        'Reasonforspendingmoney' => $reason_data->expenses_reason,
+                        'reasonId_id' => $target_acc->orginal_id,
+                        'notes' => $item['notes'] . ' | تعديل سند رقم: ' . $serf_count,
+                        'expensesAvt' => $reason_data->expensesAvt,
+                        'created_at' => $request->date . ' ' . now()->format('H:i:s'),
+                        'date_export' => $request->date,
+                        'updated_at' => \Carbon\Carbon::now()->addHours(3),
+                        'Theـamountـpaid' => $amount,
+                        'type' => 2,
 
-        ]);
-        }
+                    ]);
+                }
 
 
                 // ب- قيد الضريبة (إن وجد)
                 if ($tax_val > 0) {
-                  
-                   $financial_accounts= financial_accounts::where('parent_account_number',102)->where('branchs_id', $main_payment_acc->branchs_id)->first();
+
+                    $financial_accounts = financial_accounts::where('parent_account_number', 102)->where('branchs_id', $main_payment_acc->branchs_id)->first();
 
                     credittransactions::create([
                         'user_id' => auth()->id(),
@@ -483,13 +486,13 @@ class CredittransactionsController extends Controller
                         'date_export' => $request->date,
                         'debtor' => $tax_val,
                         'creditor' => 0,
-                    'created_at' => $request->date . ' ' . now()->format('H:i:s'),
+                        'created_at' => $request->date . ' ' . now()->format('H:i:s'),
 
                         'Pay_Method_Name' => $payment_name,
                         'pay_method' => $main_payment_acc->name,
-                'vat'=>1,
-                'note' =>  $item['notes'] .'|  سند صرف  | '.' : '.(string)$serf_count,
-                    'sent_serf_count' => $serf_count,
+                        'vat' => 1,
+                        'note' => $item['notes'] . '|  سند صرف  | ' . ' : ' . (string) $serf_count,
+                        'sent_serf_count' => $serf_count,
 
 
                     ]);
@@ -507,13 +510,13 @@ class CredittransactionsController extends Controller
                 'branchs_id' => $main_payment_acc->branchs_id,
                 'pay_method' => $main_payment_acc->name,
                 'Pay_Method_Name' => $payment_name,
-                'note' => '|  سند صرف  | '.' : '. $serf_count,
+                'note' => '|  سند صرف  | ' . ' : ' . $serf_count,
                 'date_export' => $request->date,
                 'debtor' => 0,
                 'creditor' => $total_amount,
                 'type_decument' => 2,
                 'sent_serf_count' => $serf_count,
-                    'created_at' => $request->date . ' ' . now()->format('H:i:s'),
+                'created_at' => $request->date . ' ' . now()->format('H:i:s'),
 
             ]);
 
@@ -541,12 +544,12 @@ class CredittransactionsController extends Controller
         $pay_method_type = $request->pay_method_type;
 
         // 3. تحديد رقم السند
-     // 1. جلب السجل الذي يحتوي على أعلى رقم حالي
-        $recent_id = credittransactions::where('sent_serf_count',"!=", 0)->orderby('id', 'desc')->first();
+        // 1. جلب السجل الذي يحتوي على أعلى رقم حالي
+        $recent_id = credittransactions::where('sent_serf_count', "!=", 0)->orderby('id', 'desc')->first();
 
 
-// 2. إذا وجد سجل، أضف 1 على الرقم الحالي، وإذا لم يجد (أول عملية) ابدأ برقم 1
-$sent_serf_count = $recent_id ? $recent_id->sent_serf_count + 1 : 1;
+        // 2. إذا وجد سجل، أضف 1 على الرقم الحالي، وإذا لم يجد (أول عملية) ابدأ برقم 1
+        $sent_serf_count = $recent_id ? $recent_id->sent_serf_count + 1 : 1;
 
         $all_transactions_data = [];
         $total_document_amount = 0; // متغيّر لتجميع إجمالي السند
@@ -589,63 +592,63 @@ $sent_serf_count = $recent_id ? $recent_id->sent_serf_count + 1 : 1;
                 'sent_serf_count' => $sent_serf_count,
                 'type' => $pay_method_type,
                 'cost_center' => $item['cost_center'],
-                                'orginal_type'=>$target_acc->orginal_type??0,
-                        'orginal_id'=>$target_acc->orginal_id??0,
-                    'created_at' => $request->date . ' ' . now()->format('H:i:s'),
+                'orginal_type' => $target_acc->orginal_type ?? 0,
+                'orginal_id' => $target_acc->orginal_id ?? 0,
+                'created_at' => $request->date . ' ' . now()->format('H:i:s'),
 
 
             ]);
-                           if($target_acc->orginal_type==3){
-   
-    $reason_data=Expenses_reasons::find($target_acc->orginal_id);
+            if ($target_acc->orginal_type == 3) {
+
+                $reason_data = Expenses_reasons::find($target_acc->orginal_id);
 
 
-  $expense=  expenses::create([
-            'attachments'=>$the_file_path,
-            'user_id'=>Auth()->user()->id,
-            'Pay_Method_Name'=>$pay_method_type,
-            'branchs_id' =>  $branch_id,
-            'Reasonforspendingmoney'=>$reason_data->expenses_reason,
-            'reasonId_id'=>$target_acc->orginal_id,
-            'notes' => $notes . ' | سند صرف رقم: ' . $sent_serf_count,
-            'expensesAvt'=>$reason_data->expensesAvt ,
-            'date_export'  =>  $request->date,
-            'updated_at'  =>  \Carbon\Carbon::now()->addHours(3), 
-            'Theـamountـpaid'=>$amount_inclusive,
-            'type'=>2,
+                $expense = expenses::create([
+                    'attachments' => $the_file_path,
+                    'user_id' => Auth()->user()->id,
+                    'Pay_Method_Name' => $pay_method_type,
+                    'branchs_id' => $branch_id,
+                    'Reasonforspendingmoney' => $reason_data->expenses_reason,
+                    'reasonId_id' => $target_acc->orginal_id,
+                    'notes' => $notes . ' | سند صرف رقم: ' . $sent_serf_count,
+                    'expensesAvt' => $reason_data->expensesAvt,
+                    'date_export' => $request->date,
+                    'updated_at' => \Carbon\Carbon::now()->addHours(3),
+                    'Theـamountـpaid' => $amount_inclusive,
+                    'type' => 2,
                     'created_at' => $request->date . ' ' . now()->format('H:i:s'),
 
 
-        ]);
-        }
+                ]);
+            }
 
             // --- ب: معالجة الضريبة لكل سطر ---
             if ($tax_value > 0) {
 
-                   $financial_accounts= financial_accounts::where('parent_account_number',102)->where('branchs_id', $main_payment_acc->branchs_id)->first();
+                $financial_accounts = financial_accounts::where('parent_account_number', 102)->where('branchs_id', $main_payment_acc->branchs_id)->first();
 
-                    credittransactions::create([
-                                        'sent_serf_count' => $sent_serf_count,
+                credittransactions::create([
+                    'sent_serf_count' => $sent_serf_count,
 
-                        'user_id' => auth()->id(),
-                        'customer_id' => $financial_accounts->id,
-                        'recive_amount' => $tax_value,
-                        'branchs_id' => $main_payment_acc->branchs_id,
-                        'note' =>  $notes.'|  سند صرف  | '.' : '.(string)$sent_serf_count,
-                        'date_export' => $request->date,
-                        'debtor' => $tax_value,
-                        'creditor' => 0,
-                        'Pay_Method_Name' => $payment_name,
-                        'pay_method' => $main_payment_acc->name,
-                         'vat'=>1,
-                        'orginal_id'=>$financial_accounts->orginal_id??0,
+                    'user_id' => auth()->id(),
+                    'customer_id' => $financial_accounts->id,
+                    'recive_amount' => $tax_value,
+                    'branchs_id' => $main_payment_acc->branchs_id,
+                    'note' => $notes . '|  سند صرف  | ' . ' : ' . (string) $sent_serf_count,
+                    'date_export' => $request->date,
+                    'debtor' => $tax_value,
+                    'creditor' => 0,
+                    'Pay_Method_Name' => $payment_name,
+                    'pay_method' => $main_payment_acc->name,
+                    'vat' => 1,
+                    'orginal_id' => $financial_accounts->orginal_id ?? 0,
                     'created_at' => $request->date . ' ' . now()->format('H:i:s'),
 
 
 
 
-                    ]);
-                }
+                ]);
+            }
 
             $all_transactions_data[] = [
                 'name' => $target_acc->name,
@@ -672,7 +675,7 @@ $sent_serf_count = $recent_id ? $recent_id->sent_serf_count + 1 : 1;
                 'Pay_Method_Name' => $payment_name,
                 'type_decument' => 2,
                 'sent_serf_count' => $sent_serf_count,
-                    'created_at' => $request->date . ' ' . now()->format('H:i:s'),
+                'created_at' => $request->date . ' ' . now()->format('H:i:s'),
 
             ]);
         }
@@ -696,7 +699,7 @@ $sent_serf_count = $recent_id ? $recent_id->sent_serf_count + 1 : 1;
 
 
 
-/**
+    /**
      * دالة مساعدة موحدة لعكس أرصدة أي قيد (يومي أو افتتاحي) من الشجرة قبل الحذف أو التعديل
      */
     private function reverseTransactionBalances($columnName, $idValue)
@@ -844,7 +847,8 @@ $sent_serf_count = $recent_id ? $recent_id->sent_serf_count + 1 : 1;
                 }
 
                 $financial_account = financial_accounts::find($accountId);
-                if (!$financial_account) continue;
+                if (!$financial_account)
+                    continue;
 
                 $transaction = credittransactions::create([
                     'attachments' => $the_file_path_1,
@@ -968,10 +972,12 @@ $sent_serf_count = $recent_id ? $recent_id->sent_serf_count + 1 : 1;
                 $rowNote = $request->notes[$key] ?? $request->general_notes;
                 $costCenter = $request->cost_centers[$key] ?? null;
 
-                if ($debitValue == 0 && $creditValue == 0) continue;
+                if ($debitValue == 0 && $creditValue == 0)
+                    continue;
 
                 $financial_account = financial_accounts::find($accountId);
-                if (!$financial_account) continue;
+                if (!$financial_account)
+                    continue;
 
                 $transaction = credittransactions::create([
                     'attachments' => $the_file_path_1,
@@ -1041,7 +1047,7 @@ $sent_serf_count = $recent_id ? $recent_id->sent_serf_count + 1 : 1;
 
     public function Opening_entry()
     {
-        $accounts = financial_accounts::all();
+        $accounts = financial_accounts::where('is_parent', 0)->where('active', 1)->get();
         $cost_centers = Cost_centers::all();
         $latest_entries = OpeningEntry::orderBy('id', 'desc')->paginate(3);
         return view('acountes.Opening_entry', compact('accounts', 'cost_centers'))->with('latest_entries', $latest_entries);
@@ -1054,8 +1060,8 @@ $sent_serf_count = $recent_id ? $recent_id->sent_serf_count + 1 : 1;
             return $query->where('id', 'like', "%$search%")
                 ->orWhere('general_notes', 'like', "%$search%");
         })
-        ->orderBy('id', 'desc')
-        ->paginate(3);
+            ->orderBy('id', 'desc')
+            ->paginate(3);
 
         $records->appends(['search' => $search]);
         return view('acountes.latest_table', compact('records'))->render();
@@ -1076,15 +1082,15 @@ $sent_serf_count = $recent_id ? $recent_id->sent_serf_count + 1 : 1;
     }
 
 
-    
-    
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
+
+
     private function updateAccountBalance($account, $debit, $credit, $transaction)
     {
         $amount = $debit + $credit;
@@ -1142,13 +1148,13 @@ $sent_serf_count = $recent_id ? $recent_id->sent_serf_count + 1 : 1;
 
 
 
-/**
+    /**
      * دالة مساعدة لحساب الرصيد الافتتاحي وتأثيره على طبيعة الحساب
      */
     private function applyOpeningBalance($account, $item, $isDebtor, $dely_record_id)
     {
         $amount = $isDebtor ? $item->debtor : $item->creditor;
-        
+
         // الحسابات ذات الطبيعة المدينة (أصول / مصروفات) = النوع 1 و 4
         $isAssetOrExpense = in_array($account->account_type, [1, 4]);
 
@@ -1303,7 +1309,8 @@ $sent_serf_count = $recent_id ? $recent_id->sent_serf_count + 1 : 1;
             DB::beginTransaction();
 
             $tx = credittransactions::find($id);
-            if (!$tx) return response()->json(['status' => 'error', 'message' => 'الحركة غير موجودة']);
+            if (!$tx)
+                return response()->json(['status' => 'error', 'message' => 'الحركة غير موجودة']);
 
             $account = financial_accounts::find($tx->customer_id);
             if ($account) {
@@ -1349,7 +1356,8 @@ $sent_serf_count = $recent_id ? $recent_id->sent_serf_count + 1 : 1;
             DB::beginTransaction();
 
             $tx = credittransactions::find($request->transactionId);
-            if (!$tx) return response()->json(['status' => 'error', 'message' => 'الحركة غير موجودة']);
+            if (!$tx)
+                return response()->json(['status' => 'error', 'message' => 'الحركة غير موجودة']);
 
             // 1. عكس الأرصدة القديمة من الحساب القديم قبل التعديل
             $oldAccount = financial_accounts::find($tx->customer_id);
@@ -1409,7 +1417,7 @@ $sent_serf_count = $recent_id ? $recent_id->sent_serf_count + 1 : 1;
     public function save_Opening_entry($dely_record_id)
     {
         $transactions = credittransactions::where('Opening_entry', $dely_record_id)->get();
-        
+
         $credit_sum = $transactions->sum('creditor');
         $debit_sum = $transactions->sum('debtor');
 
@@ -1422,12 +1430,13 @@ $sent_serf_count = $recent_id ? $recent_id->sent_serf_count + 1 : 1;
 
             foreach ($transactions as $item) {
                 $account = financial_accounts::find($item->customer_id);
-                if (!$account) continue;
+                if (!$account)
+                    continue;
 
                 if ($item->debtor > 0) {
                     $this->applyOpeningBalance($account, $item, true, $dely_record_id);
                 }
-                
+
                 if ($item->creditor > 0) {
                     $this->applyOpeningBalance($account, $item, false, $dely_record_id);
                 }
@@ -1456,7 +1465,7 @@ $sent_serf_count = $recent_id ? $recent_id->sent_serf_count + 1 : 1;
         $credittransactions = credittransactions::where('Opening_entry', $request->record_id_print)
             ->where('parent_Opening_entry', 0)
             ->get();
-        
+
         $OpeningEntry = OpeningEntry::where('entry_number', $request->record_id_print)->first();
         $date = $credittransactions->first()->created_at ?? now();
 
@@ -1480,7 +1489,7 @@ $sent_serf_count = $recent_id ? $recent_id->sent_serf_count + 1 : 1;
     {
         app()->setLocale(LaravelLocalization::getCurrentLocale());
         $credittransactions = credittransactions::where('dely_record', $request->record_id_print)->get();
-        
+
         $date = $credittransactions->first()->created_at ?? now();
         $data = $credittransactions->map(function ($item) {
             return [
@@ -1500,7 +1509,7 @@ $sent_serf_count = $recent_id ? $recent_id->sent_serf_count + 1 : 1;
     }
 
 
- /**
+    /**
      * دالة مساعدة موحدة لمزامنة الكيانات الخارجية وتحديث الرصيد الحالي الصافي للحساب
      */
     private function syncExternalBalances($account)
@@ -1546,7 +1555,8 @@ $sent_serf_count = $recent_id ? $recent_id->sent_serf_count + 1 : 1;
 
             foreach ($credittransactions as $item) {
                 $account = financial_accounts::find($item->customer_id);
-                if (!$account) continue;
+                if (!$account)
+                    continue;
 
                 $isAssetOrExpense = in_array($account->account_type, [1, 4]);
 
@@ -1729,7 +1739,7 @@ $sent_serf_count = $recent_id ? $recent_id->sent_serf_count + 1 : 1;
 
 
 
-    
+
 
 
 
@@ -1740,149 +1750,149 @@ $sent_serf_count = $recent_id ? $recent_id->sent_serf_count + 1 : 1;
      */
 
 
- public function updateVoncher(Request $request)
-{
-    app()->setLocale(LaravelLocalization::getCurrentLocale());
+    public function updateVoncher(Request $request)
+    {
+        app()->setLocale(LaravelLocalization::getCurrentLocale());
 
-    // 1. جلب سجل الحركة الأساسي المراد تعديله
-    $transaction = credittransactions::findOrFail($request->transactionId);
-    $decument_id_recipt = $transaction->sent_abd_count;
-    $type = $request->pay_type_desc;
+        // 1. جلب سجل الحركة الأساسي المراد تعديله
+        $transaction = credittransactions::findOrFail($request->transactionId);
+        $decument_id_recipt = $transaction->sent_abd_count;
+        $type = $request->pay_type_desc;
 
-    try {
-        DB::beginTransaction();
+        try {
+            DB::beginTransaction();
 
-        // --- المرحلة الأولى: إلغاء وعكس الأثر المالي القديم تماماً ---
+            // --- المرحلة الأولى: إلغاء وعكس الأثر المالي القديم تماماً ---
 
-        // أ. إلغاء أثر طريقة الدفع القديمة (الحساب الفرعي والأب)
-        $oldPaymentAccount = financial_accounts::where('name', $transaction->Pay_Method_Name)->first();
-        if ($oldPaymentAccount) {
-            $oldPaymentAccount->decrement('current_balance', $transaction->recive_amount);
-            $oldPaymentAccount->decrement('debtor_current', $transaction->recive_amount);
-            $this->syncExternalBalances($oldPaymentAccount);
+            // أ. إلغاء أثر طريقة الدفع القديمة (الحساب الفرعي والأب)
+            $oldPaymentAccount = financial_accounts::where('name', $transaction->Pay_Method_Name)->first();
+            if ($oldPaymentAccount) {
+                $oldPaymentAccount->decrement('current_balance', $transaction->recive_amount);
+                $oldPaymentAccount->decrement('debtor_current', $transaction->recive_amount);
+                $this->syncExternalBalances($oldPaymentAccount);
 
-            if ($oldPaymentAccount->parent_account_number) {
-                $oldParentPayment = financial_accounts::where('account_number', $oldPaymentAccount->parent_account_number)->first();
-                if ($oldParentPayment) {
-                    $oldParentPayment->decrement('current_balance', $transaction->recive_amount);
-                    $oldParentPayment->decrement('debtor_current', $transaction->recive_amount);
-                    $this->syncExternalBalances($oldParentPayment);
+                if ($oldPaymentAccount->parent_account_number) {
+                    $oldParentPayment = financial_accounts::where('account_number', $oldPaymentAccount->parent_account_number)->first();
+                    if ($oldParentPayment) {
+                        $oldParentPayment->decrement('current_balance', $transaction->recive_amount);
+                        $oldParentPayment->decrement('debtor_current', $transaction->recive_amount);
+                        $this->syncExternalBalances($oldParentPayment);
+                    }
                 }
             }
-        }
 
-        // ب. إلغاء أثر العميل/المورد القديم (إرجاع حسابه للحالة السابقة)
-        $oldCustomerAccount = financial_accounts::find($transaction->customer_id);
-        if ($oldCustomerAccount) {
-            $isAssetOrExpense = in_array($oldCustomerAccount->account_type, [1, 4]);
-            
-            if ($isAssetOrExpense) {
-                $oldCustomerAccount->increment('current_balance', $transaction->recive_amount);
-                $oldCustomerAccount->decrement('creditor_current', $transaction->recive_amount);
+            // ب. إلغاء أثر العميل/المورد القديم (إرجاع حسابه للحالة السابقة)
+            $oldCustomerAccount = financial_accounts::find($transaction->customer_id);
+            if ($oldCustomerAccount) {
+                $isAssetOrExpense = in_array($oldCustomerAccount->account_type, [1, 4]);
+
+                if ($isAssetOrExpense) {
+                    $oldCustomerAccount->increment('current_balance', $transaction->recive_amount);
+                    $oldCustomerAccount->decrement('creditor_current', $transaction->recive_amount);
+                } else {
+                    $oldCustomerAccount->increment('current_balance', $transaction->recive_amount);
+                    $oldCustomerAccount->decrement('debtor_current', $transaction->recive_amount);
+                }
+                $this->syncExternalBalances($oldCustomerAccount);
+            }
+
+            // --- المرحلة الثانية: تطبيق البيانات والأثر المالي الجديد ---
+
+            // أ. جلب بيانات طريقة الدفع الجديدة وتحديث حساباتها
+            $newPaymentAccount = financial_accounts::findOrFail($request->payupdate);
+            $payment_new_text = $newPaymentAccount->name;
+
+            $newPaymentAccount->increment('current_balance', $request->cashreceivedupdate);
+            $newPaymentAccount->increment('debtor_current', $request->cashreceivedupdate);
+            $this->syncExternalBalances($newPaymentAccount);
+
+            if ($newPaymentAccount->parent_account_number) {
+                $newParentPayment = financial_accounts::where('account_number', $newPaymentAccount->parent_account_number)->first();
+                if ($newParentPayment) {
+                    $newParentPayment->increment('current_balance', $request->cashreceivedupdate);
+                    $newParentPayment->increment('debtor_current', $request->cashreceivedupdate);
+                    $this->syncExternalBalances($newParentPayment);
+                }
+            }
+
+            // ب. جلب بيانات العميل/المورد الجديد وتحديث حساباته
+            $newCustomerAccount = financial_accounts::findOrFail($request->clientnamesearch_update);
+            $isNewAssetOrExpense = in_array($newCustomerAccount->account_type, [1, 4]);
+
+            if ($isNewAssetOrExpense) {
+                $newCustomerAccount->decrement('current_balance', $request->cashreceivedupdate);
+                $newCustomerAccount->increment('creditor_current', $request->cashreceivedupdate);
             } else {
-                $oldCustomerAccount->increment('current_balance', $transaction->recive_amount);
-                $oldCustomerAccount->decrement('debtor_current', $transaction->recive_amount);
+                $newCustomerAccount->decrement('current_balance', $request->cashreceivedupdate);
+                $newCustomerAccount->increment('debtor_current', $request->cashreceivedupdate);
             }
-            $this->syncExternalBalances($oldCustomerAccount);
-        }
+            $this->syncExternalBalances($newCustomerAccount);
 
-        // --- المرحلة الثانية: تطبيق البيانات والأثر المالي الجديد ---
+            // --- المرحلة الثالثة: تحديث السجلات الفرعية لقيود السند ---
 
-        // أ. جلب بيانات طريقة الدفع الجديدة وتحديث حساباتها
-        $newPaymentAccount = financial_accounts::findOrFail($request->payupdate);
-        $payment_new_text = $newPaymentAccount->name;
-
-        $newPaymentAccount->increment('current_balance', $request->cashreceivedupdate);
-        $newPaymentAccount->increment('debtor_current', $request->cashreceivedupdate);
-        $this->syncExternalBalances($newPaymentAccount);
-
-        if ($newPaymentAccount->parent_account_number) {
-            $newParentPayment = financial_accounts::where('account_number', $newPaymentAccount->parent_account_number)->first();
-            if ($newParentPayment) {
-                $newParentPayment->increment('current_balance', $request->cashreceivedupdate);
-                $newParentPayment->increment('debtor_current', $request->cashreceivedupdate);
-                $this->syncExternalBalances($newParentPayment);
-            }
-        }
-
-        // ب. جلب بيانات العميل/المورد الجديد وتحديث حساباته
-        $newCustomerAccount = financial_accounts::findOrFail($request->clientnamesearch_update);
-        $isNewAssetOrExpense = in_array($newCustomerAccount->account_type, [1, 4]);
-
-        if ($isNewAssetOrExpense) {
-            $newCustomerAccount->decrement('current_balance', $request->cashreceivedupdate);
-            $newCustomerAccount->increment('creditor_current', $request->cashreceivedupdate);
-        } else {
-            $newCustomerAccount->decrement('current_balance', $request->cashreceivedupdate);
-            $newCustomerAccount->increment('debtor_current', $request->cashreceivedupdate);
-        }
-        $this->syncExternalBalances($newCustomerAccount);
-
-        // --- المرحلة الثالثة: تحديث السجلات الفرعية لقيود السند ---
-
-        // تحديث السجل المرتبط بحساب النقدية/البنك القديم ليتحول إلى الجديد
-        credittransactions::where('customer_id', $oldPaymentAccount->id)
-            ->where('decument_id', $request->transactionId)
-            ->update([
-                'customer_id' => $newPaymentAccount->id,
-                'recive_amount' => $request->cashreceivedupdate,
-                'Pay_Method_Name' => $payment_new_text,
-                'pay_method' => $payment_new_text,
-                'debtor' => $request->cashreceivedupdate,
-                'type' => $type,
-            ]);
-
-        // تحديث السجل المرتبط بحساب الأب للنقدية/البنك القديم
-        if (isset($oldParentPayment) && isset($newParentPayment)) {
-            credittransactions::where('customer_id', $oldParentPayment->id)
+            // تحديث السجل المرتبط بحساب النقدية/البنك القديم ليتحول إلى الجديد
+            credittransactions::where('customer_id', $oldPaymentAccount->id)
                 ->where('decument_id', $request->transactionId)
                 ->update([
-                    'customer_id' => $newParentPayment->account_number,
+                    'customer_id' => $newPaymentAccount->id,
                     'recive_amount' => $request->cashreceivedupdate,
                     'Pay_Method_Name' => $payment_new_text,
                     'pay_method' => $payment_new_text,
                     'debtor' => $request->cashreceivedupdate,
                     'type' => $type,
                 ]);
+
+            // تحديث السجل المرتبط بحساب الأب للنقدية/البنك القديم
+            if (isset($oldParentPayment) && isset($newParentPayment)) {
+                credittransactions::where('customer_id', $oldParentPayment->id)
+                    ->where('decument_id', $request->transactionId)
+                    ->update([
+                        'customer_id' => $newParentPayment->account_number,
+                        'recive_amount' => $request->cashreceivedupdate,
+                        'Pay_Method_Name' => $payment_new_text,
+                        'pay_method' => $payment_new_text,
+                        'debtor' => $request->cashreceivedupdate,
+                        'type' => $type,
+                    ]);
+            }
+
+            // تحديث السجل الأساسي للسند بالبيانات والجهات الجديدة
+            $transaction->update([
+                'customer_id' => $request->clientnamesearch_update,
+                'recive_amount' => $request->cashreceivedupdate,
+                'Pay_Method_Name' => $payment_new_text,
+                'pay_method' => $payment_new_text,
+                'creditor' => $isNewAssetOrExpense ? $request->cashreceivedupdate : 0,
+                'debtor' => !$isNewAssetOrExpense ? $request->cashreceivedupdate : 0,
+                'type' => $type,
+                'orginal_type' => $newCustomerAccount->orginal_type ?? 0,
+                'orginal_id' => $newCustomerAccount->orginal_id ?? 0,
+            ]);
+
+            DB::commit();
+
+            // جلب البيانات المحدثة لإرجاعها إلى الـ View أو طلب الـ AJAX
+            $data = credittransactions::where('sent_abd_count', $decument_id_recipt)
+                ->get()
+                ->map(function ($item) use ($decument_id_recipt) {
+                    return [
+                        'sent_abd_count' => $decument_id_recipt,
+                        'id' => $item->id,
+                        'name' => $item->financial_accounts_data->name ?? 'N/A',
+                        'method_pay' => $item->Pay_Method_Name,
+                        'paid_amount' => $item->recive_amount,
+                        'recipt_id' => $item->customer_id,
+                    ];
+                });
+
+            return response()->json($data);
+
+        } catch (\Exception $e) {
+            DB::rollback();
+            return response()->json(['error' => 'حدث خطأ أثناء تعديل السند: ' . $e->getMessage()], 500);
         }
-
-        // تحديث السجل الأساسي للسند بالبيانات والجهات الجديدة
-        $transaction->update([
-            'customer_id' => $request->clientnamesearch_update,
-            'recive_amount' => $request->cashreceivedupdate,
-            'Pay_Method_Name' => $payment_new_text,
-            'pay_method' => $payment_new_text,
-            'creditor' => $isNewAssetOrExpense ? $request->cashreceivedupdate : 0,
-            'debtor' => !$isNewAssetOrExpense ? $request->cashreceivedupdate : 0,
-            'type' => $type,
-            'orginal_type' => $newCustomerAccount->orginal_type ?? 0,
-            'orginal_id' => $newCustomerAccount->orginal_id ?? 0,
-        ]);
-
-        DB::commit();
-
-        // جلب البيانات المحدثة لإرجاعها إلى الـ View أو طلب الـ AJAX
-        $data = credittransactions::where('sent_abd_count', $decument_id_recipt)
-            ->get()
-            ->map(function ($item) use ($decument_id_recipt) {
-                return [
-                    'sent_abd_count' => $decument_id_recipt,
-                    'id' => $item->id,
-                    'name' => $item->financial_accounts_data->name ?? 'N/A',
-                    'method_pay' => $item->Pay_Method_Name,
-                    'paid_amount' => $item->recive_amount,
-                    'recipt_id' => $item->customer_id,
-                ];
-            });
-
-        return response()->json($data);
-
-    } catch (\Exception $e) {
-        DB::rollback();
-        return response()->json(['error' => 'حدث خطأ أثناء تعديل السند: ' . $e->getMessage()], 500);
     }
-}
-   public function search_by_decoumentNo_send_abd($count)
+    public function search_by_decoumentNo_send_abd($count)
     {
         $data = credittransactions::where('note', 'LIKE', '%سند قبض%')
             ->where('branchs_id', auth()->user()->branchs_id)
@@ -1938,11 +1948,11 @@ $sent_serf_count = $recent_id ? $recent_id->sent_serf_count + 1 : 1;
         foreach ($transactions as $item) {
             $data[] = [
                 'sent_abd_count' => $count,
-                'id'             => $item->id,
-                'name'           => $item->financial_accounts_data->name ?? '-',
-                'method_pay'     => $item->Pay_Method_Name,
-                'paid_amount'    => $item->recive_amount,
-                'recipt_id'      => $item->financial_accounts_data->id ?? null,
+                'id' => $item->id,
+                'name' => $item->financial_accounts_data->name ?? '-',
+                'method_pay' => $item->Pay_Method_Name,
+                'paid_amount' => $item->recive_amount,
+                'recipt_id' => $item->financial_accounts_data->id ?? null,
             ];
         }
 
@@ -1972,7 +1982,7 @@ $sent_serf_count = $recent_id ? $recent_id->sent_serf_count + 1 : 1;
 
         $financial_accounts = financial_accounts::find($payment_id);
         $payment_name = $financial_accounts ? $financial_accounts->name : '';
-        
+
         $sent_abd_count = $request->id_create;
         $recent_id = credittransactions::where('sent_abd_count', '!=', 0)->orderBy('id', 'desc')->first();
         if ($recent_id != null && $sent_abd_count == 1) {
@@ -1984,14 +1994,14 @@ $sent_serf_count = $recent_id ? $recent_id->sent_serf_count + 1 : 1;
 
         if (in_array($customerAccount->account_type, [1, 4])) {
             $customerAccount->update([
-                'current_balance'  => $customerAccount->debtor_current - ($customerAccount->creditor_current + $request->cashreceived),
+                'current_balance' => $customerAccount->debtor_current - ($customerAccount->creditor_current + $request->cashreceived),
                 'creditor_current' => $customerAccount->creditor_current + $request->cashreceived,
             ]);
 
             $currentBalanceValue = $customerAccount->debtor_current - ($customerAccount->creditor_current + $request->cashreceived);
         } else {
             $customerAccount->update([
-                'current_balance'  => ($customerAccount->debtor_current + $request->cashreceived) - $customerAccount->creditor_current,
+                'current_balance' => ($customerAccount->debtor_current + $request->cashreceived) - $customerAccount->creditor_current,
                 'creditor_current' => $customerAccount->debtor_current + $request->cashreceived,
             ]);
 
@@ -1999,24 +2009,24 @@ $sent_serf_count = $recent_id ? $recent_id->sent_serf_count + 1 : 1;
         }
 
         $createTransaction = credittransactions::create([
-            'attachments'     => $the_file_path,
-            'orginal_type'    => $customerAccount->orginal_type ?? 0,
-            'user_id'         => auth()->user()->id,
-            'customer_id'     => $clientId,
-            'recive_amount'   => $request->cashreceived,
-            'branchs_id'      => auth()->user()->branchs_id,
-            'pay_method'      => $payment_name,
-            'date_export'     => $request->date,
-            'note'            => $request->notes . '| سند قبض | : ' . (string) $sent_abd_count,
-            'currentblance'   => $currentBalanceValue,
+            'attachments' => $the_file_path,
+            'orginal_type' => $customerAccount->orginal_type ?? 0,
+            'user_id' => auth()->user()->id,
+            'customer_id' => $clientId,
+            'recive_amount' => $request->cashreceived,
+            'branchs_id' => auth()->user()->branchs_id,
+            'pay_method' => $payment_name,
+            'date_export' => $request->date,
+            'note' => $request->notes . '| سند قبض | : ' . (string) $sent_abd_count,
+            'currentblance' => $currentBalanceValue,
             'Pay_Method_Name' => $payment_name,
-            'created_at'      => $now,
-            'updated_at'      => $now,
-            'orginal_id'      => $customerAccount->orginal_id ?? 0,
-            'debtor'          => 0,
-            'creditor'        => $request->cashreceived,
-            'sent_abd_count'  => $sent_abd_count,
-            'type'            => $type,
+            'created_at' => $now,
+            'updated_at' => $now,
+            'orginal_id' => $customerAccount->orginal_id ?? 0,
+            'debtor' => 0,
+            'creditor' => $request->cashreceived,
+            'sent_abd_count' => $sent_abd_count,
+            'type' => $type,
         ]);
 
         // Handled Payment Method updates logically relative to condition
@@ -2024,28 +2034,28 @@ $sent_serf_count = $recent_id ? $recent_id->sent_serf_count + 1 : 1;
             $parent_account_number = $financial_accounts->parent_account_number;
             $financial_accounts->update([
                 'current_balance' => ($financial_accounts->debtor_current + $request->cashreceived) - $financial_accounts->creditor_current,
-                'debtor_current'  => $financial_accounts->debtor_current + $request->cashreceived,
+                'debtor_current' => $financial_accounts->debtor_current + $request->cashreceived,
             ]);
 
             credittransactions::create([
-                'attachments'     => $the_file_path,
-                'orginal_type'    => 0,
-                'user_id'         => auth()->user()->id,
-                'customer_id'     => $payment_id,
-                'recive_amount'   => $request->cashreceived,
-                'branchs_id'      => auth()->user()->branchs_id,
-                'pay_method'      => $payment_name,
-                'note'            => $request->notes . '| سند قبض | : ' . (string) $sent_abd_count,
-                'currentblance'   => ($financial_accounts->debtor_current + $request->cashreceived) - $financial_accounts->creditor_current,
+                'attachments' => $the_file_path,
+                'orginal_type' => 0,
+                'user_id' => auth()->user()->id,
+                'customer_id' => $payment_id,
+                'recive_amount' => $request->cashreceived,
+                'branchs_id' => auth()->user()->branchs_id,
+                'pay_method' => $payment_name,
+                'note' => $request->notes . '| سند قبض | : ' . (string) $sent_abd_count,
+                'currentblance' => ($financial_accounts->debtor_current + $request->cashreceived) - $financial_accounts->creditor_current,
                 'Pay_Method_Name' => $payment_name,
-                'created_at'      => $now,
-                'date_export'     => $request->date,
-                'updated_at'      => $now,
-                'orginal_id'      => $financial_accounts->orginal_id ?? 0,
-                'debtor'          => $request->cashreceived,
-                'creditor'        => 0,
-                'decument_id'     => $createTransaction->id,
-                'type'            => $type,
+                'created_at' => $now,
+                'date_export' => $request->date,
+                'updated_at' => $now,
+                'orginal_id' => $financial_accounts->orginal_id ?? 0,
+                'debtor' => $request->cashreceived,
+                'creditor' => 0,
+                'decument_id' => $createTransaction->id,
+                'type' => $type,
             ]);
 
             if ($parent_account_number) {
@@ -2053,28 +2063,28 @@ $sent_serf_count = $recent_id ? $recent_id->sent_serf_count + 1 : 1;
                 if ($parentAccount) {
                     $parentAccount->update([
                         'current_balance' => ($parentAccount->debtor_current + $request->cashreceived) - $parentAccount->creditor_current,
-                        'debtor_current'  => $parentAccount->debtor_current + $request->cashreceived,
+                        'debtor_current' => $parentAccount->debtor_current + $request->cashreceived,
                     ]);
 
                     credittransactions::create([
-                        'attachments'     => $the_file_path,
-                        'orginal_type'    => 0,
-                        'user_id'         => auth()->user()->id,
-                        'customer_id'     => $parent_account_number,
-                        'recive_amount'   => $request->cashreceived,
-                        'branchs_id'      => auth()->user()->branchs_id,
-                        'pay_method'      => $payment_name,
-                        'note'            => $request->notes . '| سند قبض | : ' . (string) $sent_abd_count,
-                        'currentblance'   => ($parentAccount->debtor_current + $request->cashreceived) - $parentAccount->creditor_current,
+                        'attachments' => $the_file_path,
+                        'orginal_type' => 0,
+                        'user_id' => auth()->user()->id,
+                        'customer_id' => $parent_account_number,
+                        'recive_amount' => $request->cashreceived,
+                        'branchs_id' => auth()->user()->branchs_id,
+                        'pay_method' => $payment_name,
+                        'note' => $request->notes . '| سند قبض | : ' . (string) $sent_abd_count,
+                        'currentblance' => ($parentAccount->debtor_current + $request->cashreceived) - $parentAccount->creditor_current,
                         'Pay_Method_Name' => $payment_name,
-                        'created_at'      => $now,
-                        'date_export'     => $request->date,
-                        'updated_at'      => $now,
-                        'orginal_id'      => $parentAccount->orginal_id ?? 0,
-                        'debtor'          => $request->cashreceived,
-                        'creditor'        => 0,
-                        'decument_id'     => $createTransaction->id,
-                        'type'            => $type,
+                        'created_at' => $now,
+                        'date_export' => $request->date,
+                        'updated_at' => $now,
+                        'orginal_id' => $parentAccount->orginal_id ?? 0,
+                        'debtor' => $request->cashreceived,
+                        'creditor' => 0,
+                        'decument_id' => $createTransaction->id,
+                        'type' => $type,
                     ]);
                 }
             }
@@ -2083,7 +2093,7 @@ $sent_serf_count = $recent_id ? $recent_id->sent_serf_count + 1 : 1;
         // External original entities synchronizations
         if ($customerAccount->orginal_type == 2) {
             supllier::where('id', $customerAccount->orginal_id)->update([
-                'In_debt'    => $customerAccount->current_balance,
+                'In_debt' => $customerAccount->current_balance,
                 'updated_at' => $now,
             ]);
         } elseif ($customerAccount->orginal_type == 1) {
@@ -2094,18 +2104,18 @@ $sent_serf_count = $recent_id ? $recent_id->sent_serf_count + 1 : 1;
             $reason_data = Expenses_reasons::find($customerAccount->orginal_id);
             if ($reason_data) {
                 expenses::create([
-                    'attachments'            => $the_file_path,
-                    'user_id'                => auth()->user()->id,
-                    'Pay_Method_Name'        => $payment_name,
-                    'branchs_id'             => auth()->user()->branchs_id,
+                    'attachments' => $the_file_path,
+                    'user_id' => auth()->user()->id,
+                    'Pay_Method_Name' => $payment_name,
+                    'branchs_id' => auth()->user()->branchs_id,
                     'Reasonforspendingmoney' => $reason_data->expenses_reason,
-                    'reasonId_id'            => $customerAccount->orginal_id,
-                    'notes'                  => $request->notes ?? '-',
-                    'expensesAvt'            => $reason_data->expensesAvt,
-                    'created_at'             => $now,
-                    'updated_at'             => $now,
-                    'Theـamountـpaid'       => $request->cashreceived * (-1),
-                    'Transaction_id'         => $createTransaction->id,
+                    'reasonId_id' => $customerAccount->orginal_id,
+                    'notes' => $request->notes ?? '-',
+                    'expensesAvt' => $reason_data->expensesAvt,
+                    'created_at' => $now,
+                    'updated_at' => $now,
+                    'Theـamountـpaid' => $request->cashreceived * (-1),
+                    'Transaction_id' => $createTransaction->id,
                 ]);
             }
         }
@@ -2115,11 +2125,11 @@ $sent_serf_count = $recent_id ? $recent_id->sent_serf_count + 1 : 1;
         foreach ($credittransactions as $item) {
             $data[] = [
                 'sent_abd_count' => $sent_abd_count,
-                'id'             => $item->id,
-                'name'           => $item->financial_accounts_data->name ?? '-',
-                'recipt_id'      => $item->financial_accounts_data->id ?? null,
-                'method_pay'     => $item->Pay_Method_Name,
-                'paid_amount'    => $item->recive_amount
+                'id' => $item->id,
+                'name' => $item->financial_accounts_data->name ?? '-',
+                'recipt_id' => $item->financial_accounts_data->id ?? null,
+                'method_pay' => $item->Pay_Method_Name,
+                'paid_amount' => $item->recive_amount
             ];
         }
 
@@ -2142,10 +2152,10 @@ $sent_serf_count = $recent_id ? $recent_id->sent_serf_count + 1 : 1;
         foreach ($transactions as $item) {
             $data[] = [
                 'sent_serf_count' => $count,
-                'id'              => $item->id,
-                'name'            => $item->financial_accounts_data->name ?? '-',
-                'method_pay'      => $item->Pay_Method_Name,
-                'paid_amount'     => $item->recive_amount
+                'id' => $item->id,
+                'name' => $item->financial_accounts_data->name ?? '-',
+                'method_pay' => $item->Pay_Method_Name,
+                'paid_amount' => $item->recive_amount
             ];
         }
 
@@ -2188,39 +2198,39 @@ $sent_serf_count = $recent_id ? $recent_id->sent_serf_count + 1 : 1;
         if (in_array($customerdata->account_type, [1, 4])) {
             $customerdata->update([
                 'current_balance' => $customerdata->current_balance + $request->cashreceived,
-                'debtor_current'  => $customerdata->debtor_current + $request->cashreceived,
+                'debtor_current' => $customerdata->debtor_current + $request->cashreceived,
             ]);
             $currentBlanceVal = $customerdata->current_balance;
         } else {
             $customerdata->update([
                 'current_balance' => $customerdata->current_balance - $request->cashreceived,
-                'debtor_current'  => $customerdata->debtor_current + $request->cashreceived,
+                'debtor_current' => $customerdata->debtor_current + $request->cashreceived,
             ]);
             $currentBlanceVal = $customerdata->current_balance;
         }
 
         $createTransaction = credittransactions::create([
-            'attachments'     => $the_file_path,
-            'orginal_type'    => $customerdata->orginal_type ?? 0,
-            'user_id'         => auth()->user()->id,
-            'customer_id'     => $clientId,
-            'recive_amount'   => $request->cashreceived,
-            'branchs_id'      => $breanchas_id,
-            'pay_method'      => $payment_name,
-            'note'            => $request->notes . '| سند صرف | : ' . (string) $sent_serf_count,
-            'currentblance'   => $currentBlanceVal,
+            'attachments' => $the_file_path,
+            'orginal_type' => $customerdata->orginal_type ?? 0,
+            'user_id' => auth()->user()->id,
+            'customer_id' => $clientId,
+            'recive_amount' => $request->cashreceived,
+            'branchs_id' => $breanchas_id,
+            'pay_method' => $payment_name,
+            'note' => $request->notes . '| سند صرف | : ' . (string) $sent_serf_count,
+            'currentblance' => $currentBlanceVal,
             'Pay_Method_Name' => $payment_name,
-            'created_at'      => $now,
-            'date_export'     => $request->date,
-            'updated_at'      => $now,
-            'orginal_id'      => $customerdata->orginal_id ?? 0,
-            'creditor'        => 0,
-            'debtor'          => $request->cashreceived,
-            'vat'             => $request->AVT,
-            'type_decument'   => 2,
+            'created_at' => $now,
+            'date_export' => $request->date,
+            'updated_at' => $now,
+            'orginal_id' => $customerdata->orginal_id ?? 0,
+            'creditor' => 0,
+            'debtor' => $request->cashreceived,
+            'vat' => $request->AVT,
+            'type_decument' => 2,
             'sent_serf_count' => $sent_serf_count,
-            'type'            => $type,
-            'cost_center'     => $request->cost_center,
+            'type' => $type,
+            'cost_center' => $request->cost_center,
         ]);
 
         // VAT handling
@@ -2232,29 +2242,29 @@ $sent_serf_count = $recent_id ? $recent_id->sent_serf_count + 1 : 1;
             if ($vatAccount) {
                 $vatAccount->update([
                     'current_balance' => ($vatAccount->debtor_current + $vat_amount) - $vatAccount->creditor_current,
-                    'debtor_current'  => $vatAccount->debtor_current + $vat_amount,
+                    'debtor_current' => $vatAccount->debtor_current + $vat_amount,
                 ]);
 
                 credittransactions::create([
-                    'user_id'         => auth()->user()->id,
-                    'customer_id'     => 102,
-                    'recive_amount'   => $vat_amount,
-                    'branchs_id'      => $breanchas_id,
-                    'pay_method'      => $payment_name,
-                    'note'            => $request->notes . '| سند صرف | : ' . (string) $sent_serf_count,
-                    'currentblance'   => ($vatAccount->debtor_current) - $vatAccount->creditor_current,
+                    'user_id' => auth()->user()->id,
+                    'customer_id' => 102,
+                    'recive_amount' => $vat_amount,
+                    'branchs_id' => $breanchas_id,
+                    'pay_method' => $payment_name,
+                    'note' => $request->notes . '| سند صرف | : ' . (string) $sent_serf_count,
+                    'currentblance' => ($vatAccount->debtor_current) - $vatAccount->creditor_current,
                     'Pay_Method_Name' => $payment_name,
-                    'created_at'      => $now,
-                    'date_export'     => $request->date,
-                    'updated_at'      => $now,
-                    'orginal_id'      => 0,
-                    'debtor'          => $vat_amount,
-                    'creditor'        => 0,
-                    'vat'             => 1,
-                    'name'            => $request->name_buyer ?? '-',
-                    'tax'             => $request->TaxـNumber ?? '0',
-                    'decument_id'     => $createTransaction->id,
-                    'type'            => $type,
+                    'created_at' => $now,
+                    'date_export' => $request->date,
+                    'updated_at' => $now,
+                    'orginal_id' => 0,
+                    'debtor' => $vat_amount,
+                    'creditor' => 0,
+                    'vat' => 1,
+                    'name' => $request->name_buyer ?? '-',
+                    'tax' => $request->TaxـNumber ?? '0',
+                    'decument_id' => $createTransaction->id,
+                    'type' => $type,
                 ]);
             }
 
@@ -2262,29 +2272,29 @@ $sent_serf_count = $recent_id ? $recent_id->sent_serf_count + 1 : 1;
             if ($subVatAccount) {
                 $subVatAccount->update([
                     'current_balance' => ($subVatAccount->debtor_current + $vat_amount) - $subVatAccount->creditor_current,
-                    'debtor_current'  => $subVatAccount->debtor_current + $vat_amount,
+                    'debtor_current' => $subVatAccount->debtor_current + $vat_amount,
                 ]);
 
                 credittransactions::create([
-                    'user_id'         => auth()->user()->id,
-                    'customer_id'     => $subVatAccount->id,
-                    'recive_amount'   => $vat_amount,
-                    'branchs_id'      => $breanchas_id,
-                    'pay_method'      => $payment_name,
-                    'note'            => $request->notes . '| سند صرف | : ' . (string) $sent_serf_count,
-                    'currentblance'   => ($subVatAccount->debtor_current) - $subVatAccount->creditor_current,
+                    'user_id' => auth()->user()->id,
+                    'customer_id' => $subVatAccount->id,
+                    'recive_amount' => $vat_amount,
+                    'branchs_id' => $breanchas_id,
+                    'pay_method' => $payment_name,
+                    'note' => $request->notes . '| سند صرف | : ' . (string) $sent_serf_count,
+                    'currentblance' => ($subVatAccount->debtor_current) - $subVatAccount->creditor_current,
                     'Pay_Method_Name' => $payment_name,
-                    'created_at'      => $now,
-                    'date_export'     => $request->date,
-                    'updated_at'      => $now,
-                    'orginal_id'      => 0,
-                    'debtor'          => $vat_amount,
-                    'creditor'        => 0,
-                    'vat'             => 1,
-                    'name'            => $request->name_buyer ?? '-',
-                    'tax'             => $request->TaxـNumber ?? '0',
-                    'decument_id'     => $createTransaction->id,
-                    'type'            => $type,
+                    'created_at' => $now,
+                    'date_export' => $request->date,
+                    'updated_at' => $now,
+                    'orginal_id' => 0,
+                    'debtor' => $vat_amount,
+                    'creditor' => 0,
+                    'vat' => 1,
+                    'name' => $request->name_buyer ?? '-',
+                    'tax' => $request->TaxـNumber ?? '0',
+                    'decument_id' => $createTransaction->id,
+                    'type' => $type,
                 ]);
             }
         }
@@ -2293,62 +2303,62 @@ $sent_serf_count = $recent_id ? $recent_id->sent_serf_count + 1 : 1;
         if ($financial_accounts) {
             $parent_account_number = $financial_accounts->parent_account_number;
             $financial_accounts->update([
-                'current_balance'  => $financial_accounts->debtor_current - ($financial_accounts->creditor_current + $request->cashreceived),
+                'current_balance' => $financial_accounts->debtor_current - ($financial_accounts->creditor_current + $request->cashreceived),
                 'creditor_current' => $financial_accounts->creditor_current + $request->cashreceived,
             ]);
 
             credittransactions::create([
-                'attachments'     => $the_file_path,
-                'orginal_type'    => 0,
-                'user_id'         => auth()->user()->id,
-                'customer_id'     => $payment_id,
-                'recive_amount'   => $request->cashreceived,
-                'branchs_id'      => $breanchas_id,
-                'pay_method'      => $payment_name,
-                'note'            => $request->notes . '| سند صرف | : ' . (string) $sent_serf_count,
-                'currentblance'   => $financial_accounts->debtor_current - $financial_accounts->creditor_current,
+                'attachments' => $the_file_path,
+                'orginal_type' => 0,
+                'user_id' => auth()->user()->id,
+                'customer_id' => $payment_id,
+                'recive_amount' => $request->cashreceived,
+                'branchs_id' => $breanchas_id,
+                'pay_method' => $payment_name,
+                'note' => $request->notes . '| سند صرف | : ' . (string) $sent_serf_count,
+                'currentblance' => $financial_accounts->debtor_current - $financial_accounts->creditor_current,
                 'Pay_Method_Name' => $payment_name,
-                'created_at'      => $now,
-                'date_export'     => $request->date,
-                'updated_at'      => $now,
-                'orginal_id'      => $financial_accounts->orginal_id ?? 0,
-                'creditor'        => $request->cashreceived,
-                'name'            => $request->name_buyer ?? '-',
-                'tax'             => $request->TaxـNumber ?? '0',
-                'debtor'          => 0,
-                'decument_id'     => $createTransaction->id,
-                'type'            => $type,
+                'created_at' => $now,
+                'date_export' => $request->date,
+                'updated_at' => $now,
+                'orginal_id' => $financial_accounts->orginal_id ?? 0,
+                'creditor' => $request->cashreceived,
+                'name' => $request->name_buyer ?? '-',
+                'tax' => $request->TaxـNumber ?? '0',
+                'debtor' => 0,
+                'decument_id' => $createTransaction->id,
+                'type' => $type,
             ]);
 
             if ($parent_account_number) {
                 $parentAccount = financial_accounts::find($parent_account_number);
                 if ($parentAccount) {
                     $parentAccount->update([
-                        'current_balance'  => $parentAccount->debtor_current - ($parentAccount->creditor_current + $request->cashreceived),
+                        'current_balance' => $parentAccount->debtor_current - ($parentAccount->creditor_current + $request->cashreceived),
                         'creditor_current' => $parentAccount->creditor_current + $request->cashreceived,
                     ]);
 
                     credittransactions::create([
-                        'attachments'     => $the_file_path,
-                        'orginal_type'    => 0,
-                        'user_id'         => auth()->user()->id,
-                        'customer_id'     => $parent_account_number,
-                        'recive_amount'   => $request->cashreceived,
-                        'branchs_id'      => $breanchas_id,
-                        'pay_method'      => $payment_name,
-                        'note'            => $request->notes . '| سند صرف | : ' . (string) $sent_serf_count,
-                        'currentblance'   => $parentAccount->debtor_current - $parentAccount->creditor_current,
+                        'attachments' => $the_file_path,
+                        'orginal_type' => 0,
+                        'user_id' => auth()->user()->id,
+                        'customer_id' => $parent_account_number,
+                        'recive_amount' => $request->cashreceived,
+                        'branchs_id' => $breanchas_id,
+                        'pay_method' => $payment_name,
+                        'note' => $request->notes . '| سند صرف | : ' . (string) $sent_serf_count,
+                        'currentblance' => $parentAccount->debtor_current - $parentAccount->creditor_current,
                         'Pay_Method_Name' => $payment_name,
-                        'created_at'      => $now,
-                        'date_export'     => $request->date,
-                        'updated_at'      => $now,
-                        'orginal_id'      => $parentAccount->orginal_id ?? 0,
-                        'creditor'        => $request->cashreceived,
-                        'name'            => $request->name_buyer ?? '-',
-                        'tax'             => $request->TaxـNumber ?? '0',
-                        'debtor'          => 0,
-                        'decument_id'     => $createTransaction->id,
-                        'type'            => $type,
+                        'created_at' => $now,
+                        'date_export' => $request->date,
+                        'updated_at' => $now,
+                        'orginal_id' => $parentAccount->orginal_id ?? 0,
+                        'creditor' => $request->cashreceived,
+                        'name' => $request->name_buyer ?? '-',
+                        'tax' => $request->TaxـNumber ?? '0',
+                        'debtor' => 0,
+                        'decument_id' => $createTransaction->id,
+                        'type' => $type,
                     ]);
                 }
             }
@@ -2356,26 +2366,26 @@ $sent_serf_count = $recent_id ? $recent_id->sent_serf_count + 1 : 1;
 
         if ($customerdata->orginal_type == 2) {
             supllier::where('id', $customerdata->orginal_id)->update([
-                'In_debt'    => $customerdata->current_balance,
+                'In_debt' => $customerdata->current_balance,
                 'updated_at' => $now,
             ]);
         } elseif ($customerdata->orginal_type == 3) {
             $reason_data = Expenses_reasons::find($customerdata->orginal_id);
             if ($reason_data) {
                 expenses::create([
-                    'attachments'            => $the_file_path,
-                    'user_id'                => auth()->user()->id,
-                    'Pay_Method_Name'        => $type,
-                    'branchs_id'             => $breanchas_id,
+                    'attachments' => $the_file_path,
+                    'user_id' => auth()->user()->id,
+                    'Pay_Method_Name' => $type,
+                    'branchs_id' => $breanchas_id,
                     'Reasonforspendingmoney' => $reason_data->expenses_reason,
-                    'reasonId_id'            => $customerdata->orginal_id,
-                    'notes'                  => $request->notes . '| سند صرف | : ' . (string) $sent_serf_count,
-                    'expensesAvt'            => $reason_data->expensesAvt,
-                    'created_at'             => $now,
-                    'date_export'            => $request->date,
-                    'updated_at'             => $now,
-                    'Theـamountـpaid'       => $request->cashreceived,
-                    'type'                   => 2,
+                    'reasonId_id' => $customerdata->orginal_id,
+                    'notes' => $request->notes . '| سند صرف | : ' . (string) $sent_serf_count,
+                    'expensesAvt' => $reason_data->expensesAvt,
+                    'created_at' => $now,
+                    'date_export' => $request->date,
+                    'updated_at' => $now,
+                    'Theـamountـpaid' => $request->cashreceived,
+                    'type' => 2,
                 ]);
             }
         }
@@ -2384,12 +2394,12 @@ $sent_serf_count = $recent_id ? $recent_id->sent_serf_count + 1 : 1;
         $data = [];
         foreach ($credittransactions as $item) {
             $data[] = [
-                'customer_id'     => $item->customer_id,
+                'customer_id' => $item->customer_id,
                 'sent_serf_count' => $sent_serf_count,
-                'id'              => $item->id,
-                'name'            => $item->financial_accounts_data->name ?? '-',
-                'method_pay'      => $item->Pay_Method_Name,
-                'paid_amount'     => $item->recive_amount
+                'id' => $item->id,
+                'name' => $item->financial_accounts_data->name ?? '-',
+                'method_pay' => $item->Pay_Method_Name,
+                'paid_amount' => $item->recive_amount
             ];
         }
 
@@ -2400,247 +2410,247 @@ $sent_serf_count = $recent_id ? $recent_id->sent_serf_count + 1 : 1;
 
 
 
-public function updaterecieptdecoument(Request $request)
-{
-    app()->setLocale(LaravelLocalization::getCurrentLocale());
+    public function updaterecieptdecoument(Request $request)
+    {
+        app()->setLocale(LaravelLocalization::getCurrentLocale());
 
-    $newcustomer = $request->payupdate;
-    $type = $request->pay_type_desc;
-    $now = Carbon::now()->addHours(3);
+        $newcustomer = $request->payupdate;
+        $type = $request->pay_type_desc;
+        $now = Carbon::now()->addHours(3);
 
-    $transaction = credittransactions::find($request->transactionId);
-    if (!$transaction) {
-        return response()->json(['error' => 'Transaction not found'], 404);
-    }
+        $transaction = credittransactions::find($request->transactionId);
+        if (!$transaction) {
+            return response()->json(['error' => 'Transaction not found'], 404);
+        }
 
-    // --- 1. Handle Client Account Switching Logic ---
-    if ($request->clientnamesearch_update != $transaction->customer_id) {
-        $customerdata_old_account = financial_accounts::find($transaction->customer_id);
-        $customerdata_new_account = financial_accounts::find($request->clientnamesearch_update);
+        // --- 1. Handle Client Account Switching Logic ---
+        if ($request->clientnamesearch_update != $transaction->customer_id) {
+            $customerdata_old_account = financial_accounts::find($transaction->customer_id);
+            $customerdata_new_account = financial_accounts::find($request->clientnamesearch_update);
 
-        $transaction->update([
-            'customer_id' => $request->clientnamesearch_update
-        ]);
-
-        // Process New Account Balance
-        if ($customerdata_new_account) {
-            $customerdata_new_account->update([
-                'debtor_current' => $customerdata_new_account->debtor_current + $request->cashreceivedupdate
+            $transaction->update([
+                'customer_id' => $request->clientnamesearch_update
             ]);
 
-            if ($customerdata_new_account->orginal_type == 2) {
-                $supplierNew = supllier::find($customerdata_new_account->orginal_id);
-                if ($supplierNew) {
-                    $supplierNew->update([
-                        'In_debt'    => $supplierNew->In_debt + $request->cashreceivedupdate,
-                        'updated_at' => $now
+            // Process New Account Balance
+            if ($customerdata_new_account) {
+                $customerdata_new_account->update([
+                    'debtor_current' => $customerdata_new_account->debtor_current + $request->cashreceivedupdate
+                ]);
+
+                if ($customerdata_new_account->orginal_type == 2) {
+                    $supplierNew = supllier::find($customerdata_new_account->orginal_id);
+                    if ($supplierNew) {
+                        $supplierNew->update([
+                            'In_debt' => $supplierNew->In_debt + $request->cashreceivedupdate,
+                            'updated_at' => $now
+                        ]);
+                    }
+                } elseif ($customerdata_new_account->orginal_type == 3) {
+                    expenses::where('type', 2)
+                        ->where('Transaction_id', $request->transactionId)
+                        ->update(['reasonId_id' => $customerdata_new_account->orginal_id]);
+                }
+            }
+
+            // Process Old Account Balance safely
+            if ($customerdata_old_account) {
+                $customerdata_old_account->update([
+                    'debtor_current' => $customerdata_old_account->debtor_current - $transaction->recive_amount
+                ]);
+
+                if ($customerdata_old_account->orginal_type == 2) {
+                    $supplierOld = supllier::find($customerdata_old_account->orginal_id);
+                    if ($supplierOld) {
+                        $supplierOld->update([
+                            'In_debt' => $supplierOld->In_debt - $transaction->recive_amount,
+                            'updated_at' => $now
+                        ]);
+                    }
+                }
+            }
+        }
+
+        // --- 2. Handle Reversing Old Payment Methods ---
+        $decument_id_recipt = $transaction->sent_serf_count;
+        $clientId = $transaction->customer_id;
+
+        $financial_accounts_payment = financial_accounts::find($newcustomer);
+        $payment_new_text = $financial_accounts_payment ? $financial_accounts_payment->name : '';
+
+        $old_payment_account = financial_accounts::where('name', $transaction->Pay_Method_Name)->first();
+
+        if ($old_payment_account) {
+            $old_payment_id = $old_payment_account->id;
+            $parent_payment_old = $old_payment_account->parent_account_number;
+
+            $old_payment_account->update([
+                'current_balance' => $old_payment_account->current_balance + $transaction->recive_amount,
+                'creditor_current' => $old_payment_account->creditor_current - $transaction->recive_amount,
+            ]);
+
+            if ($parent_payment_old) {
+                $parentOldAccount = financial_accounts::find($parent_payment_old);
+                if ($parentOldAccount) {
+                    $parentOldAccount->update([
+                        'current_balance' => $parentOldAccount->current_balance + $transaction->recive_amount,
+                        'creditor_current' => $parentOldAccount->creditor_current - $transaction->recive_amount,
                     ]);
                 }
-            } elseif ($customerdata_new_account->orginal_type == 3) {
+            }
+
+            // Update old transaction records referencing the old payment account
+            credittransactions::where('customer_id', $old_payment_id)
+                ->where('decument_id', $request->transactionId)
+                ->update([
+                    'customer_id' => $newcustomer,
+                    'recive_amount' => $request->cashreceivedupdate,
+                    'Pay_Method_Name' => $payment_new_text,
+                    'creditor' => $request->cashreceivedupdate,
+                    'type' => $type,
+                ]);
+
+            if ($financial_accounts_payment && $parent_payment_old) {
+                credittransactions::where('customer_id', $parent_payment_old)
+                    ->where('decument_id', $request->transactionId)
+                    ->update([
+                        'customer_id' => $financial_accounts_payment->parent_account_number,
+                        'recive_amount' => $request->cashreceivedupdate,
+                        'Pay_Method_Name' => $payment_new_text,
+                        'creditor' => $request->cashreceivedupdate,
+                        'type' => $type,
+                    ]);
+            }
+        }
+
+        // --- 3. Handle VAT Re-calculations ---
+        if ($transaction->vat) {
+            $total_value_old = $transaction->recive_amount;
+            $total_value = $request->cashreceivedupdate;
+            $old_vat_calc = $total_value_old - ($total_value_old * 100 / 115);
+            $new_vat_calc = $total_value - ($total_value * 100 / 115);
+            $vat_diff = $new_vat_calc - $old_vat_calc;
+
+            $vatAccount = financial_accounts::find(102);
+            if ($vatAccount) {
+                $vatAccount->update([
+                    'current_balance' => ($vatAccount->debtor_current + $vat_diff) - $vatAccount->creditor_current,
+                    'debtor_current' => $vatAccount->debtor_current + $vat_diff,
+                ]);
+
+                credittransactions::where('customer_id', 102)
+                    ->where('decument_id', $request->transactionId)
+                    ->update([
+                        'recive_amount' => $new_vat_calc,
+                        'pay_method' => $payment_new_text,
+                        'currentblance' => ($vatAccount->debtor_current) - $vatAccount->creditor_current,
+                        'Pay_Method_Name' => $payment_new_text,
+                        'debtor' => $new_vat_calc,
+                        'type' => $type,
+                    ]);
+            }
+
+            $subVatAccount = financial_accounts::where('parent_account_number', 102)
+                ->where('branchs_id', auth()->user()->branchs_id)
+                ->first();
+
+            if ($subVatAccount) {
+                $subVatAccount->update([
+                    'current_balance' => $subVatAccount->current_balance + $vat_diff,
+                    'debtor_current' => $subVatAccount->debtor_current + $vat_diff,
+                ]);
+            }
+        }
+
+        // --- 4. Apply New Payment Method Impacts ---
+        if ($financial_accounts_payment) {
+            $financial_accounts_payment->update([
+                'current_balance' => $financial_accounts_payment->current_balance - $request->cashreceivedupdate,
+                'creditor_current' => $financial_accounts_payment->creditor_current + $request->cashreceivedupdate,
+            ]);
+
+            if ($financial_accounts_payment->parent_account_number) {
+                $parentNewAccount = financial_accounts::find($financial_accounts_payment->parent_account_number);
+                if ($parentNewAccount) {
+                    $parentNewAccount->update([
+                        'current_balance' => $parentNewAccount->current_balance - $request->cashreceivedupdate,
+                        'creditor_current' => $parentNewAccount->creditor_current + $request->cashreceivedupdate,
+                    ]);
+                }
+            }
+        }
+
+        // --- 5. Apply Client Dynamic Current Balances ---
+        $customerdata = financial_accounts::find($clientId);
+
+        if ($customerdata) {
+            if (in_array($customerdata->account_type, [1, 4])) {
+                $new_balance = $customerdata->current_balance - $transaction->recive_amount + $request->cashreceivedupdate;
+
+                $customerdata->update([
+                    'current_balance' => $new_balance,
+                    'debtor_current' => $customerdata->debtor_current - $transaction->recive_amount + $request->cashreceivedupdate,
+                ]);
+
+                credittransactions::where('id', $request->transactionId)->update([
+                    'recive_amount' => $request->cashreceivedupdate,
+                    'currentblance' => $new_balance,
+                    'Pay_Method_Name' => $payment_new_text,
+                    'debtor' => $request->cashreceivedupdate,
+                    'type' => $type,
+                ]);
+            } else {
+                $new_balance = $customerdata->current_balance + $transaction->recive_amount - $request->cashreceivedupdate;
+
+                $customerdata->update([
+                    'current_balance' => $new_balance,
+                    'debtor_current' => $customerdata->debtor_current - $transaction->recive_amount + $request->cashreceivedupdate,
+                ]);
+
+                credittransactions::where('id', $request->transactionId)->update([
+                    'recive_amount' => $request->cashreceivedupdate,
+                    'currentblance' => $new_balance,
+                    'Pay_Method_Name' => $payment_new_text,
+                    'debtor' => $request->cashreceivedupdate,
+                    'type' => $type,
+                ]);
+            }
+
+            // --- 6. Sync Underlying Operational Subsystems ---
+            if ($customerdata->orginal_type == 2) {
+                supllier::where('id', $customerdata->orginal_id)->update([
+                    'In_debt' => $customerdata->current_balance,
+                    'updated_at' => $now,
+                ]);
+            } elseif ($customerdata->orginal_type == 3) {
                 expenses::where('type', 2)
                     ->where('Transaction_id', $request->transactionId)
-                    ->update(['reasonId_id' => $customerdata_new_account->orginal_id]);
-            }
-        }
-
-        // Process Old Account Balance safely
-        if ($customerdata_old_account) {
-            $customerdata_old_account->update([
-                'debtor_current' => $customerdata_old_account->debtor_current - $transaction->recive_amount
-            ]);
-
-            if ($customerdata_old_account->orginal_type == 2) {
-                $supplierOld = supllier::find($customerdata_old_account->orginal_id);
-                if ($supplierOld) {
-                    $supplierOld->update([
-                        'In_debt'    => $supplierOld->In_debt - $transaction->recive_amount,
-                        'updated_at' => $now
+                    ->update([
+                        'Pay_Method_Name' => $payment_new_text,
+                        'updated_at' => $now,
+                        'Theـamountـpaid' => $request->cashreceivedupdate,
                     ]);
-                }
-            }
-        }
-    }
-
-    // --- 2. Handle Reversing Old Payment Methods ---
-    $decument_id_recipt = $transaction->sent_serf_count;
-    $clientId = $transaction->customer_id;
-
-    $financial_accounts_payment = financial_accounts::find($newcustomer);
-    $payment_new_text = $financial_accounts_payment ? $financial_accounts_payment->name : '';
-
-    $old_payment_account = financial_accounts::where('name', $transaction->Pay_Method_Name)->first();
-    
-    if ($old_payment_account) {
-        $old_payment_id = $old_payment_account->id;
-        $parent_payment_old = $old_payment_account->parent_account_number;
-
-        $old_payment_account->update([
-            'current_balance'  => $old_payment_account->current_balance + $transaction->recive_amount,
-            'creditor_current' => $old_payment_account->creditor_current - $transaction->recive_amount,
-        ]);
-
-        if ($parent_payment_old) {
-            $parentOldAccount = financial_accounts::find($parent_payment_old);
-            if ($parentOldAccount) {
-                $parentOldAccount->update([
-                    'current_balance'  => $parentOldAccount->current_balance + $transaction->recive_amount,
-                    'creditor_current' => $parentOldAccount->creditor_current - $transaction->recive_amount,
-                ]);
             }
         }
 
-        // Update old transaction records referencing the old payment account
-        credittransactions::where('customer_id', $old_payment_id)
-            ->where('decument_id', $request->transactionId)
-            ->update([
-                'customer_id'     => $newcustomer,
-                'recive_amount'   => $request->cashreceivedupdate,
-                'Pay_Method_Name' => $payment_new_text,
-                'creditor'        => $request->cashreceivedupdate,
-                'type'            => $type,
-            ]);
+        // --- 7. Build Standard Response Output ---
+        $credittransactions = credittransactions::where('sent_serf_count', $decument_id_recipt)
+            ->where('type_decument', 2)
+            ->get();
 
-        if ($financial_accounts_payment && $parent_payment_old) {
-            credittransactions::where('customer_id', $parent_payment_old)
-                ->where('decument_id', $request->transactionId)
-                ->update([
-                    'customer_id'     => $financial_accounts_payment->parent_account_number,
-                    'recive_amount'   => $request->cashreceivedupdate,
-                    'Pay_Method_Name' => $payment_new_text,
-                    'creditor'        => $request->cashreceivedupdate,
-                    'type'            => $type,
-                ]);
+        $data = [];
+        foreach ($credittransactions as $item) {
+            $data[] = [
+                'sent_serf_count' => $decument_id_recipt,
+                'id' => $item->id,
+                'name' => $item->financial_accounts_data->name ?? '-',
+                'method_pay' => $item->Pay_Method_Name,
+                'paid_amount' => $item->recive_amount
+            ];
         }
+
+        return $data;
     }
-
-    // --- 3. Handle VAT Re-calculations ---
-    if ($transaction->vat) {
-        $total_value_old = $transaction->recive_amount;
-        $total_value = $request->cashreceivedupdate;
-        $old_vat_calc = $total_value_old - ($total_value_old * 100 / 115);
-        $new_vat_calc = $total_value - ($total_value * 100 / 115);
-        $vat_diff = $new_vat_calc - $old_vat_calc;
-
-        $vatAccount = financial_accounts::find(102);
-        if ($vatAccount) {
-            $vatAccount->update([
-                'current_balance' => ($vatAccount->debtor_current + $vat_diff) - $vatAccount->creditor_current,
-                'debtor_current'  => $vatAccount->debtor_current + $vat_diff,
-            ]);
-
-            credittransactions::where('customer_id', 102)
-                ->where('decument_id', $request->transactionId)
-                ->update([
-                    'recive_amount'   => $new_vat_calc,
-                    'pay_method'      => $payment_new_text,
-                    'currentblance'   => ($vatAccount->debtor_current) - $vatAccount->creditor_current,
-                    'Pay_Method_Name' => $payment_new_text,
-                    'debtor'          => $new_vat_calc,
-                    'type'            => $type,
-                ]);
-        }
-
-        $subVatAccount = financial_accounts::where('parent_account_number', 102)
-            ->where('branchs_id', auth()->user()->branchs_id)
-            ->first();
-            
-        if ($subVatAccount) {
-            $subVatAccount->update([
-                'current_balance' => $subVatAccount->current_balance + $vat_diff,
-                'debtor_current'  => $subVatAccount->debtor_current + $vat_diff,
-            ]);
-        }
-    }
-
-    // --- 4. Apply New Payment Method Impacts ---
-    if ($financial_accounts_payment) {
-        $financial_accounts_payment->update([
-            'current_balance'  => $financial_accounts_payment->current_balance - $request->cashreceivedupdate,
-            'creditor_current' => $financial_accounts_payment->creditor_current + $request->cashreceivedupdate,
-        ]);
-
-        if ($financial_accounts_payment->parent_account_number) {
-            $parentNewAccount = financial_accounts::find($financial_accounts_payment->parent_account_number);
-            if ($parentNewAccount) {
-                $parentNewAccount->update([
-                    'current_balance'  => $parentNewAccount->current_balance - $request->cashreceivedupdate,
-                    'creditor_current' => $parentNewAccount->creditor_current + $request->cashreceivedupdate,
-                ]);
-            }
-        }
-    }
-
-    // --- 5. Apply Client Dynamic Current Balances ---
-    $customerdata = financial_accounts::find($clientId);
-
-    if ($customerdata) {
-        if (in_array($customerdata->account_type, [1, 4])) {
-            $new_balance = $customerdata->current_balance - $transaction->recive_amount + $request->cashreceivedupdate;
-            
-            $customerdata->update([
-                'current_balance' => $new_balance,
-                'debtor_current'  => $customerdata->debtor_current - $transaction->recive_amount + $request->cashreceivedupdate,
-            ]);
-
-            credittransactions::where('id', $request->transactionId)->update([
-                'recive_amount'   => $request->cashreceivedupdate,
-                'currentblance'   => $new_balance,
-                'Pay_Method_Name' => $payment_new_text,
-                'debtor'          => $request->cashreceivedupdate,
-                'type'            => $type,
-            ]);
-        } else {
-            $new_balance = $customerdata->current_balance + $transaction->recive_amount - $request->cashreceivedupdate;
-
-            $customerdata->update([
-                'current_balance' => $new_balance,
-                'debtor_current'  => $customerdata->debtor_current - $transaction->recive_amount + $request->cashreceivedupdate,
-            ]);
-
-            credittransactions::where('id', $request->transactionId)->update([
-                'recive_amount'   => $request->cashreceivedupdate,
-                'currentblance'   => $new_balance,
-                'Pay_Method_Name' => $payment_new_text,
-                'debtor'          => $request->cashreceivedupdate,
-                'type'            => $type,
-            ]);
-        }
-
-        // --- 6. Sync Underlying Operational Subsystems ---
-        if ($customerdata->orginal_type == 2) {
-            supllier::where('id', $customerdata->orginal_id)->update([
-                'In_debt'    => $customerdata->current_balance,
-                'updated_at' => $now,
-            ]);
-        } elseif ($customerdata->orginal_type == 3) {
-            expenses::where('type', 2)
-                ->where('Transaction_id', $request->transactionId)
-                ->update([
-                    'Pay_Method_Name' => $payment_new_text,
-                    'updated_at'      => $now,
-                    'Theـamountـpaid' => $request->cashreceivedupdate,
-                ]);
-        }
-    }
-
-    // --- 7. Build Standard Response Output ---
-    $credittransactions = credittransactions::where('sent_serf_count', $decument_id_recipt)
-        ->where('type_decument', 2)
-        ->get();
-
-    $data = [];
-    foreach ($credittransactions as $item) {
-        $data[] = [
-            'sent_serf_count' => $decument_id_recipt,
-            'id'              => $item->id,
-            'name'            => $item->financial_accounts_data->name ?? '-',
-            'method_pay'      => $item->Pay_Method_Name,
-            'paid_amount'     => $item->recive_amount
-        ];
-    }
-
-    return $data;
-}
 
 
 

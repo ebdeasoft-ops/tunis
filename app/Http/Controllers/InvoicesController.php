@@ -4055,58 +4055,62 @@ public function updatepaymentconfirmpayment($invoiceId, $cashamount, $bankamount
         $userId = auth()->user()->id;
         $now = Carbon::now();
 
-        $cashAccountId =  financial_accounts::where('parent_account_number', 5)
+        // ✔️ الإصلاح: جلب كائن الخزنة واستخراج الـ ID الرقمي مباشرة لمنع انهيار السيرفر
+        $cashAccountObj = financial_accounts::where('parent_account_number', 5)
             ->where('branchs_id', $branchId)
-            ->first(); // رقم حساب الخزنة الرئيسية
+            ->first(); 
+        $cashAccountId = $cashAccountObj ? $cashAccountObj->id : 5;
         
-        // جلب حساب البنك الخاص بالفرع ديناميكياً بناءً على الكود الذي أرفقته
+        // جلب حساب البنك الخاص بالفرع ديناميكياً
         $branchBank = financial_accounts::where('parent_account_number', 4)
             ->where('branchs_id', $branchId)
             ->first();
-            
-        $bankAccountId = $branchBank ? $branchBank->id : 4; // استخدام حساب الفرع أو الحساب الرئيسي كاحتياط
+        $bankAccountId = $branchBank ? $branchBank->id : 4; 
 
         // =========================================================
         // أولاً: إلغاء وتصفير أثر الدفعة القديمة (تنظيف كامل للحسابات)
         // =========================================================
 
-        // 1. عكس أثر الكاش القديم لو كان موجود
+        // 1. عكس أثر الكاش القديم وتصفيره
         if ($invoice->cashamount > 0 || $invoice->Pay == 'Cash') {
-            // $this->adjustAccountBalance($cashAccountId, $branchId, -$invoice->cashamount);
+            // إرجاع الرصيد الفعلي في شجرة الحسابات لحالته قبل هذه الفاتورة
+            if (method_exists($this, 'adjustAccountBalance')) {
+                $this->adjustAccountBalance($cashAccountId, $branchId, -$invoice->cashamount);
+            }
             
-            // 💡 تحديث قيود الكاش القديمة المرتبطة بهذه الفاتورة لتصبح صفرية ولا تكرر الحسابات
-            // ملاحظة: قم بتغيير اسم الجدول والحقل إذا كان يختلف في نظامك لحركات الصندوق
-            DB::table('credittransactions') // أو الاسم الخاص بجدول القيود لديك
-                ->where('note',  'فاتورة مبيعات رقم :' . $invoiceId)
+            // تصفير القيود القديمة للكاش
+            DB::table('credittransactions')
+                ->where('note', 'فاتورة مبيعات رقم :' . $invoiceId)
                 ->where('customer_id', $cashAccountId)
-                ->update([ 'save' => 0]);
+                ->update(['save' => 0, 'recive_amount' => 0, 'debtor' => 0, 'creditor' => 0]);
         } 
         
-        // 2. عكس أثر البنك/الشبكة القديم
+        // 2. عكس أثر البنك/الشبكة القديم وتصفيره
         if (in_array($invoice->Pay, ['Shabka', 'Bank_transfer', 'Partition'])) {
             $oldBankAmount = $invoice->Bank_transfer + $invoice->bankamount;
             if ($oldBankAmount > 0) {
-                // تحديد البنك الفرعي أو الافتراضي الذي تم الحفظ عليه مسبقاً لعكسه بدقة
+                // تحديد البنك القديم الذي تم الحفظ عليه بناءً على الحقل المخزن تلافياً لأي تحديث خيارات
                 $oldTargetBankId =  $bankAccountId;
-                $this->adjustAccountBalance($oldTargetBankId, $branchId, -$oldBankAmount);
                 
-                // 💡 تصفير قيود البنك القديمة المرتبطة بالفاتورة
+                if (method_exists($this, 'adjustAccountBalance')) {
+                    $this->adjustAccountBalance($oldTargetBankId, $branchId, -$oldBankAmount);
+                }
+                
+                // تصفير قيود البنك القديمة المرتبطة بالفاتورة
                 DB::table('credittransactions')
-                    ->where('note',  'فاتورة مبيعات رقم :' . $invoiceId)
+                    ->where('note', 'فاتورة مبيعات رقم :' . $invoiceId)
                     ->where('customer_id', $oldTargetBankId)
-                ->update([ 'save' => 0]);
+                    ->update(['save' => 0, 'recive_amount' => 0, 'debtor' => 0, 'creditor' => 0]);
             }
         }
 
         // 3. تصفير حساب ومصادقة مديونية العميل القديمة تماماً
         if ($invoice->creaditamount > 0 || $invoice->Pay == 'Credit' || $invoice->Pay == 'Partition') {
-            // خصم المبلغ من جدول العملاء الأساسي
             $customer = customers::find($invoice->customer_id);
             if ($customer) {
                 $customer->decrement('Balance', $invoice->creaditamount);
             }
 
-            // خصم المبلغ من الحساب المالي للعميل في شجرة الحسابات
             $customerFinancialAccount = financial_accounts::where('orginal_type', 1)
                 ->where('orginal_id', $invoice->customer_id)
                 ->first();
@@ -4115,12 +4119,11 @@ public function updatepaymentconfirmpayment($invoiceId, $cashamount, $bankamount
                 $customerFinancialAccount->decrement('current_balance', $invoice->creaditamount);
                 $customerFinancialAccount->decrement('debtor_current', $invoice->creaditamount);
 
-                // تطبيق الكود الجديد المرفق من قبلك لتصفير حركة العميل بدقة وتغيير المعطيات
-                credittransactions::where('note',  'فاتورة مبيعات رقم :' . $invoiceId)
-
+                credittransactions::where('note', 'فاتورة مبيعات رقم :' . $invoiceId)
+                    ->where('customer_id', $customerFinancialAccount->id) // تأمين الاستعلام للتصفير الدقيق
                     ->update([
                         'user_id' => $userId,
-                        'customer_id' => 0, // تصفير الـ id بناءً على رغبتك في الكود المرفق
+                        'customer_id' => 0, 
                         'recive_amount' => 0,
                         'branchs_id' => $branchId,
                         'pay_method' => 'update',
@@ -4137,43 +4140,97 @@ public function updatepaymentconfirmpayment($invoiceId, $cashamount, $bankamount
         // ثانياً: تطبيق وتوزيع المبالغ الجديدة بناءً على المدخلات
         // =========================================================
         
-        // تحديد البنك المستهدف للعملية الجديدة بناءً على خيار الكاشير
-        $targetBankId =  $bankAccountId;
+        // تحديد البنك المستهدف الفعلي بناءً على اختيار الكاشير الحالي
+        $targetBankId = ($another_bank == 4) ? 1157 : $bankAccountId;
 
+        // 1. إضافة حركة الكاش الجديدة (في حساب الخزنة الصواب)
         if ($cashamount > 0) {
-            // تحديث رصيد الصندوق وتسجيل حركة جديدة
-       credittransactions::create([
-                    'user_id' => $userId,
-                    'customer_id' => $targetBankId,
-                    'recive_amount' => ($cashamount ) ,
-                    'branchs_id' => $branchId,
-                    'pay_method' => $paymentMethod,
-                    'note' => 'فاتورة مبيعات رقم :' . $invoiceId,
-                    'Pay_Method_Name' => $paymentMethod,
-                    'created_at' => $now,
-                    'updated_at' => $now,
-                    'orginal_id' => 0,
-                    'creditor' => 0,
-                    'debtor' => ($cashamount ) ,
-                ]);           }
+            if (method_exists($this, 'adjustAccountBalance')) {
+                $this->adjustAccountBalance($cashAccountId, $branchId, $cashamount);
+            }
 
+            credittransactions::create([
+                'user_id' => $userId,
+                'customer_id' => $cashAccountId, // ✔️ تعديل: الكاش يدخل في حساب الخزنة وليس البنك
+                'recive_amount' => $cashamount,
+                'branchs_id' => $branchId,
+                'pay_method' => $paymentMethod,
+                'note' => 'فاتورة مبيعات رقم :' . $invoiceId,
+                'Pay_Method_Name' => $paymentMethod,
+                'created_at' => $now,
+                'updated_at' => $now,
+                'orginal_id' => 0,
+                'creditor' => 0,
+                'debtor' => $cashamount,
+                'save' => 1
+            ]);   
+            
+                 $customerFinancialAccount = financial_accounts::where('orginal_type', 1)
+                ->where('orginal_id', $invoice->customer_id)
+                ->first();
+
+            credittransactions::create([
+                'user_id' => $userId,
+                'customer_id' => $customerFinancialAccount->id, // ✔️ تعديل: الكاش يدخل في حساب الخزنة وليس البنك
+                'recive_amount' => 0,
+                'branchs_id' => $branchId,
+                'pay_method' => $paymentMethod,
+                'note' => 'فاتورة مبيعات رقم :' . $invoiceId,
+                'Pay_Method_Name' => $paymentMethod,
+                'created_at' => $now,
+                'updated_at' => $now,
+                'orginal_id' => 0,
+                'creditor' => 0,
+                'debtor' => 0,
+                'save' => 1
+            ]);   
+
+        }
+
+        // 2. إضافة حركة البنك الجديدة (في حساب البنك الصواب)
         if (($Bank_transfer + $bankamount) > 0) {
             $totalBank = $Bank_transfer + $bankamount;
-            // تحديث رصيد البنك المختار (سواء الأساسي أو الفرعي 1157) وتسجيل الحركة الجديدة
-              credittransactions::create([
-                    'user_id' => $userId,
-                    'customer_id' => $targetBankId,
-                    'recive_amount' => ($Bank_transfer + $bankamount) ,
-                    'branchs_id' => $branchId,
-                    'pay_method' => $paymentMethod,
-                    'note' => 'فاتورة مبيعات رقم :' . $invoiceId,
-                    'Pay_Method_Name' => $paymentMethod,
-                    'created_at' => $now,
-                    'updated_at' => $now,
-                    'orginal_id' => 0,
-                    'creditor' => 0,
-                    'debtor' => ($Bank_transfer + $bankamount) ,
-                ]);        }
+            
+            if (method_exists($this, 'adjustAccountBalance')) {
+                $this->adjustAccountBalance($targetBankId, $branchId, $totalBank);
+            }
+
+            credittransactions::create([
+                'user_id' => $userId,
+                'customer_id' => $targetBankId, // ✔️ البنك يدخل في حساب البنك المحدد
+                'recive_amount' => $totalBank,
+                'branchs_id' => $branchId,
+                'pay_method' => $paymentMethod,
+                'note' => 'فاتورة مبيعات رقم :' . $invoiceId,
+                'Pay_Method_Name' => $paymentMethod,
+                'created_at' => $now,
+                'updated_at' => $now,
+                'orginal_id' => 0,
+                'creditor' => 0,
+                'debtor' => $totalBank,
+                'save' => 1
+            ]);
+            
+                          $customerFinancialAccount = financial_accounts::where('orginal_type', 1)
+                ->where('orginal_id', $invoice->customer_id)
+                ->first();
+
+            credittransactions::create([
+                'user_id' => $userId,
+                'customer_id' => $customerFinancialAccount->id, // ✔️ تعديل: الكاش يدخل في حساب الخزنة وليس البنك
+                'recive_amount' => 0,
+                'branchs_id' => $branchId,
+                'pay_method' => $paymentMethod,
+                'note' => 'فاتورة مبيعات رقم :' . $invoiceId,
+                'Pay_Method_Name' => $paymentMethod,
+                'created_at' => $now,
+                'updated_at' => $now,
+                'orginal_id' => 0,
+                'creditor' => 0,
+                'debtor' => 0,
+                'save' => 1
+            ]);   
+        }
 
         // =========================================================
         // ثالثاً: تحديث بيانات الفاتورة نفسها في قاعدة البيانات
@@ -4186,7 +4243,7 @@ public function updatepaymentconfirmpayment($invoiceId, $cashamount, $bankamount
             'creaditamount' => $creaditamount,
             'Bank_transfer' => $Bank_transfer,
             'Pay' => $paymentMethod,
-            'another_bank' => $another_bank // حفظ البنك المختار بالفاتورة لضمان إمكانية عكسه مستقبلاً
+            'another_bank' => $another_bank 
         ]);
 
         // =========================================================
@@ -4199,12 +4256,10 @@ public function updatepaymentconfirmpayment($invoiceId, $cashamount, $bankamount
                 ->first();
 
             if ($customerFinancialAccount && $customer) {
-                // زيادة رصيد المديونية الفعلي للعميل
                 $customerFinancialAccount->increment('current_balance', $creaditamount);
                 $customerFinancialAccount->increment('debtor_current', $creaditamount);
                 $customer->increment('Balance', $creaditamount);
 
-                // تسجيل حركة القيد الآجل الجديد في كشف الحساب
                 credittransactions::create([
                     'user_id' => $userId,
                     'customer_id' => $customerFinancialAccount->id,
@@ -4218,7 +4273,8 @@ public function updatepaymentconfirmpayment($invoiceId, $cashamount, $bankamount
                     'updated_at' => $now,
                     'orginal_id' => 0,
                     'creditor' => 0,
-                    'debtor' => $creaditamount
+                    'debtor' => $creaditamount,
+                    'save' => 1
                 ]);
             }
         }
@@ -4230,7 +4286,6 @@ public function updatepaymentconfirmpayment($invoiceId, $cashamount, $bankamount
     $data = invoices::where('branchs_id', auth()->user()->branchs_id)->orderBy('id', 'desc')->paginate(20);
     return view('ajax_Recent_Invoices', compact('data'))->render();
 }
-
 
 
 

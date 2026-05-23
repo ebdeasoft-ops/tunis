@@ -238,52 +238,46 @@ td .d-flex {
 @stop
 @endsection
 @section('page-header')
+<!-- breadcrumb -->
 <div class="main-parent">
-    <div style="justify-content: space-between !important" class="breadcrumb-header parent-heading">
-        <div class="my-auto" style="width:100%">
-            <div class="d-flex align-items-center justify-content-between flex-wrap" style="width:100%; gap: 10px;">
+    <div style="justify-content: space-between !important" class="breadcrumb-header parent-heading ">
+        <div class="my-auto"style="width:100%">
+<div class="d-flex align-items-center justify-content-between flex-wrap" style="width:100%; gap: 10px;">
 
-                <div class="d-flex align-items-center">
-                    <h4 class="content-title mb-0 my-auto">{{ __('home.sel_product_withoud_tax') }}</h4>
-                </div>
+    <div class="d-flex align-items-center">
+        <h4 class="content-title mb-0 my-auto">{{ __('home.sel_product_withoud_tax') }}</h4>
+    </div>
 
-                <div class="d-flex flex-wrap align-items-center" style="gap: 5px;">
+    <div class="d-flex flex-wrap align-items-center" style="gap: 5px;">
+        
+        <div class="select-wrapper">
+            <select class="form-control select2" name="numbershowstatus" id="numbershowstatus" required>
+                <option value="1">{{__('home.shownumberselect')}}</option>
+                <option value="0">{{__('home.notshow')}}</option>
+            </select>
+        </div>
 
-                    {{-- خيار التحكم في إظهار الرقم --}}
-                    <div class="select-wrapper">
-                        <select class="form-control select2" name="numbershowstatus" id="numbershowstatus" required>
-                            <option value="1">{{ __('home.shownumberselect') }}</option>
-                            <option value="0">{{ __('home.notshow') }}</option>
-                        </select>
-                    </div>
+        <button style="background-color: #23395D;" class="btn btn-sm text-white p-2" data-toggle="modal" href="#createcustomer">
+            <i class="fa fa-user-plus"></i> {{ __('home.addnewcustomer') }}
+        </button>
 
-                    {{-- زر إضافة عميل جديد --}}
-                    @can('Add Customer')
-                        <button style="background-color: #23395D;" class="btn btn-sm text-white p-2" data-toggle="modal" href="#createcustomer">
-                            <i class="fa fa-user-plus"></i> {{ __('home.addnewcustomer') }}
-                        </button>
-                    @endcan
+   
 
-                    {{-- زر إضافة منتج جديد --}}
-                    @can('Add Product')
-                        <button style="background-color: #23395D;" class="btn btn-sm text-white p-2" data-toggle="modal" href="#createproduct">
-                            <i class="fa fa-plus"></i> {{ __('supprocesses.addproduct') }}
-                        </button>
-                    @endcan
+        <button style="background-color: #23395D;" class="btn btn-sm text-white p-2" data-toggle="modal" href="#createproduct">
+            <i class="fa fa-plus"></i> {{ __('supprocesses.addproduct') }}
+        </button>
 
-                    {{-- زر اعتماد تسعيرة المبيعات المضاف حديثاً --}}
-                    @can('Pricing Approval')
-                       <button style="background-color: green;" class="btn btn-sm text-white p-2" data-toggle="modal" href="#updateinvoicebyidmodale">
+        @can('sales return')
+        <button style="background-color: green;" class="btn btn-sm text-white p-2" data-toggle="modal" href="#updateinvoicebyidmodale">
             {{ __('home.updateinvoicebyid') }}
         </button>
-                    @endcan
-
-
-                </div>
-            </div>
-        </div>
+        @endcan
     </div>
 </div>
+            </div><!-- col-4 -->
+        </div><!-- col-4 -->
+    </div><!-- col-4 -->
+</div><!-- col-4 -->
 
 
 
@@ -364,7 +358,7 @@ td .d-flex {
                                     </tr>
                                 </thead>
                             <tbody id="productsTableBody">
-
+                              
                             </tbody>
                         </table>
 
@@ -378,9 +372,9 @@ td .d-flex {
         <i class="fa fa-file-invoice-dollar ml-1"></i> {{ __('home.discound_on_invoice') }}
     </label>
     <input type="text" id="discound_on_invoice" name="discound_on_invoice"  readonly
-           oninput='calculateTotalDiscount()'
-           class="form-control"
-           style="border: 1px solid #23395D; border-radius: 5px; height: 40px; text-align: center; font-weight: bold; color: #d32f2f;"
+           oninput='calculateTotalDiscount()' 
+           class="form-control" 
+           style="border: 1px solid #23395D; border-radius: 5px; height: 40px; text-align: center; font-weight: bold; color: #d32f2f;" 
            placeholder="0.00">
 </div>
                 @can('System setting')
@@ -389,8 +383,8 @@ td .d-flex {
         <label for="profit" class="control-label parent-label" style="color: #23395D; font-weight: bold; font-size: 13px;">
             <i class="fa fa-money-bill-wave ml-1"></i> {{ __('home.profit') }}
         </label>
-        <input autocomplete="off" type="text" id="profit" name="profit" value="0" readonly
-               class="form-control parent-input"
+        <input autocomplete="off" type="text" id="profit" name="profit" value="0" readonly 
+               class="form-control parent-input" 
                style="background-color: #e3f2fd; border: 1px solid #90caf9; border-radius: 5px; height: 40px; text-align: center; font-weight: bold; color: #1565c0;">
     </div>
                     @endcan
@@ -440,24 +434,24 @@ td .d-flex {
                             <div class="col-lg-5 mg-lg-t-10">
                                 <label for="inputName" class="form-label">{{ __('home.chooseclient') }}</label>
 
-
-
+                                
+                                
                                            <select style="width:100%!important" name="clientnamesearch" id="clientnamesearch" class="form-control select2">
                                     <option  value=1 >عميل نقدي CASH CUSTOMER</option>
 
 
                             </select>
                             </div><!-- col-4 -->
-
-
-
+                 
+                            
+                            
                                      <div class="col-lg-2 mg-t-20 mg-lg-t-0" >
                                 <p class="mg-b-10"> {{__('home.paymentmethod')}}</p>
                                 <select class="form-control select2" name="paymentmethod" id="paymentmethod" required>
                                     @foreach (App\Models\financial_accounts::where('parent_account_number',4)->where('branchs_id',Auth()->user()->branchs_id)->orwhere('parent_account_number',5)->where('parent_account_number','!=',NULL)->where('branchs_id',Auth()->user()->branchs_id)->get() as $section)
                                     <option value="{{ $section->id }}"> {{ $section->name }} ({{ $section->account_number }})</option>
                                     @endforeach
-
+                                    
                                   <option value="Partition"> {{ __('home.Partition of the amount') }} </option>
 
                                 </select>
@@ -497,13 +491,13 @@ td .d-flex {
                                     name="notes" title="يرجي ادخال ملاحظات   " onchange="makenoteoninvoice()"
                                     value="- ">
                             </div>
-
+                           
                                     <input class="form-control parent-input fc-datepicker" hidden value="0" name="date" id="date" placeholder="YYYY-MM-DD" type="text" required>
-
-
-
-
-
+                              
+                            
+                            
+                            
+                            
                             <input type="hidden" id="token_search" value="{{ csrf_token() }}">
                             <div class="col-lg-4 mg-t-20 mg-lg-t-0">
                                 <input type="text" hidden=true class="form-control" id="invoice_number"
@@ -521,7 +515,7 @@ td .d-flex {
         $rate_discount = App\Models\system_setting::find(1);
         $rate_system = $rate_discount->discount_on_invoice;
                                                                         ?>
-                                <input hidden=true class="form-control" id="rate_system" name="rate_system" value="{{$rate_system}}">
+                                <input hidden=true class="form-control" id="rate_system" name="rate_system" value="{{$rate_system}}"> 
                                     <input hidden=true class="form-control" id="shownumberproduct" name="shownumberproduct" value="1">
                             </div>
                             <br>
@@ -558,7 +552,7 @@ td .d-flex {
             <center>
                 <div class=" justify-content-center" id="printdiv">
 
-
+              
                     <button type="button"
                         style="background-color: #419BB2;font-size:15px;width: 120px!important;height:30px"
                         id="printReciept" class="btn btn-success p-1 px-2 fw-bolder">
@@ -572,8 +566,8 @@ td .d-flex {
 
 
 
-
-
+             
+                                          
 
 
                 </div>
@@ -1098,7 +1092,7 @@ td .d-flex {
                             <div class="col-lg-4">
                                 <label for="inputName" class="control-label parent-label" required>{{ __('home.salepice') }} </label>
                                 <input autocomplete="off" type="text" class="form-control parent-input" id="sale_price_create" value=0  name="sale_price_create" onkeyup="convertToNumbersalePrice()">
-                            </div>
+                            </div>   
                             <div class="col-lg-4">
                                 <label for="inputName" class="control-label parent-label" required>{{ __('home.quantity') }} </label>
                                 <input autocomplete="off" type="text" class="form-control parent-input" id="quantity_create" value=0   name="quantity_create" onkeyup="convertToNumbersalePrice()">
@@ -1288,7 +1282,7 @@ td .d-flex {
                             </div>
 
                   &nbsp;&nbsp;
-
+                       
 
                         </div>
                     <div class="modal-footer">
@@ -1340,19 +1334,37 @@ td .d-flex {
 
 @endsection
 @section('js')
-<!-- 1. استدعاء مكتبة jQuery (ضرورية جداً قبل أي ملف آخر) -->
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<!-- Internal Data tables -->
 
-<!-- 2. ملفات الإضافات (Plugins) -->
+<!-- Internal Data tables -->
+<!-- Internal Data tables -->
+<!--Internal  Datatable js -->
+<!--Internal  Datatable js -->
+<script src="{{ URL::asset('assets/js/table-data.js') }}"></script>
+<!--Internal  Datatable js -->
+<script src="{{ URL::asset('assets/plugins/jquery-ui/ui/widgets/datepicker.js') }}"></script>
+<!--Internal  jquery.maskedinput js -->
+<script src="{{ URL::asset('assets/plugins/jquery.maskedinput/jquery.maskedinput.js') }}"></script>
+<!--Internal  spectrum-colorpicker js -->
+<!-- Internal Select2.min js -->
 <script src="{{ URL::asset('assets/plugins/select2/js/select2.min.js') }}"></script>
+<!--Internal Ion.rangeSlider.min js -->
 <script src="{{ URL::asset('assets/plugins/ion-rangeslider/js/ion.rangeSlider.min.js') }}"></script>
-
-<!-- 3. ملف البوتستراب (يأتي بعد الـ jQuery دائماً) -->
+<!--Internal  jquery-simple-datetimepicker js -->
+<script src="{{ URL::asset('assets/plugins/amazeui-datetimepicker/js/amazeui.datetimepicker.min.js') }}"></script>
+<!-- Ionicons js -->
+<script src="{{ URL::asset('assets/plugins/jquery-simple-datetimepicker/jquery.simple-dtpicker.js') }}"></script>
+<!--Internal  pickerjs js -->
+<script src="{{ URL::asset('assets/plugins/pickerjs/picker.min.js') }}"></script>
+<!-- Internal form-elements js -->
+<script src="{{ URL::asset('assets/js/form-elements.js') }}"></script>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="{{ URL::asset('assets/plugins/bootstrap/js/bootstrap.min.js') }}"></script>
 
-<!-- 4. ملف الـ SweetAlert -->
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
+{{-- Select2 --}}
+<script src="{{ URL::asset('assets/plugins/select2/js/select2.min.js') }}"></script>
 <script>
 
     $("#getinvoiceupdate").click(function (e) {
@@ -1411,7 +1423,6 @@ td .d-flex {
                                 <td class="text-start">
                                     <input type="text" class="form-control product-name" value="${item.product_name}" name="products[${rowIndex}][product-name]">
                                 </td>
-                                <td><input type="text" name="products[${rowIndex}][price-tax]" class="form-control product-price-tax" value="${priceWithTax.toFixed(2)}" onchange="calculateTotals_with_tax()"></td>
                                 <td><input type="text" name="products[${rowIndex}][price]" class="form-control product-price" value="${unitPrice.toFixed(2)}" onchange="calculateTotals()"></td>
                                 <td><input type="text" name="products[${rowIndex}][quentity]" class="form-control product-quentity" value="${quantity}" oninput="calculateTotals()"></td>
                                 <td><input type="text" name="products[${rowIndex}][totalprice_withodtax]" class="form-control product-totalprice_withodtax" value="${(unitPrice * quantity).toFixed(2)}" readonly></td>
@@ -1447,18 +1458,18 @@ td .d-flex {
                 }
             });
         });
-
-
-
+        
+        
+        
 $(document).on("keydown", ":input:not(textarea):not(:submit)", function(event) {
         if (event.key === "Enter") {
             event.preventDefault(); // يمنع إرسال النموذج
             return false;
         }
     });
-
-
-
+    
+    
+    
 function replaceproduct(id) {
     branchs_id = $('#branchs_id').val();
     console.log(branchs_id)
@@ -1498,14 +1509,14 @@ function calcCash() {
         $('#cashamount_form').val($('#cashamount').val())
         $('#bankamount_form').val($('#bankamount').val())
 
-
+    
 }
 
 
-
-
-
-
+    
+    
+    
+    
 $('select[name="paymentmethod"]').on('change', function () {
 
     var selectclientid = $(this).val();
@@ -1532,14 +1543,14 @@ $('select[name="paymentmethod"]').on('change', function () {
         $('#paymentmethod_MODALE').modal().show();
             value = document.getElementById('grandTotal').value
            document.getElementById('totalvalue').innerHTML =document.getElementById('grandTotal').value * 1
-
+           
             $('#cashamount').val(value)
             $('#bankamount').val(0)
             document.getElementById("bankamount").readOnly = false;
             document.getElementById("cashamount").readOnly = false;
     }
-
-
+    
+    
     else {
 
         $('#payment_type').val('Cash').change();
@@ -1553,9 +1564,9 @@ $('select[name="paymentmethod"]').on('change', function () {
 let rowIndex = 1;
 
     $("#updateinvoicebyidforsaleupdate").click(function(e) {
+        
 
-
-
+        
             event.preventDefault();
             var url = " {{ URL::to('updateinvoicebyidforsaleupdate') }}" + "/" + $('#updateinvoicebyidforsale_update').val();
             console.log(url)
@@ -1565,11 +1576,11 @@ let rowIndex = 1;
                 dataType: 'json',
                 cache: false,
 
-
+             
                 success: function(data) {
 
 
-
+                
 
                     $('#show_invoice_number_update').val($('#updateinvoicebyidforsale_update').val())
 
@@ -1593,7 +1604,7 @@ let rowIndex = 1;
    <td><input type="hidden" name="products[${index}][product_id]" class="product-id form-control">
                         <input type="hidden" name="products[${index}][product_cost]" class="product_cost">
 
-            </td>
+            </td>              
             <td class="align-middle text-center">${index + 1}</td>
 
                 <td class="text-start">
@@ -1647,12 +1658,12 @@ let rowIndex = 1;
                     <button type="button" class="btn btn-danger btn-sm" onclick="removeRow(this)">{{ __('home.delete') }}</button>
                 </td>
             </tr>`;
-
+            
               table.insertAdjacentHTML("beforeend", row);
 
+            
 
-
-
+            
                         product_code = product['Product_Code']
                         product_name = product['product_name']
                         purchasingـprice = product['Unit_Price']
@@ -1698,10 +1709,10 @@ console.log(data['customer']['name'])
                     alert("{{ __('home.sorryerror') }}")
 
                 }
-
+                
             })
-
-
+            
+       
     });
 
     function plusFunctionIndex(btn) {
@@ -1777,7 +1788,7 @@ function minusFunctionIndex(btn) {
             dataType: 'json',
             delay: 300,
             data: function (params) {
-                searchText=params.term
+                searchText=params.term 
                 return { q: params.term };
             },
             processResults: function (data) {
@@ -1809,12 +1820,12 @@ else{
 
   let barcodeEnabled = true;
 
-
+ 
 
         var barcode = '';
         var interval;
         let productCache = {};
-
+  
         document.addEventListener('keydown', function (evt) {
             if (!barcodeEnabled) return; // 🛑 يمنع القراءة أثناء انشغال الكود
 
@@ -1940,7 +1951,7 @@ if (productCache[code] && document.body.contains(productCache[code])) {
             style="width:32px; height:32px;" type="button"
             onclick="plusFunctionIndex(this)">+</button>
     </div>
-
+    
     </td>
                                 <td><input type="text" name="products[${index}][totalprice_withodtax]" class="form-control product-totalprice_withodtax" readonly value="0"></td>
 
@@ -1968,7 +1979,7 @@ if (productCache[code] && document.body.contains(productCache[code])) {
                                         audio.play();
 
                     // حفظه في Cache
-productCache[code] = newRow;
+productCache[code] = newRow; 
                     $('#firstiteminput').val("1");
 
                     // تحديث الإجماليات
@@ -1997,7 +2008,7 @@ document.addEventListener("keydown", function (e) {
 document.addEventListener("keydown", function (e) {
   if (e.key === "+") {
     plusFunction();
-  }
+  } 
   else if (e.key === "-") {
     minusFunction();
   }
@@ -2009,7 +2020,7 @@ function plusFunction() {
      let row = document.querySelector(`#productsTableBody tr[data-index='${rowIndex-1}']`);
             if (!row) return;
             row.querySelector('.product-quentity').value = (row.querySelector('.product-quentity').value*1)+1;
-
+    
 }
 
 function minusFunction() {
@@ -2123,8 +2134,8 @@ function createnewproductajax() {
     if ($('#product_name_ar').val() == '') {
         Swal.fire({ icon: 'warning', title: 'تنبيه', text: "{{ __('supprocesses.product_name_ar') }}" });
         return;
-    }
-
+    } 
+    
     if ($('#product_location_create').val() == '') {
         Swal.fire({ icon: 'warning', title: 'تنبيه', text: "{{ __('supprocesses.product_location') }}" });
         return;
@@ -2167,9 +2178,9 @@ function createnewproductajax() {
 
             // حالة 2: نجاح الإضافة
             successAudio.play(); // تشغيل صوت النجاح
-
+            
             $('#createcustomer').modal('hide');
-
+            
             // تصفير الحقول
             $('#quantity_create, #cost_price, #sale_price_create').val(0);
             $('#product_location_create, #product_name_ar, #product_notes, #product_code_create').val('');
@@ -2193,10 +2204,10 @@ function createnewproductajax() {
 
 function translateNameToArbic() {
   const checkbox = document.getElementById('translate_status');
-
+  
   if (checkbox.checked) {
-
-
+      
+      
       var wordEnglish = $('#product_name_en').val();
 
     jQuery.ajax({
@@ -2230,10 +2241,10 @@ $('#shownumberproduct').val(selectCustomer)
     })
 function translateNameToEnglish() {
   const checkbox = document.getElementById('translate_status');
-
+  
   if (checkbox.checked) {
-
-
+      
+      
     var wordarbic = $('#product_name_ar').val();
 
     jQuery.ajax({
@@ -2445,7 +2456,7 @@ $("#formdata").on('submit', function (e) {
 
                         setTimeout(() => {
                             $('#massagesave').modal('hide');
-
+                            
                             // تنبيه نجاح نهائي
                             Swal.fire({
                                 icon: 'success',
@@ -2496,7 +2507,7 @@ function removeRow(btn) {
 let rowCounter = 0;
 
 function openProductModal(index) {
-
+     
     window.currentRow = index;
     $('#SearchProduct').modal().show();
     $('#searchaboutproduct').focus();
@@ -2517,8 +2528,8 @@ function addRow() {
         location.reload(); // إعادة تحميل الصفحة
         return; // التوقف هنا وعدم تنفيذ باقي الكود
     }
-
-
+    
+    
             $('#searchaboutproduct').focus();
 
     $('#SearchProduct').modal().show();
@@ -2560,12 +2571,12 @@ $("#printReciept").click(function(e) {
 });
 
 function calculateTotalDiscount() {
-
+    
     let amountBeforeTax =  $('#discound_on_invoice').val()*1;
         // 3. تقريب الرقم لخانة أو خانتين عشريتين ثم وضعه في الحقل مرة أخرى
       amountBeforeTax=amountBeforeTax.toFixed(2);
-
-
+      
+   
     avtsale = $('#avtValue').val();
     totalbefore_discount = document.getElementById('totalSum').value;
     let discountTotal = 0;
@@ -2604,7 +2615,7 @@ Swal.fire({
             <p dir="ltr">The entered price is lower than the registered selling price!</p>
             <hr>
             <div style="background: #f8f9fa; padding: 10px; border-radius: 5px;">
-                <strong>سعر النظام | System Price:</strong>
+                <strong>سعر النظام | System Price:</strong> 
                 <span style="color: #28a745; font-size: 1.2em;">${cost}</span>
             </div>
         </div>
@@ -2680,7 +2691,7 @@ function calculateTotals_with_tax() {
                 let tax_with_price = parseFloat(r.querySelector('.product-price-tax').value) || 0;
 
 {
-
+            
         let qty = parseFloat(r.querySelector('.product-quentity').value) || 0;
         let price =( tax_with_price*100)/((100*avtsale)+100);
         console.log(avtsale)
@@ -2700,9 +2711,9 @@ function calculateTotals_with_tax() {
         taxTotal += tax;
         grand += totalRow;
         discountTotal += discound;
-
-
-
+        
+            
+            
         }
     });
     cost= $('#profit').val( );
@@ -2793,7 +2804,7 @@ $(document).on('click', '#ajax_pagination_in_search a', function(e) {
     });
 });
 function checkDuplicateProduct(productId, currentIndex) {
-
+  
     return false; // غير مكرر
 }
 
@@ -2842,18 +2853,18 @@ index=index-1;
             <td class="text-start">
                 <div class="d-flex gap-2">
                     <input type="text" class="form-control product-code" placeholder="اختر منتج" readonly>
-
+               
                 </div>
             </td>
 
             <td class="text-start">
                 <div class="d-flex gap-2">
                     <input type="text" class="form-control product-name" placeholder="اختر منتج" readonly>
-
+                   
                 </div>
             </td>
 
-
+       
    <td><input type="text" name="products[${index}][price]"
                     class="form-control product-price" value="0" min="0" onchange="calculateTotals()"></td>
 
@@ -2870,7 +2881,7 @@ index=index-1;
             style="width:32px; height:32px;" type="button"
             onclick="plusFunctionIndex(this)">+</button>
     </div>
-
+    
     </td>
             <td><input type="text" name="products[${index}][totalprice_withodtax]"
                     class="form-control product-totalprice_withodtax"  readonly value="0" min="0" oninput="calculateTotals()"></td>

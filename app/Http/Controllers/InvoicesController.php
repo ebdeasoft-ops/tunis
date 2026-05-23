@@ -3349,20 +3349,15 @@ public function updatepaymentconfirmpaymentpurchases($invoiceId, $cashamount, $b
             }
 
             $financial_account = financial_accounts::where('orginal_type', 2)->where('orginal_id', $invoice->suplier_id)->first();
-            if ($financial_account) {
                 $oldpayment = $financial_account->id;
-                $financial_account->update([
-                    'current_balance'  => $financial_account->current_balance - $totalAmount,
-                    'creditor_current' => $financial_account->creditor_current - $totalAmount,
-                ]);
-            }
+           
+            
 
-            credittransactions::where('note', '  فاتورة مشتريات رقم :' . $invoiceId)
+            credittransactions::where('note', ' فاتورة مشتريات رقم :' . $invoiceId)
                 ->where('customer_id', $oldpayment)
                 ->update([
                     'user_id'         => $userId,
-                    'customer_id'     => 0,
-                    'recive_amount'   => 0,
+                    'recive_amount'   => $totalAmount,
                     'branchs_id'      => $branchId,
                     'pay_method'      => $paymentMethod,
                     'currentblance'   => 0,
@@ -3371,34 +3366,12 @@ public function updatepaymentconfirmpaymentpurchases($invoiceId, $cashamount, $b
                     'updated_at'      => $now,
                     'orginal_id'      => 0,
                     'creditor'        => 0,
-                    'debtor'          => 0
+                    'debtor'          => 0,
                 ]);
         }
 
         // 2. Apply New Cash Payment Settings
         if ($cashamount) {
-            $financial_account = financial_accounts::find(5);
-            if ($financial_account) {
-                $financial_account->update([
-                    'current_balance'  => $financial_account->current_balance - $cashamount,
-                    'creditor_current' => $financial_account->creditor_current + $cashamount,
-                ]);
-            }
-
-            credittransactions::where('note', '  فاتورة مشتريات رقم :' . $invoiceId)
-                ->where('customer_id', $oldpayment)
-                ->update([
-                    'user_id'         => $userId,
-                    'customer_id'     => 5,
-                    'recive_amount'   => $cashamount,
-                    'branchs_id'      => $branchId,
-                    'pay_method'      => $paymentMethod,
-                    'Pay_Method_Name' => $paymentMethod,
-                    'updated_at'      => $now,
-                    'orginal_id'      => 0,
-                    'debtor'          => 0,
-                    'creditor'        => $cashamount,
-                ]);
 
             $parent_account = financial_accounts::where('parent_account_number', 5)->where('branchs_id', $branchId)->first();
             if ($parent_account) {
@@ -3414,7 +3387,7 @@ public function updatepaymentconfirmpaymentpurchases($invoiceId, $cashamount, $b
                         'recive_amount'   => $cashamount,
                         'branchs_id'      => $branchId,
                         'pay_method'      => $paymentMethod,
-                        'note'            => '  فاتورة مشتريات رقم :' . $invoiceId,
+                        'note'            => ' فاتورة مشتريات رقم :'. $invoiceId,
                         'currentblance'   => $parent_account->current_balance + $cashamount,
                         'Pay_Method_Name' => $paymentMethod,
                         'created_at'      => $now,
@@ -3424,7 +3397,7 @@ public function updatepaymentconfirmpaymentpurchases($invoiceId, $cashamount, $b
                         'creditor'        => $cashamount
                     ]);
                 } else {
-                    credittransactions::where('note', '  فاتورة مشتريات رقم :' . $invoiceId)
+                    credittransactions::where('note',' فاتورة مشتريات رقم :' . $invoiceId)
                         ->where('customer_id', $oldpayment_parent)
                         ->update([
                             'user_id'         => $userId,
@@ -3445,28 +3418,7 @@ public function updatepaymentconfirmpaymentpurchases($invoiceId, $cashamount, $b
         // 3. Apply New Bank/Network Settings
         $totalBank = $Bank_transfer + $bankamount;
         if ($totalBank) {
-            $financial_account = financial_accounts::find(4);
             if ($financial_account) {
-                $financial_account->update([
-                    'current_balance'  => $financial_account->current_balance - $totalBank,
-                    'creditor_current' => $financial_account->creditor_current + $totalBank,
-                ]);
-            }
-
-            credittransactions::where('note', '  فاتورة مشتريات رقم :' . $invoiceId)
-                ->where('customer_id', $oldpayment)
-                ->update([
-                    'user_id'         => $userId,
-                    'customer_id'     => 4,
-                    'recive_amount'   => $totalBank,
-                    'branchs_id'      => $branchId,
-                    'pay_method'      => $paymentMethod,
-                    'Pay_Method_Name' => $paymentMethod,
-                    'updated_at'      => $now,
-                    'orginal_id'      => 0,
-                    'debtor'          => 0,
-                    'creditor'        => $totalBank,
-                ]);
 
             $parent_account = financial_accounts::where('parent_account_number', 4)->where('branchs_id', $branchId)->first();
             if ($parent_account) {
@@ -3482,7 +3434,7 @@ public function updatepaymentconfirmpaymentpurchases($invoiceId, $cashamount, $b
                         'recive_amount'   => $totalBank,
                         'branchs_id'      => $branchId,
                         'pay_method'      => $paymentMethod,
-                        'note'            => '  فاتورة مشتريات رقم :' . $invoiceId,
+                        'note'            => ' فاتورة مشتريات رقم :'. $invoiceId,
                         'currentblance'   => $parent_account->current_balance + $totalBank,
                         'Pay_Method_Name' => $paymentMethod,
                         'created_at'      => $now,
@@ -3492,7 +3444,7 @@ public function updatepaymentconfirmpaymentpurchases($invoiceId, $cashamount, $b
                         'creditor'        => $totalBank
                     ]);
                 } else {
-                    credittransactions::where('note', '  فاتورة مشتريات رقم :' . $invoiceId)
+                    credittransactions::where('note', ' فاتورة مشتريات رقم :'. $invoiceId)
                         ->where('customer_id', $oldpayment_parent)
                         ->update([
                             'user_id'         => $userId,
@@ -3509,7 +3461,7 @@ public function updatepaymentconfirmpaymentpurchases($invoiceId, $cashamount, $b
                 }
             }
         }
-
+        }
         // 4. Apply New Credit Settings
         if ($creaditamount) {
             $supplierData = supllier::find($invoice->suplier_id);
@@ -3517,19 +3469,17 @@ public function updatepaymentconfirmpaymentpurchases($invoiceId, $cashamount, $b
                 $supplierData->increment('In_debt', $creaditamount);
             }
 
-            credittransactions::where('note', '  فاتورة مشتريات رقم :' . $invoiceId)->where('customer_id', $oldpayment)->delete();
+            credittransactions::where('note', ' فاتورة مشتريات رقم :' . $invoiceId)->where('customer_id', $oldpayment)->delete();
             if ($oldpayment_parent != 0) {
-                credittransactions::where('note', '  فاتورة مشتريات رقم :' . $invoiceId)->where('customer_id', $oldpayment_parent)->delete();
+                credittransactions::where('note',' فاتورة مشتريات رقم :' . $invoiceId)->where('customer_id', $oldpayment_parent)->delete();
+
             }
 
             $financial_account = financial_accounts::where('orginal_type', 2)->where('orginal_id', $invoice->suplier_id)->first();
             if ($financial_account) {
-                credittransactions::where('note', '  فاتورة مشتريات رقم :' . $invoiceId)->where('customer_id', $financial_account->id)->delete();
+                credittransactions::where('note',' فاتورة مشتريات رقم :' . $invoiceId)->where('customer_id', $financial_account->id)->delete();
 
-                $financial_account->update([
-                    'current_balance'  => $financial_account->current_balance + $creaditamount,
-                    'creditor_current' => $financial_account->creditor_current + $creaditamount,
-                ]);
+           
 
                 credittransactions::create([
                     'user_id'         => $userId,
@@ -3537,7 +3487,7 @@ public function updatepaymentconfirmpaymentpurchases($invoiceId, $cashamount, $b
                     'recive_amount'   => $creaditamount,
                     'branchs_id'      => $branchId,
                     'pay_method'      => $paymentMethod,
-                    'note'            => '  فاتورة مشتريات رقم :' . $invoiceId,
+                    'note'            =>' فاتورة مشتريات رقم :' . $invoiceId,
                     'currentblance'   => $financial_account->current_balance + $creaditamount,
                     'Pay_Method_Name' => $paymentMethod,
                     'created_at'      => $now,

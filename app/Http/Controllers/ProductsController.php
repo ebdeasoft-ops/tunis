@@ -1050,6 +1050,26 @@ public function save_invoice_qutation(Request $request)
                     'debtor' => 0,
                 ]);
             }
+                        $financial_accounts_sup = financial_accounts::where('orginal_type', 2)
+                                                        ->where('orginal_id', $resource_purchases->suplier_id)
+                                                        ->first();
+         
+
+                credittransactions::create([
+                    'user_id' => auth()->user()->id,
+                    'customer_id' => $financial_accounts_sup->id,
+                    'recive_amount' =>  $value_total,
+                    'branchs_id' => $branchs_id,
+                    'pay_method' => $payment,
+                    'note' => $invoice_note,
+                    'currentblance' => $financial_accounts_sup->current_balance,
+                    'Pay_Method_Name' => $paymentMethod,
+                    'created_at' => $createdAt,
+                    'updated_at' => $updatedAt,
+                    'orginal_id' => 0,
+                    'creditor' => 0,
+                    'debtor' => 0,
+                ]);
         }
 
         // 8. المعالجة المالية في حالة (Bank_transfer أو Shabka)

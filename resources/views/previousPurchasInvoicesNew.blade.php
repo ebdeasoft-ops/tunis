@@ -239,5 +239,42 @@
             });
         });
     });
+
+            // مراقبة حقل السيلكت في المودال لتوزيع المبالغ تلقائياً وحماية الحقول (ReadOnly)
+            $('select[name="paymodal"]').on('change', function () {
+                var selectCustomer = $(this).val();
+                var value = 0;
+
+                if ($('#cashamount').val() != 0) {
+                    value = $('#cashamount').val();
+                } else if ($('#bankamount').val() != 0) {
+                    value = $('#bankamount').val();
+                } else if ($('#Bank_transfer').val() != 0) {
+                    value = $('#Bank_transfer').val();
+                } else {
+                    value = $('#creaditamount').val();
+                }
+
+                if (selectCustomer == 'Cash') {
+                    $('#cashamount').val(value);
+                    $('#bankamount').val(0); $('#creaditamount').val(0); $('#Bank_transfer').val(0);
+                    $("#bankamount, #cashamount, #Bank_transfer").prop('readOnly', true);
+                } else if (selectCustomer == 'Shabka') {
+                    $('#cashamount').val(0); $('#bankamount').val(value); $('#creaditamount').val(0); $('#Bank_transfer').val(0);
+                    $("#bankamount, #cashamount, #Bank_transfer").prop('readOnly', true);
+                } else if (selectCustomer == 'Credit') {
+                    $('#cashamount').val(0); $('#bankamount').val(0); $('#Bank_transfer').val(0); $('#creaditamount').val(value);
+                    $("#bankamount, #cashamount, #Bank_transfer").prop('readOnly', true);
+                } else if (selectCustomer == 'Bank_transfer') {
+                    $('#cashamount').val(0); $('#bankamount').val(0); $('#creaditamount').val(0); $('#Bank_transfer').val(value);
+                    $("#bankamount, #cashamount, #Bank_transfer").prop('readOnly', true);
+                } else {
+                    // في حال اختيار دفع متعدد (Partition)
+                    $('#cashamount').val(value);
+                    $('#bankamount').val(0); $('#creaditamount').val(0); $('#Bank_transfer').val(0);
+                    $("#bankamount, #cashamount, #Bank_transfer").prop('readOnly', false);
+                }
+            });
+
 </script>
 @endsection

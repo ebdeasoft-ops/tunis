@@ -544,7 +544,7 @@ class CredittransactionsController extends Controller
 
         // 3. تحديد رقم السند
      // 1. جلب السجل الذي يحتوي على أعلى رقم حالي
-        $recent_id = credittransactions::where('sent_serf_count',"!=", 0)->orderby('id', 'desc')->first();
+        $recent_id = credittransactions::where('sent_serf_count',"!=", 0)->orderby('sent_serf_count', 'desc')->first();
 
 
         // 2. إذا وجد سجل، أضف 1 على الرقم الحالي، وإذا لم يجد (أول عملية) ابدأ برقم 1

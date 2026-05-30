@@ -2,6 +2,7 @@
 
 @section('css')
     <link href="{{ URL::asset('assets/plugins/select2/css/select2.min.css') }}" rel="stylesheet">
+    <link href="{{ URL::asset('assets/plugins/sweet-alert2/sweetalert2.min.css') }}" rel="stylesheet">
     <style>
         .parent-label {
             font-weight: 600;
@@ -55,24 +56,26 @@
                         <input type="hidden" name="receipt_id" id="receipt_id">
 
                         <div class="row mb-4">
+                        <div class="col-md-4">
+                            <label class="parent-label">{{ __('home.Withdraw from account') }}</label>
+                            <select class="form-control select2" name="payment_account_id" id="payment_account_id" required>
+                                <option value="">{{ __('home.Choose account') }}</option>
+                                @foreach (App\Models\financial_accounts::whereIn('parent_account_number', [4, 5])->get() as $acc)
+                                    <option value="{{ $acc->id }}" data-parent="{{ $acc->parent_account_number }}">
+                                        {{ $acc->name }} ({{ $acc->account_number }})
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+
+                        <div class="col-md-4">
+                            <label class="parent-label">{{ __('home.Payment method') }}</label>
+                            <select class="form-control" name="pay_method_type" id="pay_method_type">
+                                <option value="Cash">{{ __('home.Cash') }}</option>
+                                <option value="Bank_transfer">{{ __('home.Bank transfer') }}</option>
+                            </select>
+                        </div>
                             <div class="col-md-4">
-                                <label class="parent-label">{{ __('home.Withdraw from account') }}</label>
-                                <select class="form-control select2" name="payment_account_id" id="payment_account_id"
-                                    required>
-                                    <option value="">{{ __('home.Choose account') }}</option>
-                                    @foreach (App\Models\financial_accounts::whereIn('parent_account_number', [4, 5])->get() as $acc)
-                                        <option value="{{ $acc->id }}">{{ $acc->name }} ({{ $acc->account_number }})</option>
-                                    @endforeach
-                                </select>
-                            </div>
-                            <div class="col-md-3">
-                                <label class="parent-label">{{ __('home.Payment method') }}</label>
-                                <select class="form-control" name="pay_method_type" id="pay_method_type">
-                                    <option value="Cash">{{ __('home.Cash') }}</option>
-                                    <option value="Bank_transfer">{{ __('home.Bank transfer') }}</option>
-                                </select>
-                            </div>
-                            <div class="col-md-3">
                                 <label class="parent-label">{{ __('home.Date') }}</label>
                                 <input class="form-control" name="date" id="date_input" type="date"
                                     value="{{ date('Y-m-d') }}" required>
@@ -178,9 +181,24 @@
 
 @section('js')
     <script src="{{ URL::asset('assets/plugins/select2/js/select2.min.js') }}"></script>
+    <script src="{{ URL::asset('assets/plugins/sweet-alert2/sweetalert2.all.min.js') }}"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
         $(document).ready(function () {
+                $('#payment_account_id').on('change', function() {
+                // جلب الـ data-parent للخيار اللي تم تحديده
+                var parentAccount = $(this).find(':selected').data('parent');
+
+                if (parentAccount == 5) {
+                    // إذا كان الأب 4 (خزينة) -> يقف على نقدي (Cash)
+                    $('#pay_method_type').val('Cash').trigger('change');
+                } else if (parentAccount == 4) {
+                    // إذا كان الأب 5 (بنك) -> يقف على حساب بنكي (Bank_transfer)
+                    $('#pay_method_type').val('Bank_transfer').trigger('change');
+                }
+            });
+
+            // تفعيل السيلكت 2 وتحميل البيانات
             $('.select2').select2({ width: '100%' });
             loadAllData();
 
@@ -321,18 +339,35 @@
                         i = 0;
 
                         // 1. البحث عن قيد الخزينة/البنك (الذي يحتوي على قيمة في creditor)
-                        var paymentEntry = response.find(item => parseFloat(item.creditor) > 0);
 
-                        if (paymentEntry) {
+                       var paymentEntry = response.find(item => parseFloat(item.creditor) > 0);
+
+                       if (paymentEntry) {
                             // تعيين حساب الخزينة في القائمة العلوية
                             $('#payment_account_id').val(paymentEntry.customer_id).trigger('change');
-                            $('#pay_method_type').val(paymentEntry.pay_method);
+
+                            // --- الكود الجديد والمضمون لجلب طريقة الدفع من أي سطر في المصفوفة ---
+                            var validMethodEntry = response.find(item => item.Pay_Method_Name && item.Pay_Method_Name.trim() !== '');
+
+                            if (validMethodEntry) {
+                                let method = validMethodEntry.Pay_Method_Name.toLowerCase().trim();
+
+                                if (method === 'cash') {
+                                    $('#pay_method_type').val('Cash').trigger('change');
+                                } else if (method === 'bank_transfer' || method === 'bank transfer') {
+                                    $('#pay_method_type').val('Bank_transfer').trigger('change');
+                                } else {
+                                    $('#pay_method_type').val(validMethodEntry.pay_method).trigger('change');
+                                }
+                            }
+                            // ------------------------------------------------------------------
+
                             $('#date_input').val(paymentEntry.date_export);
                         }
 
                         // 2. تصفية القيود لعرض الحسابات المدينة فقط في الجدول (استثناء الخزينة والضريبة)
                         $.each(response, function (index, item) {
-                            // نتحقق أن القيد مدين (debtor > 0) 
+                            // نتحقق أن القيد مدين (debtor > 0)
                             // ونستبعد حساب الضريبة إذا كان رقمه ثابتاً (مثلاً 102)
                             if (parseFloat(item.debtor) > 0 && item.customer_id != 102) {
                                 addDynamicRowWithData(item);

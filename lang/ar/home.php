@@ -12,22 +12,22 @@ return [
     | you want to customize your views to better match your application.
     |
     */
-    'customer_supplier_account'=>"حسابات العملاءو الموردين",
-        'Roken_Section'=>"شركة ركن المعدات",
-        "confirm_purchase"=>"تاكيد مشتريات",
+    'customer_supplier_account' => "حسابات العملاءو الموردين",
+    'Roken_Section' => "شركة ركن المعدات",
+    "confirm_purchase" => "تاكيد مشتريات",
 
     'delivery-profit-loss-report' => 'تقرير ارباح التسليمات ',
-'profit-loss-report' => 'تقرير ارباح المبيعات',
-'last_quotation_price' => 'اخر تسعيرة بدون ضريبة',
-   'Out_of_Stock' => 'نفدت الكمية',
+    'profit-loss-report' => 'تقرير ارباح المبيعات',
+    'last_quotation_price' => 'اخر تسعيرة بدون ضريبة',
+    'Out_of_Stock' => 'نفدت الكمية',
     "delivery_current_month" => "التسليمات الشهر الجاري",
     'sel_product_withoud_tax' => "تسليم منتج لعميل ",
 
     'previous_deliver_Invoices' => 'التسليمات السابقة',
     'salesreturned_delivery' => 'مرتجع التسليمات',
     'delivery_return' => 'مترجع التسليمات',
-'add_item'=>"إضافة المنتج",
-        'product_number'=>"رقم القطعة",
+    'add_item' => "إضافة المنتج",
+    'product_number' => "رقم القطعة",
 
     'customer' => "العميل",
     'confirm_delete_msg' => "تاكيد الحذف",

@@ -3010,6 +3010,8 @@ public function printReturnpurchases($id)
 
     public function goToSaleByPage()
     {
+                app()->setLocale(LaravelLocalization::getCurrentLocale());
+
         return products::where('branchs_id', auth()->user()->branchs_id)->paginate(50);
     }
 

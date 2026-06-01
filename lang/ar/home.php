@@ -12,6 +12,13 @@ return [
     | you want to customize your views to better match your application.
     |
     */
+    "wherehouse" => "انشاء مخزن فرعي",
+    "name_wherehouse" => "اسم المخزن الفرعي",
+    "location_wherehouse" => "مكان المخزن الفرعي",
+    'sub_branch' => 'فرعي',
+    'main_branch' => 'رئيسي',
+
+
     'customer_supplier_account' => "حسابات العملاءو الموردين",
     'Roken_Section' => "شركة ركن المعدات",
     "confirm_purchase" => "تاكيد مشتريات",

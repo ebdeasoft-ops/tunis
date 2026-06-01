@@ -441,6 +441,7 @@ Route::middleware([
         Route::get('/generate_customer_statment_pdf/{customerId}/{start}/{end}', 'generate_customer_statment_pdf');
         Route::get('/employeeـsales', 'employeeـsales');
         Route::get('/showallBranchs', 'showallBranchs');
+        Route::get('/wherehouse', 'wherehouse');
         Route::get('/salesـprofits', 'salesـprofits');
         Route::post('/salesReport', 'salesReportsearch');
         Route::post('/salesـprofits', 'salesـprofitssearch');
@@ -595,6 +596,7 @@ Route::middleware([
     Route::controller(BranchsController::class)->group(function () {
         Route::get('/addbranch', 'index');
         Route::post('/addbranch', 'create');
+        Route::post('/addwherehouse', 'addwherehouse');
         Route::get('/showbranches', 'show');
         Route::post('/updatebranch', 'updatebranch');
     });

@@ -1701,6 +1701,7 @@ public function search_product_sales_purchases(Request $request)
     public function salesـprofits() { app()->setLocale(LaravelLocalization::getCurrentLocale()); return view('reports.sales_profits'); }
     public function supplierList() { app()->setLocale(LaravelLocalization::getCurrentLocale()); return view('reports.supplierList'); }
     public function showallBranchs() { app()->setLocale(LaravelLocalization::getCurrentLocale()); return view('users.show_branchs'); }
+    public function wherehouse() { app()->setLocale(LaravelLocalization::getCurrentLocale()); return view('users.AddWherehouse'); }
     public function Expenses() { app()->setLocale(LaravelLocalization::getCurrentLocale()); return view('reports.Expenses'); }
     public function Creditsales() { app()->setLocale(LaravelLocalization::getCurrentLocale()); return view('reports.Creditsales'); }
     public function employeeـsales() { app()->setLocale(LaravelLocalization::getCurrentLocale()); return view('reports.employeesales'); }
@@ -3857,5 +3858,3 @@ public function search_budgetsheet(Request $request)
         return view('reports.print_stock_update', compact('stock_update'));
     }
 }
-
-

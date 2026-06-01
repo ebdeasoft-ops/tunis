@@ -13,6 +13,8 @@ class branchs extends Model
         'place',
         'created_at',
         'updated_at',
+        'type',
+        'branch_id'
      
     ];
     

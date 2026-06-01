@@ -9,6 +9,13 @@ return [
     */
 
     // --- التعديلات الأخيرة ---
+    "wherehouse" => "Create Sub Warehouse",
+    "name_wherehouse" => "Sub Warehouse Name",
+    "location_wherehouse" => "Sub Warehouse Location",
+    'sub_branch' => 'Sub Branch',
+    'main_branch' => 'Main Branch',
+
+    
     'customer_supplier_account' => "Customer & Supplier Accounts",
     'sel_product_withoud_tax' => "Deliver product",
     'previous_deliver_Invoices' => 'Previous Delivery Invoices',

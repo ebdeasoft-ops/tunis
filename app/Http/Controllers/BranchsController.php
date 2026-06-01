@@ -99,6 +99,80 @@ class BranchsController extends Controller
 
         return redirect()->back();
     }
+   public function addwherehouse(Request $request)
+    {
+        app()->setLocale(LaravelLocalization::getCurrentLocale());
+
+        // التحقق من المدخلات الأساسية
+        $request->validate([
+            'breanchName' => 'required|string|max:255',
+            'branchLoction' => 'nullable|string|max:255',
+        ]);
+
+        try {
+            // استخدام الترانزأكشن لحماية البيانات في حال حدوث خطأ
+            DB::transaction(function () use ($request) {
+                
+                // 1. إنشاء الفرع
+                $createBranch = branchs::create([
+                    'name' => $request->breanchName,
+                    'place' => $request->branchLoction,
+                    'branch_id' => $request->branchs_id,
+                    'type' => 1,
+                    'created_at' => Carbon::now()->addHours(3)
+                ]);
+
+                // 2. تعريف الحسابات المالية المراد إنشاؤها للفرع بشكل ديناميكي
+                $accountsStructure = [
+                    
+                ];
+
+                $currentTime = Carbon::now()->addHours(3);
+
+                // 3. إنشاء الحسابات تباعاً مع توليد رقم حساب فريد لكل حساب
+                foreach ($accountsStructure as $acc) {
+                    
+                    // جلب آخر رقم حساب في قاعدة البيانات فوراً قبل الإدخال (لقفل الحساب ومنع الـ Race Condition)
+                    $lastAccount = financial_accounts::lockForUpdate()->latest('id')->first();
+                    $nextAccountNumber = $lastAccount ? ($lastAccount->account_number + 1) : 1000;
+
+                    financial_accounts::create([
+                        'name'                  => $acc['name'] . ' ' . $request->breanchName,
+                        'account_type'          => $acc['type'],
+                        'parent_account_number' => $acc['parent'],
+                        'account_number'        => $nextAccountNumber,
+                        'start_balance'         => 0,
+                        'current_balance'       => 0,
+                        'start_balance_status'  => 3,
+                        'other_table_FK'        => NULL,
+                        'notes'                 => NULL,
+                        'added_by'              => 1, // يفضل مستقبلاً استبدالها بـ auth()->id()
+                        'updated_by'            => NULL,
+                        'com_code'              => 1,
+                        'date'                  => $currentTime,
+                        'active'                => 1,
+                        'is_parent'             => 0,
+                        'orginal_id'            => NULL,
+                        'orginal_type'          => NULL,
+                        'branchs_id'            => $createBranch->id,
+                    ]);
+                }
+            });
+
+$message = app()->getLocale() == 'ar' 
+    ? 'تم إنشاء المخزن الفرعي بنجاح' 
+    : 'The sub-store has been created successfully';
+
+session()->flash('create', $message);
+
+
+} catch (\Exception $e) {
+            // في حال فشل أي جزء، سيتراجع النظام عن كل شيء تلقائياً دون التأثير على قواعد البيانات
+            session()->flash('notcreate', 'حدثت مشكلة أثناء إنشاء الفرع: ' . $e->getMessage());
+        }
+
+        return redirect()->back();
+    }
 
     /**
      * Display the specified resource.

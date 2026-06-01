@@ -317,7 +317,8 @@ td .d-flex {
                                 <select class="form-control select2" id="branchs_id" onchange="syncValue()">
                                     <option selected value="{{ Auth()->user()->branch->id }}">
                                         {{ Auth()->user()->branch->name }}</option>
-                                    @foreach (App\Models\branchs::get() as $section)
+                                    @foreach (App\Models\branchs::where('id','!=',Auth()->user()->branch->id )->get()
+                                    as $section)
                                     <option value="{{ $section->id }}"> {{ $section->name }}</option>
                                     @endforeach
                                 </select>

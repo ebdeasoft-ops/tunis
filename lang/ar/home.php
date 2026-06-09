@@ -12,6 +12,7 @@ return [
     | you want to customize your views to better match your application.
     |
     */
+    "SalesPurchaseInPeriode"=>"مشتريات و مبيعات فترة",
     "wherehouse" => "انشاء مخزن فرعي",
     "name_wherehouse" => "اسم المخزن الفرعي",
     "location_wherehouse" => "مكان المخزن الفرعي",

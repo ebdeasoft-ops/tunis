@@ -495,7 +495,7 @@ Route::middleware([
         Route::get('/Customerlist', 'Customerlist');
         Route::get('/print_supplierlist/{userId}/{startat}/{endat}', 'print_supplierlist');
         Route::get('/print_customeList', 'print_customeList');
-        Route::get('/Stocktaking', 'Stocktaking');
+        Route::get('/Stocktaking/{id}', 'Stocktaking');
         Route::get('/customerslist_export', 'customerslist_export');
         Route::get('/supplierlist_export', 'supplierlist_export');
         Route::get('/Stocktakingpdf', 'Stocktakingpdf');
@@ -548,6 +548,8 @@ Route::middleware([
         Route::post('/sales_product_by_date', 'search_sales_product_by_date');
         Route::get('/purchase_product_by_date', 'purchase_product_by_date');
         Route::post('/purchase_product_by_date', 'search_purchase_product_by_date');
+        Route::get('/SalesPurchaseInPeriode', 'SalesPurchaseInPeriode');
+        Route::post('/SalesPurchaseInPeriode', 'search_SalesPurchaseInPeriode');
         Route::get('/low_sell', 'low_sell');
         Route::post('/low_sell', 'low_sell_search');
         Route::get('/cost_center', 'cost_center');
@@ -704,6 +706,7 @@ Route::middleware([
     // 26. حركة المنتجات بين الفروع (Product Movement)
     Route::controller(ProductMovementAnotherBranchController::class)->group(function () {
         Route::get('sendProduct', 'index');
+        Route::get('my-drafts-movements',  'showMyDrafts');
         Route::get('reciveProduct', 'show');
         Route::get('deleteproduct/{id}', 'destroy');
         Route::get('findinvoiceMovmevt/{id}', 'findinvoiceMovmevt');
@@ -715,9 +718,16 @@ Route::middleware([
         Route::post('print_Recive_items', 'print_Recive_items');
     });
 
+        Route::controller(UserController::class)->group(function () {
+               Route::get('get-branch-employees/{branch_id}', 'getEmployeesByBranch');
+
+    });
+
+
     // ملفات الشخصية التابعة للنظام المتعدد اللغات
     Route::get('/profile', function () {
         app()->setLocale(LaravelLocalization::getCurrentLocale());
         return view('index');
     })->name('profile');
 });
+

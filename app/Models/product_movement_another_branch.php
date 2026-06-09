@@ -16,8 +16,8 @@ class product_movement_another_branch extends Model
         'user_to' ,
         'Totalcost' ,
         'send_invoice_number',
-        'cost_withod_tax'
-         
+        'cost_withod_tax',
+        'status'        
     ];
     public function branchfrom()
     {

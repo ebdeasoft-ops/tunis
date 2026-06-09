@@ -615,7 +615,7 @@ class CredittransactionsController extends Controller
             'updated_at'  =>  \Carbon\Carbon::now()->addHours(3),
             'Theـamountـpaid'=>$amount_inclusive,
             'type'=>2,
-                    'created_at' => $request->date . ' ' . now()->format('H:i:s'),
+            'created_at' => $request->date . ' ' . now()->format('H:i:s'),
 
 
                 ]);
@@ -642,6 +642,7 @@ class CredittransactionsController extends Controller
                     'vat' => 1,
                     'orginal_id' => $financial_accounts->orginal_id ?? 0,
                     'created_at' => $request->date . ' ' . now()->format('H:i:s'),
+                'sent_serf_count' => $sent_serf_count,
 
 
 
@@ -2264,6 +2265,8 @@ class CredittransactionsController extends Controller
                     'tax' => $request->TaxـNumber ?? '0',
                     'decument_id' => $createTransaction->id,
                     'type' => $type,
+                                'sent_serf_count' => $sent_serf_count,
+
                 ]);
             }
 

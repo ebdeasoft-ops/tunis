@@ -42,27 +42,30 @@ class UserController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request)
-    {
-        $this->validate($request, [
-            'name'       => 'required|string|max:255',
-            'email'      => 'required|email|unique:users,email',
-            'password'   => 'required|same:confirm-password',
-            'roles_name' => 'required'
-        ]);
+   public function store(Request $request)
+{
+    $this->validate($request, [
+        'name'       => 'required|string|max:255',
+        'email'      => 'required|email|unique:users,email',
+        'password'   => 'required|same:confirm-password',
+        'roles_name' => 'required'
+    ]);
 
-        // تصفية البيانات المسموح بإدخالها فقط
-        $input = $request->only(['name', 'email', 'password']);
-        $input['password'] = Hash::make($input['password']);
+    // 1. أضفنا 'roles_name' هنا لكي يتم إرسالها إلى قاعدة البيانات
+    $input = $request->only(['name', 'email', 'password', 'roles_name']);
+    
+    // 2. تشفير كلمة المرور
+    $input['password'] = Hash::make($input['password']);
 
-        $user = User::create($input);
-        
-        // إسناد الدور بشكل آمن سواء كان مصفوفة أو نص
-        $user->assignRole($request->input('roles_name'));
+    // 3. الآن User::create ستنجح لأن 'roles_name' موجودة في $input
+    $user = User::create($input);
+    
+    // 4. إسناد الدور (هذا الجزء خاص بـ Spatie Roles)
+    $user->assignRole($request->input('roles_name'));
 
-        return redirect()->route('users.index')
-                        ->with('success', 'User created successfully');
-    }
+    return redirect()->route('users.index')
+                    ->with('success', 'User created successfully');
+}
 
     /**
      * Display the specified resource.
@@ -70,7 +73,23 @@ class UserController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function show($id)
+
+
+
+
+
+public function getEmployeesByBranch($branch_id)
+{
+    // جلب المستخدمين الذين يطابق فرعهم الـ branch_id الممرر
+    $employees = User::where('branchs_id', $branch_id)->get(['id', 'name']);
+    
+    // إرجاع البيانات كـ JSON لـجافا سكريبت
+    return response()->json($employees);
+}
+
+
+
+public function show($id)
     {
         $user = User::findOrFail($id);
         return view('users.show', compact('user'));

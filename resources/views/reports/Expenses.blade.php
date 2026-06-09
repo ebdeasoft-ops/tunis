@@ -120,15 +120,15 @@
                                 </div>
                             </div>
                             <br>
-                            <div class="d-flex justify-content-center mb-3">
-                                <button class="btn btn-success print-style p-1">
-                                    {{ __('home.search') }}
-                                    <i style=" height: 100;
-                                                 
-                                                 font-size:15px"
-                                        class="las la-search"></i>
-                                </button>
-                            </div>
+                      <div class="d-flex justify-content-center mb-3">
+        <button type="submit" name="search" class="btn btn-success mx-2">
+            بحث <i class="las la-search"></i>
+        </button>
+
+            <button type="submit" name="export_excel" value="1" class="btn btn-primary mx-2">
+                تصدير إلى Excel <i class="las la-file-excel"></i>
+            </button>
+    </div>
 
 
                         </form>

@@ -20,6 +20,7 @@ use App\Models\product_movement_another_branch;
 use App\Models\product_movement_another_branch_items;
 use App\Models\resource_purchases;
 use App\Models\sales;
+use App\Models\ProductsSalesReport;
 use App\Models\supllier;
 use App\Models\Cash_withdrawal_from_the_bank;
 use App\Models\expenses;
@@ -46,13 +47,49 @@ use DateTime;
 use Maatwebsite\Excel\Concerns\FromCollection;
 use Illuminate\Support\Facades\Http;
 use App\Exports\Export_Account_staatment;
-use App\Models\sales_withoud_taxes;
-
+use App\Exports\ExpensesExport;
+use App\Exports\ProductsSalesAndPurchaseReport;
 
 use Illuminate\Support\Facades\View;
 
 class ReportController extends Controller
 {
+        public function search_Expenses(Request $request)
+{
+    // 1. استرجاع البيانات (تم اختصار الكود بنفس منطقك)
+    $query = credittransactions::where('orginal_type', 3)
+        ->whereDate('created_at', '>=', $request->start_at)
+        ->whereDate('created_at', '<=', $request->end_at);
+
+    if ($request->branch != '-') {
+        $query->where('branchs_id', $request->branch);
+    }
+    if ($request->enpenses_reason != '-') {
+        $query->where('customer_id', $request->enpenses_reason);
+    }
+
+    $Invoices = $query->get();
+
+    // 2. التحقق مما إذا كان الطلب تصدير أم بحث
+if ($request->has('export_excel')) {
+    // 1. حساب الإجماليات أولاً
+    $totals = [
+        'active'   => $Invoices->where('vat', 1)->sum('recive_amount'),
+        'inactive' => $Invoices->where('vat', 0)->sum('recive_amount'),
+        'total'    => $Invoices->sum('recive_amount')
+    ];
+
+    // 2. تمرير البيانات والإجماليات معاً
+    return Excel::download(new ExpensesExport($Invoices, $totals), 'expenses_report.xlsx');
+}
+
+    return view('reports.printExpensesReport', compact('Invoices', 'request'));
+}
+
+
+
+
+
    public function exportExcel(Request $request) 
     {
         app()->setLocale(LaravelLocalization::getCurrentLocale());
@@ -426,6 +463,32 @@ class ReportController extends Controller
         return view('reports.print_purchase_product_by_date', compact('products'));
     }
 
+
+      public function SalesPurchaseInPeriode()
+    {
+        app()->setLocale(LaravelLocalization::getCurrentLocale());
+        return view('reports.SalesPurchaseInPeriode');
+    }
+
+    public function search_SalesPurchaseInPeriode(Request $request)
+    {
+// تحديد اسم الملف المنشأ بالتاريخ الحالي
+    $fileName = 'تقرير_المشتريات_والمبيعات_' . now()->format('Y-m-d') . '.xlsx';
+    
+    return Excel::download(new ProductsSalesAndPurchaseReport($request), $fileName);
+
+    }
+
+
+
+
+
+    
+
+
+
+
+    
     public function sales_product_by_date()
     {
         app()->setLocale(LaravelLocalization::getCurrentLocale());
@@ -435,14 +498,14 @@ class ReportController extends Controller
     public function search_sales_product_by_date(Request $request)
     {
         $query = sales::whereDate('created_at', '>=', $request->start_at)
-            ->whereDate('created_at', '<=', $request->end_at)
+           ->whereDate('created_at', '<=', $request->end_at)
             ->where('save', 1);
 
         if ($request->branch != '-') {
             $query->where('branch_id', $request->branch);
         }
 
-        $productsQuery = $query->select('product_id')
+        $productsQuery = $query->select('product_id') 
             ->selectRaw('SUM(quantity) as total_quantity')
             ->selectRaw('SUM(quantity * Unit_Price) as total_sales_amount')
             ->groupBy('product_id')
@@ -3619,10 +3682,13 @@ public function search_budgetsheet(Request $request)
     /**
      * جرد المخزون وتصديره Excel
      */
-    public function Stocktaking()
-    {
-        return Excel::download(new Exportproducts(), 'Stocktaking_Report.xlsx');
-    }
+public function Stocktaking( $request)
+{
+    // إذا أرسل المستخدم ID فرع نستخدمه، وإلا نأخذ الخاص بالمستخدم
+    $branchId = $request ;
+    return Excel::download(new Exportproducts($branchId), 'Stocktaking_Report.xlsx');
+}
+
 
     /**
      * جرد المخزون وتصديره بصيغة PDF عبر ميزة التصدير المباشر

@@ -244,7 +244,7 @@
 
                                             ?>
                                             <td data-target="numberofpice">{{ $pays }}</td>
-                                            <td> <a style="color: #23395D" class="dropdown-item" href="printInvoicesAllItemsWithReturned/{{ $product->id }}"><i style="fill:#072c3c !important" class=" fas fa-print"></i>&nbsp;&nbsp;
+                                            <td> <a style="color: #23395D" class="dropdown-item" href="showInvoiceRecent/{{ $product->id }}"><i style="fill:#072c3c !important" class=" fas fa-print"></i>&nbsp;&nbsp;
                                                     {{ __('home.show') }}
                                                 </a></td>
 

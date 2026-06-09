@@ -296,7 +296,12 @@
                             href="{{ url('/sendProduct') }}">{{ __('home.send_product_from_brance') }}</a>
                     </li>
                     @endcan
-
+                    @can('Transferring a product to another branch')
+                    <li>
+                        <a class="slide-item"
+                            href="{{ url('/my-drafts-movements') }}">{{ __('home.pending_invoice_previes') }}</a>
+                    </li>
+                    @endcan
                     @can('Receiving a product from another branch')
                     <li>
                         <a class="slide-item"
@@ -799,7 +804,12 @@
                                     href="{{ url('purchase_product_by_date') }}">{{ __('home.purchase_product_by_date') }}</a>
                             </li>
                             @endcan
-
+                            @can('Purchase product by date report')
+                            <li>
+                                <a class="slide-item"
+                                    href="{{ url('SalesPurchaseInPeriode') }}">{{ __('home.SalesPurchaseInPeriode') }}</a>
+                            </li>
+                            @endcan
                             @can('Purchases from suppliers report')
                             <li>
                                 <a class="slide-item"

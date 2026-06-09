@@ -114,6 +114,7 @@ public function save_purchase_order(Request $request)
 
 public function importPurchasesAjax(Request $request) 
 {
+    
     try {
         $rows = Excel::toCollection(new PurchasesImport, $request->file('excel_file'))->first();
         
@@ -123,21 +124,24 @@ public function importPurchasesAjax(Request $request)
         $allProdctsD = [];
 
         foreach ($rows as $row) {
-            $product = products::firstOrCreate(
-                ['Product_Code' => $row['product_code']], 
-                [
-                    'product_name'     => ($row['product_name_ar'] ?? '') . "  " . ($row['product_name_en'] ?? ''),
-                    'name_en'          => $row['name_en'] ?? '',
-                    'branchs_id'       => $selectedBranchId, // استخدام الفرع المختار من الواجهة
-                    'user_id'          => auth()->id(),
-                    'unit'             => 'pices',
-                    'Status'           => 1,
-                    'Product_Location' => $row['location'] ?? '-',
-                    'type'             => '1',
-                    'brand'            => '1',
-                    'product_group'    => 1,
-                ]
-            );
+$product = products::firstOrCreate(
+    [
+        'Product_Code' => $row['product_code'], 
+        'branchs_id'   => $selectedBranchId // تمت إضافتها هنا لتصبح جزءاً من معيار البحث
+    ], 
+    [
+        'product_name'     => ($row['product_name_ar'] ?? '') . "  " . ($row['product_name_en'] ?? ''),
+        'name_en'          => $row['name_en'] ?? '',
+        'user_id'          => Auth()->id(),
+        'unit'             => 'pices',
+        'Status'           => 1,
+        'Product_Location' => $row['location'] ?? '-',
+        'type'             => '1',
+        'brand'            => '1',
+        'product_group'    => 1,
+    ]
+);
+
 
             $allProdctsD[] = [
                 'product_id'       => $product->id,

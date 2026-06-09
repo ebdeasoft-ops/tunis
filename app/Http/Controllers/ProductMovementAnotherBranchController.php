@@ -18,186 +18,235 @@ class ProductMovementAnotherBranchController extends Controller
         app()->setLocale(LaravelLocalization::getCurrentLocale());
     }
 
-    public function index()
-    {
-        return view('supProcesses.send_product_to_branch');
-    }
 
+    public function index(Request $request)
+    {
+        $draftMovement = null;
+        $draftItems = [];
+
+        // التحقق مما إذا كان هناك طلب لفتح مسودة معينة عبر الرابط مثل: sendProduct?draft_id=5
+        if ($request->has('draft_id')) {
+
+            // 1. جلب الحركة الرئيسية وتأكيد أنها مسودة ومن نفس فرع المستخدم الحالي للأمان
+            $draftMovement = product_movement_another_branch::where('id', $request->draft_id)
+                ->where('branch_from', auth()->user()->branchs_id)
+                ->where('status', 'draft')
+                ->firstOrFail();
+
+            // 2. جلب المنتجات (البنود) التابعة لهذه المسودة مع بيانات المنتج الأساسية (كالاسم)
+            // تأكد من وجود علاقة باسم product داخل موديل البنود
+            $draftItems = product_movement_another_branch_items::with('product')
+                ->where('order_id', $draftMovement->id)
+                ->get();
+        }
+
+        // تمرير البيانات المتغيرات لملف الـ Blade سواء كانت مليئة بالبيانات أو فارغة (null)
+        return view('supProcesses.send_product_to_branch', compact('draftMovement', 'draftItems'));
+    }
     /**
      * إنشاء أو تحديث أمر تحويل منتجات إلى فرع آخر (صرف من الفرع الحالي)
      */
-    public function create(Request $request)
-    {
-        $this->validate($request, [
-            'product_no' => 'required|exists:products,id',
-            'branch_reciver' => 'required',
-            'quentity' => 'required|numeric|min:0.01',
-            'thecostProduct' => 'required|numeric',
-            'order_id' => 'required|numeric'
+
+    public function showMyDrafts()
+{
+    // جلب المسودات المعلقة الخاصة بفرع المستخدم الحالي فقط
+    $myDrafts = product_movement_another_branch::where('branch_from', auth()->user()->branchs_id)
+        ->where('status', 'draft')
+        ->orderBy('id', 'desc')
+        ->get();
+
+    // نقوم بتمريرها إلى صفحة مستقلة سننشئها في الخطوة التالية
+    return view('supProcesses.my_drafts_list', compact('myDrafts'));
+}
+
+
+
+ public function create(Request $request)
+{
+    // 1. التحقق من البيانات 
+    $this->validate($request, [
+        'products' => 'required|array',
+        'products.*' => 'required|exists:products,id', 
+        'branch' => 'required',
+        'employeereciver' => 'required|exists:users,id', 
+        'quantities' => 'required|array',
+        'quantities.*' => 'required|numeric|min:0.01',
+        'prices' => 'required|array',
+        'status' => 'required|in:completed,draft', 
+        'draft_id' => 'nullable|exists:product_movement_another_branches,id',
+    ]);
+
+    return DB::transaction(function () use ($request) {
+        $now = Carbon::now();
+        $user = Auth::user();
+        
+        $isUpdatingDraft = $request->has('draft_id') && !empty($request->draft_id);
+
+        if ($isUpdatingDraft) {
+            $movement = product_movement_another_branch::findOrFail($request->draft_id);
+            
+            // 🌟 [مهم جداً] إذا كان الاعتماد النهائي لحركة كانت مسودة سابقاً، 
+            // نقوم أولاً بمسح بنود المسودة القديمة من جدول البنود بعد جلبها لإعادة البناء النظيف.
+            product_movement_another_branch_items::where('order_id', $movement->id)->delete();
+
+            $movement->update([
+                'branch_to' => $request->branch,
+                'user_to' => $request->employeereciver,
+                'status' => $request->status, 
+                'updated_at' => $now,
+            ]);
+        } else {
+            // إنشاء حركة جديدة تماماً لأول مرة
+            $movement = product_movement_another_branch::create([
+                'branch_from' => $user->branchs_id,
+                'branch_to' => $request->branch,
+                'user_from' => $user->id,
+                'user_to' => $request->employeereciver, 
+                'status' => $request->status, 
+                'reciveInvoiceNumber' => 1, 
+                'created_at' => $now,
+                'updated_at' => $now,
+                'Totalcost' => 0,
+                'cost_withod_tax' => 0,
+            ]);
+        }
+
+        $orderId = $movement->id;
+        $totalCost = 0;
+        $totalCostWithoutTax = 0;
+
+        // 3. معالجة جدول المنتجات الحالي والجديد الماثل أمامنا على الشاشة
+        foreach ($request->products as $index => $product_id) {
+            $quantity = $request->quantities[$index];
+            $price = $request->prices[$index];
+
+            $product = products::lockForUpdate()->findOrFail($product_id);
+
+            // 🌟 منطق توازن المخزن المحدث:
+            // الخصم الفعلي من المخزن يتم "فقط" إذا كانت الحالة الحالية للملف هي اعتماد نهائي (completed)
+            if ($request->status === 'completed') {
+                $product->decrement('numberofpice', $quantity);
+            }
+
+            // إعادة إنشاء البند بالوضع والكمية الجديدة المحدثة على الشاشة
+            product_movement_another_branch_items::create([
+                'order_id' => $orderId,
+                'product_id' => $product_id,
+                'quantity' => $quantity,
+                'cost_per_each_withoud_tax' => $price,
+                'created_at' => $now,
+            ]);
+
+            // إعادة حساب الإجماليات المالية بناءً على المدخلات الأخيرة المعدلة
+            $totalCost += ($price * $quantity);
+            $purchasingPriceField = isset($product->purchasingـprice) ? $product->purchasingـprice : $product->purchasing_price;
+            $totalCostWithoutTax += ($purchasingPriceField * $quantity); 
+        }
+
+        // 4. تحديث الإجمالي النهائي والدقيق في الفاتورة الرئيسية
+        $movement->update([
+            'Totalcost' => $totalCost,
+            'cost_withod_tax' => $totalCostWithoutTax
         ]);
 
-        $data = DB::transaction(function () use ($request) {
-            $product = products::lockForUpdate()->findOrFail($request->product_no);
-            $now = Carbon::now(); // يتم ضبط Timezone في config/app.php كـ Asia/Riyadh
+        $message = $request->status === 'draft' ? 'تم تحديث وحفظ الحركة كمسودة بنجاح' : 'تم اعتماد وتحويل المنتجات بنجاح والخصم الدقيق من المخزن';
 
-            $orderId = $request->order_id;
+        return redirect()->back()->with('productupdatedlocation', $message);
+    });
+}
 
-            if ($orderId == 0) {
-                // إنشاء فاتورة تحويل جديدة
-                $movement = product_movement_another_branch::create([
-                    'branch_from' => Auth::user()->branchs_id,
-                    'branch_to' => $request->branch_reciver,
-                    'user_from' => Auth::id(),
-                    'reciveInvoiceNumber' => $request->reciveInvoiceNumber,
-                    'user_to' => $request->employeereciver,
-                    'Totalcost' => $request->thecostProduct * $request->quentity,
-                    'cost_withod_tax' => $product->purchasingـprice * $request->quentity,
-                    'created_at' => $now,
-                    'updated_at' => $now,
-                ]);
-                $orderId = $movement->id;
-            } else {
-                // تحديث فاتورة تحويل قائمة (تجنب التكرار إذا كان المنتج مضافاً مسبقاً)
-                $exists = product_movement_another_branch_items::where('product_id', $request->product_no)
-                    ->where('order_id', $orderId)
-                    ->exists();
 
-                if (!$exists) {
-                    $movement = product_movement_another_branch::lockForUpdate()->findOrFail($orderId);
-                    $movement->update([
-                        'cost_withod_tax' => $movement->cost_withod_tax + ($product->purchasingـprice * $request->quentity),
-                        'Totalcost' => $movement->Totalcost + ($request->thecostProduct * $request->quentity),
-                        'updated_at' => $now,
-                    ]);
-                }
-            }
-
-            // إضافة العنصر للفاتورة إن لم يكن موجوداً
-            $itemExists = product_movement_another_branch_items::where('product_id', $request->product_no)
-                ->where('order_id', $orderId)
-                ->first();
-
-            if (!$itemExists) {
-                product_movement_another_branch_items::create([
-                    'order_id' => $orderId,
-                    'product_id' => $request->product_no,
-                    'quantity' => $request->quentity,
-                    'cost_per_each_withoud_tax' => $request->thecostProduct,
-                    'created_at' => $now,
-                    'updated_at' => $now,
-                ]);
-
-                // خصم الكمية المحولة من مخزون الفرع الحالي (المصدر)
-                $product->decrement('numberofpice', $request->quentity);
-            }
-
-            return $this->getMovementOrderData($orderId);
-        });
-
-        return $data;
-    }
 
     /**
      * دالة استقبال المنتجات المحولة وتحديث مخزون الفرع المستلِم (أو إنشاء منتجات جديدة برقم كود مطابق)
      */
-    public function store(Request $request)
+    public function create_sendProduct(Request $request)
     {
+        // 1. التحقق من البيانات القادمة من الفورم
         $this->validate($request, [
-            'invoiceId' => 'required'
+            'products' => 'required|array',
+            'products.*' => 'required|exists:products,id',
+            'branch' => 'required',
+            'employeereciver' => 'required|exists:users,id',
+            'quantities' => 'required|array',
+            'quantities.*' => 'required|numeric|min:0.01',
+            'prices' => 'required|array',
+            'status' => 'required|in:completed,draft', // 🌟 هنا نستقبل الحالة (draft أو completed)
         ]);
-
-        $data = DB::transaction(function () use ($request) {
-            $mainInvoice = product_movement_another_branch::find($request->invoiceId);
-
-            if (!$mainInvoice || $mainInvoice->reciveInvoiceNumber == 10) {
-                return [
-                    'mesage' => "عذراً، هذه الفاتورة تم استلامها بالفعل أو غير موجودة.",
-                    'status' => 'error'
-                ];
-            }
-
-            $notregisterproductCount = 0;
+        return DB::transaction(function () use ($request) {
             $now = Carbon::now();
-            $currentBranchId = $mainInvoice->branch_to;
+            $user = Auth::user();
 
-            // استخدام Eager Loading لتفادي مشكلة N+1 Queries أثناء جلب عناصر الحركة
-            $items = product_movement_another_branch_items::where('order_id', $mainInvoice->id)->get();
+            // 2. التحقق: هل نحن نقوم بتحديث مسودة قديمة أم ننشئ حركة جديدة؟
+            if ($request->has('draft_id') && !empty($request->draft_id)) {
+                // إذا كانت مسودة قديمة، نحذف بنودها القديمة لإعادة بنائها بالكميات الجديدة
+               product_movement_another_branch_items::where('order_id', $request->draft_id)->delete();
 
-            foreach ($items as $item) {
-                $productSender = products::findOrFail($item->product_id);
-
-                // البحث عن المنتج في الفرع المستلِم بواسطة الـ Product_Code
-                $productReceiver = products::where('branchs_id', $currentBranchId)
-                    ->where('Product_Code', $productSender->Product_Code)
-                    ->first();
-
-                if ($productReceiver) {
-                    // زيادة كمية المخزون وتحديث الأسعار للفرع المستلم
-                    $productReceiver->update([
-                        'numberofpice' => $productReceiver->numberofpice + $item->quantity,
-                        'purchasingـprice' => $productSender->purchasingـprice,
-                        'sale_price' => $productSender->sale_price,
-                    ]);
-                } else {
-                    $notregisterproductCount++;
-                    // إنشاء كارت صنف جديد بالكامل في الفرع الحالي بنفس الكود والبيانات الأصلية
-                    $productReceiver = products::create([
-                        'product_name' => $productSender->product_name,
-                        'name_en' => $productSender->name_en,
-                        'branchs_id' => $currentBranchId,
-                        'numberofpice' => $item->quantity,
-                        'user_id' => Auth::id(),
-                        'Product_Location' => 'Transfer',
-                        'Product_Code' => $productSender->Product_Code,
-                        'purchasingـprice' => $productSender->purchasingـprice,
-                        'sale_price' => $productSender->sale_price,
-                        'Status' => 1,
-                        'notes' => $productSender->notes,
-                        'unit' => $productSender->unit,
-                        'minmum_quantity_stock_alart' => $productSender->minmum_quantity_stock_alart,
-                    ]);
-                }
-
-                // توثيق حركة الاستلام للفرع المستلم بشكل منفصل
-                product_movement_another_branch_items::create([
-                    'reciver_branch' => $currentBranchId,
-                    'order_id' => 0,
-                    'order_id_sender' => $item->order_id,
-                    'product_id' => $productReceiver->id,
-                    'quantity' => $item->quantity,
-                    'cost_per_each_withoud_tax' => $item->cost_per_each_withoud_tax,
+                $movement =product_movement_another_branch::findOrFail($request->draft_id);
+                $movement->update([
+                    'branch_to' => $request->branch,
+                    'user_to' => $request->employeereciver,
+                    'status' => $request->status, // 🌟 قد تتحول هنا من draft إلى completed لو ضغط حفظ نهائي
+                    'updated_at' => $now,
+                ]);
+            } else {
+                // إذا كانت حركة جديدة تماماً
+                $movement = product_movement_another_branch::create([
+                    'branch_from' => $user->branchs_id,
+                    'branch_to' => $request->branch,
+                    'user_from' => $user->id,
+                    'user_to' => $request->employeereciver,
+                    'status' => $request->status, // 🌟 تخزين الحالة القادمة من الزر (draft أو completed)
+                    'reciveInvoiceNumber' => 1, // الفاتورة مفتوحة بمجرد إنشائها
                     'created_at' => $now,
                     'updated_at' => $now,
+                    'Totalcost' => 0,
+                    'cost_withod_tax' => 0,
                 ]);
             }
 
-            // إغلاق الفاتورة وتغيير حالتها لـ (مستلمة بالكامل = 10)
-            $mainInvoice->update([
-                'reciveInvoiceNumber' => 10,
-                'updated_at' => $now
-            ]);
+            $orderId = $movement->id;
+            $totalCost = 0;
+            $totalCostWithoutTax = 0;
 
-            $isAr = LaravelLocalization::getCurrentLocale() == 'ar';
-            if ($notregisterproductCount > 0) {
-                $message = $isAr
-                    ? "تم تزويد المخزون بنجاح وتحديث الأسعار. تم إنشاء {$notregisterproductCount} أصناف جديدة لعدم توفر أكوادها بالفرع."
-                    : "Inventory replenished successfully. Created {$notregisterproductCount} new items as their codes weren't found in this branch.";
-                session()->flash('createnewproduct', $message);
-            } else {
-                $message = $isAr ? "تم تزويد المخزون بالمنتجات المستلمة بنجاح وتحديث أسعار التكلفة." : "Inventory has been replenished with successfully received products.";
-                session()->flash('confirmed', $message);
+            // 3. لف على المنتجات المختره وحفظ بنودها
+            foreach ($request->products as $index => $product_id) {
+                $quantity = $request->quantities[$index];
+                $price = $request->prices[$index];
+
+                $product = products::lockForUpdate()->findOrFail($product_id);
+
+                // 🌟 السيستم يخصم من مخزنك الحالي فقط إذا كان الحفظ نهائي (completed).
+                // أما لو كان الحفظ كمسودة (draft)، فلن يتم خصم أي قطعة من المخزن!
+                if ($request->status === 'completed') {
+                    $product->decrement('numberofpice', $quantity);
+                }
+
+                // حفظ البند في جدول البنود (يتحفظ في الحالتين عشان لما تفتح المسودة تلاقيهم)
+               product_movement_another_branch_items::create([
+                    'order_id' => $orderId,
+                    'product_id' => $product_id,
+                    'quantity' => $quantity,
+                    'cost_per_each_withoud_tax' => $price,
+                    'created_at' => $now,
+                ]);
+
+                $totalCost += ($price * $quantity);
+                $totalCostWithoutTax += ($product->purchasingـprice * $quantity);
             }
 
-            return [
-                'mesage' => $message,
-                'invoice_number' => $mainInvoice->id,
-                'invoices_Reciepts' => product_movement_another_branch::where('branch_to', $currentBranchId)->where('reciveInvoiceNumber', 1)->get()
-            ];
+            // 4. تحديث إجمالي التكلفة للفاتورة
+            $movement->update([
+                'Totalcost' => $totalCost,
+                'cost_withod_tax' => $totalCostWithoutTax
+            ]);
+
+            // تحديد الرسالة المناسبة بناءً على الزر المضغوط
+            $message = $request->status === 'draft' ? 'تم حفظ الحركة كمسودة بنجاح' : 'تم تحويل المنتجات بنجاح والخصم من المخزن';
+
+            return redirect()->back()->with('productupdatedlocation', $message);
         });
-
-        return $data;
     }
-
     /**
      * إلغاء أو حذف صنف واحد من الفاتورة الصادرة وإعادة توازن المخزون وقيمتها المالية
      */
@@ -267,7 +316,84 @@ class ProductMovementAnotherBranchController extends Controller
             'orderItems' => $dataitems
         ];
     }
+public function store(Request $request)
+{
+    app()->setLocale(LaravelLocalization::getCurrentLocale());
 
+    // 1. التحقق من وجود بيانات
+    if (!$request->has('product_code')) {
+        return response()->json(['message' => 'البيانات غير موجودة'], 400);
+    }
+
+    $notregisterproductCount = 0;
+    $branchId = Auth()->user()->branchs_id;
+
+    // 2. المرور على مصفوفة المنتجات القادمة من الجدول
+    // نستخدم index للوصول للكمية والسعر المقابل لكل منتج
+    foreach ($request->product_code as $index => $pCode) {
+        
+        $qty = $request->quantity[$index];
+        $cost = $request->cost[$index];
+
+        // البحث عن المنتج في المخزن الخاص بالفرع
+        $updateProduct = products::where('branchs_id', $branchId)
+                                 ->where('Product_Code', $pCode)
+                                 ->first();
+
+        if ($updateProduct) {
+            // تحديث الكمية والسعر للمنتج الموجود
+            $updateProduct->update([
+                'numberofpice' => $updateProduct->numberofpice + $qty,
+                'purchasingـprice' => $cost,
+            ]);
+            $productId = $updateProduct->id;
+        } else {
+            // إنشاء منتج جديد إذا لم يكن موجوداً
+            $notregisterproductCount++;
+            $newProduct = products::create([
+                'product_name' => $request->product_name[$index], // استخدام الاسم الحقيقي                'branchs_id' => $branchId,
+                'numberofpice' => $qty,
+                'user_id' => Auth()->id(),
+                'Product_Code' => $pCode,
+                'purchasingـprice' => $cost,
+                'Status' => 1,
+            ]);
+            $productId = $newProduct->id;
+        }
+
+        // 3. تسجيل حركة المخزون لكل عنصر
+        product_movement_another_branch_items::create([
+            'reciver_branch' => $branchId,
+            'order_id' => 0,
+            'order_id_sender' => $request->invoiceId, // رقم الفاتورة المرسل
+            'product_id' => $productId,
+            'quantity' => $qty,
+            'cost_per_each_withoud_tax' => $cost,
+            'created_at' => \Carbon\Carbon::now()->addHours(3),
+        ]);
+    }
+
+    // 4. تحديث حالة الفاتورة الرئيسية
+    product_movement_another_branch::where('id', $request->invoiceId)->update([
+        'reciveInvoiceNumber' => 10,
+        'updated_at' => \Carbon\Carbon::now()->addHours(3),
+    ]);
+
+    // 5. إعداد رسالة النجاح
+    $message = ($notregisterproductCount > 0) 
+        ? "تم استلام المنتجات بنجاح، وتم إنشاء $notregisterproductCount منتجات جديدة لم تكن مسجلة."
+        : "تم استلام المنتجات وتحديث المخزون بنجاح.";
+
+    return response()->json([
+        'invoice_number' => $request->invoiceId,
+        'message' => $message
+    ]);
+}
+
+
+
+
+    
     public function show()
     {
         return view('supProcesses.recive_product_from_another_branch', ['data' => 0]);

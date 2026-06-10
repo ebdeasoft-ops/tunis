@@ -1,11 +1,7 @@
 @extends('layouts.master')
+
 @section('css')
 <style>
-/* إخفاء زر الطباعة إجبارياً عند تحميل الصفحة */
-#printSection {
-    display: none !important;
-}
-
 .our-table {
     width: 100%;
     border-collapse: collapse;
@@ -29,6 +25,9 @@
 }
 </style>
 @endsection
+
+@section('title') {{__('home.recive_product_from_other_branch_other')}} @stop
+
 @section('page-header')
 <div class="breadcrumb-header justify-content-between">
     <div class="my-auto">
@@ -36,7 +35,6 @@
     </div>
 </div>
 @endsection
-@section('title') {{__('home.recive_product_from_other_branch_other')}} @stop
 
 @section('content')
 <div class="row">
@@ -81,7 +79,7 @@
                     <button id="button_1" class="btn btn-info">{{ __('home.confirm') }}</button>
                 </div>
 
-                <div id="printSection" class="d-flex justify-content-center mt-3">
+                <div id="printSection" class="d-none justify-content-center mt-3">
                     <form
                         action="{{ url(Mcamara\LaravelLocalization\Facades\LaravelLocalization::getCurrentLocale() . '/print_Recive_items') }}"
                         method="POST">
@@ -111,207 +109,60 @@
     </div>
 </div>
 
-<div class="modal fade product-selection" id="SearchProduct" name="SearchProduct" tabindex="-1" role="dialog"
-    aria-labelledby="exampleModalLabel" dir='rtl' aria-hidden="true">
+<div class="modal fade product-selection" id="SearchProduct" tabindex="-1" role="dialog" aria-hidden="true">
     <div class="modal-dialog modal-xl" role="document">
         <div class="modal-content">
-            <div class="modal-header">
-
-            </div>
             <div class="modal-body">
-
-
                 <div class="card-body">
                     <div class="row">
-
-                        <div class="col-lg-4 mg-t-20 mg-lg-t-0">
-                            <label for="inputName" style="font-weight: bold" class="control-label parent-label">
-                                {{__('home.searchaboutproduct')}} </label>
-                            <input autocomplete="off" dir="ltr" type="text" autofocus class="form-control parent-input"
-                                placeholder="{{ __('home.Search By Name or Product Number') }}" id="searchaboutproduct"
-                                name="searchaboutproduct" onkeyup="searchaboutproductfunction()" autofocus>
-                        </div>
-                        <div class="col-lg-3 mb-2">
-                            <label for="inputName" class="control-label parent-label">{{ __('home.groups') }}</label>
-                            <select style="width:100%!important" name="product_group" id="product_group"
-                                class="form-control select2">
-                                <!--placeholder-->
-                                @foreach (App\Models\products_group::get() as $section)
-                                <option value="{{ $section->id }}"> {{ $section->group_ar }}</option>
-                                @endforeach
-                            </select>
+                        <div class="col-lg-4">
+                            <label>{{__('home.searchaboutproduct')}}</label>
+                            <input type="text" class="form-control" id="searchaboutproduct"
+                                onkeyup="searchaboutproductfunction()">
                         </div>
                     </div>
-                    <br>
-                    <div class="table-responsive" id="ajax_responce_serarchDiv">
-                        <table class="table text-md-nowrap text-center our-table" id="SearchProductTable" width="100%"
-                            style="border: 2px solid rgba(0,0,0,.3);">
-                            <col style="width:5%">
-                            <col style="width:14%">
-                            <col style="width:28%">
-                            <col style="width:10%">
-                            <col style="width:18%">
-                            <col style="width:15%">
-                            <col style="width:10%">
-
-                            <thead>
-                                <tr>
-                                    <th style="font-size: 15px" class="border-bottom-0">{{__('home.productNo')}}
-                                    </th>
-                                    <th style="font-size: 15px" class="border-bottom-0" style="text-align:center">
-                                        {{__('home.product')}}
-                                    </th>
-                                    <th style="font-size: 15px" class="border-bottom-0" style="text-align:center">
-                                        {{__('home.branch')}}
-                                    </th>
-                                    <th style="font-size: 15px" class="border-bottom-0" style="text-align:center">
-                                        {{__('home.productlocation')}}
-                                    </th>
-
-                                    <th style="font-size: 15px" class="border-bottom-0">{{__('home.quantity')}}
-                                    </th>
-                                    <th style="font-size: 13px" class="border-bottom-0">
-                                        {{__('home.purchaseproductwithouttax')}}
-                                    </th>
-                                    <th style="font-size: 13px" class="border-bottom-0">
-                                        {{__('home.sellingproduct without tax')}}
-                                    </th>
-                                    <th style="font-size: 15px" class="border-bottom-0">{{__('home.Add')}}</th>
-
-
-
-                                </tr>
-                            </thead>
-
-
-                            <tbody class="">
-                                <?php $i = 0;
-    $data = 'm'; ?>
-
-                                <?php $i++ ?>
-
-                                <tr>
-                                    <td id="tableData" dir=ltr>-</td>
-                                    <td id="tableData" data-target="product_name">-</td>
-                                    <td id="tableData" data-target="product_name">-</td>
-                                    <td id="tableData" data-target="numberofpice">-</td>
-                                    <td id="tableData" data-target="numberofpice">-</td>
-                                    <td id="tableData" data-target="numberofpice">-</td>
-                                    <td id="tableData" data-target="numberofpice">-</td>
-                                    <td id="tableData">- </td>
-                                </tr>
-
-                            </tbody>
-                        </table>
-                        <td id="tableData">- </td>
-                        </tr>
-
-                        </tbody>
-                        </table>
-                        <div>
-
-                        </div>
-
-
-
-                    </div>
-
+                    <div class="table-responsive" id="ajax_responce_serarchDiv"></div>
                 </div>
-
-                <div class="modal-footer">
-                    {{-- <button id="added_product" name="added_product" id="added_product"
-                            class="btn btn-primary">{{__('home.confirm')}}</button>
-                    --}}
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">{{__('home.cancel')}}</button>
-                </div>
-
             </div>
-
-
         </div>
     </div>
-
 </div>
 
 <input hidden=true class="form-control" id="branchs_id" name="branchs_id" value="{{Auth()->user()->branchs_id}}">
-                                                                <input type="hidden" id="token_search" value="{{ csrf_token() }}">
-
 @endsection
 
 @section('js')
-
-
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
-    var currentRowIndex = 0; // متغير عالمي لحفظ رقم السطر
+var currentRowIndex = 0;
 
-
+// دالة اختيار المنتج
 function chooseProduct(code, productcode, name, cost, sale_price, location, availablequantity) {
-    // جلب السطر بناءً على رقم الـ index المحفوظ
     let rows = document.querySelectorAll('#table-body tr');
     let targetRow = rows[currentRowIndex];
-
     if (targetRow) {
-        // البحث عن الـ input داخل هذا السطر وتحديث قيمته
-        let productInput = targetRow.querySelector('input[name="product_code[]"]');
-        if (productInput) {
-            productInput.value = productcode;
-        }
+        targetRow.querySelector('input[name="product_code[]"]').value = productcode;
     }
-
-    // إغلاق المودال بعد الاختيار
-    $('#productModal').modal('hide');
+    $('#SearchProduct').modal('hide');
 }
 
-
-
-    function searchaboutproductfunction() {
-    searchtext = $('#searchaboutproduct').val();
-    branchs_id = $('#branchs_id').val();
-    var token_search = $("#token_search").val();
-
-    jQuery.ajax({
+// دالة البحث
+function searchaboutproductfunction() {
+    let searchtext = $('#searchaboutproduct').val();
+    let branchs_id = $('#branchs_id').val();
+    $.ajax({
         url: "{{ URL::to('searchChooseProductpaginatenewSaleBypost')}}",
         type: 'post',
-        cache: false,
-        dataType: 'html',
         data: {
-            "_token": token_search,
+            "_token": $("#token_search").val(),
             "searchtext": searchtext,
-            "branchs_id": branchs_id,
-            "currentrow": window.currentRow,
+            "branchs_id": branchs_id
         },
         success: function(data) {
             $("#ajax_responce_serarchDiv").html(data);
-        },
-
+        }
     });
-
 }
-
-$('#SearchProduct').on('show.bs.modal', function(event) {
-    searchtext = ' ';
-    branchs_id = $('#branchs_id').val();
-    var token_search = $("#token_search").val();
-
-    jQuery.ajax({
-        url: "{{ URL::to('searchChooseProductpaginatenewSaleBypost')}}",
-        type: 'post',
-        cache: false,
-        dataType: 'html',
-        data: {
-            "_token": token_search,
-            "searchtext": searchtext,
-            "branchs_id": branchs_id,
-            "currentrow": window.currentRow,
-        },
-        success: function(data) {
-            $("#ajax_responce_serarchDiv").html(data);
-        },
-
-    });
-
-});
 $(document).on('click', '#ajax_pagination_in_search a', function(e) {
     e.preventDefault();
     var search_by_text = $("#searchaboutproduct").val();
@@ -340,29 +191,27 @@ $(document).on('click', '#ajax_pagination_in_search a', function(e) {
     });
 });
 
+// تحميل المودال
+$('#SearchProduct').on('show.bs.modal', function() {
+    searchaboutproductfunction();
+});
 
-// 1. جلب البيانات
+// جلب البيانات عند اختيار فاتورة
 $('select[name="reciveInvoiceNumber"]').on('change', function() {
     var id = $(this).val();
+    $("#sprint_invoice_number").val(id);
     if (id === '-') return;
-
     $.ajax({
         url: "{{ URL::to('/findinvoiceMovmevt') }}/" + id,
         type: "GET",
         success: function(data) {
-            // تعريف الـ tbody
-            let tbody = $('#table-body'); 
-            // مسح البيانات القديمة تماماً
-            tbody.empty(); 
-
-            // حلقة التكرار لإنشاء الصفوف
-            data.orderItems.forEach((p, index) => { 
-                // تم وضع الـ append مرة واحدة فقط وبشكل صحيح
-                tbody.append(`
-                    <tr data-index="${index}">
+            let tbody = $('#table-body');
+            tbody.empty();
+            data.orderItems.forEach((p, index) => {
+                tbody.append(`<tr data-index="${index}">
                         <td>${p.count}</td>
-                        <td>
-                            <div class="d-flex gap-2">
+                        <td><input type="hidden" name="product_name[]" value="${p.productname}">
+                                           <div class="d-flex gap-2">
                                 <input type="hidden" name="product_name[]" value="${p.productname}">
                                 <input type="text" name="product_code[]" class="input-edit product-code" value="${p.product_code}" readonly>
                                 <button type="button" class="btn btn-sm btn-info p-1" onclick="openProductModal(${index})">
@@ -378,50 +227,18 @@ $('select[name="reciveInvoiceNumber"]').on('change', function() {
                         <td><input type="number" name="quantity[]" class="input-edit" value="${p.quantity}"></td>
                         <td><input type="number" name="cost[]" class="input-edit" value="${p.cost}"></td>
                         <td>${p.total}</td>
-                    </tr>
-                `);
+                    </tr>`);
             });
-        },
-        error: function(r) {
-            console.log(r);
         }
     });
 });
 
-
 function openProductModal(index) {
-window.currentRowIndex = index;
-    $('#searchaboutproduct').focus();
-   
-$('#SearchProduct').modal('show');
+    window.currentRowIndex = index;
+    $('#SearchProduct').modal('show');
 }
 
-function searchaboutproductfunction() {
-    searchtext = $('#searchaboutproduct').val();
-    branchs_id = $('#branchs_id').val();
-    var token_search = $("#token_search").val();
-
-    jQuery.ajax({
-        url: "{{ URL::to('searchChooseProductpaginatenewSaleBypost')}}",
-        type: 'post',
-        cache: false,
-        dataType: 'html',
-        data: {
-            "_token": token_search,
-            "searchtext": searchtext,
-            "branchs_id": branchs_id,
-            "currentrow": window.currentRow,
-        },
-        success: function(data) {
-            $("#ajax_responce_serarchDiv").html(data);
-        },
-
-    });
-
-}
-
-
-// 2. تأكيد العملية
+// تأكيد العملية
 $("#button_1").click(function() {
     if ($('#reciveInvoiceNumber').val() === '-') {
         alert("يرجى اختيار رقم الفاتورة");
@@ -429,49 +246,45 @@ $("#button_1").click(function() {
         $('#modaldemo9').modal('show');
     }
 });
+
 $("#deleteproduct").click(function() {
-    // 1. تجميع بيانات الجدول في مصفوفة
-    let product_codes = $("input[name='product_code[]']").map(function(){return $(this).val();}).get();
-    let product_names = $("input[name='product_name[]']").map(function(){return $(this).val();}).get(); // إضافة جمع الأسماء
-    let quantities    = $("input[name='quantity[]']").map(function(){return $(this).val();}).get();
-    let costs         = $("input[name='cost[]']").map(function(){return $(this).val();}).get();
+    let product_codes = $("input[name='product_code[]']").map(function() {
+        return $(this).val();
+    }).get();
+    let product_names = $("input[name='product_name[]']").map(function() {
+        return $(this).val();
+    }).get();
+    let quantities = $("input[name='quantity[]']").map(function() {
+        return $(this).val();
+    }).get();
+    let costs = $("input[name='cost[]']").map(function() {
+        return $(this).val();
+    }).get();
 
     $.ajax({
         url: "{{ URL::to('create_reciveProduct') }}",
         type: 'post',
         data: {
             _token: $("#token_search").val(),
-            invoiceId: $('#invoiceId').val(),
-            // إرسال البيانات كـ Arrays لتصل للكنترولر
             product_code: product_codes,
-            product_name: product_names, // إرسال المصفوفة الجديدة
+            product_name: product_names,
             quantity: quantities,
             cost: costs
         },
         success: function(data) {
-            // 2. تحديث رقم الفاتورة
-            $('#sprint_invoice_number').val(data.invoice_number);
-            
-            // 3. إخفاء زر التأكيد وإظهار زر الطباعة
+            console.log(data)
+            // التعديل هنا: استخدام data.invoice_number بدلاً من invoice_number
+
             $('#confirmDiv').fadeOut(200, function() {
-                $(this).remove(); 
+                $(this).remove();
             });
 
-            $('#printSection').css({
-                'display': 'flex',
-                'visibility': 'visible',
-                'opacity': '1'
-            }).fadeIn(500);
-            
-            // 4. إغلاق المودال
+            // إظهار زر الطباعة
+            $('#printSection').removeClass('d-none').addClass('d-flex').fadeIn(500);
             $('#modaldemo9').modal('hide');
-            
             Swal.fire('تمت العملية بنجاح', '', 'success');
-        },
-        error: function(r) {
-            console.log(r);
-            Swal.fire('خطأ!', 'حدثت مشكلة أثناء حفظ البيانات', 'error');
         }
     });
-});</script>
+});
+</script>
 @endsection

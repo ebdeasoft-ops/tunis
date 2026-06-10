@@ -319,7 +319,6 @@ class ProductMovementAnotherBranchController extends Controller
 public function store(Request $request)
 {
     app()->setLocale(LaravelLocalization::getCurrentLocale());
-
     // 1. التحقق من وجود بيانات
     if (!$request->has('product_code')) {
         return response()->json(['message' => 'البيانات غير موجودة'], 400);
@@ -412,7 +411,8 @@ public function store(Request $request)
     }
 
     public function print_Recive_items(Request $request)
-    {
+    { 
+
         if (!$request->sprint_invoice_number) {
             session()->flash('nodataprint', '');
             return view('supProcesses.recive_product_from_another_branch');

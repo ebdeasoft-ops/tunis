@@ -63,9 +63,9 @@ $logo=camplogo;
                     </div><!-- invoice-header -->
               
                         <div class="card-body">
+<center><h3>                                {{__('home.recive_product_from_brance')}}
+</h3> </center>
 
-<h3>                                {{__('home.recive_product_from_brance')}}
-</h3>
                             <div style="padding: 0 0 0 40%" class="table-responsive mg-t-30 mb-3">
                                 <table class="table table-invoice border text-md-nowrap mb-0 table-bordered table-striped text-center" id="tableTotalPrice"
                                     name="tableTotalPrice"width="50%">

@@ -14,8 +14,7 @@ return [
     "location_wherehouse" => "Sub Warehouse Location",
     'sub_branch' => 'Sub Branch',
     'main_branch' => 'Main Branch',
-
-    
+    'choose_employee_placeholder' => 'Choose the receiving employee',
     'customer_supplier_account' => "Customer & Supplier Accounts",
     'sel_product_withoud_tax' => "Deliver product",
     'previous_deliver_Invoices' => 'Previous Delivery Invoices',

@@ -151,7 +151,7 @@ class ProductMovementAnotherBranchController extends Controller
 
         $message = $request->status === 'draft' ? 'تم تحديث وحفظ الحركة كمسودة بنجاح' : 'تم اعتماد وتحويل المنتجات بنجاح والخصم الدقيق من المخزن';
 
-        return redirect()->back()->with('productupdatedlocation', $message);
+        return redirect()->back()->with('productupdatedlocation', $message)->with('saved_movement_id', $orderId);  
     });
 }
 
@@ -419,7 +419,6 @@ public function store(Request $request)
         }
         $invoice = product_movement_another_branch::findOrFail($request->sprint_invoice_number);
         $items = product_movement_another_branch_items::with('product')->where('order_id', $invoice->id)->get();
-
         return view('supProcesses.print_recive_product', ['data' => compact('invoice', 'items')]);
     }
 

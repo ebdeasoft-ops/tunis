@@ -122,7 +122,7 @@ $logo=camplogo;
                             <?php $i = 0;
                             $totalprice = 0;
                             $totalAddedvalue = 0; ?>
-                            @foreach ($data['itemsdetails'] as $product)
+                            @foreach ($data['items'] as $product)
                             <?php $i++;
                             $totalprice += $product->cost_per_each_withoud_tax*$product->quantity;
                             $avtSaleRate = App\Models\Avt::find(2);

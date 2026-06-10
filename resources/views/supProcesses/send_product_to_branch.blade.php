@@ -177,22 +177,57 @@
                     </div>
 
                     {{-- قسم أزرار التحكم بالحفظ والحفظ كمسودة --}}
-                    <div class="d-flex justify-content-center mt-4">
-                        <button type="button" id="draftBtn" class="btn btn-secondary px-4 ml-2"
+                    {{-- قسم أزرار التحكم بالحفظ والطباعة --}}
+                    <div class="d-flex justify-content-center align-items-center mt-4" style="gap: 10px;">
+
+                        {{-- زر الحفظ كمسودة --}}
+                        <button type="button" id="draftBtn" class="btn btn-secondary px-4"
                             onclick="submitMovementForm('draft')">
                             <i class="las la-file-alt"></i> حفظ كمسودة
                         </button>
 
+                        {{-- زر الحفظ النهائي --}}
                         <button type="button" id="submitBtn" class="btn btn-primary px-5"
                             onclick="submitMovementForm('completed')">
                             <i class="las la-save"></i> {{ __('home.save_data') }}
                         </button>
+
+                 
                     </div>
-                    <br>
-                </form>
+
             </div>
+            </form>
+
+                        <br>
+
         </div>
+               <br>
+            
+<center>
+
+          {{-- زر الطباعة (يظهر فقط إذا كان هناك رقم فاتورة $data) --}}
+                        @if(session()->has('saved_movement_id') || (isset($data) && !empty($data)))
+                        @php
+                        // نجلب القيمة من السيشن، وإذا لم تكن موجودة نجلبها من المتغير $data
+                        $invoiceId = session()->get('saved_movement_id') ?? $data;
+                        @endphp
+
+                        <form
+                            action="{{ url(Mcamara\LaravelLocalization\Facades\LaravelLocalization::getCurrentLocale() .'/print_Transfer_items') }}"
+                            method="POST" target="_blank" class="m-0">
+                            {{ csrf_field() }}
+
+                            <input type="number" name="sprint_invoice_number" value="{{ $invoiceId }}" hidden>
+
+                            <button type="submit" class="btn btn-success px-4"
+                                style="background-color: #419BB2; border-color: #419BB2;">
+                                <i class="las la-print"></i> {{ __('home.print') }}
+                            </button>
+                        </form>
+                        @endif
+</center>
     </div>
+</div>
 </div>
 
 <div class="modal fade" id="SearchProduct" tabindex="-1" role="dialog" aria-hidden="true">
@@ -302,9 +337,8 @@ $('#SearchProduct').on('show.bs.modal', function() {
 function searchaboutproductfunction() {
     let searchtext = $('#searchaboutproduct').val();
     let current_user_branch = "{{ Auth()->user()->branchs_id }}";
-
     if (searchtext.trim() == '') {
-        searchtext = " ";
+        searchtext = "1";
     }
 
     $.ajax({

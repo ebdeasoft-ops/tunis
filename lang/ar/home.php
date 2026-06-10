@@ -12,7 +12,7 @@ return [
     | you want to customize your views to better match your application.
     |
     */
-    "SalesPurchaseInPeriode"=>"مشتريات و مبيعات فترة",
+    "SalesPurchaseInPeriode" => "مشتريات و مبيعات فترة",
     "wherehouse" => "انشاء مخزن فرعي",
     "name_wherehouse" => "اسم المخزن الفرعي",
     "location_wherehouse" => "مكان المخزن الفرعي",
@@ -36,7 +36,7 @@ return [
     'delivery_return' => 'مترجع التسليمات',
     'add_item' => "إضافة المنتج",
     'product_number' => "رقم القطعة",
-
+    'choose_employee_placeholder' => 'اختر الموظف المستلم',
     'customer' => "العميل",
     'confirm_delete_msg' => "تاكيد الحذف",
     'actions' => "العمليات",

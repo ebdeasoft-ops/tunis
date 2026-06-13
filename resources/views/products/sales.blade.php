@@ -358,14 +358,15 @@ td .d-flex {
                                 <col style="width:0.5%">
                                 <col style="width:1%">
                                 <col style="width:14%">
-                                <col style="width:22%">
-                                <col style="width:9%">
-                                <col style="width:9%">
-                                <col style="width:9%">
+                                <col style="width:18%">
+                                <col style="width:8%">
                                 <col style="width:8%">
                                 <col style="width:9%">
                                 <col style="width:9%">
-                                <col style="width:12%">
+                                <col style="width:8%">
+                                <col style="width:8%">
+                                <col style="width:8%">
+                                <col style="width:10%">
                                 <col style="width:8%">
                                 <thead>
                                     <tr>
@@ -374,7 +375,8 @@ td .d-flex {
                                         <th> # </th>
                                         <th>{{ __('home.productNo') }} </th>
                                         <th>{{ __('home.product') }}</th>
-                                                                                <th>{{ __('home.saleperpice') }}</th>
+                                        <th>{{ __('home.purchase') }}</th>
+                                        <th>{{ __('home.saleperpice') }}</th>
 
                                         <th> {{ __('home.productprice') }} </th>
                                         <th>{{ __('home.quantity') }}</th>
@@ -3077,6 +3079,7 @@ index=index-1;
 
                 </div>
             </td>
+            <td><input type="text" class="form-control product-cost" readonly value="0"></td>
 
             <td><input type="text" name="products[${index}][price-tax]"
                     class="form-control product-price-tax" value="0" min="0" onchange="calculateTotals_with_tax()"></td>
@@ -3135,10 +3138,7 @@ index=index-1;
 
         }
     })
-
-    console.log(cost)
-                        $('#profit').val(sale_price -cost );
-
+    $('#profit').val(sale_price -cost );
     row1.querySelector('.product-id').value = code;
     if($('#branchs_id').val()==1||$('#branchs_id').val()==11){
 
@@ -3149,6 +3149,7 @@ index=index-1;
 
     }
     row1.querySelector('.product-name').value = name;
+    row1.querySelector('.product-cost').value = cost;
     row1.querySelector('.product-code').value = productcode;
     row1.querySelector('.product-price').value = sale_price;
     row1.querySelector('.product-discound').value = 0;

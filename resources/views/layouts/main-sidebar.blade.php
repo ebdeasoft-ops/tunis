@@ -593,13 +593,7 @@
                         </a>
 
                         <ul class="slide-menu">
-                            @can('General budget sheet')
-                            <li>
-                                <a class="slide-item"
-                                    href="{{ url('budgetsheet_general') }}">{{ __('report.budgetsheet') }}</a>
-                            </li>
-                            @endcan
-
+                    
                             @can('Daily transactions sheet')
                             <li>
                                 <a class="slide-item"

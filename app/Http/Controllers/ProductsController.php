@@ -1412,7 +1412,7 @@ public function operationproducts($branchs_id, $productId)
     app()->setLocale(LaravelLocalization::getCurrentLocale()); 
 
     // جلب كل الحركات المتعلقة بالمنتج دفعة واحدة مع علاقاتها لتجنب استعلامات N+1 داخل الحلقات
-    $orderDetails = orderDetails::with('orderToSupplier')->where('product_id', $productId)->where('save', 1)->get();
+    $orderDetails = orderDetails::with('supllier')->where('product_id', $productId)->where('save', 1)->get();
     $sales = sales::with('invoice.customer')->where('product_id', $productId)->where('save', 1)->get();
     $return_sales = return_sales::with('invoice.customer')->where('product_id', $productId)->get();
     $product_movement_items = product_movement_another_branch_items::with('product', 'movement.branchto', 'movement.branchfrom')->where('product_id', $productId)->get();

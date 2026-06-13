@@ -2532,7 +2532,8 @@ public function search_budgetsheet(Request $request)
         app()->setLocale(LaravelLocalization::getCurrentLocale());
 
         $start_at = $request->start_at;
-        $end_at = $request->end_at;
+        $end_at = $request->end_at. ' 23:59:59';
+
         $branch = $request->branch;
 
         // 1. حساب أرصدة العملاء والموردين مباشرة عبر قواعد البيانات دون Loops
@@ -2807,7 +2808,6 @@ public function search_budgetsheet(Request $request)
             'convertcashboxToBankitemamount' => $convertcashboxToBankitemamount
         ];
         
-
         
         return view('reports.print_budget_sheet', compact('data'));
     }

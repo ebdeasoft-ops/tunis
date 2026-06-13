@@ -658,7 +658,7 @@ return [
     "updatesupplier" => "تعديل لبيانات المورد",
     "updatedecoument" => "تعديل السند",
     "pendingtransfers" => "التحويلات المعلقة ",
-    "Transfer cash to the next day" => " النقدية المرحلة  الي اليوم التالي",
+    "Transfer cash to the next day" => " النقدية المرحلة    ",
     "The current amount of cash" => "المبلغ النقدي الحالي",
     "The amount of the transferred amount" => "    النقدي المرحل ",
     'Transfer_cash_from_the_last_day' => "النقدية المرحلة من اليوم السابق",

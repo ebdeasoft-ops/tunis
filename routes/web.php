@@ -598,6 +598,7 @@ Route::middleware([
     Route::controller(BranchsController::class)->group(function () {
         Route::get('/addbranch', 'index');
         Route::post('/addbranch', 'create');
+        Route::get('/get-child-branches', 'getChildBranches')->name('get.child.branches');
         Route::post('/addwherehouse', 'addwherehouse');
         Route::get('/showbranches', 'show');
         Route::post('/updatebranch', 'updatebranch');

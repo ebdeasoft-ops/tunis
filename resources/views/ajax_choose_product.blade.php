@@ -7,16 +7,13 @@
                 <th style="font-size: 14px; vertical-align: middle;">#</th>
                 <th style="font-size: 14px; vertical-align: middle;">{{ __('home.productNo') }}</th>
                 <th style="font-size: 14px; vertical-align: middle;">{{ __('home.product') }}</th>
-                <th style="font-size: 14px; vertical-align: middle;">{{ __('home.photo') }}</th>
                 <th style="font-size: 14px; vertical-align: middle;">{{ __('home.branch') }}</th>
                 <th style="font-size: 14px; vertical-align: middle;">{{ __('home.productlocation') }}</th>
                 <th style="font-size: 14px; vertical-align: middle;">{{ __('home.suppliername') }}</th>
                 <th style="font-size: 14px; vertical-align: middle;">{{ __('home.quantity') }}</th>
-                
                 @can('System setting')
                     <th style="font-size: 13px; vertical-align: middle;">{{ __('home.purchaseproductwithouttax') }}</th>
                 @endcan
-
                 <th style="font-size: 13px; vertical-align: middle;">{{ __('home.sellingproduct without tax') }}</th>
                 <th style="font-size: 14px; vertical-align: middle;">{{ __('home.refnumber') }}</th>
                 <th style="font-size: 14px; vertical-align: middle;">{{ __('home.Add') }}</th>
@@ -37,13 +34,7 @@
                     <td class="text-muted small" dir="ltr">{{ $product->id }}</td>
                     <td class="fw-bold text-secondary" dir="ltr">{{ $product->Product_Code }}</td>
                     <td class="text-start ps-3 fw-bold">{{ $product->product_name }}</td>
-                    <td> 
-                        <img style="width: 55px; height: 55px; object-fit: cover; border-radius: 6px; border: 1px solid #e9ecef;" 
-                             class="custom_img shadow-sm" 
-                             src="{{ !empty($product->photo) ? asset('assets/admin/uploads/' . $product->photo) : asset('assets/img/photos/1.jpg') }}" 
-                             alt="{{ $product->product_name }}">
-                    </td>
-                    <td><span class="badge bg-light text-dark border px-2 py-1">{{ $product->branch->name ?? '-' }}</span></td>
+                    <td><span class="badge bg-light text-dark border px-2 py-1">{{ $product->branch->name ?? '**' }}</span></td>
                     <td class="text-muted">{{ $product->Product_Location ?? '-' }}</td>
                     <td class="text-truncate" style="max-width: 150px;">{{ $supplierName }}</td>
                     <td>

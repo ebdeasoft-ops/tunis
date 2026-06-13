@@ -314,6 +314,19 @@ td .d-flex {
                                 <label class="form-label fw-bold text-muted small">
                                     <i class="fas fa-store-alt me-1 text-info"></i> {{ __('users.branch') }}
                                 </label>
+                                <select class="form-control select2" id="Main_branchs_id">
+                                    <option selected value="{{ Auth()->user()->branch->id }}">
+                                        {{ Auth()->user()->branch->name }}</option>
+                                    @foreach (App\Models\branchs::where('id','!=',Auth()->user()->branch->id )->where('type',2 )->get()
+                                    as $section)
+                                    <option value="{{ $section->id }}"> {{ $section->name }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                         <div class="col-lg-1 mg-t-10">
+                                <label class="form-label fw-bold text-muted small">
+                                    <i class="fas fa-store-alt me-1 text-info"></i> {{ __('home.name_wherehouse') }}
+                                </label>
                                 <select class="form-control select2" id="branchs_id" onchange="syncValue()">
                                     <option selected value="{{ Auth()->user()->branch->id }}">
                                         {{ Auth()->user()->branch->name }}</option>
@@ -323,7 +336,6 @@ td .d-flex {
                                     @endforeach
                                 </select>
                             </div>
-
                             <div class="col-lg-2 mg-t-10">
                                 <label class="form-label fw-bold text-muted small">
                                     <i class="fas fa-crosshairs me-1 text-danger"></i> {{ __('home.cost_center') }}
@@ -336,8 +348,7 @@ td .d-flex {
                                     @endforeach
                                 </select>
                             </div>
-
-                            <div class="col-lg-3 mg-t-10">
+                            <div class="col-lg-2 mg-t-10">
                                 <label class="form-label fw-bold text-muted small">
                                     <i class="fas fa-calendar-alt me-1 text-warning"></i> {{ __('home.exportTime') }}
                                 </label>
@@ -1221,6 +1232,29 @@ td .d-flex {
 {{-- Select2 --}}
 
 <script>
+
+    $('#Main_branchs_id').on('change', function() {
+    var parentBranchId = $(this).val(); // ID الفرع المختار فوق
+    var $childSelect = $('#branchs_id'); // القائمة الثانية
+
+    if(parentBranchId) {
+        $.ajax({
+            url: "{{ route('get.child.branches') }}", // سنقوم بإنشاء هذا المسار
+            type: "GET",
+            data: { id: parentBranchId },
+            success: function(data) {
+                $childSelect.empty(); // مسح الخيارات القديمة
+                // إضافة الخيارات الجديدة بناءً على رد السيرفر
+                $.each(data, function(key, value) {
+                    $childSelect.append('<option value="'+ value.id +'">'+ value.name +'</option>');
+                });
+                $childSelect.trigger('change.select2'); // تحديث Select2
+            }
+        });
+    }
+});
+
+
 $('#excel_file').on('change', function() {
     // 1. جلب قيمة الفرع المختار
     let selectedBranch = $('#branchs_id').val();

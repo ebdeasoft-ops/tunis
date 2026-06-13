@@ -11,6 +11,11 @@ use Mcamara\LaravelLocalization\Facades\LaravelLocalization;
 
 class BranchsController extends Controller
 {
+    public function getChildBranches(Request $request) {
+    // جلب الفروع التي يكون الـ branch_id الخاص بها مساوياً للـ id المختار
+    $data = branchs::where('branch_id', $request->id)->get();
+    return response()->json($data);
+}
     /**
      * Display a listing of the resource.
      */

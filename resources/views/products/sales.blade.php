@@ -477,7 +477,7 @@ td .d-flex {
                                     @foreach (App\Models\financial_accounts::where('parent_account_number',4)->where('branchs_id',Auth()->user()->branchs_id)->orwhere('parent_account_number',5)->where('parent_account_number','!=',NULL)->where('branchs_id',Auth()->user()->branchs_id)->get() as $section)
                                     <option value="{{ $section->id }}"> {{ $section->name }} ({{ $section->account_number }})</option>
                                     @endforeach
-
+                                  <option value="Credit"> {{ __('report.credit') }} </option>
                                   <option value="Partition"> {{ __('home.Partition of the amount') }} </option>
 
                                 </select>
@@ -489,6 +489,7 @@ td .d-flex {
                                     <option id="Cash" value="Cash"> {{ __('report.cash') }}</option>
                                     <option value="Shabka"> {{ __('report.shabka') }} </option>
                                     <option value="Bank_transfer"> {{ __('home.Bank_transfer') }} </option>
+                                    <option value="Credit"> {{ __('report.credit') }} </option>
                                     <option value="Partition"> {{ __('home.Partition of the amount') }} </option>
 
 
@@ -1179,22 +1180,6 @@ td .d-flex {
                             </div>
 
 
-
-
-
-
-
-
-
-                            {{-- 3 --}}
-
-
-
-
-
-                            {{-- 5 --}}
-
-
                             <div class="col-lg-4 mb-2">
                                 <label for="inputName" class="control-label parent-label">
                                     {{ __('supprocesses.minmum_quantity_stock_alart') }}</label>
@@ -1565,51 +1550,48 @@ function calcCash() {
 
 
 
-
-
-
 $('select[name="paymentmethod"]').on('change', function () {
+    var selectedText = $(this).find(':selected').text();
+    var selectedValue = $(this).val();
+    var $paymentType = $('#payment_type');
 
-    var selectclientid = $(this).val();
-    var text_currnt = $('#paymentmethod').find(':selected').text();
-    var text = $('#payupdate').find(':selected').text();
+    // 1. إظهار جميع الخيارات أولاً لتتمكن من اختيار ما تريد منها
+    $paymentType.find('option').show().prop('disabled', false);
 
-    if (text_currnt.includes('البنك')) {
-
-        $('#payment_type').prop("disabled", false);
-        $('#Cash').prop("disabled", true);
-        document.getElementById('payment_type').style.visibility = 'visible';
-        $('#payment_type').val('Shabka').change();
-        $('#Credit').prop("disabled", true);
-
-    } else if ($('#paymentmethod').val() == "Credit") {
-
-        $('#payupdate').val(selectclientid).change();
-        $('#payment_type').val('Credit').change();
-
-    } else if ($('#paymentmethod').val() == "Partition") {
-
-        $('#payupdate').val(selectclientid).change();
-        $('#payment_type').val('Partition').change();
+    if (selectedText.includes('البنك')) {
+        // إذا اخترت البنك: نعطل كل شيء ما عدا الشبكة والتحويل
+        $paymentType.find('option').not('[value="Shabka"], [value="Bank_transfer"]').hide().prop('disabled', true);
+        // نختار أول خيار متاح تلقائياً
+        $paymentType.val('Shabka').change();
+        
+    } else if (selectedValue == "Credit") {
+        // إذا اخترت الآجل: نعطل كل شيء ما عدا الآجل
+        $paymentType.find('option').not('[value="Credit"]').hide().prop('disabled', true);
+        $paymentType.val('Credit').change();
+        
+    } else if (selectedValue == "Partition") {
+        // إذا اخترت التقسيط
+        $paymentType.find('option').not('[value="Partition"]').hide().prop('disabled', true);
+        $paymentType.val('Partition').change();
         $('#paymentmethod_MODALE').modal().show();
-            value = document.getElementById('grandTotal').value
-           document.getElementById('totalvalue').innerHTML =document.getElementById('grandTotal').value * 1
-
-            $('#cashamount').val(value)
-            $('#bankamount').val(0)
-            document.getElementById("bankamount").readOnly = false;
-            document.getElementById("cashamount").readOnly = false;
+        value = document.getElementById('grandTotal').value
+        document.getElementById('totalvalue').innerHTML =document.getElementById('grandTotal').value * 1
+           
+        // (استدعاء المودال كما كان سابقاً...)
+        
+    } else {
+        // إذا كان نقدي (أو الحالة الافتراضية): نعطل كل شيء ما عدا النقد
+        $paymentType.find('option').not('[value="Cash"]').hide().prop('disabled', true);
+        $paymentType.val('Cash').change();
     }
-
-
-    else {
-
-        $('#payment_type').val('Cash').change();
-        $('#Cash').prop("disabled", false);
-    }
-
-    $('#payupdate').val(selectclientid).change();
 });
+
+
+
+
+
+
+
 
 
 let rowIndex = 1;

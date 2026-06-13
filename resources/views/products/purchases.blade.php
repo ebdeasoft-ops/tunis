@@ -1308,33 +1308,34 @@ function renderExcelProducts(productsList) {
 
 
 
+$('#paymentmethod').on('change', function() {
+    var selectedVal = $(this).val();
+    var selectedText = $(this).find(':selected').text();
+    var $paymentType = $('#payment_type');
 
-$('select[name="paymentmethod"]').on('change', function() {
+    // 1. إعادة تفعيل كافة الخيارات
+    $paymentType.find('option').prop('disabled', false);
 
-    var selectclientid = $(this).val();
-    var text_currnt = $('#paymentmethod').find(':selected').text();
-    var text = $('#payupdate').find(':selected').text();
-
-    if (text_currnt.includes('البنك')) {
-
-        $('#payment_type').prop("disabled", false);
-        $('#Cash').prop("disabled", true);
-        document.getElementById('payment_type').style.visibility = 'visible';
-        $('#payment_type').val('Shabka').change();
-        $('#Credit').prop("disabled", true);
-
-    } else if ($('#paymentmethod').val() == "Credit") {
-
-        $('#payupdate').val(selectclientid).change();
-        $('#payment_type').val('Credit').change();
-
-    } else {
-
-        $('#payment_type').val('Cash').change();
-        $('#Cash').prop("disabled", false);
+    // 2. تطبيق المنطق
+    if (selectedText.includes('البنك')) {
+        // إذا كان بنك: نعطل النقدي والآجل
+        $paymentType.find('option[value="Cash"], option[value="Credit"]').prop('disabled', true);
+        // نختار خيار بنكي افتراضي
+        $paymentType.val('Shabka');
+    } 
+    else if (selectedVal == "Credit") {
+        // إذا كان آجل: نعطل الكل ما عدا الآجل
+        $paymentType.find('option[value="Cash"], option[value="Shabka"], option[value="Bank_transfer"]').prop('disabled', true);
+        $paymentType.val('Credit');
+    } 
+    else {
+        // إذا كان نقدي: نعطل الكل ما عدا النقدي
+        $paymentType.find('option[value="Shabka"], option[value="Bank_transfer"], option[value="Credit"]').prop('disabled', true);
+        $paymentType.val('Cash');
     }
 
-    $('#payupdate').val(selectclientid).change();
+    // 3. التحديث الجوهري لمكتبة Select2
+    $paymentType.trigger('change.select2');
 });
 
 

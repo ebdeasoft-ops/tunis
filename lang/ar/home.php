@@ -12,6 +12,7 @@ return [
     | you want to customize your views to better match your application.
     |
     */
+    "transction_day"=>"الحركة اليوم",
     "SalesPurchaseInPeriode" => "مشتريات و مبيعات فترة",
     "wherehouse" => "انشاء مخزن فرعي",
     "name_wherehouse" => "اسم المخزن الفرعي",

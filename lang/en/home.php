@@ -9,6 +9,7 @@ return [
     */
 
     // --- التعديلات الأخيرة ---
+    "transction_day" => "The Movement Today",
     "wherehouse" => "Create Sub Warehouse",
     "name_wherehouse" => "Sub Warehouse Name",
     "location_wherehouse" => "Sub Warehouse Location",

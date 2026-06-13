@@ -2118,14 +2118,15 @@ function calculateTotalDiscount() {
     totalbefore_discount = document.getElementById('totalSum').value;
     let discountTotal = 0;
 
-
+console.log(avtsale)
     document.querySelectorAll('#productsTableBody tr').forEach(r => {
 
         let discound = parseFloat(r.querySelector('.product-discound').value) || 0;
         discountTotal += discound;
     });
-    discountTotal += $('#discound_on_invoice').val() * 1;
 
+
+    discountTotal += (($('#discound_on_invoice').val() *100)/((avtsale*100)+100));
     let taxTotal = (totalbefore_discount - discountTotal) * avtsale;
     let grand = (totalbefore_discount - discountTotal) + taxTotal;
     document.getElementById('totaldiscound').value = discountTotal.toFixed(2);

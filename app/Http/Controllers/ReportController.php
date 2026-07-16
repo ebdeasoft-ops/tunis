@@ -54,7 +54,45 @@ use Illuminate\Support\Facades\View;
 
 class ReportController extends Controller
 {
-        public function search_Expenses(Request $request)
+
+    public function search_credit_collection(Request $request)
+    {
+        app()->setLocale(LaravelLocalization::getCurrentLocale());
+        $UserId = $request->UserId;
+        if ($request->branch == '-') {
+            if ($UserId == '-') {
+                $Invoices = credittransactions::where('note', 'LIKE', '%' . 'سند قبض' . '%')->whereDate('created_at', '>=', $request->start_at)->where('decument_id', 0)->whereDate('created_at', '<=', $request->end_at)->get();
+
+                return view('reports.print_credit_collection', compact('Invoices'))->with('customer_id', $UserId)->with('start_at', $request->start_at)->with('end_at', $request->end_at);
+                ;
+            }
+            $Invoices = credittransactions::where('note', 'LIKE', '%' . 'سند قبض' . '%')->where('customer_id', $UserId)->where('decument_id', 0)->whereDate('created_at', '>=', $request->start_at)->whereDate('created_at', '<=', $request->end_at)->get();
+
+
+
+            return view('reports.print_credit_collection', compact('Invoices'))->with('customer_id', $UserId)->with('start_at', $request->start_at)->with('end_at', $request->end_at);
+            ;
+
+        } else {
+
+            if ($UserId == '-') {
+                $Invoices = credittransactions::where('branchs_id', $request->branch)->where('note', 'LIKE', '%' . 'سند قبض' . '%')->whereDate('created_at', '>=', $request->start_at)->where('decument_id', 0)->whereDate('created_at', '<=', $request->end_at)->get();
+
+                return view('reports.print_credit_collection', compact('Invoices'))->with('customer_id', $UserId)->with('start_at', $request->start_at)->with('end_at', $request->end_at);
+                ;
+            }
+            $Invoices = credittransactions::where('branchs_id', $request->branch)->where('note', 'LIKE', '%' . 'سند قبض' . '%')->where('orginal_id', $UserId)->where('decument_id', 0)->whereDate('created_at', '>=', $request->start_at)->whereDate('created_at', '<=', $request->end_at)->get();
+            return view('reports.print_credit_collection', compact('Invoices'))->with('customer_id', $UserId)->with('start_at', $request->start_at)->with('end_at', $request->end_at);
+            ;
+
+
+
+
+        }
+    }
+
+    
+public function search_Expenses(Request $request)
 {
     // 1. استرجاع البيانات (تم اختصار الكود بنفس منطقك)
     $query = credittransactions::where('orginal_type', 3)

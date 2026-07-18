@@ -206,9 +206,9 @@ $logo=camplogo;
                                                 @if($total_debit-$total_credit ==0)
                                                 <td style="font-size: 15px;font-weight: bold;color:green" data-target="numberofpice">{{__('home.Balanced')}}</td>
                                                 @elseif($total_debit-$total_credit >0)
-                                                <td style="font-size: 15px;font-weight: bold;color:green" data-target="numberofpice">{{__('home.credit')}} ( {{round($total_debit-$total_credit,2)}} ) {{__('home.SAR')}}</td>
+                                                <td style="font-size: 15px;font-weight: bold;color:green" data-target="numberofpice">{{__('home.debit')}} ( {{round($total_debit-$total_credit,2)}} ) {{__('home.SAR')}}</td>
                                                 @else
-                                                <td style="font-size: 17px;font-weight: bold;color:green" data-target="numberofpice">{{__('home.debit')}} ( {{round(($total_debit-$total_credit)*-1,2)}} ) {{__('home.SAR')}}</td>
+                                                <td style="font-size: 17px;font-weight: bold;color:green" data-target="numberofpice">{{__('home.credit')}} ( {{round(($total_debit-$total_credit)*-1,2)}} ) {{__('home.SAR')}}</td>
                                                 @endif                                                      
 
                                                
@@ -230,9 +230,9 @@ $logo=camplogo;
                                                 @if(($total_debit-$total_credit)-($debit-$credit)  ==0)
                                                 <td style="font-size: 15px;font-weight: bold;color:red" data-target="numberofpice">{{__('home.Balanced')}}</td>
                                                 @elseif(($total_debit-$total_credit)-($debit-$credit) >0)
-                                                <td style="font-size: 15px;font-weight: bold;color:red" data-target="numberofpice">{{__('home.credit')}} ( {{round(($total_debit-$total_credit)-($debit-$credit) ,2)}} ) {{__('home.SAR')}}</td>
+                                                <td style="font-size: 15px;font-weight: bold;color:red" data-target="numberofpice">{{__('home.debit')}} ( {{round(($total_debit-$total_credit)-($debit-$credit) ,2)}} ) {{__('home.SAR')}}</td>
                                                 @else
-                                                <td style="font-size: 15px;font-weight: bold;color:red" data-target="numberofpice">{{__('home.debit')}} ( {{round((($total_debit-$total_credit)-($debit-$credit) )*-1,2)}} ) {{__('home.SAR')}}</td>
+                                                <td style="font-size: 15px;font-weight: bold;color:red" data-target="numberofpice">{{__('home.credit')}} ( {{round((($total_debit-$total_credit)-($debit-$credit) )*-1,2)}} ) {{__('home.SAR')}}</td>
                                                 @endif
 
                                                

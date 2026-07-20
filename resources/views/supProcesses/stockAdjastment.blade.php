@@ -122,33 +122,50 @@
     <div class="col-xl-12">
         <div class="card mg-b-20">
             <div class="card-header pb-0">
-                                     <div class="col-lg-2 mg-t-20 mg-lg-t-0" id="type">
-                                <p style="font-size: 1.1vw;" class="radio-label parent-label mb-3"> {{ __('users.branch') }} </p>
-                                <br>
-                                <select class="form-control select2" style="width:100%" name="branchs_id" id="branchs_id">
 
-                                    <option value="{{ Auth()->user()->branch->id }}"> {{ Auth()->user()->branch->name }}
-                                    </option>
-@if(Auth()->user()->id!=22&&Auth()->user()->id!=23&&Auth()->user()->id!=26)
-                                    @foreach (App\Models\branchs::get() as $section)
-                                    @if(Auth()->user()->branch->id!=$section->id)
-                                    <option value="{{ $section->id }}"> {{ $section->name }}</option>
-                                    @endif
-                                    @endforeach
-                                    @endif
-                                </select>
-                            </div><!-- col-4 -->
-                            <br>
-                <div class="row">
-                     
-                    <div class="col-lg-4 mg-t-20 mg-lg-t-0">
-                        <a style="background-color: #FBA10F" class="modal-effect btn btn-md px-0 btn-info" data-effect="effect-scale" data-toggle="modal" href="#SearchProduct" title="تحديد">
-                            <i style="width: 200px;" class="las la-search"> {{ __('home.chooose product') }}</i>
-                        </a>
+            <div class="card shadow-sm border-0 mb-4">
+    <div class="card-body">
+        <div class="row align-items-end">
+            
+            <!-- اختيار الفرع -->
+            <div class="col-md-3">
+                <label class="form-label font-weight-bold">{{ __('users.branch') }}</label>
+                <select class="form-control select2" name="branchs_id" id="branchs_id">
+                    <option value="{{ Auth()->user()->branch->id }}">{{ Auth()->user()->branch->name }}</option>
+                        @foreach (App\Models\branchs::where('id', '!=', Auth()->user()->branch->id)->get() as $section)
+                            <option value="{{ $section->id }}">{{ $section->name }}</option>
+                        @endforeach
+                </select>
+            </div>
+
+            <!-- زر اختيار المنتج -->
+            <div class="col-md-3">
+                <button type="button" class="btn btn-warning w-100 shadow-sm" data-toggle="modal" data-target="#SearchProduct">
+                    <i class="las la-search"></i> {{ __('home.chooose product') }}
+                </button>
+            </div>
+
+            <!-- أزرار الإكسل -->
+            <div class="col-md-6 text-md-right mt-3 mt-md-0">
+                <div class="d-flex justify-content-md-end gap-2">
+                    <a href="{{ route('stock.download_template') }}" class="btn btn-outline-success shadow-sm">
+                        <i class="fas fa-file-excel"></i> تحميل النموذج
+                    </a>
+                    
+                    <div class="upload-btn-wrapper">
+                        <input type="file" id="excel_file" style="display:none;" accept=".xlsx, .xls">
+                        <button type="button" class="btn btn-primary shadow-sm" onclick="document.getElementById('excel_file').click();">
+                            <i class="fas fa-upload"></i> رفع ملف Excel
+                        </button>
                     </div>
                 </div>
+            </div>
+        </div>
+    </div>
+</div>
 
-                <br>
+
+
                 <form class="parsley-style-1" id="selectForm2" autocomplete="off" name="selectForm2"
                     action="{{ url(Mcamara\LaravelLocalization\Facades\LaravelLocalization::getCurrentLocale() . '/stockAdjastment') }}"
                     method="post">
@@ -351,8 +368,145 @@
 </div>
 @endsection
 @section('js')
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <script>
+
+
+
+$('#excel_file').on('change', function(e) {
+    let selectedBranch = $('#branchs_id').val();
+    let file = this.files[0];
+
+    if (!selectedBranch) {
+        Swal.fire('تنبيه', 'يرجى اختيار الفرع أولاً', 'warning');
+        $(this).val('');
+        return;
+    }
+
+    // قراءة الملف للتحقق من عدد الصفوف قبل الإرسال
+    let reader = new FileReader();
+    reader.onload = function(e) {
+        let data = new Uint8Array(e.target.result);
+        let workbook = XLSX.read(data, {type: 'array'});
+        let jsonData = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
+
+        // التحقق: هل يتجاوز 100 صف؟
+        if (jsonData.length > 100) {
+            Swal.fire('خطأ', 'عذراً، الملف يحتوي على ' + jsonData.length + ' صف. الحد الأقصى هو 100 صف فقط.', 'error');
+            $('#excel_file').val('');
+            return;
+        }
+
+        // إذا كان صحيحاً، نبدأ عملية الرفع عبر AJAX
+        let formData = new FormData();
+        formData.append('excel_file', file);
+        formData.append('branch_id', selectedBranch);
+        formData.append('_token', '{{ csrf_token() }}');
+
+        $.ajax({
+            url: "{{ route('stock.import_ajax') }}",
+            method: "POST",
+            data: formData,
+            contentType: false,
+            processData: false,
+            beforeSend: function() {
+                Swal.showLoading();
+            },
+            success: function(response) {
+                if (response.success) {
+                    renderExcelProducts(response.data);
+                    Swal.fire('تم!', 'تم رفع المنتجات وتحديث الجدول بنجاح', 'success');
+                } else {
+                    Swal.fire('خطأ!', response.message || 'حدث خطأ ما', 'error');
+                }
+            },
+            error: function() {
+                Swal.fire('خطأ!', 'حدثت مشكلة أثناء معالجة ملف الإكسيل', 'error');
+            }
+        });
+    };
+    reader.readAsArrayBuffer(file);
+});
+
+
+
+function renderExcelProducts(productsList) {
+    let table = document.getElementById('adjustment-table-body');
+
+    productsList.forEach((product) => {
+        if ($("#row_" + product['product_id']).length > 0) return;
+
+        let available = parseFloat(product['available_quantity']);
+        let inventory = parseFloat(product['inventory_quantity']);
+
+        // تحديد النوع بناءً على المقارنة
+        // إذا كان الجرد أكبر من المخزن = زيادة
+        // إذا كان الجرد أقل من المخزن = نقصان
+        let type = (inventory >= available) ? 'inc' : 'dec';
+        
+        // حساب الفرق للكمية التي سيتم إدخالها في حقل الكمية (القيمة المطلقة للفرق)
+        let diffAmount = Math.abs(inventory - available);
+
+        let newRow = `
+            <tr id="row_${product['product_id']}">
+                <td>
+                    ${product['Product_Code']}
+                    <input type="hidden" name="productNo[]" value="${product['product_id']}">
+                </td>
+                <td>${product['product_name']}</td>
+                <td>
+                    <select class="form-control row-type-selector" style="width: 110px;">
+                        <option value="inc" ${type === 'inc' ? 'selected' : ''}>زيادة (+)</option>
+                        <option value="dec" ${type === 'dec' ? 'selected' : ''}>نقصان (-)</option>
+                    </select>
+                </td>
+                <td>
+                    <input type="text" class="form-control text-center" value="${available}" readonly>
+                </td>
+                <td>
+                    <input type="text" class="form-control amount-input" value="${diffAmount}" required min="0">
+                    <input type="hidden" name="productincrease[]" class="inc-val" value="${type === 'inc' ? diffAmount : 0}">
+                    <input type="hidden" name="productdecrease[]" class="dec-val" value="${type === 'dec' ? diffAmount : 0}">
+                </td>
+                <td>
+                    <input type="text" name="note[]" value="تعديل  جرد  update stock" class="form-control" placeholder="ملاحظة">
+                </td>
+                <td>
+                    <button type="button" class="btn btn-danger btn-sm" onclick="$(this).closest('tr').remove()">
+                        <i class="fa fa-trash"></i> حذف
+                    </button>
+                </td>
+            </tr>
+        `;
+
+        table.insertAdjacentHTML("beforeend", newRow);
+    });
+}
+// دالة مساعدة لتحديث القيم المخفية (زيادة أو نقصان)
+function updateHiddenValues(row) {
+    let type = row.find('.row-type-selector').val();
+    let amount = row.find('.amount-input').val();
+    
+    if (type === 'inc') {
+        row.find('.inc-val').val(amount);
+        row.find('.dec-val').val(0);
+    } else {
+        row.find('.inc-val').val(0);
+        row.find('.dec-val').val(amount);
+    }
+}
+
+// تفعيل التحديث عند تغيير النوع أو الكمية يدوياً
+$(document).on('change', '.row-type-selector, .amount-input', function() {
+    updateHiddenValues($(this).closest('tr'));
+});
+
+
+
+
+
     function convertToNumbersalePrice() {
         var input = document.getElementById("sale_price");
         var val = toEnglishNumber(input.value)

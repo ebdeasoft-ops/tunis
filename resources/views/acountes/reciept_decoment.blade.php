@@ -72,6 +72,7 @@
                             <label class="parent-label">{{ __('home.Payment method') }}</label>
                             <select class="form-control" name="pay_method_type" id="pay_method_type">
                                 <option value="Cash">{{ __('home.Cash') }}</option>
+                                <option value="Shabka"> {{ __('report.shabka') }} </option>
                                 <option value="Bank_transfer">{{ __('home.Bank transfer') }}</option>
                             </select>
                         </div>

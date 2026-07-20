@@ -16,9 +16,68 @@ use Illuminate\Http\Request;
 use Mcamara\LaravelLocalization\Facades\LaravelLocalization;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
+use App\Exports\StockUpdateTempleteExport;
+use App\Imports\StockUpdateImport;
+use Maatwebsite\Excel\Facades\Excel;
 
 class SupprocessesController extends Controller
 {
+
+
+public function importStockAjax(Request $request)
+{
+    try {
+        $rows = Excel::toCollection(new StockUpdateImport, $request->file('excel_file'))->first();
+        $selectedBranchId = $request->input('branch_id');
+        $allProdctsD = [];
+
+        foreach ($rows as $row) {
+            // البحث عن المنتج في الفرع المحدد
+            $product = products::where('Product_Code', $row['product_code'])
+                               ->where('branchs_id', $selectedBranchId)
+                               ->first();
+
+            if ($product) {
+                $allProdctsD[] = [
+                    'product_id' => $product->id,
+                    'Product_Code' => $product->Product_Code,
+                    'product_name' => $product->product_name,
+                    'available_quantity' => $product->numberofpice, // الكمية الحالية في البرنامج
+                    'inventory_quantity' => $row['quantity'] ?? 0,   // الكمية التي تم جردها في الإكسيل
+                ];
+            }
+        }
+
+        return response()->json(['success' => true, 'data' => $allProdctsD]);
+    } catch (\Exception $e) {
+        return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
+    }
+}
+   
+    public function downloadTemplate()
+    {
+        return Excel::download(new StockUpdateTempleteExport, 'purchase_template.xlsx');
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     public function __construct()
     {
         app()->setLocale(LaravelLocalization::getCurrentLocale());

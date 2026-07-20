@@ -1,6 +1,6 @@
 @if (isset($data) && !empty($data) && count($data) > 0)
     <div class="table-responsive">
-        <table class="table text-md-nowrap text-center our-table" id="example2"
+        <table class="table text-md-nowrap text-center our-table table-responsive" id="example2"
             style="border: 2px solid rgba(0,0,0,.3); width: 100%;">
             <thead>
                 <tr class="bg-light">

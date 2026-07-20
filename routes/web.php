@@ -45,7 +45,17 @@ Route::get('export-cost-centers', function (Request $request) {
     );
 });
 
+Route::group(['prefix' => 'stock', 'as' => 'stock.'], function () {
+    
+    // مسار تحميل نموذج الإكسيل (Template)
+    Route::get('/download-template', [SupprocessesController::class, 'downloadTemplate'])
+         ->name('download_template');
 
+    // مسار رفع ومعالجة ملف الإكسيل عبر AJAX
+    Route::post('/import-ajax', [SupprocessesController::class, 'importStockAjax'])
+         ->name('import_ajax');
+
+});
 
 Route::post('Purchase_returns_Data', [ProductsController::class, 'Purchase_returns_Data']);
 Route::post('save_invoice_purchase_roken', [ProductsController::class, 'save_invoice_purchase_roken']);

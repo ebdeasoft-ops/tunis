@@ -5,7 +5,7 @@
           @endphp
 
           <br>
-          <table class="table text-md-nowrap text-center  our-table"
+          <table class="table text-md-nowrap text-center  our-table  table-responsive"
                                              id="example2" width="100%"
                                              style="border: 2px solid rgba(0,0,0,.3);"
                                              >

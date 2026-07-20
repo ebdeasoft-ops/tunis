@@ -1225,7 +1225,7 @@ td .d-flex {
 <!-- 5) Plugins أخرى -->
 <script src="{{ URL::asset('assets/plugins/jquery-ui/ui/widgets/datepicker.js') }}"></script>
 
-
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <!-- 6) Custom form elements -->
 
 
@@ -1254,43 +1254,64 @@ td .d-flex {
     }
 });
 
-
-$('#excel_file').on('change', function() {
-    // 1. جلب قيمة الفرع المختار
+$('#excel_file').on('change', function(e) {
     let selectedBranch = $('#branchs_id').val();
+    let file = this.files[0];
 
+    // 1. التحقق من اختيار الفرع
     if (!selectedBranch) {
         Swal.fire('تنبيه', 'يرجى اختيار الفرع أولاً', 'warning');
-        $(this).val(''); // تفريغ حقل الملف
+        $(this).val('');
         return;
     }
 
-    let formData = new FormData();
-    formData.append('excel_file', this.files[0]);
-    formData.append('branch_id', selectedBranch); // إرسال رقم الفرع
-    formData.append('_token', '{{ csrf_token() }}');
+    // 2. قراءة الملف للتحقق من عدد الصفوف (قبل إرسال الطلب للسيرفر)
+    let reader = new FileReader();
+    reader.onload = function(e) {
+        let data = new Uint8Array(e.target.result);
+        let workbook = XLSX.read(data, {type: 'array'});
+        let jsonData = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
 
-    $.ajax({
-        url: "{{ route('purchases.import_ajax') }}",
-        method: "POST",
-        data: formData,
-        contentType: false,
-        processData: false,
-        beforeSend: function() {
-            // اختياري: إظهار مؤشر تحميل
-            Swal.showLoading();
-        },
-        success: function(response) {
-            if (response.success) {
-                renderExcelProducts(response.data);
-                Swal.fire('تم!', 'تم رفع المنتجات وتحديث الجدول بنجاح', 'success');
-            }
-        },
-        error: function() {
-            Swal.fire('خطأ!', 'حدثت مشكلة أثناء معالجة ملف الإكسيل', 'error');
+        // التحقق من أن عدد الصفوف لا يتجاوز 100
+        if (jsonData.length > 100) {
+            Swal.fire('خطأ!', 'عذراً، الملف يحتوي على ' + jsonData.length + ' صف. الحد الأقصى المسموح به هو 100 صف.', 'error');
+            $('#excel_file').val(''); // مسح الملف المختار
+            return;
         }
-    });
+
+        // 3. إذا كان العدد صحيحاً، نبدأ عملية الرفع عبر AJAX
+        let formData = new FormData();
+        formData.append('excel_file', file);
+        formData.append('branch_id', selectedBranch);
+        formData.append('_token', '{{ csrf_token() }}');
+
+        $.ajax({
+            url: "{{ route('purchases.import_ajax') }}",
+            method: "POST",
+            data: formData,
+            contentType: false,
+            processData: false,
+            beforeSend: function() {
+                Swal.showLoading();
+            },
+            success: function(response) {
+                if (response.success) {
+                    renderExcelProducts(response.data);
+                    Swal.fire('تم!', 'تم رفع المنتجات وتحديث الجدول بنجاح', 'success');
+                } else {
+                    Swal.fire('خطأ!', response.message || 'حدث خطأ أثناء المعالجة', 'error');
+                }
+            },
+            error: function() {
+                Swal.fire('خطأ!', 'حدثت مشكلة أثناء معالجة ملف الإكسيل', 'error');
+            }
+        });
+    };
+    reader.readAsArrayBuffer(file);
 });
+
+
+
 
 function renderExcelProducts(productsList) {
     document.getElementById("productsTableBody").innerHTML = "";

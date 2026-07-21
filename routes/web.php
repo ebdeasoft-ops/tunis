@@ -485,7 +485,7 @@ Route::middleware([
         Route::post('/Requestـaـquoteـfromـtheـsupplier', 'search_Requestـaـquoteـfromـtheـsupplier');
         Route::get('/print_Requestـaـquoteـfromـtheـsupplier/{branchId}/{supplier}/{startat}/{endat}', 'print_Requestـaـquoteـfromـtheـsupplier');
         Route::get('/Purchasesـfromـsuppliers', 'Purchasesـfromـsuppliers');
-        Route::post('/Purchasesـfromـsuppliers', 'search_Purchasesـfromـsuppliers');
+        Route::post('/Purchasesـfromـsuppliers', 'search_Purchases_from_suppliers');
         Route::get('/print_Purchasesـfromـsuppliers/{branch}/{pay}/{supplierId}/{startat}/{endat}', 'print_Purchasesـfromـsuppliers');
         Route::get('Refundـofـresourceـpurchases', 'Refundـofـresourceـpurchases');
         Route::post('/Refundـofـresourceـpurchases', 'search_Refundـofـresourceـpurchases');

@@ -13,35 +13,38 @@ class sales extends Model
     use HasFactory;
 
     protected $fillable = [
-     'product_id'
-    ,'invoice_id',
-    'branch_id',
-    'save',
-    'reamingQuantity',
-    'Discount_Value',
-    'Added_Value',
-     'Unit_Price',
-     'quantity',
-     'discountreturn',
-      'quantityreturn',
-      'created_at',
-'unit',
-'note',
-         'user_id'
+        'product_id'
+        ,
+        'invoice_id',
+        'branch_id',
+        'save',
+        'reamingQuantity',
+        'Discount_Value',
+        'Added_Value',
+        'Unit_Price',
+        'quantity',
+        'discountreturn',
+        'quantityreturn',
+        'created_at',
+        'unit',
+        'note',
+        'user_id',
+        'tax_rate',
+        'product_name'
 
-];
+    ];
 
     public function Invoice()
     {
-        return $this->belongsTo(invoices::class,'invoice_id');
+        return $this->belongsTo(invoices::class, 'invoice_id');
     }
-    
+
     public function productData()
     {
-        return $this->belongsTo(products::class,'product_id');
+        return $this->belongsTo(products::class, 'product_id');
     }
     public function branch()
     {
-        return $this->belongsTo(branchs::class,'branch_id');
+        return $this->belongsTo(branchs::class, 'branch_id');
     }
 }

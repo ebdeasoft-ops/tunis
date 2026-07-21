@@ -25,62 +25,65 @@
 
 /* الخط العام */
 /* تنسيق الحاوية الرئيسية */
-    #printdiv {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 10px;
-        align-items: center;
-        padding: 15px;
-        background: #f8f9fa;
-        border-radius: 10px;
-        border: 1px solid #e0e0e0;
-    }
+#printdiv {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: center;
+    padding: 15px;
+    background: #f8f9fa;
+    border-radius: 10px;
+    border: 1px solid #e0e0e0;
+}
 
-    /* التنسيق الموحد للأزرار */
-    #printdiv .btn,
-    #printdiv a,
-    #printdiv button {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        height: 38px !important; /* ارتفاع موحد احترافي */
-        border-radius: 8px !important;
-        font-weight: 600 !important;
-        transition: all 0.3s ease !important;
-        border: none !important;
-        padding: 0 15px !important;
-        text-decoration: none !important;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1) !important;
-    }
+/* التنسيق الموحد للأزرار */
+#printdiv .btn,
+#printdiv a,
+#printdiv button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 38px !important;
+    /* ارتفاع موحد احترافي */
+    border-radius: 8px !important;
+    font-weight: 600 !important;
+    transition: all 0.3s ease !important;
+    border: none !important;
+    padding: 0 15px !important;
+    text-decoration: none !important;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
+}
 
-    /* زر الواتساب الدائري الصغير */
-    #send_whats_app {
-        width: 45px !important; /* مقاس متناسق مع البقية */
-        background-color: #25d366 !important;
-        font-size: 20px !important;
-        color: white !important;
-    }
+/* زر الواتساب الدائري الصغير */
+#send_whats_app {
+    width: 45px !important;
+    /* مقاس متناسق مع البقية */
+    background-color: #25d366 !important;
+    font-size: 20px !important;
+    color: white !important;
+}
 
-    /* تأثيرات التمرير (Hover) */
-    #printdiv a:hover,
-    #printdiv button:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 8px rgba(0,0,0,0.15) !important;
-        filter: brightness(1.1);
-    }
+/* تأثيرات التمرير (Hover) */
+#printdiv a:hover,
+#printdiv button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15) !important;
+    filter: brightness(1.1);
+}
 
-    /* أيقونات SVG داخل الأزرار */
-    .svg-icon-buttons {
-        fill: currentColor;
-        margin-right: 5px;
-        margin-left: 5px;
-    }
+/* أيقونات SVG داخل الأزرار */
+.svg-icon-buttons {
+    fill: currentColor;
+    margin-right: 5px;
+    margin-left: 5px;
+}
 
-    /* زر هيئة الزكاة والضريبة (رمادي) */
-    #sendzatca {
-        background-color: #6c757d !important;
-        color: white !important;
-    }
+/* زر هيئة الزكاة والضريبة (رمادي) */
+#sendzatca {
+    background-color: #6c757d !important;
+    color: white !important;
+}
+
 body,
 table,
 td,
@@ -214,6 +217,7 @@ table thead th {
 td .d-flex {
     align-items: center;
 }
+
 /* Basic styling for loading screen */
 #loading-screen {
     position: fixed;
@@ -249,9 +253,6 @@ td .d-flex {
         transform: rotate(360deg);
     }
 }
-
-
-
 </style>
 @section('title')
 {{ __('home.sales') }}
@@ -264,7 +265,8 @@ td .d-flex {
             <div class="d-flex align-items-center justify-content-between flex-wrap" style="width:100%; gap: 10px;">
 
                 <div class="d-flex align-items-center">
-                    <h4 class="content-title mb-0" style="color: #23395D; font-weight: bold;">{{ __('home.sales') }}</h4>
+                    <h4 class="content-title mb-0" style="color: #23395D; font-weight: bold;">{{ __('home.sales') }}
+                    </h4>
                 </div>
 
                 <div class="d-flex flex-wrap align-items-center" style="gap: 5px;">
@@ -278,24 +280,21 @@ td .d-flex {
                     </div>
 
                     {{-- زر إضافة عميل جديد --}}
-                    @can('Add Customer')
-                    <button style="background-color: #23395D;" class="btn btn-sm text-white p-2" data-toggle="modal" href="#createcustomer">
+                    <button style="background-color: #23395D;" class="btn btn-sm text-white p-2" data-toggle="modal"
+                        href="#createcustomer">
                         <i class="fa fa-user-plus"></i> {{ __('home.addnewcustomer') }}
                     </button>
-                    @endcan
 
                     {{-- زر إضافة منتج جديد --}}
-                    @can('Add Product')
-                    <button style="background-color: #23395D;" class="btn btn-sm text-white p-2" data-toggle="modal" href="#createproduct">
+                    <button style="background-color: #23395D;" class="btn btn-sm text-white p-2" data-toggle="modal"
+                        href="#createproduct">
                         <i class="fa fa-plus"></i> {{ __('supprocesses.addproduct') }}
                     </button>
-                    @endcan
 
-                    @can('Pricing Approval')
-                    <button style="background-color: green;" class="btn btn-sm text-white p-2" data-toggle="modal" href="#updateinvoicebyidmodale">
+                    <button style="background-color: green;" class="btn btn-sm text-white p-2" data-toggle="modal"
+                        href="#updateinvoicebyidmodale">
                         {{ __('home.updateinvoicebyid') }}
                     </button>
-                    @endcan
 
                 </div>
             </div>
@@ -312,12 +311,12 @@ td .d-flex {
 @endsection
 @section('content')
 
-    <center>
-        <div id="loading-screen">
-            <div id="loading-animation"></div>
-            &nbsp; <p> جارٍ إرسال الفاتورة، يرجى الانتظار <br>Invoice is being sent, please wait</p>
-        </div>
-    </center>
+<center>
+    <div id="loading-screen">
+        <div id="loading-animation"></div>
+        &nbsp; <p> جارٍ إرسال الفاتورة، يرجى الانتظار <br>Invoice is being sent, please wait</p>
+    </div>
+</center>
 
 <!-- row -->
 <div class="row">
@@ -330,18 +329,18 @@ td .d-flex {
 
 
                 <?php
-        $avtSaleRate = App\Models\Avt::find(1);
-        $avtSaleRate = $avtSaleRate->AVT;
-        $system_settings = App\Models\system_setting::find(1);
-        $discound_allow = $system_settings->discount_on_invoice;
+    $avtSaleRate = App\Models\Avt::find(1);
+    $avtSaleRate = $avtSaleRate->AVT;
+    $system_settings = App\Models\system_setting::find(1);
+    $discound_allow = $system_settings->discount_on_invoice;
 
-                                                                    ?>
+                                                                                    ?>
 
                 <form enctype="multipart/form-data" method="POST" role="search" name="form-name" id='formdata'
                     autocomplete="off">
                     {{ csrf_field() }}
 
-                      <input type="hidden" name="action" id="invoice_action" >
+                    <input type="hidden" name="action" id="invoice_action">
 
 
                     <div style="border-radius: 10px" class="card p-3 my-3">
@@ -357,12 +356,13 @@ td .d-flex {
                             <thead class="table-dark">
                                 <col style="width:0.5%">
                                 <col style="width:1%">
-                                <col style="width:14%">
-                                <col style="width:18%">
+                                <col style="width:10%">
+                                <col style="width:15%">
                                 <col style="width:8%">
+                                <col style="width:7%">
+                                <col style="width:7%">
+                                <col style="width:7%">
                                 <col style="width:8%">
-                                <col style="width:9%">
-                                <col style="width:9%">
                                 <col style="width:8%">
                                 <col style="width:8%">
                                 <col style="width:8%">
@@ -382,6 +382,7 @@ td .d-flex {
                                         <th>{{ __('home.quantity') }}</th>
                                         <th>{{ __('home.price') }}</th>
                                         <th>{{ __('home.discount') }}</th>
+                                        <th style="width: 10%">{{ __('home.avt_rate') }}</th>
                                         <th>{{ __('home.addedValue') }}</th>
                                         <th>{{ __('home.total') }}</th>
                                         <th>{{ __('home.operations') }}</th>
@@ -395,40 +396,43 @@ td .d-flex {
                         <button type="button" class="addProductBtn" style="background-color: #419BB2 ;width:8%"
                             onclick="addRow()"> {{ __('supprocesses.addproduct') }}</button>
                         <br>
-      <div class="row mt-3 p-3" style="background-color: #fcfcfc; border: 1px solid #e1e1e1; border-radius: 8px; justify-content: space-between; align-items: flex-end;">
+                        <div class="row mt-3 p-3"
+                            style="background-color: #fcfcfc; border: 1px solid #e1e1e1; border-radius: 8px; justify-content: space-between; align-items: flex-end;">
 
-<div class="col-lg-3">
-    <label class="form-label" style="color: #23395D; font-weight: bold; font-size: 13px;">
-        <i class="fa fa-file-invoice-dollar ml-1"></i> {{ __('home.discound_on_invoice') }}
-    </label>
-    <input type="text" readonly id="discound_on_invoice" name="discound_on_invoice"
-           oninput='calculateTotalDiscount()'
-           class="form-control"
-           style="border: 1px solid #23395D; border-radius: 5px; height: 40px; text-align: center; font-weight: bold; color: #d32f2f;"
-           placeholder="0.00">
-</div>
-                @can('System setting')
+                            <div class="col-lg-3">
+                                <label class="form-label" style="color: #23395D; font-weight: bold; font-size: 13px;">
+                                    <i class="fa fa-file-invoice-dollar ml-1"></i> {{ __('home.discound_on_invoice') }}
+                                </label>
+                                <input type="text" readonly id="discound_on_invoice" name="discound_on_invoice"
+                                    oninput='calculateTotalDiscount()' class="form-control"
+                                    style="border: 1px solid #23395D; border-radius: 5px; height: 40px; text-align: center; font-weight: bold; color: #d32f2f;"
+                                    placeholder="0.00">
+                            </div>
+                            @can('System setting')
 
-    <div id="div_show_profit" class="col-lg-3">
-        <label for="profit" class="control-label parent-label" style="color: #23395D; font-weight: bold; font-size: 13px;">
-            <i class="fa fa-money-bill-wave ml-1"></i> {{ __('home.profit') }}
-        </label>
-        <input autocomplete="off" type="text" id="profit" name="profit" value="0" readonly
-               class="form-control parent-input"
-               style="background-color: #e3f2fd; border: 1px solid #90caf9; border-radius: 5px; height: 40px; text-align: center; font-weight: bold; color: #1565c0;">
-    </div>
-                    @endcan
+                            <div id="div_show_profit" class="col-lg-3">
+                                <label for="profit" class="control-label parent-label"
+                                    style="color: #23395D; font-weight: bold; font-size: 13px;">
+                                    <i class="fa fa-money-bill-wave ml-1"></i> {{ __('home.profit') }}
+                                </label>
+                                <input autocomplete="off" type="text" id="profit" name="profit" value="0" readonly
+                                    class="form-control parent-input"
+                                    style="background-color: #e3f2fd; border: 1px solid #90caf9; border-radius: 5px; height: 40px; text-align: center; font-weight: bold; color: #1565c0;">
+                            </div>
+                            @endcan
 
 
-    <div class="col-lg-4">
-        <label for="last_supplier_cost" class="control-label parent-label" style="color: #23395D; font-weight: bold; font-size: 13px;">
-            <i class="fa fa-tag ml-1"></i> {{ __('home.lastpricecustomer') }}
-        </label>
-        <select class="form-control parent-input" name="last_supplier_cost" id="last_supplier_cost"
-                style="background-color: #d4edda; border: 1px solid #28a745; border-radius: 5px; height: 40px; font-weight: 500;">
-            </select>
-    </div>
-</div>
+                            <div class="col-lg-4">
+                                <label for="last_supplier_cost" class="control-label parent-label"
+                                    style="color: #23395D; font-weight: bold; font-size: 13px;">
+                                    <i class="fa fa-tag ml-1"></i> {{ __('home.lastpricecustomer') }}
+                                </label>
+                                <select class="form-control parent-input" name="last_supplier_cost"
+                                    id="last_supplier_cost"
+                                    style="background-color: #d4edda; border: 1px solid #28a745; border-radius: 5px; height: 40px; font-weight: 500;">
+                                </select>
+                            </div>
+                        </div>
                         <div class="row mt-3">
 
 
@@ -454,8 +458,8 @@ td .d-flex {
                         <br>
 
 
-            <input type="number" class="form-control " name="show_invoice_number_update" id="show_invoice_number_update" value=0
-                title=" رقم الفاتورة " hidden>
+                        <input type="number" class="form-control " name="show_invoice_number_update"
+                            id="show_invoice_number_update" value=0 title=" رقم الفاتورة " hidden>
 
                         <div class='row'>
 
@@ -464,30 +468,37 @@ td .d-flex {
 
 
 
-                                           <select style="width:100%!important" name="clientnamesearch" id="clientnamesearch" class="form-control select2">
-                                    <option  value=1 >عميل نقدي CASH CUSTOMER</option>
+                                <select style="width:100%!important" name="clientnamesearch" id="clientnamesearch"
+                                    class="form-control select2">
+                                    <option value=1>عميل نقدي CASH CUSTOMER</option>
 
 
-                            </select>
+                                </select>
                             </div>
 
 
 
-                                     <div class="col-lg-2 mg-t-20 mg-lg-t-0" >
+                            <div class="col-lg-2 mg-t-20 mg-lg-t-0">
                                 <p class="mg-b-10"> {{__('home.paymentmethod')}}</p>
                                 <select class="form-control select2" name="paymentmethod" id="paymentmethod" required>
-                                    @foreach (App\Models\financial_accounts::where('parent_account_number',4)->where('branchs_id',Auth()->user()->branchs_id)->orwhere('parent_account_number',5)->where('parent_account_number','!=',NULL)->where('branchs_id',Auth()->user()->branchs_id)->get() as $section)
-                                    <option value="{{ $section->id }}"> {{ $section->name }} ({{ $section->account_number }})</option>
+                                    @foreach (App\Models\financial_accounts::where('parent_account_number',
+                                    4)->where('branchs_id',
+                                    Auth()->user()->branchs_id)->orwhere('parent_account_number',
+                                    5)->where('parent_account_number', '!=', NULL)->where('branchs_id',
+                                    Auth()->user()->branchs_id)->get() as $section)
+                                    <option value="{{ $section->id }}"> {{ $section->name }}
+                                        ({{ $section->account_number }})</option>
                                     @endforeach
-                                  <option value="Credit"> {{ __('report.credit') }} </option>
-                                  <option value="Partition"> {{ __('home.Partition of the amount') }} </option>
+                                    <option value="Credit"> {{ __('report.credit') }} </option>
+                                    <option value="Partition"> {{ __('home.Partition of the amount') }} </option>
 
                                 </select>
                             </div><!-- col-4 -->
 
                             <div class="col-lg-2 mg-t-20 mg-lg-t-0" id="type">
                                 <p class="mg-b-10 parent-label"> . </p>
-                                <select class="form-control parent-input " name="payment_type" id="payment_type"  required>
+                                <select class="form-control parent-input " name="payment_type" id="payment_type"
+                                    required>
                                     <option id="Cash" value="Cash"> {{ __('report.cash') }}</option>
                                     <option value="Shabka"> {{ __('report.shabka') }} </option>
                                     <option value="Bank_transfer"> {{ __('home.Bank_transfer') }} </option>
@@ -499,8 +510,10 @@ td .d-flex {
                             </div>
 
 
-                                <input type="text" class="form-control parent-input" name="cashamount_form" id="cashamount_form" hidden>
-                                <input type="text" class="form-control parent-input" name="bankamount_form" id="bankamount_form" hidden>
+                            <input type="text" class="form-control parent-input" name="cashamount_form"
+                                id="cashamount_form" hidden>
+                            <input type="text" class="form-control parent-input" name="bankamount_form"
+                                id="bankamount_form" hidden>
 
 
 
@@ -521,83 +534,91 @@ td .d-flex {
                                     value="- ">
                             </div>
 
-                                    <input class="form-control parent-input fc-datepicker" hidden value="0" name="date" id="date" placeholder="YYYY-MM-DD" type="text" required>
+                            <input class="form-control parent-input fc-datepicker" hidden value="0" name="date"
+                                id="date" placeholder="YYYY-MM-DD" type="text" required>
 
 
 
 
 
                             <input type="hidden" id="token_search" value="{{ csrf_token() }}">
-                                <input type="text" hidden=true class="form-control" id="invoice_number"
-                                    name="invoice_number" value="{{ $data['invoice_id'] ?? '' }}">
+                            <input type="text" hidden=true class="form-control" id="invoice_number"
+                                name="invoice_number" value="{{ $data['invoice_id'] ?? '' }}">
 
-                                <input type="text" hidden=true class="form-control" id="saveinvice" name="saveinvice"
-                                    value=0>
+                            <input type="text" hidden=true class="form-control" id="saveinvice" name="saveinvice"
+                                value=0>
 
-                                <input hidden=true class="form-control" id="branchs_id" name="branchs_id"
-                                    value="{{Auth()->user()->branchs_id}}">
-                                <input hidden=true class="form-control" id="user_id" name="user_id"
-                                    value="{{Auth()->user()->discount_allow_limit}}">
-                                <?php
+                            <input hidden=true class="form-control" id="branchs_id" name="branchs_id"
+                                value="{{Auth()->user()->branchs_id}}">
+                            <input hidden=true class="form-control" id="user_id" name="user_id"
+                                value="{{Auth()->user()->discount_allow_limit}}">
+                            <?php
 
-        $rate_discount = App\Models\system_setting::find(1);
-        $rate_system = $rate_discount->discount_on_invoice;
-                                                                        ?>
-                                <input hidden=true class="form-control" id="rate_system" name="rate_system" value="{{$rate_system}}">
-                                    <input hidden=true class="form-control" id="shownumberproduct" name="shownumberproduct" value="1">
-                            </div>
-                            <br>
-                            <br>
-                      <div class="d-flex justify-content-center">
-    <button type="button" id="saveInvoice" style="background-color: #419BB2" class="btn btn-success p-1">
-        {{ __('home.invoice_save') }}
-        <i class="fas fa-check-circle"></i>
-    </button>
+    $rate_discount = App\Models\system_setting::find(1);
+    $rate_system = $rate_discount->discount_on_invoice;
+                                                                                        ?>
+                            <input hidden=true class="form-control" id="rate_system" name="rate_system"
+                                value="{{$rate_system}}">
+                            <input hidden=true class="form-control" id="shownumberproduct" name="shownumberproduct"
+                                value="1">
+                        </div>
+                        <br>
+                        <br>
+                        <div class="d-flex justify-content-center">
+                            <button type="button" id="saveInvoice" style="background-color: #419BB2"
+                                class="btn btn-success p-1">
+                                {{ __('home.invoice_save') }}
+                                <i class="fas fa-check-circle"></i>
+                            </button>
 
-    &nbsp;
+                            &nbsp;
 
-    <button type="button" id="saveAsDraft" style="background-color: #ff9800; border-color: #ff9800;" class="btn btn-warning p-1 text-white">
-{{ __('home.pending_invoice') }}
-        <i class="fas fa-file-alt"></i>
-    </button>
-</div>
+                            <button type="button" id="saveAsDraft"
+                                style="background-color: #ff9800; border-color: #ff9800;"
+                                class="btn btn-warning p-1 text-white">
+                                {{ __('home.pending_invoice') }}
+                                <i class="fas fa-file-alt"></i>
+                            </button>
+                        </div>
                 </form>
 
             </div>
 
-            <input type="text" class="form-control " name="show_invoice_number" id="show_invoice_number"   value=0
+            <input type="text" class="form-control " name="show_invoice_number" id="show_invoice_number" value=0
                 title=" رقم الفاتورة " hidden>
 
-                   <center>
-               <div class="justify-content-center" id="printdiv">
+            <center>
+                <div class="justify-content-center" id="printdiv">
 
-    <a id="send_whats_app" target="_blank" title="WhatsApp">
-        <i class="bx bxl-whatsapp"></i>
-    </a>
+                    <a id="send_whats_app" target="_blank" title="WhatsApp">
+                        <i class="bx bxl-whatsapp"></i>
+                    </a>
 
-    <a id="generate_pdf" class="btn btn-success" target="_blank">
-        <i class="fa-solid fa-download ml-1"></i>
-        {{ __('home.dwonloadpdf') }}
-    </a>
+                    <a id="generate_pdf" class="btn btn-success" target="_blank">
+                        <i class="fa-solid fa-download ml-1"></i>
+                        {{ __('home.dwonloadpdf') }}
+                    </a>
 
-    <button type="button" id="printReciept" class="btn btn-success">
-        <svg class="svg-icon-buttons" viewBox="0 0 20 20" style="width: 18px;">
-            <path d="M17.453,12.691V7.723 M1.719,12.691V7.723 M18.281,12.691V7.723 M12.691,12.484H7.309c-0.228,0-0.414,0.187-0.414,0.414s0.187,0.414,0.414,0.414h5.383c0.229,0,0.414-0.187,0.414-0.414S12.92,12.484,12.691,12.484 M16.625,6.066h-1.449V3.168c0-0.228-0.186-0.414-0.414-0.414H5.238c-0.228,0-0.414,0.187-0.414,0.414v2.898H3.375c-0.913,0-1.656,0.743-1.656,1.656v4.969c0,0.913,0.743,1.656,1.656,1.656h1.449v2.484c0,0.228,0.187,0.414,0.414,0.414h9.523c0.229,0,0.414-0.187,0.414-0.414v-2.484h1.449c0.912,0,1.656-0.743,1.656-1.656V7.723C18.281,6.81,17.537,6.066,16.625,6.066 M5.652,3.582h8.695v2.484H5.652V3.582zM14.348,16.418H5.652v-4.969h8.695V16.418z"></path>
-        </svg>
-        {{ __('home.print') }}
-    </button>
+                    <button type="button" id="printReciept" class="btn btn-success">
+                        <svg class="svg-icon-buttons" viewBox="0 0 20 20" style="width: 18px;">
+                            <path
+                                d="M17.453,12.691V7.723 M1.719,12.691V7.723 M18.281,12.691V7.723 M12.691,12.484H7.309c-0.228,0-0.414,0.187-0.414,0.414s0.187,0.414,0.414,0.414h5.383c0.229,0,0.414-0.187,0.414-0.414S12.92,12.484,12.691,12.484 M16.625,6.066h-1.449V3.168c0-0.228-0.186-0.414-0.414-0.414H5.238c-0.228,0-0.414,0.187-0.414,0.414v2.898H3.375c-0.913,0-1.656,0.743-1.656,1.656v4.969c0,0.913,0.743,1.656,1.656,1.656h1.449v2.484c0,0.228,0.187,0.414,0.414,0.414h9.523c0.229,0,0.414-0.187,0.414-0.414v-2.484h1.449c0.912,0,1.656-0.743,1.656-1.656V7.723C18.281,6.81,17.537,6.066,16.625,6.066 M5.652,3.582h8.695v2.484H5.652V3.582zM14.348,16.418H5.652v-4.969h8.695V16.418z">
+                            </path>
+                        </svg>
+                        {{ __('home.print') }}
+                    </button>
 
-    <button type="button" id="reciptprinter" class="btn btn-success">
-        <i class="fa-solid fa-print ml-1"></i>
-        {{ __('home.reciptprinter') }}
-    </button>
+                    <button type="button" id="reciptprinter" class="btn btn-success">
+                        <i class="fa-solid fa-print ml-1"></i>
+                        {{ __('home.reciptprinter') }}
+                    </button>
 
-    <button type="button" id="sendzatca" class="btn">
-        <i class="fa-regular fa-paper-plane ml-1"></i>
-        {{ __('home.uploadzatca') }}
-    </button>
+                    <button type="button" id="sendzatca" class="btn">
+                        <i class="fa-regular fa-paper-plane ml-1"></i>
+                        {{ __('home.uploadzatca') }}
+                    </button>
 
-</div>
+                </div>
 
             </center>
 
@@ -652,7 +673,7 @@ td .d-flex {
 
 </div>
 <input hidden=true class="form-control" id="phone" name="phone">
-<input hidden=true class="form-control" id="discound_allow" name="discound_allow" value="{{ $discound_allow/100 }}">
+<input hidden=true class="form-control" id="discound_allow" name="discound_allow" value="{{ $discound_allow / 100 }}">
 
 
 
@@ -731,7 +752,7 @@ td .d-flex {
 
                             <tbody class="">
                                 <?php $i = 0;
-        $data = 'm'; ?>
+    $data = 'm'; ?>
 
                                 <?php $i++ ?>
 
@@ -765,7 +786,7 @@ td .d-flex {
 
                 <div class="modal-footer">
                     {{-- <button id="added_product" name="added_product" id="added_product"
-                                class="btn btn-primary">{{__('home.confirm')}}</button>
+                            class="btn btn-primary">{{__('home.confirm')}}</button>
                     --}}
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">{{__('home.cancel')}}</button>
                 </div>
@@ -816,11 +837,11 @@ td .d-flex {
                             title="{{ __('supprocesses.email') }}" value='Example@gmail.com'>
                     </div>
                     <!-- <div class="col-lg-3 col-md-3">
-                                    <label for="inputName" class="control-label parent-label"> {{ __('home.current balance') }} </label>
-                                    <input type="text" class="parent-input form-control" id="balance" name="balance"
-                                        title="يرجي ادخال الكمية  " value="{{ $data['customer']->Balance ?? '0' }}"
-                                        >
-                                </div> -->
+                                                    <label for="inputName" class="control-label parent-label"> {{ __('home.current balance') }} </label>
+                                                    <input type="text" class="parent-input form-control" id="balance" name="balance"
+                                                        title="يرجي ادخال الكمية  " value="{{ $data['customer']->Balance ?? '0' }}"
+                                                        >
+                                                </div> -->
                 </div>
 
                 {{-- 2 --}}
@@ -837,13 +858,13 @@ td .d-flex {
                         <label style="font-size: 12px;" for="inputName" class="control-label parent-label">
                             {{ __('home.tax_number') }}</label>
                         <input style="height:32px" type="text" class="form-control parent-input" id="TaxـNumber"
-                            name="TaxـNumber" value="0"   title="{{ __('supprocesses.TaxـNumber') }}">
+                            name="TaxـNumber" value="0" title="{{ __('supprocesses.TaxـNumber') }}">
                     </div>
-                       <div class="col-lg-2 col-md-3">
+                    <div class="col-lg-2 col-md-3">
                         <label style="font-size: 12px;" for="inputName" class="control-label parent-label">
                             {{ __('home.CRN') }}</label>
-                        <input style="height:32px" type="text" class="form-control parent-input" id="CRN"
-                            name="CRN" onkeyup="TaxـNumberConvert() "value=0  title="{{ __('supprocesses.TaxـNumber') }}">
+                        <input style="height:32px" type="text" class="form-control parent-input" id="CRN" name="CRN"
+                            onkeyup="TaxـNumberConvert() " value=0 title="{{ __('supprocesses.TaxـNumber') }}">
                     </div>
                     <div class="col-lg-2 col-md-3">
                         <label style="font-size: 12px;" for="inputName" class="control-label parent-label">
@@ -867,20 +888,20 @@ td .d-flex {
                         <label for="inputName" class="control-label parent-label">
                             {{ __('home.city') }}</label>
                         <input type="text" class="form-control parent-input" id="city" name="city"
-                            title="{{ __('supprocesses.product_notes') }}" required   value='-'>
+                            title="{{ __('supprocesses.product_notes') }}" required value='-'>
                     </div>
                     <div class="col-lg-2">
                         <label for="inputName" class="control-label parent-label">
                             {{ __('home.region') }}</label>
                         <input type="text" class="form-control parent-input" id="sub_city" name="sub_city"
-                            title="{{ __('supprocesses.product_notes') }}" required   value='-'>
+                            title="{{ __('supprocesses.product_notes') }}" required value='-'>
                     </div>
 
                     <div class="col-lg-2">
                         <label for="inputName" class="control-label parent-label">
                             {{ __('home.StreetName') }}</label>
                         <input type="text" class="form-control parent-input" id="StreetName" name="StreetName"
-                            title="{{ __('supprocesses.product_notes') }}" required  value='-'>
+                            title="{{ __('supprocesses.product_notes') }}" required value='-'>
                     </div>
                     <div class="col-lg-2">
                         <label for="inputName" class="control-label parent-label">
@@ -892,13 +913,13 @@ td .d-flex {
                         <label for="inputName" class="control-label parent-label">
                             {{ __('home.buildnumber') }}</label>
                         <input type="text" class="form-control parent-input" id="buildnumber" name="buildnumber"
-                            title="{{ __('supprocesses.product_notes') }}" required   value=0>
+                            title="{{ __('supprocesses.product_notes') }}" required value=0>
                     </div>
                     <div class="col-lg-2">
                         <label for="inputName" class="control-label parent-label">
                             {{ __('home.postcode') }}</label>
                         <input type="text" class="form-control parent-input" id="postcode" name="postcode"
-                            title="{{ __('home.postcode') }}"  required  value=0>
+                            title="{{ __('home.postcode') }}" required value=0>
                     </div>
 
 
@@ -1005,227 +1026,225 @@ td .d-flex {
 
 
 
-        <div class="modal p-3" id="createproduct">
-            <div style="margin: 0 9% !important;" class="modal-dialog modal-dialog-centered modal-special"
-                role="document">
-                <div class="modal-content modal-content-demo p-3">
-                    <form>
-                        <div class="modal-header">
-                            <h6 class="modal-title"> {{ __('supprocesses.addproduct') }} </h6><button aria-label="Close"
-                                class="close close-special" data-dismiss="modal" type="button"><span
-                                    aria-hidden="true">&times;</span></button>
-                        </div>
-                        {{ csrf_field() }}
-                        <br>
-<label style="font-size:18px; color:red;font-weight:bold;">&nbsp;&nbsp;<input style="font-size:16px; color:yellow;" type="checkbox"  value=0 id="translate_status">&nbsp;&nbsp;{{__('home.active_translate')}}</label>
-                        <br>
+<div class="modal p-3" id="createproduct">
+    <div style="margin: 0 9% !important;" class="modal-dialog modal-dialog-centered modal-special" role="document">
+        <div class="modal-content modal-content-demo p-3">
+            <form>
+                <div class="modal-header">
+                    <h6 class="modal-title"> {{ __('supprocesses.addproduct') }} </h6><button aria-label="Close"
+                        class="close close-special" data-dismiss="modal" type="button"><span
+                            aria-hidden="true">&times;</span></button>
+                </div>
+                {{ csrf_field() }}
+                <br>
+                <label style="font-size:18px; color:red;font-weight:bold;">&nbsp;&nbsp;<input
+                        style="font-size:16px; color:yellow;" type="checkbox" value=0
+                        id="translate_status">&nbsp;&nbsp;{{__('home.active_translate')}}</label>
+                <br>
 
 
-                        <div class="row mb-2">
-                            <div class="col mb-2">
-                                <label for="inputName" class="control-label parent-label">
-                                    {{ __('supprocesses.product_name_ar') }}</label>
-                                <input autocomplete=off type="text" class="form-control parent-input"
-                                    id="product_name_ar" name="product_name_ar"
-                                    title="{{ __('supprocesses.product_name_ar') }}" onkeyup="translateNameToEnglish()"
-                                    required>
-                            </div>
-
-
-                            <div class="col mb-2">
-                                <label for="inputName" class="control-label parent-label">
-                                    {{ __('supprocesses.product_name_en') }}</label>
-                                <input autocomplete=off type="text" class="form-control parent-input"
-                                    id="product_name_en" name="product_name_en"
-                                    title="{{ __('supprocesses.product_name_en') }}" onkeyup="translateNameToArbic()"
-                                    required>
-                            </div>
-
-
-                            <div class="col mb-2">
-                                <label for="inputName" class="control-label parent-label">
-                                    {{ __('supprocesses.product_code') }}</label>
-                                <input type="text" class="form-control parent-input" id="product_code_create"
-                                    name="product_code_create" type="text" dir="ltr" onkeyup="convertToNumber()"
-                                    title="{{ __('supprocesses.product_code') }}">
-                            </div>
-
-                        </div>
-
-                        {{-- 2 --}}
-                        <div class="row mb-2">
-                            <div class="col-lg-3 mb-2">
-                                <label for="inputName"
-                                    class="control-label parent-label">{{ __('supprocesses.product_branch') }}</label>
-                                <select name="Section" id="Section" class="form-control parent-input"
-                                    onclick="console.log($(this).val())" onchange="console.log('change is firing')">
-                                    <!--placeholder-->
-                                    <option value="{{ Auth()->user()->branch->id }}"> {{ Auth()->user()->branch->name }}
-                                    </option>
-
-                                    @foreach (App\Models\branchs::get() as $section)
-                                    @if(Auth()->user()->branch->id!=$section->id)
-                                    <option value="{{ $section->id }}"> {{ $section->name }}</option>
-                                    @endif
-                                    @endforeach
-                                </select>
-                            </div>
-                            <div class="col-lg-3 mb-2">
-                                <label for="inputName"
-                                    class="control-label parent-label">{{ __('home.groups') }}</label>
-                                <select style="width:100%!important" name="product_group" id="product_group"
-                                    class="form-control select2">
-                                    <!--placeholder-->
-                                    @foreach (App\Models\products_group::get() as $section)
-                                    <option value="{{ $section->id }}"> {{ $section->group_ar }}</option>
-                                    @endforeach
-                                </select>
-                            </div>
-                            <div class="col-lg-3 mb-2">
-                                <label for="inputName"
-                                    class="control-label parent-label">{{ __('home.MAINproduct') }}</label>
-                                <br>
-                                <select style="width:100%!important" name="MAINproduct" id="MAINproduct" class="form-control select2">
-                                    <!--placeholder-->
-                                    <option value=0> {{ __('home.noreplace') }}</option>
-
-
-                                </select>
-                            </div>
-                            <div class="col-lg-3 mb-2">
-                                <label for="inputName" class="control-label parent-label">
-                                    {{ __('home.refnumber') }}</label>
-                                <input type="text" class="form-control parent-input" id="refnumber" name="refnumber">
-                            </div>
-                            <select hidden name="unit" id="unit" class="form-control parent-input">
-                                <!--placeholder-->
-                                <div class="row">
-
-                                    <option value="piece"> {{ __('home.unitـpiece') }}</option>
-                                    <option value="box">{{ __('home.unit_box') }}</option>
-                            </select>
-
-
-
-
-                        </div>
-
-
-                        {{-- 3 --}}
-
-                                                  @if(Auth()->user()->id==30||Auth()->user()->id==17)
-
-
-                    <div class="row">
-                        <div class="col-lg-4">
-                            <label for="inputName" class="control-label parent-label"> {{ __('home.purachesepice') }}
-                            </label>
-                            <input autocomplete="off" type="text" class="form-control parent-input" id="cost_price"
-                                name="cost_price" value=0 onkeyup="convertToNumberpurchasersPrice()">
-                        </div>
-                        <div class="col-lg-4">
-                            <label for="inputName" class="control-label parent-label" required>{{ __('home.salepice') }}
-                            </label>
-                            <input autocomplete="off" type="text" class="form-control parent-input" id="sale_price_create"
-                                value=0 name="sale_price_create" onkeyup="convertToNumbersalePrice()">
-                        </div>
-                        <div class="col-lg-4">
-                            <label for="inputName" class="control-label parent-label" required>{{ __('home.quantity') }}
-                            </label>
-                            <input autocomplete="off" type="text" class="form-control parent-input" id="quantity_create"
-                                value=0 name="quantity_create" onkeyup="convertToNumbersalePrice()">
-                        </div>
-
+                <div class="row mb-2">
+                    <div class="col mb-2">
+                        <label for="inputName" class="control-label parent-label">
+                            {{ __('supprocesses.product_name_ar') }}</label>
+                        <input autocomplete=off type="text" class="form-control parent-input" id="product_name_ar"
+                            name="product_name_ar" title="{{ __('supprocesses.product_name_ar') }}"
+                            onkeyup="translateNameToEnglish()" required>
                     </div>
 
 
-                    @else
-
-                                <div class="row">
-                        <div class="col-lg-4">
-                            <label for="inputName" class="control-label parent-label"> {{ __('home.purachesepice') }}
-                            </label>
-                            <input autocomplete="off" type="text" class="form-control parent-input" id="cost_price" readonly
-                                name="cost_price" value=0 onkeyup="convertToNumberpurchasersPrice()">
-                        </div>
-                        <div class="col-lg-4">
-                            <label for="inputName" class="control-label parent-label" required>{{ __('home.salepice') }}
-                            </label>
-                            <input autocomplete="off" type="text" class="form-control parent-input" id="sale_price_create" readonly
-                                value=0 name="sale_price_create" onkeyup="convertToNumbersalePrice()">
-                        </div>
-                        <div class="col-lg-4">
-                            <label for="inputName" class="control-label parent-label" required>{{ __('home.quantity') }}
-                            </label>
-                            <input autocomplete="off" type="text" class="form-control parent-input" id="quantity_create" readonly
-                                value=0 name="quantity_create" onkeyup="convertToNumbersalePrice()">
-                        </div>
-
+                    <div class="col mb-2">
+                        <label for="inputName" class="control-label parent-label">
+                            {{ __('supprocesses.product_name_en') }}</label>
+                        <input autocomplete=off type="text" class="form-control parent-input" id="product_name_en"
+                            name="product_name_en" title="{{ __('supprocesses.product_name_en') }}"
+                            onkeyup="translateNameToArbic()" required>
                     </div>
 
 
+                    <div class="col mb-2">
+                        <label for="inputName" class="control-label parent-label">
+                            {{ __('supprocesses.product_code') }}</label>
+                        <input type="text" class="form-control parent-input" id="product_code_create"
+                            name="product_code_create" type="text" dir="ltr" onkeyup="convertToNumber()"
+                            title="{{ __('supprocesses.product_code') }}">
+                    </div>
 
-                                       @endif
-
-
-
-                        {{-- 5 --}}
-                        <div class="row mb-2">
-                            <div class="col-lg-4 mb-2" style="direction: ltr !important;">
-
-                                <label for="inputName" class="control-label parent-label">
-                                    {{ __('supprocesses.product_location') }}</label>
-                                <input dir="ltr" style="direction:LTR !important ;text-align:start!important;"
-                                    type="text" class="form-control parent-input" id="product_location_create"
-                                    name="product_location_create" value='-' title="{{ __('supprocesses.product_location') }}"
-                                    required>
-                            </div>
-
-
-                            <div class="col-lg-4 mb-2">
-                                <label for="inputName" class="control-label parent-label">
-                                    {{ __('supprocesses.minmum_quantity_stock_alart') }}</label>
-                                <input type="text" class="form-control parent-input" id="minmum_quantity_stock_alart"
-                                    name="minmum_quantity_stock_alart" onkeyup="minmum_quantity_stock_alartConvert()"
-                                    title="{{ __('supprocesses.minmum_quantity_stock_alart') }}" value=2 required>
-                            </div>
-
-
-
-
-
-
-
-                            <div class="col-lg-4 mb-2">
-                                <label for="inputName" class="control-label parent-label">
-                                    {{ __('supprocesses.product_notes') }}</label>
-                                <input type="text" class="form-control parent-input" id="product_notes"
-                                    name="product_notes" title="{{ __('supprocesses.product_notes') }}">
-                            </div>
-
-                            <div class="col-lg-4 mb-2">
-                                <input type="text" class="form-control parent-input" id="product_name_en"
-                                    name="product_name_en" title=" {{ __('supprocesses.product_name_en') }}" hidden>
-                            </div>
-
-                        </div><br>
-
-                        <br>
-                        <div class="d-flex justify-content-center">
-                            <button style="background-color: #419BB2" class="btn btn-primary p-1" data-dismiss="modal"
-                                onclick="createnewproductajax()">
-                                {{ __('supprocesses.save_data') }}
-                                <svg style="width: 20px" class="svg-icon-buttons" viewBox="0 0 20 20">
-                                    <path fill="none"
-                                        d="M7.629,14.566c0.125,0.125,0.291,0.188,0.456,0.188c0.164,0,0.329-0.062,0.456-0.188l8.219-8.221c0.252-0.252,0.252-0.659,0-0.911c-0.252-0.252-0.659-0.252-0.911,0l-7.764,7.763L4.152,9.267c-0.252-0.251-0.66-0.251-0.911,0c-0.252,0.252-0.252,0.66,0,0.911L7.629,14.566z">
-                                    </path>
-                                </svg>
-                            </button>
-                        </div>
                 </div>
 
-            </div>
+                {{-- 2 --}}
+                <div class="row mb-2">
+                    <div class="col-lg-3 mb-2">
+                        <label for="inputName"
+                            class="control-label parent-label">{{ __('supprocesses.product_branch') }}</label>
+                        <select name="Section" id="Section" class="form-control parent-input"
+                            onclick="console.log($(this).val())" onchange="console.log('change is firing')">
+                            <!--placeholder-->
+                            <option value="{{ Auth()->user()->branch->id }}"> {{ Auth()->user()->branch->name }}
+                            </option>
+
+                            @foreach (App\Models\branchs::get() as $section)
+                            @if(Auth()->user()->branch->id != $section->id)
+                            <option value="{{ $section->id }}"> {{ $section->name }}</option>
+                            @endif
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="col-lg-3 mb-2">
+                        <label for="inputName" class="control-label parent-label">{{ __('home.groups') }}</label>
+                        <select style="width:100%!important" name="product_group" id="product_group"
+                            class="form-control select2">
+                            <!--placeholder-->
+                            @foreach (App\Models\products_group::get() as $section)
+                            <option value="{{ $section->id }}"> {{ $section->group_ar }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="col-lg-3 mb-2">
+                        <label for="inputName" class="control-label parent-label">{{ __('home.MAINproduct') }}</label>
+                        <br>
+                        <select style="width:100%!important" name="MAINproduct" id="MAINproduct"
+                            class="form-control select2">
+                            <!--placeholder-->
+                            <option value=0> {{ __('home.noreplace') }}</option>
+
+
+                        </select>
+                    </div>
+                    <div class="col-lg-3 mb-2">
+                        <label for="inputName" class="control-label parent-label">
+                            {{ __('home.refnumber') }}</label>
+                        <input type="text" class="form-control parent-input" id="refnumber" name="refnumber">
+                    </div>
+                    <select hidden name="unit" id="unit" class="form-control parent-input">
+                        <!--placeholder-->
+                        <div class="row">
+
+                            <option value="piece"> {{ __('home.unitـpiece') }}</option>
+                            <option value="box">{{ __('home.unit_box') }}</option>
+                    </select>
+
+
+
+
+                </div>
+
+
+                {{-- 3 --}}
+
+                @if(Auth()->user()->id == 30 || Auth()->user()->id == 17)
+
+
+                <div class="row">
+                    <div class="col-lg-4">
+                        <label for="inputName" class="control-label parent-label"> {{ __('home.purachesepice') }}
+                        </label>
+                        <input autocomplete="off" type="text" class="form-control parent-input" id="cost_price"
+                            name="cost_price" value=0 onkeyup="convertToNumberpurchasersPrice()">
+                    </div>
+                    <div class="col-lg-4">
+                        <label for="inputName" class="control-label parent-label" required>{{ __('home.salepice') }}
+                        </label>
+                        <input autocomplete="off" type="text" class="form-control parent-input" id="sale_price_create"
+                            value=0 name="sale_price_create" onkeyup="convertToNumbersalePrice()">
+                    </div>
+                    <div class="col-lg-4">
+                        <label for="inputName" class="control-label parent-label" required>{{ __('home.quantity') }}
+                        </label>
+                        <input autocomplete="off" type="text" class="form-control parent-input" id="quantity_create"
+                            value=0 name="quantity_create" onkeyup="convertToNumbersalePrice()">
+                    </div>
+
+                </div>
+
+
+                @else
+
+                <div class="row">
+                    <div class="col-lg-4">
+                        <label for="inputName" class="control-label parent-label"> {{ __('home.purachesepice') }}
+                        </label>
+                        <input autocomplete="off" type="text" class="form-control parent-input" id="cost_price" readonly
+                            name="cost_price" value=0 onkeyup="convertToNumberpurchasersPrice()">
+                    </div>
+                    <div class="col-lg-4">
+                        <label for="inputName" class="control-label parent-label" required>{{ __('home.salepice') }}
+                        </label>
+                        <input autocomplete="off" type="text" class="form-control parent-input" id="sale_price_create"
+                            readonly value=0 name="sale_price_create" onkeyup="convertToNumbersalePrice()">
+                    </div>
+                    <div class="col-lg-4">
+                        <label for="inputName" class="control-label parent-label" required>{{ __('home.quantity') }}
+                        </label>
+                        <input autocomplete="off" type="text" class="form-control parent-input" id="quantity_create"
+                            readonly value=0 name="quantity_create" onkeyup="convertToNumbersalePrice()">
+                    </div>
+
+                </div>
+
+
+
+                @endif
+
+
+
+                {{-- 5 --}}
+                <div class="row mb-2">
+                    <div class="col-lg-4 mb-2" style="direction: ltr !important;">
+
+                        <label for="inputName" class="control-label parent-label">
+                            {{ __('supprocesses.product_location') }}</label>
+                        <input dir="ltr" style="direction:LTR !important ;text-align:start!important;" type="text"
+                            class="form-control parent-input" id="product_location_create"
+                            name="product_location_create" value='-' title="{{ __('supprocesses.product_location') }}"
+                            required>
+                    </div>
+
+
+                    <div class="col-lg-4 mb-2">
+                        <label for="inputName" class="control-label parent-label">
+                            {{ __('supprocesses.minmum_quantity_stock_alart') }}</label>
+                        <input type="text" class="form-control parent-input" id="minmum_quantity_stock_alart"
+                            name="minmum_quantity_stock_alart" onkeyup="minmum_quantity_stock_alartConvert()"
+                            title="{{ __('supprocesses.minmum_quantity_stock_alart') }}" value=2 required>
+                    </div>
+
+
+
+
+
+
+
+                    <div class="col-lg-4 mb-2">
+                        <label for="inputName" class="control-label parent-label">
+                            {{ __('supprocesses.product_notes') }}</label>
+                        <input type="text" class="form-control parent-input" id="product_notes" name="product_notes"
+                            title="{{ __('supprocesses.product_notes') }}">
+                    </div>
+
+                    <div class="col-lg-4 mb-2">
+                        <input type="text" class="form-control parent-input" id="product_name_en" name="product_name_en"
+                            title=" {{ __('supprocesses.product_name_en') }}" hidden>
+                    </div>
+
+                </div><br>
+
+                <br>
+                <div class="d-flex justify-content-center">
+                    <button style="background-color: #419BB2" class="btn btn-primary p-1" data-dismiss="modal"
+                        onclick="createnewproductajax()">
+                        {{ __('supprocesses.save_data') }}
+                        <svg style="width: 20px" class="svg-icon-buttons" viewBox="0 0 20 20">
+                            <path fill="none"
+                                d="M7.629,14.566c0.125,0.125,0.291,0.188,0.456,0.188c0.164,0,0.329-0.062,0.456-0.188l8.219-8.221c0.252-0.252,0.252-0.659,0-0.911c-0.252-0.252-0.659-0.252-0.911,0l-7.764,7.763L4.152,9.267c-0.252-0.251-0.66-0.251-0.911,0c-0.252,0.252-0.252,0.66,0,0.911L7.629,14.566z">
+                            </path>
+                        </svg>
+                    </button>
+                </div>
         </div>
+
+    </div>
+</div>
 
 <div class="modal fade product-selection" id="operation_product" name="main_product" tabindex="-1" role="dialog"
     aria-labelledby="exampleModalLabel" dir='rtl' aria-hidden="true">
@@ -1246,7 +1265,8 @@ td .d-flex {
             </div>
 
             <div class="modal-footer">
-                {{-- <button id="added_product" name="added_product" id="added_product" class="btn btn-primary">{{__('home.confirm')}}</button>
+                {{-- <button id="added_product" name="added_product" id="added_product"
+                        class="btn btn-primary">{{__('home.confirm')}}</button>
                 --}}
                 <button type="button" class="btn btn-secondary" data-dismiss="modal">{{__('home.cancel')}}</button>
             </div>
@@ -1258,7 +1278,7 @@ td .d-flex {
 </div>
 
 </div>
-    <input hidden=true class="form-control" id="firstiteminput" name="firstiteminput" value="0">
+<input hidden=true class="form-control" id="firstiteminput" name="firstiteminput" value="0">
 
 {{-- End Update ( 24/4/2023 ) --}}
 <div class="modal fade product-selection" id="main_product2" name="main_product2" tabindex="-1" role="dialog"
@@ -1280,7 +1300,8 @@ td .d-flex {
             </div>
 
             <div class="modal-footer">
-                {{-- <button id="added_product" name="added_product" id="added_product" class="btn btn-primary">{{__('home.confirm')}}</button>
+                {{-- <button id="added_product" name="added_product" id="added_product"
+                        class="btn btn-primary">{{__('home.confirm')}}</button>
                 --}}
                 <button type="button" class="btn btn-secondary" data-dismiss="modal">{{__('home.cancel')}}</button>
             </div>
@@ -1293,63 +1314,61 @@ td .d-flex {
 
 </div>
 
-            <div class="modal" id="paymentmethod_MODALE">
-            <div class="modal-dialog modal-dialog-centered" role="document">
-                <div class="modal-content modal-content-demo">
-                    <div class="modal-header">
-                        <h6 class="modal-title">  {{ __('home.Partition of the amount') }} </h6>
-                    </div>
-                    <div class="modal-body" style="width:100%">
-                       <div class="d-flex align-items-center justify-content-center" style="width:100%">
-    <label style="font-size:20px" class="control-label parent-label me-1">
-        {{ __('home.total') }} :&nbsp;&nbsp;
-    </label>
+<div class="modal" id="paymentmethod_MODALE">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content modal-content-demo">
+            <div class="modal-header">
+                <h6 class="modal-title"> {{ __('home.Partition of the amount') }} </h6>
+            </div>
+            <div class="modal-body" style="width:100%">
+                <div class="d-flex align-items-center justify-content-center" style="width:100%">
+                    <label style="font-size:20px" class="control-label parent-label me-1">
+                        {{ __('home.total') }} :&nbsp;&nbsp;
+                    </label>
 
-    <label style="font-size:25px;font-weight:bold;color:green" id="totalvalue">0</label>
+                    <label style="font-size:25px;font-weight:bold;color:green" id="totalvalue">0</label>
 
-    <label style="font-size:20px" class="control-label parent-label ms-1"> &nbsp;&nbsp;
-        {{ __('home.SAR') }}
-    </label>
+                    <label style="font-size:20px" class="control-label parent-label ms-1"> &nbsp;&nbsp;
+                        {{ __('home.SAR') }}
+                    </label>
+                </div>
+
+
+            </div>
+            <br>
+
+            <div class="row">
+                &nbsp;&nbsp;
+                <div class="col">
+
+                    <label class="control-label parent-label">{{ __('report.cash') }}</label>
+                    <input type="text" class="form-control parent-input" name="cashamount" id="cashamount"
+                        onkeyup="calcshabka()" readonly value=0>
+                </div>
+
+                <div class="col">
+
+                    <label class="control-label parent-label">{{ __('report.shabka') }}</label>
+                    <input type="text" class="form-control parent-input" name="bankamount" id="bankamount"
+                        onkeyup="calcCash()" value=0>
+                </div>
+
+                &nbsp;&nbsp;
+
+
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">{{ __('home.cancel') }}</button>
+                <button data-dismiss="modal" class="btn btn-danger">{{ __('home.confirm') }}</button>
+            </div>
+        </div>
+    </div>
 </div>
 
 
-                        </div>
-                                 <br>
+<!-- delete -->
 
-                        <div class="row">
-&nbsp;&nbsp;
-                            <div class="col">
-
-                                <label class="control-label parent-label">{{ __('report.cash') }}</label>
-                                <input type="text" class="form-control parent-input" name="cashamount" id="cashamount"
-                                    onkeyup="calcshabka()" readonly value=0>
-                            </div>
-
-                            <div class="col">
-
-                                <label class="control-label parent-label">{{ __('report.shabka') }}</label>
-                                <input type="text" class="form-control parent-input" name="bankamount" id="bankamount"
-                                    onkeyup="calcCash()"  value=0>
-                            </div>
-
-                  &nbsp;&nbsp;
-
-
-                        </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary"
-                            data-dismiss="modal">{{ __('home.cancel') }}</button>
-                        <button  data-dismiss="modal"
-                            class="btn btn-danger">{{ __('home.confirm') }}</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-
-        <!-- delete -->
-
-    </div>
+</div>
 </div>
 <div class="modal fade product-selection" id="operation_product" name="main_product" tabindex="-1" role="dialog"
     aria-labelledby="exampleModalLabel" dir='rtl' aria-hidden="true">
@@ -1370,7 +1389,8 @@ td .d-flex {
             </div>
 
             <div class="modal-footer">
-                {{-- <button id="added_product" name="added_product" id="added_product" class="btn btn-primary">{{__('home.confirm')}}</button>
+                {{-- <button id="added_product" name="added_product" id="added_product"
+                        class="btn btn-primary">{{__('home.confirm')}}</button>
                 --}}
                 <button type="button" class="btn btn-secondary" data-dismiss="modal">{{__('home.cancel')}}</button>
             </div>
@@ -1400,7 +1420,6 @@ td .d-flex {
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <script>
-
 $("#getinvoiceupdate").click(function(e) {
     e.preventDefault(); // تأكد من وضعها في البداية
 
@@ -1420,6 +1439,18 @@ $("#getinvoiceupdate").click(function(e) {
         cache: false,
         success: function(data) {
             console.log(data)
+            if (data.error) {
+                // تقسيم الرسالة لعرضها بشكل منسق
+                let messages = data.error.split('|');
+
+                Swal.fire({
+                    icon: 'error',
+                    title: 'تنبيه / Alert',
+                    html: `<strong>${messages[0]}</strong><br>${messages[1]}`,
+                    confirmButtonText: 'حسناً / OK'
+                });
+                return;
+            }
             if (data == 0) {
                 alert("{{ __('home.stocknotAvailable') }}");
             } else {
@@ -1435,39 +1466,40 @@ $("#getinvoiceupdate").click(function(e) {
                 // 3. إضافة المنتجات للجدول
                 data.product.forEach(function(item) {
                     let quantity = parseFloat(item.quantity) || 0;
-                        let index = rowIndex++; // 👈 يزيد دايمًا
+                    let index = rowIndex++; // 👈 يزيد دايمًا
 
                     if (quantity > 0) {
                         let unitPrice = parseFloat(item.Unit_Price) || 0;
                         let discount = parseFloat(item.Discount_Value) || 0;
-                        let taxAmount = parseFloat(item.Added_Value) || 0; // الضريبة لكل منتج من الـ JSON
+                        let taxAmount = parseFloat(item.Added_Value) ||
+                        0; // الضريبة لكل منتج من الـ JSON
 
                         // حساب السعر شامل الضريبة للعرض فقط
                         let priceWithTax = unitPrice + (taxAmount / quantity);
 
                         let row = `
-                        <tr data-index="${index}">
+                                        <tr data-index="${index}">
 
-                            <td><input type="hidden" name="products[${index}][product_id]" value="${item.id}" class="product-id form-control">
-                                        <input type="hidden" name="products[${index}][product_cost]" class="product_cost">
+                                            <td><input type="hidden" name="products[${index}][product_id]" value="${item.id}" class="product-id form-control">
+                                                        <input type="hidden" name="products[${index}][product_cost]" class="product_cost">
 
-</td>
-                            <td class="align-middle text-center">${index }</td>
-                            <td class="text-start">
-                                <input type="text" class="form-control product-code" value="${item.Product_Code}" readonly>
-                            </td>
-                            <td class="text-start">
-                                <input type="text" class="form-control product-name" value="${item.product_name}" readonly>
-                            </td>
-                            <td><input type="text" name="products[${index}][price-tax]" class="form-control product-price-tax" value="${priceWithTax.toFixed(2)}" onchange="calculateTotals_with_tax()"></td>
-                            <td><input type="text" name="products[${index}][price]" class="form-control product-price" value="${unitPrice.toFixed(2)}" onchange="calculateTotals()"></td>
-                            <td><input type="text" name="products[${index}][quentity]" class="form-control product-quentity" value="${quantity}" oninput="calculateTotals()"></td>
-                            <td><input type="text" name="products[${index}][totalprice_withodtax]" class="form-control product-totalprice_withodtax" value="${(unitPrice * quantity).toFixed(2)}" readonly></td>
-                            <td><input type="text" name="products[${index}][discound]" class="form-control product-discound" value="${discount}" onchange="calculateTotals()"></td>
-                            <td><input type="text" name="products[${index}][tax]" class="form-control product-tax" value="${taxAmount.toFixed(2)}" readonly></td>
-                            <td><input type="text" class="form-control product-total" value="${( (unitPrice * quantity) + taxAmount - discount ).toFixed(2)}" readonly></td>
-                            <td><button type="button" class="btn btn-danger btn-sm" onclick="removeRow(this)">{{ __('home.delete') }}</button></td>
-                        </tr>`;
+                </td>
+                                            <td class="align-middle text-center">${index}</td>
+                                            <td class="text-start">
+                                                <input type="text" class="form-control product-code" value="${item.Product_Code}" readonly>
+                                            </td>
+                                            <td class="text-start">
+                                                <input type="text" class="form-control product-name" name="products[${index}][product_name]"  value="${item.product_name}" >
+                                            </td>
+                                            <td><input type="text" name="products[${index}][price-tax]" class="form-control product-price-tax" value="${priceWithTax.toFixed(2)}" onchange="calculateTotals_with_tax()"></td>
+                                            <td><input type="text" name="products[${index}][price]" class="form-control product-price" value="${unitPrice.toFixed(2)}" onchange="calculateTotals()"></td>
+                                            <td><input type="text" name="products[${index}][quentity]" class="form-control product-quentity" value="${quantity}" oninput="calculateTotals()"></td>
+                                            <td><input type="text" name="products[${index}][totalprice_withodtax]" class="form-control product-totalprice_withodtax" value="${(unitPrice * quantity).toFixed(2)}" readonly></td>
+                                            <td><input type="text" name="products[${index}][discound]" class="form-control product-discound" value="${discount}" onchange="calculateTotals()"></td>
+                                            <td><input type="text" name="products[${index}][tax]" class="form-control product-tax" value="${taxAmount.toFixed(2)}" readonly></td>
+                                            <td><input type="text" class="form-control product-total" value="${((unitPrice * quantity) + taxAmount - discount).toFixed(2)}" readonly></td>
+                                            <td><button type="button" class="btn btn-danger btn-sm" onclick="removeRow(this)">{{ __('home.delete') }}</button></td>
+                                        </tr>`;
 
                         $("#productsTableBody").append(row);
 
@@ -1476,8 +1508,8 @@ $("#getinvoiceupdate").click(function(e) {
                 });
                 rowIndex++
                 rowIndex++
-console.log('rowIndex')
-console.log(rowIndex)
+                console.log('rowIndex')
+                console.log(rowIndex)
                 // 4. تحديث عداد الصفوف العالمي (إذا كنت تستخدمه للإضافات اليدوية لاحقاً)
 
                 // 5. تعبئة إجماليات الفاتورة السفلية من الـ JSON مباشرة
@@ -1486,7 +1518,7 @@ console.log(rowIndex)
                 $('#invoicetotal_discount_total').val(data.invoicetotal_discount);
 
                 // 6. استدعاء دالة الحسابات لإعادة التأكيد على الأرقام
-                if(typeof calculateTotals === "function") {
+                if (typeof calculateTotals === "function") {
                     calculateTotals();
                 }
 
@@ -1500,11 +1532,11 @@ console.log(rowIndex)
     });
 });
 $(document).on("keydown", ":input:not(textarea):not(:submit)", function(event) {
-        if (event.key === "Enter") {
-            event.preventDefault(); // يمنع إرسال النموذج
-            return false;
-        }
-    });
+    if (event.key === "Enter") {
+        event.preventDefault(); // يمنع إرسال النموذج
+        return false;
+    }
+});
 
 
 
@@ -1535,24 +1567,24 @@ function replaceproduct(id) {
 
 function calcshabka() {
 
-        $('#bankamount').val((document.getElementById('grandTotal').value * 1) - ($('#cashamount').val() * 1))
-        $('#bankamount_form').val($('#bankamount').val())
-        $('#cashamount_form').val($('#cashamount').val())
+    $('#bankamount').val((document.getElementById('grandTotal').value * 1) - ($('#cashamount').val() * 1))
+    $('#bankamount_form').val($('#bankamount').val())
+    $('#cashamount_form').val($('#cashamount').val())
 
 }
 
 function calcCash() {
 
-        $('#cashamount').val((document.getElementById('grandTotal').value * 1) - ($('#bankamount').val() * 1))
-        $('#cashamount_form').val($('#cashamount').val())
-        $('#bankamount_form').val($('#bankamount').val())
+    $('#cashamount').val((document.getElementById('grandTotal').value * 1) - ($('#bankamount').val() * 1))
+    $('#cashamount_form').val($('#cashamount').val())
+    $('#bankamount_form').val($('#bankamount').val())
 
 
 }
 
 
 
-$('select[name="paymentmethod"]').on('change', function () {
+$('select[name="paymentmethod"]').on('change', function() {
     var selectedText = $(this).find(':selected').text();
     var selectedValue = $(this).val();
     var $paymentType = $('#payment_type');
@@ -1562,25 +1594,26 @@ $('select[name="paymentmethod"]').on('change', function () {
 
     if (selectedText.includes('البنك')) {
         // إذا اخترت البنك: نعطل كل شيء ما عدا الشبكة والتحويل
-        $paymentType.find('option').not('[value="Shabka"], [value="Bank_transfer"]').hide().prop('disabled', true);
+        $paymentType.find('option').not('[value="Shabka"], [value="Bank_transfer"]').hide().prop('disabled',
+            true);
         // نختار أول خيار متاح تلقائياً
         $paymentType.val('Shabka').change();
-        
+
     } else if (selectedValue == "Credit") {
         // إذا اخترت الآجل: نعطل كل شيء ما عدا الآجل
         $paymentType.find('option').not('[value="Credit"]').hide().prop('disabled', true);
         $paymentType.val('Credit').change();
-        
+
     } else if (selectedValue == "Partition") {
         // إذا اخترت التقسيط
         $paymentType.find('option').not('[value="Partition"]').hide().prop('disabled', true);
         $paymentType.val('Partition').change();
         $('#paymentmethod_MODALE').modal().show();
         value = document.getElementById('grandTotal').value
-        document.getElementById('totalvalue').innerHTML =document.getElementById('grandTotal').value * 1
-           
+        document.getElementById('totalvalue').innerHTML = document.getElementById('grandTotal').value * 1
+
         // (استدعاء المودال كما كان سابقاً...)
-        
+
     } else {
         // إذا كان نقدي (أو الحالة الافتراضية): نعطل كل شيء ما عدا النقد
         $paymentType.find('option').not('[value="Cash"]').hide().prop('disabled', true);
@@ -1598,160 +1631,188 @@ $('select[name="paymentmethod"]').on('change', function () {
 
 let rowIndex = 1;
 
-    $("#updateinvoicebyidforsaleupdate").click(function(e) {
+$("#updateinvoicebyidforsaleupdate").click(function(e) {
 
 
 
-            event.preventDefault();
-            var url = " {{ URL::to('updateinvoicebyidforsaleupdate') }}" + "/" + $('#updateinvoicebyidforsale_update').val();
-            console.log(url)
-            jQuery.ajax({
-                url: url,
-                type: 'get',
-                dataType: 'json',
-                cache: false,
+    event.preventDefault();
+    var url = " {{ URL::to('updateinvoicebyidforsaleupdate') }}" + "/" + $('#updateinvoicebyidforsale_update')
+        .val();
+    console.log(url)
+    jQuery.ajax({
+        url: url,
+        type: 'get',
+        dataType: 'json',
+        cache: false,
 
 
-                success: function(data) {
+        success: function(data) {
 
 
 
 
-                    $('#show_invoice_number_update').val($('#updateinvoicebyidforsale_update').val())
+            $('#show_invoice_number_update').val($('#updateinvoicebyidforsale_update').val())
 
 
-                    console.log('++++++')
-                    console.log(data)
+            console.log('++++++')
+            console.log(data)
 
-                     document.getElementById("productsTableBody").innerHTML = "";
+            document.getElementById("productsTableBody").innerHTML = "";
 
-                    data['product'].forEach(async (product) => {
-                        quentity = product['quantity']
+            data['product'].forEach(async (product) => {
+                quentity = product['quantity']
 
- let index = rowIndex-1
+                let index = rowIndex - 1
 
-                        if (quentity > 0) {
-                                            let table = document.getElementById('productsTableBody');
+                if (quentity > 0) {
+                    let table = document.getElementById('productsTableBody');
 
 
-            let row = `
-            <tr data-index="${index}">
-                <td><input type="hidden" name="products[${index}][product_id]" class="product-id form-control">
-                            <input type="hidden" name="products[${index}][product_cost]" class="product_cost">
+                    let row = `
+                            <tr data-index="${index}">
+                                <td><input type="hidden" name="products[${index}][product_id]" class="product-id form-control">
+                                            <input type="hidden" name="products[${index}][product_cost]" class="product_cost">
+                </td>
+                                <td class="align-middle text-center">${index + 1}</td>
+
+                                <td class="text-start">
+                                    <div class="d-flex gap-2">
+                                        <input type="text" class="form-control product-code" placeholder="اختر منتج" readonly>
+                                        <button type="button" class="btn btn-sm btn-info p-1"
+                                                style="background-color: #FBA10F;font-size:13px;width:40px"
+                                                onclick="openProductModal(${index})">   <svg style="width: 16px;height:16px" xmlns="http://www.w3.org/2000/svg"
+                                                                            class="icon icon-tabler icon-tabler-search" width="24" height="24"
+                                                                            viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"
+                                                                            fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                                                            <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+                                                                            <path d="M10 10m-7 0a7 7 0 1 0 14 0a7 7 0 1 0 -14 0"></path>
+                                                                            <path d="M21 21l-6 -6"></path>
+                                                                        </svg></button>
+                                    </div>
+                                </td>
+
+                                <td class="text-start">
+                                    <div class="d-flex gap-2">
+                                        <input type="text" class="form-control product-name"  name="products[${index}][product_name]"  placeholder="اختر منتج" >
+                                        <button type="button" class="btn btn-sm btn-info p-1"
+                                                style="background-color: #FBA10F;font-size:13px;width:40px"
+                                                onclick="openProductModal(${index})">   <svg style="width: 16px;height:16px" xmlns="http://www.w3.org/2000/svg"
+                                                                            class="icon icon-tabler icon-tabler-search" width="24" height="24"
+                                                                            viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"
+                                                                            fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                                                            <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+                                                                            <path d="M10 10m-7 0a7 7 0 1 0 14 0a7 7 0 1 0 -14 0"></path>
+                                                                            <path d="M21 21l-6 -6"></path>
+                                                                        </svg></button>
+                                    </div>
+                                </td>
+                   <td><input type="text" name="products[${index}][price-tax]"
+                                    class="form-control product-price-tax" value="0" min="0" onchange="calculateTotals_with_tax()"></td>
+                                <td><input type="text" name="products[${index}][price]"
+                                        class="form-control product-price" value="0" min="0" onchange="calculateTotals()"></td>
+
+                              <td>
+    <div class="d-flex align-items-center justify-content-center" style="width:100%;">
+        <button class="btn btn-secondary rounded-circle d-flex align-items-center justify-content-center p-0"
+            style="width: 32px; height: 32px; min-width: 32px; min-height: 32px;" 
+            type="button" 
+            onclick="minusFunctionIndex(this)">−</button>
+
+        <input type="text" 
+            name="products[${index}][quentity]" 
+            style="width: 50px; text-align: center;" 
+            class="form-control product-quentity mx-2" 
+            oninput="calculateTotals()" 
+            value="1">
+
+        <button class="btn btn-secondary rounded-circle d-flex align-items-center justify-content-center p-0"
+            style="width: 32px; height: 32px; min-width: 32px; min-height: 32px;" 
+            type="button" 
+            onclick="plusFunctionIndex(this)">+</button>
+    </div>
 </td>
-                <td class="align-middle text-center">${index + 1}</td>
+                                <td><input type="text" name="products[${index}][totalprice_withodtax]"
+                                        class="form-control product-totalprice_withodtax"  readonly value="0" min="0" oninput="calculateTotals()"></td>
 
-                <td class="text-start">
-                    <div class="d-flex gap-2">
-                        <input type="text" class="form-control product-code" placeholder="اختر منتج" readonly>
-                        <button type="button" class="btn btn-sm btn-info p-1"
-                                style="background-color: #FBA10F;font-size:13px;width:40px"
-                                onclick="openProductModal(${index})">   <svg style="width: 16px;height:16px" xmlns="http://www.w3.org/2000/svg"
-                                                            class="icon icon-tabler icon-tabler-search" width="24" height="24"
-                                                            viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"
-                                                            fill="none" stroke-linecap="round" stroke-linejoin="round">
-                                                            <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
-                                                            <path d="M10 10m-7 0a7 7 0 1 0 14 0a7 7 0 1 0 -14 0"></path>
-                                                            <path d="M21 21l-6 -6"></path>
-                                                        </svg></button>
-                    </div>
-                </td>
+                                <td><input type="text" name="products[${index}][discound]"
+                                        class="form-control product-discound" value="0" onchange='calculateTotals()' min="0"></td>
+          <td><select class="form-control tax-select" oninput='calculateTotals()' name="products[${index}][tax_rate]">
+                            <option value="0.15">15%</option>
+                                <option value="0">{{ __('home.Exempt') }}</option>
+                            </select></td>
+                                <td><input type="text" name="products[${index}][tax]" class="form-control product-tax" value="0" readonly></td>
 
-                <td class="text-start">
-                    <div class="d-flex gap-2">
-                        <input type="text" class="form-control product-name" placeholder="اختر منتج" readonly>
-                        <button type="button" class="btn btn-sm btn-info p-1"
-                                style="background-color: #FBA10F;font-size:13px;width:40px"
-                                onclick="openProductModal(${index})">   <svg style="width: 16px;height:16px" xmlns="http://www.w3.org/2000/svg"
-                                                            class="icon icon-tabler icon-tabler-search" width="24" height="24"
-                                                            viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"
-                                                            fill="none" stroke-linecap="round" stroke-linejoin="round">
-                                                            <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
-                                                            <path d="M10 10m-7 0a7 7 0 1 0 14 0a7 7 0 1 0 -14 0"></path>
-                                                            <path d="M21 21l-6 -6"></path>
-                                                        </svg></button>
-                    </div>
-                </td>
-   <td><input type="text" name="products[${index}][price-tax]"
-                    class="form-control product-price-tax" value="0" min="0" onchange="calculateTotals_with_tax()"></td>
-                <td><input type="text" name="products[${index}][price]"
-                        class="form-control product-price" value="0" min="0" onchange="calculateTotals()"></td>
+                                <td><input type="text" class="form-control product-total" readonly value="0"></td>
 
-                <td><input type="text" name="products[${index}][quentity]"
-                        class="form-control product-quentity" oninput='calculateTotals()' value=1></td>
+                                <td>
+                                    <button type="button" class="btn btn-danger btn-sm" onclick="removeRow(this)">{{ __('home.delete') }}</button>
+                                </td>
+                            </tr>`;
 
-                <td><input type="text" name="products[${index}][totalprice_withodtax]"
-                        class="form-control product-totalprice_withodtax"  readonly value="0" min="0" oninput="calculateTotals()"></td>
-
-                <td><input type="text" name="products[${index}][discound]"
-                        class="form-control product-discound" value="0" onchange='calculateTotals()' min="0"></td>
-
-                <td><input type="text" name="products[${index}][tax]" class="form-control product-tax" value="0" readonly></td>
-
-                <td><input type="text" class="form-control product-total" readonly value="0"></td>
-
-                <td>
-                    <button type="button" class="btn btn-danger btn-sm" onclick="removeRow(this)">{{ __('home.delete') }}</button>
-                </td>
-            </tr>`;
-
-              table.insertAdjacentHTML("beforeend", row);
+                    table.insertAdjacentHTML("beforeend", row);
 
 
 
 
-                        product_code = product['Product_Code']
-                        product_name = product['product_name']
-                        purchasingـprice = product['Unit_Price']
-                        quantity = product['quantity']
+                    product_code = product['Product_Code']
+                    product_name = product['product_name']
+                    purchasingـprice = product['Unit_Price']
+                    quantity = product['quantity']
 
 
-                   let row_add = document.querySelector(`#productsTableBody tr[data-index='${index}']`);
-                   row_add.querySelector('.product-id').value = product['id'];
-                   row_add.querySelector('.product-name').value = product_name;
-                   row_add.querySelector('.product-code').value = product_code;
-                   row_add.querySelector('.product-price').value = purchasingـprice;
-                   row_add.querySelector('.product-discound').value = 0;
-                   row_add.querySelector('.product-quentity').value = quentity;
+                    let row_add = document.querySelector(
+                        `#productsTableBody tr[data-index='${index}']`);
+                    row_add.querySelector('.product-id').value = product['id'];
+                    row_add.querySelector('.product-name').value = product_name;
+                    row_add.querySelector('.product-code').value = product_code;
+                    row_add.querySelector('.product-price').value = purchasingـprice;
+                    row_add.querySelector('.product-discound').value = 0;
+                    row_add.querySelector('.product-quentity').value = quentity;
 
-         index = rowIndex++; // 👈 يزيد دايمًا
-
-                        }
-
-                       window.currentRow = index;
-
-                    });
-                   try {
-    $('#clientnamesearch').append(
-        $('<option>', { value: data['customer']['id'], text:data['customer']['name'] })
-    );
-    $('#clientnamesearch').val(data['customer']['id']).trigger('change');
-} catch (e) {
-    console.error(e);
-}
-console.log('n')
-console.log(data['customer']['name'])
-
-              calculateTotals()
-            window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
-
-           document.getElementById('printdiv').hidden = true
-                document.getElementById('saveInvoice').hidden = false
-
-
-
-                },
-                error: function(response) {
-                    alert("{{ __('home.sorryerror') }}")
+                    index = rowIndex++; // 👈 يزيد دايمًا
 
                 }
 
-            })
+                window.currentRow = index;
+
+            });
+            try {
+                $('#clientnamesearch').append(
+                    $('<option>', {
+                        value: data['customer']['id'],
+                        text: data['customer']['name']
+                    })
+                );
+                $('#clientnamesearch').val(data['customer']['id']).trigger('change');
+            } catch (e) {
+                console.error(e);
+            }
+            console.log('n')
+            console.log(data['customer']['name'])
+
+            calculateTotals()
+            window.scrollTo({
+                top: document.body.scrollHeight,
+                behavior: "smooth"
+            });
+
+            document.getElementById('printdiv').hidden = true
+            document.getElementById('saveInvoice').hidden = false
 
 
-    });
 
-    function plusFunctionIndex(btn) {
+        },
+        error: function(response) {
+            alert("{{ __('home.sorryerror') }}")
+
+        }
+
+    })
+
+
+});
+
+function plusFunctionIndex(btn) {
     let input = btn.previousElementSibling;
     input.value = (parseInt(input.value) || 0) + 1;
     calculateTotals();
@@ -1763,7 +1824,7 @@ function minusFunctionIndex(btn) {
     if (val > 0) input.value = val - 1;
     calculateTotals();
 }
-       $('select[name="product_group"]').on('change', function() {
+$('select[name="product_group"]').on('change', function() {
     var selectclientid = $(this).val();
     var token_search = $("#token_search").val();
     console.log(selectclientid)
@@ -1776,7 +1837,7 @@ function minusFunctionIndex(btn) {
             data: {
                 "_token": token_search,
                 "group_id": selectclientid,
-                            "currentrow": window.currentRow,
+                "currentrow": window.currentRow,
 
             },
             success: function(products) {
@@ -1792,283 +1853,293 @@ function minusFunctionIndex(btn) {
         console.log('AJAX load did not work');
     }
 });
-    $('#MAINproduct').select2({
-        placeholder: 'ابحث عن المنتج',
-        allowClear: true,
-        minimumInputLength: 2,
-        ajax: {
-            url: "{{ route('itemcards.search') }}",
-            dataType: 'json',
-            delay: 300,
-            data: function (params) {
-                return { q: params.term };
-            },
-            processResults: function (data) {
-                return {
-                    results: data.map(item => ({
-                        id: item.id,
-                        text: item.product_name
-                    }))
-                };
-            }
+$('#MAINproduct').select2({
+    placeholder: 'ابحث عن المنتج',
+    allowClear: true,
+    minimumInputLength: 2,
+    ajax: {
+        url: "{{ route('itemcards.search') }}",
+        dataType: 'json',
+        delay: 300,
+        data: function(params) {
+            return {
+                q: params.term
+            };
+        },
+        processResults: function(data) {
+            return {
+                results: data.map(item => ({
+                    id: item.id,
+                    text: item.product_name
+                }))
+            };
         }
-    });
-    let searchText = '';
+    }
+});
+let searchText = '';
 
-        $('#clientnamesearch').select2({
-        placeholder: 'ابحث عن المنتج',
-        allowClear: true,
-        minimumInputLength: 2,
-        ajax: {
-            url: "{{ route('clientnamesearch.search') }}",
-            dataType: 'json',
-            delay: 300,
-            data: function (params) {
-                searchText=params.term
-                return { q: params.term };
-            },
-            processResults: function (data) {
-                    if (!data || data.length === 0) {
-        // 👇 الكود اللي عايز يتنفّذ
-        console.log('مفيش بيانات راجعة');
-        $('#name').val( searchText)
+$('#clientnamesearch').select2({
+    placeholder: 'ابحث عن المنتج',
+    allowClear: true,
+    minimumInputLength: 2,
+    ajax: {
+        url: "{{ route('clientnamesearch.search') }}",
+        dataType: 'json',
+        delay: 300,
+        data: function(params) {
+            searchText = params.term
+            return {
+                q: params.term
+            };
+        },
+        processResults: function(data) {
+            if (!data || data.length === 0) {
+                // 👇 الكود اللي عايز يتنفّذ
+                console.log('مفيش بيانات راجعة');
+                $('#name').val(searchText)
 
                 $('#clientnamesearch').select2('close');
 
 
-        $('#createcustomer').modal().show();
-        return { results: [] };
-    }
-else{
+                $('#createcustomer').modal().show();
+                return {
+                    results: []
+                };
+            } else {
                 return {
                     results: data.map(item => ({
                         id: item.id,
-                    text: item.name + ' :-' + item.tax_no
+                        text: item.name + ' :-' + item.tax_no
                     }))
                 };
             }
-            }
         }
-    });
-    </script>
+    }
+});
+</script>
 <script>
-
-
-  let barcodeEnabled = true;
+let barcodeEnabled = true;
 
 
 
-        var barcode = '';
-        var interval;
-        let productCache = {};
+var barcode = '';
+var interval;
+let productCache = {};
 
-        document.addEventListener('keydown', function (evt) {
-            if (!barcodeEnabled) return; // 🛑 يمنع القراءة أثناء انشغال الكود
+document.addEventListener('keydown', function(evt) {
+    if (!barcodeEnabled) return; // 🛑 يمنع القراءة أثناء انشغال الكود
 
-            if (interval)
-                clearInterval(interval);
-            if (evt.code == 'Enter') {
-                if (barcode)
-                    if ($('#saveinvice').val() == 1) {
-                        $('#invoice_number').val('')
-                        $('#saveinvice').val('0')
+    if (interval)
+        clearInterval(interval);
+    if (evt.code == 'Enter') {
+        if (barcode)
+            if ($('#saveinvice').val() == 1) {
+                $('#invoice_number').val('')
+                $('#saveinvice').val('0')
 
-                        handleBarcode(barcode);
+                handleBarcode(barcode);
 
-                    } else {
-                        handleBarcode(barcode);
+            } else {
+                handleBarcode(barcode);
 
-                    }
-                barcode = '';
-                return;
             }
-            if (evt.key != 'Shift')
-                barcode += evt.key;
-            interval = setInterval(() => barcode = '', 20);
-        });
-
-        function handleBarcode(scanned_barcode) {
-            var url = "{{ URL::to('getByCodenew') }}/" + scanned_barcode;
-
-            $.ajax({
-                url: url,
-                type: 'GET',
-                dataType: 'json', // <-- أسرع بكثير ولا تحتاج JSON.parse
-                cache: false,
-                beforeSend: function () {
-                    barcodeEnabled = false; // إيقاف القراءة قبل البدء
-                },
-
-                complete: function () {
-                    barcodeEnabled = true; // ✔ إعادة التشغيل بعد الانتهاء
-                },
-                success: function (data) {
-                    console.log(productCache)
-
-                    if (!data) {
-                        alert(
-                            "عذرا المنتج غير مسجل نرجو تسجيلة اولا \n   Sorry, the product is not registered. Please register it first."
-                        );
-                        return;
-                    }
-
-                    let code = data.id;
-                    let name = data.product_name;
-                    let productcode = data.Product_Code;
-                    let sale_price = data.sale_price;
-
-                    let table = document.getElementById('productsTableBody');
-
-                    // ---------------------------------------------
-                    // 1) التحقق من تكرار المنتج باستخدام Cache
-                    // ---------------------------------------------
-                    console.log('jjjjjjjjjjjjjjjjj')
-                    console.log($('#firstiteminput').val())
-                    if ($('#firstiteminput').val() == "0") {
-                        let rows = table.querySelectorAll('tr');
-
-                        if (rows.length == 1) {
-                            console.log(rows.length)
-
-                            table.removeChild(rows[rows.length - 1]);
-                        } else {
-                            for (i = 1; i <= rows.length; i++) {
-                                table.removeChild(rows[i - 1]);
-                            }
-
-
-                        }
-                    }
-                    console.log('code Add')
-                    console.log(productCache[code])
-
-if (productCache[code] && document.body.contains(productCache[code])) {
-    let qty = productCache[code].querySelector(".product-quentity");
-    qty.value = Number(qty.value) + 1;
-    calculateTotals();
-    return;
-}
-
-                    // ---------------------------------------------
-                    // 2) حذف الصف الفارغ (إن وجد)
-                    // ---------------------------------------------
-
-
-                    // ---------------------------------------------
-                    // 3) إضافة صف جديد (نسخة محسّنة وسريعة)
-                    // ---------------------------------------------
-    let index = rowIndex++; // 👈 يزيد دايمًا
-
-                    let rowHTML = `
-                            <tr data-index="${index}">
-                                <td>
-                                    <input type="hidden" name="products[${index}][product_id]" class="product-id">
-                                                            <input type="hidden" name="products[${index}][product_cost]" class="product_cost">
-
-                                </td>
-
-                                <td class="align-middle text-center">${index + 1}</td>
-
-                                <td><input type="text" class="form-control product-code" readonly></td>
-                                <td><input type="text" class="form-control product-name" readonly></td>
-            <td><input type="text" name="products[${index}][price-tax]"
-                    class="form-control product-price-tax" value="0" min="0" onchange="calculateTotals_with_tax()"></td>
-                                <td><input type="text" name="products[${index}][price]" class="form-control product-price" onchange="calculateTotals()" value="0"></td>
-
-                 <td>  <div class="input-group input-group-sm" style="width:100%;">
-        <button    class="btn btn-secondary rounded-circle"
-            style="width:32px; height:32px;" type="button"
-            onclick="minusFunctionIndex(this)">−</button>
-            &nbsp;
-
-                                <input type="text" name="products[${index}][quentity]"  style="width:50px; text-align:center;" class="form-control product-quentity" oninput="calculateTotals()" value="1">
-&nbsp;
-
-        <button    class="btn btn-secondary rounded-circle"
-            style="width:32px; height:32px;" type="button"
-            onclick="plusFunctionIndex(this)">+</button>
-    </div>
-
-    </td>
-                                <td><input type="text" name="products[${index}][totalprice_withodtax]" class="form-control product-totalprice_withodtax" readonly value="0"></td>
-
-                                <td><input type="text" name="products[${index}][discound]" class="form-control product-discound" onchange="calculateTotals()" value="0"></td>
-
-                                <td><input type="text" name="products[${index}][tax]" class="form-control product-tax" readonly value="0"></td>
-
-                                <td><input type="text" class="form-control product-total" readonly value="0"></td>
-
-                                <td><button type="button" class="btn btn-danger btn-sm" onclick="removeRow(this)">حذف</button></td>
-                            </tr>
-                        `;
-
-                    table.insertAdjacentHTML("beforeend", rowHTML);
-
-                    // ---------------------------------------------
-                    // 4) تعبئة بيانات الصف الجديد
-                    // ---------------------------------------------
-                    let newRow = document.querySelector(`#productsTableBody tr[data-index='${index}']`);
-
-                    newRow.querySelector('.product-id').value = code;
-                    newRow.querySelector('.product-name').value = name;
-                    newRow.querySelector('.product-code').value = productcode;
-                    newRow.querySelector('.product-price').value = sale_price;
-    var audio = new Audio('/sounds/done.mp3');
-                                        audio.play();
-
-                    // حفظه في Cache
-productCache[code] = newRow;
-                    $('#firstiteminput').val("1");
-
-                    // تحديث الإجماليات
-                    calculateTotals();
-                },
-
-                error: function () {
-                    alert(
-                        "عذرا المنتج غير مسجل نرجو تسجيلة اولا \n   Sorry, the product is not registered. Please register it first."
-                    );
-
-                }
-            });
-
-        }
-
-
-
-document.addEventListener("keydown", function (e) {
-  if (e.key === "F8") {
-    e.preventDefault(); // يمنع أي وظيفة افتراضية
-    window.open(window.location.href, "_blank");
-  }
+        barcode = '';
+        return;
+    }
+    if (evt.key != 'Shift')
+        barcode += evt.key;
+    interval = setInterval(() => barcode = '', 20);
 });
 
-document.addEventListener("keydown", function (e) {
-  if (e.key === "+") {
-    plusFunction();
-  }
-  else if (e.key === "-") {
-    minusFunction();
-  }
+function handleBarcode(scanned_barcode) {
+    var url = "{{ URL::to('getByCodenew') }}/" + scanned_barcode;
+
+    $.ajax({
+        url: url,
+        type: 'GET',
+        dataType: 'json', // <-- أسرع بكثير ولا تحتاج JSON.parse
+        cache: false,
+        beforeSend: function() {
+            barcodeEnabled = false; // إيقاف القراءة قبل البدء
+        },
+
+        complete: function() {
+            barcodeEnabled = true; // ✔ إعادة التشغيل بعد الانتهاء
+        },
+        success: function(data) {
+            console.log(productCache)
+
+            if (!data) {
+                alert(
+                    "عذرا المنتج غير مسجل نرجو تسجيلة اولا \n   Sorry, the product is not registered. Please register it first."
+                );
+                return;
+            }
+
+            let code = data.id;
+            let name = data.product_name;
+            let productcode = data.Product_Code;
+            let sale_price = data.sale_price;
+
+            let table = document.getElementById('productsTableBody');
+
+            // ---------------------------------------------
+            // 1) التحقق من تكرار المنتج باستخدام Cache
+            // ---------------------------------------------
+            console.log('jjjjjjjjjjjjjjjjj')
+            console.log($('#firstiteminput').val())
+            if ($('#firstiteminput').val() == "0") {
+                let rows = table.querySelectorAll('tr');
+
+                if (rows.length == 1) {
+                    console.log(rows.length)
+
+                    table.removeChild(rows[rows.length - 1]);
+                } else {
+                    for (i = 1; i <= rows.length; i++) {
+                        table.removeChild(rows[i - 1]);
+                    }
+
+
+                }
+            }
+            console.log('code Add')
+            console.log(productCache[code])
+
+            if (productCache[code] && document.body.contains(productCache[code])) {
+                let qty = productCache[code].querySelector(".product-quentity");
+                qty.value = Number(qty.value) + 1;
+                calculateTotals();
+                return;
+            }
+
+            // ---------------------------------------------
+            // 2) حذف الصف الفارغ (إن وجد)
+            // ---------------------------------------------
+
+
+            // ---------------------------------------------
+            // 3) إضافة صف جديد (نسخة محسّنة وسريعة)
+            // ---------------------------------------------
+            let index = rowIndex++; // 👈 يزيد دايمًا
+
+            let rowHTML = `
+                                            <tr data-index="${index}">
+                                                <td>
+                                                    <input type="hidden" name="products[${index}][product_id]" class="product-id">
+                                                                            <input type="hidden" name="products[${index}][product_cost]" class="product_cost">
+
+                                                </td>
+
+                                                <td class="align-middle text-center">${index + 1}</td>
+
+                                                <td><input type="text" class="form-control product-code" readonly></td>
+                                                <td><input type="text" class="form-control product-name" name="products[${index}][product_name]"   ></td>
+                            <td><input type="text" name="products[${index}][price-tax]"
+                                    class="form-control product-price-tax" value="0" min="0" onchange="calculateTotals_with_tax()"></td>
+                                                <td><input type="text" name="products[${index}][price]" class="form-control product-price" onchange="calculateTotals()" value="0"></td>
+
+   <td>
+    <div class="d-flex align-items-center justify-content-center" style="width:100%;">
+        <button class="btn btn-secondary rounded-circle d-flex align-items-center justify-content-center p-0"
+            style="width: 32px; height: 32px; min-width: 32px; min-height: 32px;" 
+            type="button" 
+            onclick="minusFunctionIndex(this)">−</button>
+
+        <input type="text" 
+            name="products[${index}][quentity]" 
+            style="width: 50px; text-align: center;" 
+            class="form-control product-quentity mx-2" 
+            oninput="calculateTotals()" 
+            value="1">
+
+        <button class="btn btn-secondary rounded-circle d-flex align-items-center justify-content-center p-0"
+            style="width: 32px; height: 32px; min-width: 32px; min-height: 32px;" 
+            type="button" 
+            onclick="plusFunctionIndex(this)">+</button>
+    </div>
+</td>
+                                                <td><input type="text" name="products[${index}][totalprice_withodtax]" class="form-control product-totalprice_withodtax" readonly value="0"></td>
+
+                                                <td><input type="text" name="products[${index}][discound]" class="form-control product-discound" onchange="calculateTotals()" value="0"></td>
+          <td><select class="form-control tax-select" oninput='calculateTotals()' name="products[${index}][tax_rate]">
+                            <option value="0.15">15%</option>
+                                <option value="0">{{ __('home.Exempt') }}</option>
+                            </select></td>
+                                                <td><input type="text" name="products[${index}][tax]" class="form-control product-tax" readonly value="0"></td>
+
+                                                <td><input type="text" class="form-control product-total" readonly value="0"></td>
+
+                                                <td><button type="button" class="btn btn-danger btn-sm" onclick="removeRow(this)">حذف</button></td>
+                                            </tr>
+                                        `;
+
+            table.insertAdjacentHTML("beforeend", rowHTML);
+
+            // ---------------------------------------------
+            // 4) تعبئة بيانات الصف الجديد
+            // ---------------------------------------------
+            let newRow = document.querySelector(`#productsTableBody tr[data-index='${index}']`);
+
+            newRow.querySelector('.product-id').value = code;
+            newRow.querySelector('.product-name').value = name;
+            newRow.querySelector('.product-code').value = productcode;
+            newRow.querySelector('.product-price').value = sale_price;
+            var audio = new Audio('/sounds/done.mp3');
+            audio.play();
+
+            // حفظه في Cache
+            productCache[code] = newRow;
+            $('#firstiteminput').val("1");
+
+            // تحديث الإجماليات
+            calculateTotals();
+        },
+
+        error: function() {
+            alert(
+                "عذرا المنتج غير مسجل نرجو تسجيلة اولا \n   Sorry, the product is not registered. Please register it first."
+            );
+
+        }
+    });
+
+}
+
+
+
+document.addEventListener("keydown", function(e) {
+    if (e.key === "F8") {
+        e.preventDefault(); // يمنع أي وظيفة افتراضية
+        window.open(window.location.href, "_blank");
+    }
+});
+
+document.addEventListener("keydown", function(e) {
+    if (e.key === "+") {
+        plusFunction();
+    } else if (e.key === "-") {
+        minusFunction();
+    }
 });
 
 function plusFunction() {
-  console.log("دست +");
-  console.log(rowIndex);
-     let row = document.querySelector(`#productsTableBody tr[data-index='${rowIndex-1}']`);
-            if (!row) return;
-            row.querySelector('.product-quentity').value = (row.querySelector('.product-quentity').value*1)+1;
+    console.log("دست +");
+    console.log(rowIndex);
+    let row = document.querySelector(`#productsTableBody tr[data-index='${rowIndex - 1}']`);
+    if (!row) return;
+    row.querySelector('.product-quentity').value = (row.querySelector('.product-quentity').value * 1) + 1;
 
 }
 
 function minusFunction() {
-  console.log("دست -");
+    console.log("دست -");
     console.log(rowIndex);
 
-     let row = document.querySelector(`#productsTableBody tr[data-index='${rowIndex-1}']`);
-            if (!row) return;
-            row.querySelector('.product-quentity').value = (row.querySelector('.product-quentity').value*1)-1;
-    }
+    let row = document.querySelector(`#productsTableBody tr[data-index='${rowIndex - 1}']`);
+    if (!row) return;
+    row.querySelector('.product-quentity').value = (row.querySelector('.product-quentity').value * 1) - 1;
+}
 
 
 
@@ -2133,30 +2204,31 @@ function hasInternet() {
     return navigator.onLine;
 }
 
-        function translateNameToArbic() {
-            const checkbox = document.getElementById('translate_status');
+function translateNameToArbic() {
+    const checkbox = document.getElementById('translate_status');
 
-            if (checkbox.checked) {
+    if (checkbox.checked) {
 
 
-                var wordEnglish = $('#product_name_en').val();
+        var wordEnglish = $('#product_name_en').val();
 
-                jQuery.ajax({
-                    url: "https://translate.googleapis.com/translate_a/single?client=gtx&dt=t&sl=en&tl=ar&q=" + wordEnglish,
-                    type: 'get',
-                    cache: false,
+        jQuery.ajax({
+            url: "https://translate.googleapis.com/translate_a/single?client=gtx&dt=t&sl=en&tl=ar&q=" +
+                wordEnglish,
+            type: 'get',
+            cache: false,
 
-                    success: function (request_result) {
-                        $('#product_name_ar').val(request_result[0][0][0])
-                    },
-                    error: function () {
-
-                    }
-                });
+            success: function(request_result) {
+                $('#product_name_ar').val(request_result[0][0][0])
+            },
+            error: function() {
 
             }
+        });
 
-        }
+    }
+
+}
 
 
 
@@ -2170,12 +2242,20 @@ function createnewproductajax() {
 
     // التحقق من الحقول الإجبارية
     if ($('#product_name_ar').val() == '') {
-        Swal.fire({ icon: 'warning', title: 'تنبيه', text: "{{ __('supprocesses.product_name_ar') }}" });
+        Swal.fire({
+            icon: 'warning',
+            title: 'تنبيه',
+            text: "{{ __('supprocesses.product_name_ar') }}"
+        });
         return;
     }
 
     if ($('#product_location_create').val() == '') {
-        Swal.fire({ icon: 'warning', title: 'تنبيه', text: "{{ __('supprocesses.product_location') }}" });
+        Swal.fire({
+            icon: 'warning',
+            title: 'تنبيه',
+            text: "{{ __('supprocesses.product_location') }}"
+        });
         return;
     }
 
@@ -2235,75 +2315,82 @@ function createnewproductajax() {
         error: function(xhr) {
             errorAudio.play();
             console.log(xhr.responseText);
-            Swal.fire({ icon: 'error', title: 'خطأ نظام', text: 'فشلت عملية الاتصال بالسيرفر' });
+            Swal.fire({
+                icon: 'error',
+                title: 'خطأ نظام',
+                text: 'فشلت عملية الاتصال بالسيرفر'
+            });
         }
     });
 }
 
 function translateNameToArbic() {
-  const checkbox = document.getElementById('translate_status');
+    const checkbox = document.getElementById('translate_status');
 
-  if (checkbox.checked) {
+    if (checkbox.checked) {
 
 
-      var wordEnglish = $('#product_name_en').val();
+        var wordEnglish = $('#product_name_en').val();
 
-    jQuery.ajax({
-        url: "https://translate.googleapis.com/translate_a/single?client=gtx&dt=t&sl=en&tl=ar&q=" + wordEnglish,
-        type: 'get',
-        cache: false,
+        jQuery.ajax({
+            url: "https://translate.googleapis.com/translate_a/single?client=gtx&dt=t&sl=en&tl=ar&q=" +
+                wordEnglish,
+            type: 'get',
+            cache: false,
 
-        success: function(request_result) {
-            $('#product_name_ar').val(request_result[0][0][0])
-        },
-        error: function() {
+            success: function(request_result) {
+                $('#product_name_ar').val(request_result[0][0][0])
+            },
+            error: function() {
 
-        }
-    });
+            }
+        });
+
+    }
 
 }
 
-}
 
 
 
 
+$('select[name="numbershowstatus"]').on('change', function() {
+    console.log('AJAX load   work 0000');
 
-    $('select[name="numbershowstatus"]').on('change', function() {
-        console.log('AJAX load   work 0000');
-
-        var selectCustomer = $(this).val();
-$('#shownumberproduct').val(selectCustomer)
+    var selectCustomer = $(this).val();
+    $('#shownumberproduct').val(selectCustomer)
 
 
-    })
+})
+
 function translateNameToEnglish() {
-  const checkbox = document.getElementById('translate_status');
+    const checkbox = document.getElementById('translate_status');
 
-  if (checkbox.checked) {
+    if (checkbox.checked) {
 
 
-    var wordarbic = $('#product_name_ar').val();
+        var wordarbic = $('#product_name_ar').val();
 
-    jQuery.ajax({
-        url: "https://translate.googleapis.com/translate_a/single?client=gtx&dt=t&sl=ar&tl=en&q=" + wordarbic,
-        type: 'get',
-        cache: false,
+        jQuery.ajax({
+            url: "https://translate.googleapis.com/translate_a/single?client=gtx&dt=t&sl=ar&tl=en&q=" +
+                wordarbic,
+            type: 'get',
+            cache: false,
 
-        success: function(request_result) {
-            $('#product_name_en').val(request_result[0][0][0])
-        },
-        error: function() {
+            success: function(request_result) {
+                $('#product_name_en').val(request_result[0][0][0])
+            },
+            error: function() {
 
-        }
-    });
+            }
+        });
+
+    }
 
 }
 
-}
 
-
-    function createnewcustomerajax() {
+function createnewcustomerajax() {
 
 
     console.log('+++++++++++++++++++++++++++++++++create customer ++++++++++++++++++++++++++++++++');
@@ -2324,7 +2411,7 @@ function translateNameToEnglish() {
         alert("{{ __('home.city') }}")
     } else if ($('#sub_city').val() == '') {
         alert("{{ __('home.sub_city') }}")
-    } else if ($('#TaxـNumber').val().length <1) {
+    } else if ($('#TaxـNumber').val().length < 1) {
         alert('يجب ان يكون رقم الضريبي مكون من 15 رقم     \n    The tax number must consist of 15 digits')
     } else {
 
@@ -2365,7 +2452,7 @@ function translateNameToEnglish() {
                     value: data['id'],
                     text: data['name'] + data['tax_no']
                 }));
-        $('#clientnamesearch').val(data['id']).change();
+                $('#clientnamesearch').val(data['id']).change();
 
 
                 $('#massagesave').modal().show();
@@ -2442,7 +2529,7 @@ $(document).on('click', '#saveAsDraft', function() {
 
 let isSubmitting = false;
 
-$("#formdata").on('submit', function (e) {
+$("#formdata").on('submit', function(e) {
     e.preventDefault();
 
     // --- 1. التحقق من السعر والكمية لجميع الأصناف ---
@@ -2459,7 +2546,8 @@ $("#formdata").on('submit', function (e) {
         if (price === "" || parseFloat(price) <= 0 || qty === "" || parseFloat(qty) <= 0) {
             row.find('.product-price, .product-quentity').css('border', '2px solid red');
             isValid = false;
-            fieldErrorMessage = "يرجى إدخال السعر والكمية بشكل صحيح للمنتج: " + (productName || "غير محدد");
+            fieldErrorMessage = "يرجى إدخال السعر والكمية بشكل صحيح للمنتج: " + (productName ||
+                "غير محدد");
         } else {
             row.find('.product-price, .product-quentity').css('border', '');
         }
@@ -2485,20 +2573,20 @@ $("#formdata").on('submit', function (e) {
     var clientName = $("#clientnamesearch option:selected").text().trim();
     var form = this;
 
-    let messageText = ($('#invoice_action').val() == 'save')
-        ? 'هل أنت متأكد من حفظ الفاتورة للعميل؟'
-        : 'هل أنت متأكد من حفظ المسودة للعميل؟';
+    let messageText = ($('#invoice_action').val() == 'save') ?
+        'هل أنت متأكد من حفظ الفاتورة للعميل؟' :
+        'هل أنت متأكد من حفظ المسودة للعميل؟';
 
     // --- 3. نافذة التأكيد ---
     Swal.fire({
         title: 'تأكيد الحفظ | Confirm Save',
         html: `
-            <div style="font-weight: bold; font-size: 1.1em; margin-bottom: 10px;">
-                ${messageText}
-                <br>
-                <span style="color: #28a745;">${clientName}</span>
-            </div>
-        `,
+                            <div style="font-weight: bold; font-size: 1.1em; margin-bottom: 10px;">
+                                ${messageText}
+                                <br>
+                                <span style="color: #28a745;">${clientName}</span>
+                            </div>
+                        `,
         icon: 'question',
         showCancelButton: true,
         confirmButtonColor: '#28a745',
@@ -2520,49 +2608,57 @@ $("#formdata").on('submit', function (e) {
                 cache: false,
                 contentType: false,
                 processData: false,
-                success: function (data) {
-                    if($('#invoice_action').val() == 'save') {
+                success: function(data) {
+                    if ($('#invoice_action').val() == 'save') {
                         // منطق الحفظ النهائي والربط مع زاتكا (كودك الأصلي)
                         $('#show_invoice_number').val(data);
                         let link = "{{ URL::to('generate_pdf') }}/" + data;
-                                    $('#generate_pdf').attr('href', link);
+                        $('#generate_pdf').attr('href', link);
 
                         // إعداد رابط واتساب
                         let ph = $('#phone').val();
                         let phone = "966" + ph.substring(1);
                         let message = "يسرنا خدمتكم.. فاتورتكم رقم " + data + " : " + link;
-                        $('#send_whats_app').attr('href', `https://web.whatsapp.com/send?phone=${phone}&text=${encodeURIComponent(message)}`);
+                        $('#send_whats_app').attr('href',
+                            `https://web.whatsapp.com/send?phone=${phone}&text=${encodeURIComponent(message)}`
+                            );
 
                         if (data >= 1) {
                             $('#printdiv').prop('hidden', false);
                             $('#saveInvoice').prop('hidden', true);
 
                             // إرسال لزاتكا
-                            document.getElementById('loading-screen').style.display = 'block';
+                            document.getElementById('loading-screen').style.display =
+                                'block';
                             var urlZatca = "{{ URL::to('sendzatca_fromsale') }}/" + data;
 
                             $.ajax({
                                 url: urlZatca,
                                 type: 'GET',
                                 success: function(res) {
-                                    document.getElementById('loading-screen').style.display = 'none';
+                                    document.getElementById('loading-screen')
+                                        .style.display = 'none';
                                     $('#massagesave').modal('hide');
                                     if (res == 1) {
                                         new Audio('/sounds/done.mp3').play();
-                                        Swal.fire({ icon: 'success', title: 'تم الحفظ والإرسال لزاتكا' });
+                                        Swal.fire({
+                                            icon: 'success',
+                                            title: 'تم الحفظ والإرسال لزاتكا'
+                                        });
                                     } else {
                                         alert("خطأ زاتكا: " + res);
                                     }
                                 }
                             });
                         }
-                                                            document.getElementById('loading-screen').style.display = 'none';
-                                    $('#massagesave').modal('hide');
+                        document.getElementById('loading-screen').style.display = 'none';
+                        $('#massagesave').modal('hide');
 
                     } else {
                         // منطق المسودة (الموجود في كودك)
                         $('#massagesave').modal('hide');
-                        let pendingLink = "{{ URL::to('showInvoiceRecent__pending') }}/" + data;
+                        let pendingLink = "{{ URL::to('showInvoiceRecent__pending') }}/" +
+                            data;
                         Swal.fire({
                             title: 'تم حفظ المسودة!',
                             html: `<p>رقم المسودة <b>#${data}</b></p><a href="${pendingLink}" target="_blank" class="btn btn-info">طباعة المسودة</a>`,
@@ -2570,7 +2666,7 @@ $("#formdata").on('submit', function (e) {
                         });
                     }
                 },
-                error: function (r) {
+                error: function(r) {
                     isSubmitting = false;
                     $('#massagesave').modal('hide');
                     Swal.fire('خطأ', "تعذر الاتصال بالسيرفر", 'error');
@@ -2580,8 +2676,8 @@ $("#formdata").on('submit', function (e) {
     });
 });
 
-$(window).on('offline', function () {
-            alert("{{ __('home.sorryerror') }}")
+$(window).on('offline', function() {
+    alert("{{ __('home.sorryerror') }}")
 });
 
 
@@ -2593,8 +2689,8 @@ function reorderRows() {
 
 function removeRow(btn) {
     btn.closest('tr').remove();
-                calculateTotals()
-                    reorderRows();
+    calculateTotals()
+    reorderRows();
 
 
 }
@@ -2609,13 +2705,13 @@ function openProductModal(index) {
 
 }
 var modal = document.getElementById('SearchProduct');
-modal.addEventListener('shown.bs.modal', function () {
+modal.addEventListener('shown.bs.modal', function() {
     document.getElementById('searchaboutproduct').focus();
 });
 
 
 function addRow() {
-// جلب القيمة وتحويلها لرقم للتأكد من المقارنة الصحيحة
+    // جلب القيمة وتحويلها لرقم للتأكد من المقارنة الصحيحة
     let invoiceNumber = parseFloat($('#show_invoice_number').val());
 
     // التحقق إذا كانت القيمة أكبر من الصفر
@@ -2625,10 +2721,10 @@ function addRow() {
     }
 
 
-            $('#searchaboutproduct').focus();
+    $('#searchaboutproduct').focus();
 
     $('#SearchProduct').modal().show();
-        $('#searchaboutproduct').focus();
+    $('#searchaboutproduct').focus();
 
 }
 
@@ -2652,7 +2748,7 @@ $("#sendzatca").click(function(e) {
 
             if (data == 1) {
                 document.getElementById('loading-screen').style.display =
-                'none'; // Hide loading screen
+                    'none'; // Hide loading screen
 
                 var audio = new Audio('/sounds/done.mp3');
                 audio.play();
@@ -2664,10 +2760,10 @@ $("#sendzatca").click(function(e) {
                 }, 1000);
             } else {
                 $('#massagesave').modal('hide');
- document.getElementById('loading-screen').style.display =
-                'none';
+                document.getElementById('loading-screen').style.display =
+                    'none';
                 alert(data)
-                                $('#massagesave').modal('hide');
+                $('#massagesave').modal('hide');
 
                 document.getElementById('sendzatca').hidden = false
 
@@ -2760,9 +2856,10 @@ function calculateTotalDiscount() {
 
 
 function calculateTotals() {
-    let total = 0, taxTotal = 0, discountTotal = 0, grand = 0;
-    let taxInput = parseFloat($('#avtValue').val()) || 0;
-    let avtsale = taxInput > 1 ? taxInput / 100 : taxInput;
+    let total = 0,
+        taxTotal = 0,
+        discountTotal = 0,
+        grand = 0;
 
     document.querySelectorAll('#productsTableBody tr').forEach(r => {
         let price = parseFloat(r.querySelector('.product-price').value) || 0;
@@ -2771,27 +2868,27 @@ function calculateTotals() {
 
         // --- فحص التكلفة ---
         if (price > 0 && price < cost) {
-Swal.fire({
-    icon: 'error',
-    title: 'تنبيه: خطأ في سعر البيع <br> <small>Warning: Sales Price Error</small>',
-    html: `
-        <div style="direction: rtl; text-align: center;">
-            <p style="font-weight: bold; color: #d33;">السعر المدخل أقل من سعر البيع المعتمد في النظام!</p>
-            <p dir="ltr">The entered price is lower than the registered selling price!</p>
-            <hr>
-            <div style="background: #f8f9fa; padding: 10px; border-radius: 5px;">
-                <strong>سعر النظام | System Price:</strong>
-                <span style="color: #28a745; font-size: 1.2em;">${cost}</span>
-            </div>
-        </div>
-    `,
-    position: 'center',
-    showConfirmButton: true,
-    confirmButtonText: 'موافق | OK',
-    confirmButtonColor: '#3085d6',
-    timer: 6000,
-    timerProgressBar: true
-});
+            Swal.fire({
+                icon: 'error',
+                title: 'تنبيه: خطأ في سعر البيع <br> <small>Warning: Sales Price Error</small>',
+                html: `
+                        <div style="direction: rtl; text-align: center;">
+                            <p style="font-weight: bold; color: #d33;">السعر المدخل أقل من سعر البيع المعتمد في النظام!</p>
+                            <p dir="ltr">The entered price is lower than the registered selling price!</p>
+                            <hr>
+                            <div style="background: #f8f9fa; padding: 10px; border-radius: 5px;">
+                                <strong>سعر النظام | System Price:</strong>
+                                <span style="color: #28a745; font-size: 1.2em;">${cost}</span>
+                            </div>
+                        </div>
+                    `,
+                position: 'center',
+                showConfirmButton: true,
+                confirmButtonText: 'موافق | OK',
+                confirmButtonColor: '#3085d6',
+                timer: 6000,
+                timerProgressBar: true
+            });
 
             r.querySelector('.product-price').classList.add('is-invalid');
             r.querySelector('.product-price').style.borderColor = 'red';
@@ -2804,27 +2901,27 @@ Swal.fire({
 
 
 
-    let discound_allow_Input = parseFloat($('#discound_allow').val()) || 0.15;
-    let discountInput = parseFloat(r.querySelector('.product-discound').value) || 0;
+        let discound_allow_Input = parseFloat($('#discound_allow').val()) || 0.15;
+        let discountInput = parseFloat(r.querySelector('.product-discound').value) || 0;
 
-if (discountInput > (qty*price) * discound_allow_Input) {
-    Swal.fire({
-        icon: 'error',
-        title: 'تجاوز حد الخصم | Discount Limit Exceeded',
-        text: 'لقد تخطيت الخصم المسموح به | You have exceeded the allowed discount',
-        position: 'center',
-        showConfirmButton: true,
-        confirmButtonText: 'موافق | OK',
-        confirmButtonColor: '#d33',
-        timer: 5000,
-        timerProgressBar: true
-    });
-r.querySelector('.product-discound').value=0
-}
+        if (discountInput > (qty * price) * discound_allow_Input) {
+            Swal.fire({
+                icon: 'error',
+                title: 'تجاوز حد الخصم | Discount Limit Exceeded',
+                text: 'لقد تخطيت الخصم المسموح به | You have exceeded the allowed discount',
+                position: 'center',
+                showConfirmButton: true,
+                confirmButtonText: 'موافق | OK',
+                confirmButtonColor: '#d33',
+                timer: 5000,
+                timerProgressBar: true
+            });
+            r.querySelector('.product-discound').value = 0
+        }
 
-
+        let avtsale = parseFloat(r.querySelector('.tax-select').value) || 0;
         let subtotal = price * qty;
-        let discountAmount= discountInput;
+        let discountAmount = discountInput;
         let taxableAmount = subtotal - discountAmount;
         let tax = taxableAmount * avtsale;
         let totalRow = taxableAmount + tax;
@@ -2851,42 +2948,45 @@ r.querySelector('.product-discound').value=0
 
 
 function calculateTotals_with_tax() {
-    let total = 0, taxTotal = 0, discountTotal = 0, grand = 0;
-    let avtsale = parseFloat($('#avtValue').val()) || 0;
-    let taxFactor = avtsale > 1 ? (avtsale / 100) : avtsale;
+    let total = 0,
+        taxTotal = 0,
+        discountTotal = 0,
+        grand = 0;
 
     document.querySelectorAll('#productsTableBody tr').forEach(r => {
         let tax_with_price = parseFloat(r.querySelector('.product-price-tax').value) || 0;
         let cost = parseFloat(r.querySelector('.product_cost').value) || 0;
         let qty = parseFloat(r.querySelector('.product-quentity').value) || 0;
+        let avtsale = parseFloat(r.querySelector('.tax-select').value) || 0;
+        let taxFactor = avtsale > 1 ? (avtsale / 100) : avtsale;
 
         // استخراج السعر قبل الضريبة للمقارنة
         let price = tax_with_price / (1 + taxFactor);
 
         // --- فحص التكلفة ---
         if (tax_with_price > 0 && price < cost) {
-Swal.fire({
-    icon: 'error',
-    title: 'تنبيه: خطأ في سعر البيع <br> <small>Warning: Sales Price Error</small>',
-    html: `
-        <div style="direction: rtl; text-align: center;">
-            <p style="font-weight: bold; color: #d33;">السعر المدخل أقل من سعر البيع المعتمد في النظام!</p>
-            <p dir="ltr">The entered price is lower than the registered selling price!</p>
-            <hr>
-            <div style="background: #f8f9fa; padding: 10px; border-radius: 5px;">
-                <strong>سعر النظام | System Price:</strong>
-                <span style="color: #28a745; font-size: 1.2em;">${cost}</span>
-            </div>
-        </div>
-    `,
-    position: 'center',
-    showConfirmButton: true,
-    confirmButtonText: 'موافق | OK',
-    confirmButtonColor: '#3085d6',
-    timer: 6000,
-    timerProgressBar: true
-});
-           r.querySelector('.product-price-tax').style.borderColor = 'red';
+            Swal.fire({
+                icon: 'error',
+                title: 'تنبيه: خطأ في سعر البيع <br> <small>Warning: Sales Price Error</small>',
+                html: `
+                        <div style="direction: rtl; text-align: center;">
+                            <p style="font-weight: bold; color: #d33;">السعر المدخل أقل من سعر البيع المعتمد في النظام!</p>
+                            <p dir="ltr">The entered price is lower than the registered selling price!</p>
+                            <hr>
+                            <div style="background: #f8f9fa; padding: 10px; border-radius: 5px;">
+                                <strong>سعر النظام | System Price:</strong>
+                                <span style="color: #28a745; font-size: 1.2em;">${cost}</span>
+                            </div>
+                        </div>
+                    `,
+                position: 'center',
+                showConfirmButton: true,
+                confirmButtonText: 'موافق | OK',
+                confirmButtonColor: '#3085d6',
+                timer: 6000,
+                timerProgressBar: true
+            });
+            r.querySelector('.product-price-tax').style.borderColor = 'red';
             // إجبار السعر ليكون التكلفة + الضريبة
             tax_with_price = cost * (1 + taxFactor);
             r.querySelector('.product-price-tax').value = tax_with_price.toFixed(2);
@@ -2897,26 +2997,26 @@ Swal.fire({
         let discound = parseFloat(r.querySelector('.product-discound').value) || 0;
         let discound_allow_Input = parseFloat($('#discound_allow').val()) || 0.15;
 
-if (discound > (qty*price) * discound_allow_Input) {
-    Swal.fire({
-        icon: 'error',
-        title: 'تنبيه: تجاوز حد الخصم <br> <small>Warning: Discount Limit Exceeded</small>',
-        html: `
-            <div style="direction: rtl; text-align: center;">
-                <p>لقد تخطيت الخصم المسموح به لهذا المنتج!</p>
-                <p dir="ltr">You have exceeded the allowed discount for this product!</p>
-                <hr>
-                <strong>الحد المسموح | Allowed Limit:</strong> ${cost * discound_allow_Input}
-            </div>
-        `,
-        position: 'center',
-        showConfirmButton: true,
-        confirmButtonText: 'موافق | OK',
-        confirmButtonColor: '#d33',
-        timer: 6000,
-        timerProgressBar: true
-    });
-}
+        if (discound > (qty * price) * discound_allow_Input) {
+            Swal.fire({
+                icon: 'error',
+                title: 'تنبيه: تجاوز حد الخصم <br> <small>Warning: Discount Limit Exceeded</small>',
+                html: `
+                            <div style="direction: rtl; text-align: center;">
+                                <p>لقد تخطيت الخصم المسموح به لهذا المنتج!</p>
+                                <p dir="ltr">You have exceeded the allowed discount for this product!</p>
+                                <hr>
+                                <strong>الحد المسموح | Allowed Limit:</strong> ${cost * discound_allow_Input}
+                            </div>
+                        `,
+                position: 'center',
+                showConfirmButton: true,
+                confirmButtonText: 'موافق | OK',
+                confirmButtonColor: '#d33',
+                timer: 6000,
+                timerProgressBar: true
+            });
+        }
         let subtotal = price * qty;
         let tax = (subtotal - discound) * taxFactor;
         let totalRow = subtotal - discound + tax;
@@ -2960,7 +3060,7 @@ function searchaboutproductfunction() {
         },
         success: function(data) {
             $("#ajax_responce_serarchDiv").html(data);
-                document.getElementById('searchaboutproduct').focus();
+            document.getElementById('searchaboutproduct').focus();
 
         },
 
@@ -2986,7 +3086,7 @@ $('#SearchProduct').on('show.bs.modal', function(event) {
         },
         success: function(data) {
             $("#ajax_responce_serarchDiv").html(data);
-                document.getElementById('searchaboutproduct').focus();
+            document.getElementById('searchaboutproduct').focus();
 
         },
 
@@ -3009,7 +3109,7 @@ $(document).on('click', '#ajax_pagination_in_search a', function(e) {
             "_token": token_search,
             "searchtext": search_by_text,
             "branchs_id": branchs_id,
-                        "currentrow": window.currentRow,
+            "currentrow": window.currentRow,
 
         },
         success: function(data) {
@@ -3020,6 +3120,7 @@ $(document).on('click', '#ajax_pagination_in_search a', function(e) {
         }
     });
 });
+
 function checkDuplicateProduct(productId, currentIndex) {
 
     return false; // غير مكرر
@@ -3028,136 +3129,147 @@ function checkDuplicateProduct(productId, currentIndex) {
 
 function chooseProduct(code, productcode, name, cost, sale_price, location, availablequantity, currentrow) {
     if (checkDuplicateProduct(code, currentrow)) {
-    return; // منتج مكرر — توقف!
-}else if (availablequantity<=0) {
-    // رسالة SweetAlert احترافية لتنبيه نقص المخزون
-Swal.fire({
-    title: '<span style="color: #d33;">عذراً! المخزون غير كافٍ</span><br><small>Sorry! Insufficient Stock</small>',
-    html: `
-        <div style="text-align: center; font-size: 1.1em; margin-top: 10px;">
-            <p>الكمية المتاحة حالياً هي: <strong style="color: #28a745;">${availablequantity}</strong> فقط</p>
-            <p style="direction: ltr;">Current available stock is: <strong style="color: #28a745;">${availablequantity}</strong> only</p>
-            <hr>
-            <p style="color: #555;">لا يمكن إتمام عملية البيع لعدم توفر مخزون كافٍ.</p>
-            <p style="direction: ltr; color: #555;">Transaction cannot be completed due to out-of-stock.</p>
-        </div>
-    `,
-    icon: 'error',
-    confirmButtonText: 'حسناً | OK',
-    confirmButtonColor: '#3085d6',
-    footer: '<a href="#">هل تريد طلب كمية جديدة؟ | Request Stock</a>'
-});
-    return; // منتج مكرر — توقف!
-}else{
+        return; // منتج مكرر — توقف!
+    } else if (availablequantity <= 0) {
+        // رسالة SweetAlert احترافية لتنبيه نقص المخزون
+        Swal.fire({
+            title: '<span style="color: #d33;">عذراً! المخزون غير كافٍ</span><br><small>Sorry! Insufficient Stock</small>',
+            html: `
+                        <div style="text-align: center; font-size: 1.1em; margin-top: 10px;">
+                            <p>الكمية المتاحة حالياً هي: <strong style="color: #28a745;">${availablequantity}</strong> فقط</p>
+                            <p style="direction: ltr;">Current available stock is: <strong style="color: #28a745;">${availablequantity}</strong> only</p>
+                            <hr>
+                            <p style="color: #555;">لا يمكن إتمام عملية البيع لعدم توفر مخزون كافٍ.</p>
+                            <p style="direction: ltr; color: #555;">Transaction cannot be completed due to out-of-stock.</p>
+                        </div>
+                    `,
+            icon: 'error',
+            confirmButtonText: 'حسناً | OK',
+            confirmButtonColor: '#3085d6',
+            footer: '<a href="#">هل تريد طلب كمية جديدة؟ | Request Stock</a>'
+        });
+        return; // منتج مكرر — توقف!
+    } else {
         let index = rowIndex++; // 👈 يزيد دايمًا
 
 
 
-    let table = document.getElementById('productsTableBody');
+        let table = document.getElementById('productsTableBody');
 
 
-console.log('index')
-console.log(index)
-index=index-1;
-    let row = `
-        <tr data-index="${index}">
-            <td><input type="hidden" name="products[${index}][product_id]" class="product-id form-control">
-                <input type="hidden" name="products[${index}][product_cost]" class="product_cost">
-</td>
-            <td class="align-middle text-center">${index + 1}</td>
+        console.log('index')
+        console.log(index)
+        index = index - 1;
+        let row = `
+                        <tr data-index="${index}">
+                            <td><input type="hidden" name="products[${index}][product_id]" class="product-id form-control">
+                                <input type="hidden" name="products[${index}][product_cost]" class="product_cost">
+                </td>
+                            <td class="align-middle text-center">${index + 1}</td>
 
-            <td class="text-start">
-                <div class="d-flex gap-2">
-                    <input type="text" class="form-control product-code" placeholder="اختر منتج" readonly>
+                            <td class="text-start">
+                                <div class="d-flex gap-2">
+                                    <input type="text" class="form-control product-code" placeholder="اختر منتج" readonly>
 
-                </div>
-            </td>
+                                </div>
+                            </td>
 
-            <td class="text-start">
-                <div class="d-flex gap-2">
-                    <input type="text" class="form-control product-name" placeholder="اختر منتج" readonly>
+                            <td class="text-start">
+                                <div class="d-flex gap-2">
+                                    <input type="text" class="form-control product-name" name="products[${index}][product_name]"  placeholder="اختر منتج" >
 
-                </div>
-            </td>
-            <td><input type="text" class="form-control product-cost" readonly value="0"></td>
+                                </div>
+                            </td>
+                            <td><input type="text" class="form-control product-cost" readonly value="0"></td>
 
-            <td><input type="text" name="products[${index}][price-tax]"
-                    class="form-control product-price-tax" value="0" min="0" onchange="calculateTotals_with_tax()"></td>
-   <td><input type="text" name="products[${index}][price]"
-                    class="form-control product-price" value="0" min="0" onchange="calculateTotals()"></td>
+                            <td><input type="text" name="products[${index}][price-tax]"
+                                    class="form-control product-price-tax" value="0" min="0" onchange="calculateTotals_with_tax()"></td>
+                   <td><input type="text" name="products[${index}][price]"
+                                    class="form-control product-price" value="0" min="0" onchange="calculateTotals()"></td>
 
-                        <td>  <div class="input-group input-group-sm" style="width:100%;">
-        <button    class="btn btn-secondary rounded-circle"
-            style="width:32px; height:32px;" type="button"
+  <td>
+    <div class="d-flex align-items-center justify-content-center" style="width:100%;">
+        <button class="btn btn-secondary rounded-circle d-flex align-items-center justify-content-center p-0"
+            style="width: 32px; height: 32px; min-width: 32px; min-height: 32px;" 
+            type="button" 
             onclick="minusFunctionIndex(this)">−</button>
-            &nbsp;
 
-                                <input type="text" name="products[${index}][quentity]"  style="width:50px; text-align:center;" class="form-control product-quentity" oninput="calculateTotals()" value="1">
-&nbsp;
+        <input type="text" 
+            name="products[${index}][quentity]" 
+            style="width: 50px; text-align: center;" 
+            class="form-control product-quentity mx-2" 
+            oninput="calculateTotals()" 
+            value="1">
 
-        <button    class="btn btn-secondary rounded-circle"
-            style="width:32px; height:32px;" type="button"
+        <button class="btn btn-secondary rounded-circle d-flex align-items-center justify-content-center p-0"
+            style="width: 32px; height: 32px; min-width: 32px; min-height: 32px;" 
+            type="button" 
             onclick="plusFunctionIndex(this)">+</button>
     </div>
+</td>
+                            <td><input type="text" name="products[${index}][totalprice_withodtax]"
+                                    class="form-control product-totalprice_withodtax"  readonly value="0" min="0" oninput="calculateTotals()"></td>
 
-    </td>
-            <td><input type="text" name="products[${index}][totalprice_withodtax]"
-                    class="form-control product-totalprice_withodtax"  readonly value="0" min="0" oninput="calculateTotals()"></td>
+                            <td><input type="text" name="products[${index}][discound]"
+                                    class="form-control product-discound" value="0" onchange='calculateTotals()' min="0"></td>
+                <td><select class="form-control tax-select" oninput='calculateTotals()' name="products[${index}][tax_rate]">
+                            <option value="0.15">15%</option>
+                                <option value="0">{{ __('home.Exempt') }}</option>
+                            </select></td>
+                            <td><input type="text" name="products[${index}][tax]" class="form-control product-tax" value="0" readonly></td>
 
-            <td><input type="text" name="products[${index}][discound]"
-                    class="form-control product-discound" value="0" onchange='calculateTotals()' min="0"></td>
+                            <td><input type="text" class="form-control product-total" readonly value="0"></td>
 
-            <td><input type="text" name="products[${index}][tax]" class="form-control product-tax" value="0" readonly></td>
+                            <td>
+                                <button type="button" class="btn btn-danger btn-sm" onclick="removeRow(this)">{{ __('home.delete') }}</button>
+                            </td>
+                        </tr>`;
 
-            <td><input type="text" class="form-control product-total" readonly value="0"></td>
+        table.insertAdjacentHTML("beforeend", row);
+        window.currentRow = index;
+        let row1 = document.querySelector(`#productsTableBody tr[data-index='${index}']`);
+        $.ajax({
+            url: "{{ URL::to('/getlastprice') }}/" + code + "/" + $('#clientnamesearch').val(),
+            type: "GET",
+            dataType: "json",
+            success: function(data) {
+                $("#last_supplier_cost").empty();
 
-            <td>
-                <button type="button" class="btn btn-danger btn-sm" onclick="removeRow(this)">{{ __('home.delete') }}</button>
-            </td>
-        </tr>`;
+                data.forEach(async (product) => {
 
-    table.insertAdjacentHTML("beforeend", row);
-    window.currentRow = index;
-    let row1 = document.querySelector(`#productsTableBody tr[data-index='${index}']`);
-    $.ajax({
-        url: "{{ URL::to('/getlastprice') }}/" + code + "/" + $('#clientnamesearch').val(),
-        type: "GET",
-        dataType: "json",
-        success: function(data) {
-            $("#last_supplier_cost").empty();
+                    $('#last_supplier_cost').append($('<option>', {
+                        value: 1,
+                        text: "{{ __('home.Invoice_no') }}" + " : " + product[
+                                'invoiceid'] + " ** " + product['date'] + " **  " +
+                            product['cost'] + " " + "{{ __('home.SAR') }}"
+                    }));
+                })
 
-            data.forEach(async (product) => {
+            }
+        })
+        $('#profit').val(sale_price - cost);
+        row1.querySelector('.product-id').value = code;
+        if ($('#branchs_id').val() == 1 || $('#branchs_id').val() == 11) {
 
-                $('#last_supplier_cost').append($('<option>', {
-                    value: 1,
-                    text: "{{ __('home.Invoice_no') }}" + " : " + product[
-                            'invoiceid'] + " ** " + product['date'] + " **  " +
-                        product['cost'] + " " + "{{ __('home.SAR') }}"
-                }));
-            })
+            row1.querySelector('.product_cost').value = cost;
+
+        } else {
+            row1.querySelector('.product_cost').value = cost;
 
         }
-    })
-    $('#profit').val(sale_price -cost );
-    row1.querySelector('.product-id').value = code;
-    if($('#branchs_id').val()==1||$('#branchs_id').val()==11){
+        row1.querySelector('.product-name').value = name;
+        row1.querySelector('.product-cost').value = cost;
+        row1.querySelector('.product-code').value = productcode;
+        row1.querySelector('.product-price').value = sale_price;
+        row1.querySelector('.product-discound').value = 0;
+        $('#firstiteminput').val("1");
 
-    row1.querySelector('.product_cost').value = cost;
-
-    }else{
-    row1.querySelector('.product_cost').value = cost;
-
+        calculateTotals()
     }
-    row1.querySelector('.product-name').value = name;
-    row1.querySelector('.product-cost').value = cost;
-    row1.querySelector('.product-code').value = productcode;
-    row1.querySelector('.product-price').value = sale_price;
-    row1.querySelector('.product-discound').value = 0;
-                    $('#firstiteminput').val("1");
-
-    calculateTotals()
-    }
-    window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
+    window.scrollTo({
+        top: document.body.scrollHeight,
+        behavior: "smooth"
+    });
 
 }
 </script>

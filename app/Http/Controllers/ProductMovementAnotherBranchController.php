@@ -51,7 +51,7 @@ public function showMyDrafts(Request $request)
 
         // جلب المسودات المعلقة بناءً على فرع المستخدم أو الفرع الفرعي المحدد من الرابط
         $myDrafts = product_movement_another_branch::where('branch_from',$branchId?? auth()->user()->branchs_id)
-           
+
             ->where('status', 'draft')
             ->orderBy('id', 'desc')
             ->get();
@@ -63,7 +63,7 @@ public function showMyDrafts(Request $request)
 
     public function create(Request $request)
     {
-        // 1. التحقق من البيانات 
+        // 1. التحقق من البيانات
         $this->validate($request, [
             'products' => 'required|array',
             'products.*' => 'required|exists:products,id',
@@ -85,7 +85,7 @@ public function showMyDrafts(Request $request)
             if ($isUpdatingDraft) {
                 $movement = product_movement_another_branch::findOrFail($request->draft_id);
 
-                // 🌟 [مهم جداً] إذا كان الاعتماد النهائي لحركة كانت مسودة سابقاً، 
+                // 🌟 [مهم جداً] إذا كان الاعتماد النهائي لحركة كانت مسودة سابقاً،
                 // نقوم أولاً بمسح بنود المسودة القديمة من جدول البنود بعد جلبها لإعادة البناء النظيف.
                 product_movement_another_branch_items::where('order_id', $movement->id)->delete();
 
@@ -448,5 +448,88 @@ public function show(\Illuminate\Http\Request $request)
             "orderData" => $order,
             "orderItems" => $dataitems
         ];
+    }
+
+   public function sentReport(Request $request)
+    {
+        // جلب فرع المستخدم الحالي إما من Request أو من Auth مباشرة
+        $currentBranchId = $request->get('branch_id', auth()->user()->branchs_id);
+
+        $query = product_movement_another_branch::with([
+            'branchTo',
+            'userFrom',
+            'userTo',
+            'items.product'
+        ])
+        ->where('branch_from', $currentBranchId)
+        ->where('status', 'completed');
+
+        // 🌟 إصلاح التاريخ: تحويل to_date لنهاية اليوم 23:59:59
+        if ($request->filled('from_date')) {
+            $query->whereDate('created_at', '>=', $request->from_date);
+        }
+
+        if ($request->filled('to_date')) {
+            $query->whereDate('created_at', '<=', $request->to_date);
+        }
+
+        $sentMovements = $query->latest()->get(); // استخدم get أو paginate
+
+        return view('reports.movements.sent_movements', compact('sentMovements'));
+    }
+
+    /**
+     * 2. تقرير المنتجات المَسْتَلَمَة في الفرع الحالي من الفروع الأخرى
+     */
+   public function receivedReport(Request $request)
+{
+    $currentBranchId = $request->get('branch_id', auth()->user()->branchs_id);
+
+    $query = product_movement_another_branch::with([
+        'branchFrom',
+        'userFrom',
+        'userTo',
+        'items.product'
+    ])
+    ->where('branch_to', $currentBranchId)
+    ->where('status', 'completed');
+
+    if ($request->filled('from_date')) {
+        $query->whereDate('created_at', '>=', $request->from_date);
+    }
+
+    if ($request->filled('to_date')) {
+        $query->whereDate('created_at', '<=', $request->to_date);
+    }
+
+    $receivedMovements = $query->latest()->get();
+
+    return view('reports.movements.received_movements', compact('receivedMovements'));
+}
+
+    /**
+     * 3. تقرير شامل وحركة منتج محدد (إرسال واستلام) تفصيلي
+     */
+    public function productSummaryReport(Request $request)
+    {
+        $currentBranchId = auth()->user()->branchs_id;
+
+        // جلب البنود الخاصة بحركات الفرع فقط (إما كان فرع إرسال أو استلام)
+        $itemsQuery = product_movement_another_branch_items::whereHas('movement', function ($q) use ($currentBranchId) {
+            $q->where('status', 'completed')
+            ->where(function ($bQuery) use ($currentBranchId) {
+                $bQuery->where('branch_from', $currentBranchId)
+                        ->orWhere('branch_to', $currentBranchId);
+            });
+        })->with(['movement.branchFrom', 'movement.branchTo', 'product']);
+
+        // فلترة بمنتج معين (إذا حدد المستخدم منتج)
+        if ($request->filled('product_id')) {
+            $itemsQuery->where('product_id', $request->product_id);
+        }
+
+        $movementItems = $itemsQuery->latest()->paginate(20);
+
+        return view('reports.movements.product_summary', compact('movementItems', 'currentBranchId'));
     }
 }

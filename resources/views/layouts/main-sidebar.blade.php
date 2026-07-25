@@ -340,6 +340,17 @@
                                 <a class="slide-item" href="{{ url('/showAllProducts_IN_Wherehouse?branch_id=' .auth()->user()->branchs_id) }}">{{ __('home.stock') }}</a>
                             </li>
                             @endcan
+
+                            <li>
+                                <a class="slide-item"
+                                    href="{{ url('/reports/sent-movements?branch_id=' .auth()->user()->branchs_id) }}">{{ __('home.sent_movements_report') }}</a>
+                            </li>
+
+                            <li>
+                                <a class="slide-item"
+                                    href="{{ url('/reports/received-movements?branch_id=' .auth()->user()->branchs_id) }}">{{ __('home.received_movements_report') }}</a>
+                            </li>
+
                         </ul>
                     </li>
                     @endif

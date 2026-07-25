@@ -40,13 +40,13 @@ Route::get('/get-pending-invoices', function () {
 
 Route::get('export-cost-centers', function (Request $request) {
     return Excel::download(
-        new CostCenterExport($request->query('start_at'), $request->query('end_at'), $request->query('cost_center')), 
+        new CostCenterExport($request->query('start_at'), $request->query('end_at'), $request->query('cost_center')),
         'cost_centers_report_' . date('Y-m-d') . '.xlsx'
     );
 });
 
 Route::group(['prefix' => 'stock', 'as' => 'stock.'], function () {
-    
+
     // مسار تحميل نموذج الإكسيل (Template)
     Route::get('/download-template', [SupprocessesController::class, 'downloadTemplate'])
          ->name('download_template');
@@ -139,7 +139,7 @@ Route::middleware([
         Route::get('get_all_products_in_orderto_supplier/{order_id}', 'get_all_products_in_orderto_supplier');
         Route::get('getinvoicesbyspplluer/{order_id}', 'getinvoicesbyspplluer');
         Route::get('changePaymethodPurchase/{id}/{paymendMethod}', 'changePaymethodIPurchases');
-        
+
         // المسارات القديمة التابعة لنفس الكنترولر
         Route::get('/itemcards/search', 'search')->name('itemcards.search');
         Route::get('/clientnamesearch/search', 'clientnamesearch')->name('clientnamesearch.search');
@@ -288,7 +288,7 @@ Route::middleware([
         Route::post('updaterecieptdecoument', 'updaterecieptdecoument');
         Route::post('print_daily_record', 'print_daily_record');
         Route::post('print_Opening_entry', 'print_Opening_entry');
-        
+
         // المسارات السابقة للـ الكنترولر
         Route::post('/vocher.store', 'store_kabt_Decument')->name('vocher.store');
         Route::delete('/voucher/delete-full/{sent_abd_count}', 'destroy_full_voucher');
@@ -539,7 +539,7 @@ Route::middleware([
         Route::get('/Customersـexceededـgraceـperiod', 'Customersـexceededـgraceـperiod');
         Route::get('/budgetsheet', 'budgetsheet');
         Route::post('/budgetsheet', 'search_budgetsheet');
-        
+
         // المسارات السابقة للـ الكنترولر
         Route::post('/export_sales_excel', 'exportExcel')->name('export.sales.excel');
         Route::post('/printInvoicesReport_export_post', 'printInvoicesReport_export_post')->name('invoices.export.excel');
@@ -728,6 +728,9 @@ Route::middleware([
         Route::post('create_reciveProduct', 'store');
         Route::post('print_Transfer_items', 'print_Transfer_items');
         Route::post('print_Recive_items', 'print_Recive_items');
+        Route::get('reports/sent-movements', 'sentReport')->name('reports.sent');
+        Route::get('reports/received-movements', 'receivedReport')->name('reports.received');
+        Route::get('reports/product-movements-summary', 'productSummaryReport')->name('reports.summary');
     });
 
         Route::controller(UserController::class)->group(function () {

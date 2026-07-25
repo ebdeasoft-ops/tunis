@@ -1634,6 +1634,14 @@ class ProductsController extends Controller
         app()->setLocale(LaravelLocalization::getCurrentLocale());
 
         return view('showAllProducts');
+    }    public function showAllProducts_IN_Wherehouse(Request $request)
+    {
+        //
+        $branchId = $request->input('branch_id');
+
+        app()->setLocale(LaravelLocalization::getCurrentLocale());
+
+        return view('showAllProducts_IN_Wherehouse', compact( 'branchId'));
     }
     public function ShowAllNotifications()
     {

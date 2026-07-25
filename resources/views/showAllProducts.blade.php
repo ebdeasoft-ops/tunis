@@ -83,7 +83,7 @@
                                                 class="form-control form-control-sm parent-input"
                                                 placeholder="{{ __('home.Search By Name or Product Number') }}"
                                                 id="searchaboutproduct" name="searchaboutproduct"
-                                                onkeyup="searchaboutproductfunction()">
+                                                onkeyup="filterProducts()">
                                         </div>
 
                                         <div class="col-lg-2 col-md-6 mb-2">
@@ -91,7 +91,7 @@
                                                 style="font-size: 12px;">{{ __('home.groups') }}</label>
                                             <select name="product_group" id="product_group"
                                                 class="form-control form-control-sm select2">
-                                                <option value="">{{ __('home.all_groups') }}</option>
+                                                <option value="">-</option>
                                                 @foreach (App\Models\products_group::get() as $section)
                                                 <option value="{{ $section->id }}"> {{ $section->group_ar }}</option>
                                                 @endforeach
@@ -109,7 +109,7 @@
                                                 {{ __('users.branch') }} </label>
                                             <select class="form-control form-control-sm select2" name="branchs_id"
                                                 id="branchs_id">
-                                                <option value="0"> - </option>
+                                                <option value="-"> - </option>
                                                 @foreach (App\Models\branchs::get() as $section)
                                                 <option value="{{ $section->id }}"> {{ $section->name }}</option>
                                                 @endforeach
@@ -285,9 +285,9 @@
 <script src="{{ URL::asset('assets/plugins/jquery-simple-datetimepicker/jquery.simple-dtpicker.js') }}"></script>
 <!--Internal  pickerjs js -->
 <script src="{{ URL::asset('assets/plugins/pickerjs/picker.min.js') }}"></script>
-
 <script>
 $(document).ready(function() {
+
     // 1. دالة موحدة لطلبات AJAX لتقليل التكرار
     function performAjax(url, method, data, successCallback) {
         data["_token"] = $("#token_search").val();
@@ -307,14 +307,6 @@ $(document).ready(function() {
     }, (data) => $("#ajax_responce_serarchDiv").html(data));
 
     // 3. الفلترة الموحدة (الفرع، المجموعة، النص)
-    function filterProducts() {
-        performAjax("{{ URL::to('searchAllproductpaginatenew_by_post') }}", 'post', {
-            "searchtext": $('#searchaboutproduct').val(),
-            "branchs_id": $('#branchs_id').val(),
-            "group_id": $('select[name="product_group"]').val()
-        }, (data) => $("#ajax_responce_serarchDiv").html(data));
-    }
-
     $('#branchs_id, select[name="product_group"], #searchaboutproduct').on('change keyup', filterProducts);
 
     // 4. الترقيم (Pagination)
@@ -332,7 +324,6 @@ $(document).ready(function() {
         let branchId = $('#branchs_id').val();
 
         if (!branchId) return alert('الرجاء اختيار فرع أولاً');
-        console.log("{{ url('Stocktaking') }}/" + branchId)
         window.location.href = "{{ url('Stocktaking') }}/" + branchId;
     });
 
@@ -357,7 +348,29 @@ $(document).ready(function() {
         }
     });
 });
-</script>
 
+// دالة الفلترة في النطاق العام لتعمل مع onkeyup مباشرة
+function filterProducts() {
+    let data = {
+        "searchtext": $('#searchaboutproduct').val(),
+        "branchs_id": $('#branchs_id').val(),
+        "group_id": $('select[name="product_group"]').val(),
+        "_token": $("#token_search").val()
+    };
+    
+    $.ajax({
+        url: "{{ URL::to('searchAllproductpaginatenew_by_post') }}",
+        type: 'post',
+        data: data,
+        success: function(data) {
+            console.log(data);
+            $("#ajax_responce_serarchDiv").html(data);
+        },
+        error: function(err) {
+            console.error("AJAX Error:", err);
+        }
+    });
+}
+</script>
 
 @endsection

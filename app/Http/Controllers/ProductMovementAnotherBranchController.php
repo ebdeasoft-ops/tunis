@@ -23,7 +23,6 @@ class ProductMovementAnotherBranchController extends Controller
     {
         $draftMovement = null;
         $draftItems = [];
-$branchId = $request->input('branch_id');
         // التحقق مما إذا كان هناك طلب لفتح مسودة معينة عبر الرابط مثل: sendProduct?draft_id=5
         if ($request->has('draft_id')) {
 
@@ -39,26 +38,27 @@ $branchId = $request->input('branch_id');
                 ->where('order_id', $draftMovement->id)
                 ->get();
         }
-
         // تمرير البيانات المتغيرات لملف الـ Blade سواء كانت مليئة بالبيانات أو فارغة (null)
-        return view('supProcesses.send_product_to_branch', compact('draftMovement', 'draftItems','branchId'));
+        return view('supProcesses.send_product_to_branch', compact('draftMovement', 'draftItems'));
     }
     /**
      * إنشاء أو تحديث أمر تحويل منتجات إلى فرع آخر (صرف من الفرع الحالي)
      */
 
-    public function showMyDrafts()
+public function showMyDrafts(Request $request)
     {
-        // جلب المسودات المعلقة الخاصة بفرع المستخدم الحالي فقط
-        $myDrafts = product_movement_another_branch::where('branch_from', auth()->user()->branchs_id)
+        $branchId = $request->input('branch_id');
+
+        // جلب المسودات المعلقة بناءً على فرع المستخدم أو الفرع الفرعي المحدد من الرابط
+        $myDrafts = product_movement_another_branch::where('branch_from',$branchId?? auth()->user()->branchs_id)
+           
             ->where('status', 'draft')
             ->orderBy('id', 'desc')
             ->get();
 
-        // نقوم بتمريرها إلى صفحة مستقلة سننشئها في الخطوة التالية
-        return view('supProcesses.my_drafts_list', compact('myDrafts'));
+        // نقوم بتمرير المسودات ومعرف الفرع إلى صفحة العرض
+        return view('supProcesses.my_drafts_list', compact('myDrafts', 'branchId'));
     }
-
 
 
     public function create(Request $request)
@@ -393,13 +393,11 @@ $branchId = $request->input('branch_id');
 
 
 
-    public function show(\Illuminate\Http\Request $request)
+public function show(\Illuminate\Http\Request $request)
     {
         $branchId = $request->input('branch_id'); // استقبال الـ branch_id من الرابط
 
-        return view('supProcesses.recive_product_from_another_branch', [
-            'data' => $branchId
-        ]);
+        return view('supProcesses.recive_product_from_another_branch', compact('branchId'));
     }
     public function print_Transfer_items(Request $request)
     {

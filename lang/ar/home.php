@@ -431,7 +431,7 @@ return [
     'vatreports' => 'تقارير القيمة المضافة',
     'stock' => 'المخزون ',
     'searchAboutProduct' => 'ابحث عن المنتج ',
-    'users' => ' المستخدمين و الفروع',
+    'users' => 'الصلاحيات',
     'setting' => '  الاعدادات',
     'accounting' => 'الحسابات',
     'searchbyclientname' => 'البحث بواسطة اسم العميل',

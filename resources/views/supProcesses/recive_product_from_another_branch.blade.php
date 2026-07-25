@@ -50,7 +50,7 @@
                         <select name="reciveInvoiceNumber" id="reciveInvoiceNumber" class="form-control select2">
                             <option value="-">{{ __('home.Invoice_no') }}</option>
                             @foreach (App\Models\product_movement_another_branch::where('branch_to',
-                            Auth::user()->branchs_id)->where('reciveInvoiceNumber', 1)->get() as $item)
+                            $branchId)->where('reciveInvoiceNumber', 1)->get() as $item)
                             <option value="{{ $item->id }}">{{ $item->id }}</option>
                             @endforeach
                         </select>

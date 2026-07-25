@@ -203,6 +203,7 @@ Route::middleware([
         Route::get('printReturnpurchases/{id}', 'printReturnpurchases');
         Route::get('ShowAllNotifications', 'ShowAllNotifications');
         Route::get('showAllProducts', 'showAllProducts');
+        Route::get('showAllProducts_IN_Wherehouse', 'showAllProducts_IN_Wherehouse');
         Route::get('previousPurchasesInvoices', 'previousPurchasesInvoices');
         Route::get('previousSalesInvoices', 'previousSalesInvoices');
         Route::get('previousRecieptInvoices', 'previousRecieptInvoices');

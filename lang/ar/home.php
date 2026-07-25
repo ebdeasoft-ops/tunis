@@ -608,8 +608,8 @@ return [
     "cach_from_bank" => " تحويل بنكي من المالك",
     "cach_bank" => "نقدي من البنك",
     "shabka_bank" => "تحويل من البنك",
-    "send_product_from_brance" => "ارسال منتج الي فرع اخر ",
-    "recive_product_from_brance" => "استلام  منتج من فرع اخر ",
+    "send_product_from_brance" => "سند صرف",
+    "recive_product_from_brance" => "سند استلام",
     "send_product_from_other_branch_other" => "ارسال منتج الي فرع اخري",
     "recive_product_from_other_branch_other" => "استلام منتج من فرع أخر",
     "choosebranch_sender" => "اختار الفرع المرسل",
@@ -708,5 +708,8 @@ return [
     'lastpricecustomer' => "اخر سعر بيع ",
     'replace' => "البديل",
     'MAINproduct' => "المنتج الاصلي",
-    'noreplace' => 'ليس له بديل'
+    'noreplace' => 'ليس له بديل',
+    'warehouses' => 'المستودعات',
+    'main_warehouse' => 'المخزن الرئيسي',
+    'secandry_warehouses' => 'المخازن الفرعية',
 ];

@@ -64,7 +64,8 @@
                             <label class="parent-label">{{ __('home.Deposit to account') }}</label>
                             <select name="main_account_id" id="main_account_id" class="form-control select2-main" required>
                                 <option value="">{{ __('home.Choose account') }}</option>
-                                @foreach(App\Models\financial_accounts::whereIn('parent_account_number', [4, 5])->get() as $acc)
+                                @foreach(App\Models\financial_accounts::whereIn('parent_account_number', [4, 5])->where('branchs_id',
+                                    Auth()->user()->branchs_id)->get() as $acc)
                                     <option value="{{ $acc->id }}">{{ $acc->name }} ({{ $acc->account_number }})</option>
                                 @endforeach
                             </select>

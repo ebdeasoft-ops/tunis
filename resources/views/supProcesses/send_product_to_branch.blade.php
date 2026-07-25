@@ -336,7 +336,7 @@ $('#SearchProduct').on('show.bs.modal', function() {
 
 function searchaboutproductfunction() {
     let searchtext = $('#searchaboutproduct').val();
-    let current_user_branch = "{{ Auth()->user()->branchs_id }}";
+    let current_user_branch = "{{ $branchId ?? Auth()->user()->branchs_id  }}";
     if (searchtext.trim() == '') {
         searchtext = "1";
     }

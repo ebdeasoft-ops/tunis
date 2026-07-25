@@ -60,7 +60,8 @@
                             <label class="parent-label">{{ __('home.Withdraw from account') }}</label>
                             <select class="form-control select2" name="payment_account_id" id="payment_account_id" required>
                                 <option value="">{{ __('home.Choose account') }}</option>
-                                @foreach (App\Models\financial_accounts::whereIn('parent_account_number', [4, 5])->get() as $acc)
+                                @foreach (App\Models\financial_accounts::whereIn('parent_account_number', [4, 5])->where('branchs_id',
+                                    Auth()->user()->branchs_id)->get() as $acc)
                                     <option value="{{ $acc->id }}" data-parent="{{ $acc->parent_account_number }}">
                                         {{ $acc->name }} ({{ $acc->account_number }})
                                     </option>

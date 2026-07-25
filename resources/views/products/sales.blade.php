@@ -1472,7 +1472,7 @@ $("#getinvoiceupdate").click(function(e) {
                         let unitPrice = parseFloat(item.Unit_Price) || 0;
                         let discount = parseFloat(item.Discount_Value) || 0;
                         let taxAmount = parseFloat(item.Added_Value) ||
-                        0; // الضريبة لكل منتج من الـ JSON
+                            0; // الضريبة لكل منتج من الـ JSON
 
                         // حساب السعر شامل الضريبة للعرض فقط
                         let priceWithTax = unitPrice + (taxAmount / quantity);
@@ -1583,48 +1583,48 @@ function calcCash() {
 }
 
 
-
 $('select[name="paymentmethod"]').on('change', function() {
     var selectedText = $(this).find(':selected').text();
     var selectedValue = $(this).val();
     var $paymentType = $('#payment_type');
 
-    // 1. إظهار جميع الخيارات أولاً لتتمكن من اختيار ما تريد منها
+    // 1. إظهار جميع الخيارات أولاً
     $paymentType.find('option').show().prop('disabled', false);
 
-    if (selectedText.includes('البنك')) {
-        // إذا اخترت البنك: نعطل كل شيء ما عدا الشبكة والتحويل
-        $paymentType.find('option').not('[value="Shabka"], [value="Bank_transfer"]').hide().prop('disabled',
-            true);
-        // نختار أول خيار متاح تلقائياً
+    // التحقق مما إذا كان النص يحتوي على بنك أو bank (بأي حالة أحرف)
+    var isBank = /بنك|bank/i.test(selectedText);
+
+    if (isBank) {
+        // إذا اخترت البنك: نعطل الخيارات الأخرى، ونترك الشبكة والتحويل، ونُفعل الحقل ليصبح قابلاً للتعديل
+        $paymentType.find('option').not('[value="Shabka"], [value="Bank_transfer"]').hide().prop('disabled', true);
         $paymentType.val('Shabka').change();
+        $paymentType.prop('disabled', false); // مسموح بالتعديل ويتم إرساله
 
     } else if (selectedValue == "Credit") {
-        // إذا اخترت الآجل: نعطل كل شيء ما عدا الآجل
+        // إذا اخترت الآجل
         $paymentType.find('option').not('[value="Credit"]').hide().prop('disabled', true);
         $paymentType.val('Credit').change();
+        $paymentType.prop('disabled', false); // نتركه غير معطل كي يتم إرسال قيمته للسيرفر
 
     } else if (selectedValue == "Partition") {
         // إذا اخترت التقسيط
         $paymentType.find('option').not('[value="Partition"]').hide().prop('disabled', true);
         $paymentType.val('Partition').change();
+        $paymentType.prop('disabled', false); // نتركه غير معطل كي يتم إرسال قيمته
+        
         $('#paymentmethod_MODALE').modal().show();
-        value = document.getElementById('grandTotal').value
-        document.getElementById('totalvalue').innerHTML = document.getElementById('grandTotal').value * 1
-
-        // (استدعاء المودال كما كان سابقاً...)
+        var value = document.getElementById('grandTotal').value;
+        document.getElementById('totalvalue').innerHTML = value * 1;
 
     } else {
-        // إذا كان نقدي (أو الحالة الافتراضية): نعطل كل شيء ما عدا النقد
+        // الحالة الافتراضية (نقدي)
         $paymentType.find('option').not('[value="Cash"]').hide().prop('disabled', true);
         $paymentType.val('Cash').change();
+        $paymentType.prop('disabled', false); // نتركه غير معطل كي يتم إرسال قيمته
     }
 });
 
-
-
-
-
+// تفعيل الحقل وتجهيزه قبل حفظ الفاتورة لضمان إرسال قيمته دائماً
 
 
 
@@ -2512,6 +2512,7 @@ $("#reciptprinter").click(function(e) {
     });
 });
 $(document).ready(function() {
+    $('#payment_type').prop('disabled', true);
     document.getElementById('printdiv').hidden = true
 
 })
@@ -2597,6 +2598,7 @@ $("#formdata").on('submit', function(e) {
         if (result.isConfirmed) {
             if (isSubmitting) return false;
             isSubmitting = true;
+    $('#payment_type').prop('disabled', false);
 
             $('#massagesave').modal('show');
             var url = "{{ URL::to('save_invoice_sale') }}";
@@ -2621,7 +2623,7 @@ $("#formdata").on('submit', function(e) {
                         let message = "يسرنا خدمتكم.. فاتورتكم رقم " + data + " : " + link;
                         $('#send_whats_app').attr('href',
                             `https://web.whatsapp.com/send?phone=${phone}&text=${encodeURIComponent(message)}`
-                            );
+                        );
 
                         if (data >= 1) {
                             $('#printdiv').prop('hidden', false);
@@ -2667,6 +2669,7 @@ $("#formdata").on('submit', function(e) {
                     }
                 },
                 error: function(r) {
+                    console.log(r)
                     isSubmitting = false;
                     $('#massagesave').modal('hide');
                     Swal.fire('خطأ', "تعذر الاتصال بالسيرفر", 'error');
@@ -2854,7 +2857,6 @@ function calculateTotalDiscount() {
 }
 
 
-
 function calculateTotals() {
     let total = 0,
         taxTotal = 0,
@@ -2863,8 +2865,43 @@ function calculateTotals() {
 
     document.querySelectorAll('#productsTableBody tr').forEach(r => {
         let price = parseFloat(r.querySelector('.product-price').value) || 0;
-        let cost = parseFloat(r.querySelector('.product_cost').value) || 0; // جلب التكلفة من الحقل المخفي
+        let cost = parseFloat(r.querySelector('.product_cost').value) || 0;
         let qty = parseFloat(r.querySelector('.product-quentity').value) || 0;
+
+        // --- فحص الكمية المتاحة (Available Quantity Check) ---
+        let availablequantity = parseFloat(r.querySelector('.product-available_quentity').value) || 0;
+
+        if (qty > availablequantity) {
+            Swal.fire({
+                icon: 'error',
+                title: 'تنبيه: الكمية غير متوفرة <br> <small>Warning: Insufficient Quantity</small>',
+                html: `
+                    <div style="direction: rtl; text-align: center;">
+                        <p style="font-weight: bold; color: #d33;">الكمية المطلوبة أكبر من الكمية المتاحة في المخزن!</p>
+                        <p dir="ltr">The requested quantity exceeds the available stock!</p>
+                        <hr>
+                        <div style="background: #f8f9fa; padding: 10px; border-radius: 5px;">
+                            <strong>الكمية المتاحة | Available Qty:</strong>
+                            <span style="color: #28a745; font-size: 1.2em;">${availablequantity}</span>
+                        </div>
+                    </div>
+                `,
+                position: 'center',
+                showConfirmButton: true,
+                confirmButtonText: 'موافق | OK',
+                confirmButtonColor: '#d33',
+                timer: 5000,
+                timerProgressBar: true
+            });
+
+            r.querySelector('.product-quentity').classList.add('is-invalid');
+            r.querySelector('.product-quentity').style.borderColor = 'red';
+            qty = availablequantity; // إجبار الكمية لتكون مساوية للمتاحة (اختياري)
+            r.querySelector('.product-quentity').value = availablequantity;
+        } else {
+            r.querySelector('.product-quentity').classList.remove('is-invalid');
+            r.querySelector('.product-quentity').style.borderColor = '';
+        }
 
         // --- فحص التكلفة ---
         if (price > 0 && price < cost) {
@@ -2892,14 +2929,12 @@ function calculateTotals() {
 
             r.querySelector('.product-price').classList.add('is-invalid');
             r.querySelector('.product-price').style.borderColor = 'red';
-            price = cost; // إجبار السعر ليكون مساوياً للتكلفة (اختياري)
+            price = cost;
             r.querySelector('.product-price').value = cost.toFixed(2);
         } else {
             r.querySelector('.product-price').classList.remove('is-invalid');
             r.querySelector('.product-price').style.borderColor = '';
         }
-
-
 
         let discound_allow_Input = parseFloat($('#discound_allow').val()) || 0.15;
         let discountInput = parseFloat(r.querySelector('.product-discound').value) || 0;
@@ -2916,7 +2951,7 @@ function calculateTotals() {
                 timer: 5000,
                 timerProgressBar: true
             });
-            r.querySelector('.product-discound').value = 0
+            r.querySelector('.product-discound').value = 0;
         }
 
         let avtsale = parseFloat(r.querySelector('.tax-select').value) || 0;
@@ -2943,10 +2978,6 @@ function calculateTotals() {
     document.getElementById('grandTotal').value = grand.toFixed(2);
 }
 
-
-
-
-
 function calculateTotals_with_tax() {
     let total = 0,
         taxTotal = 0,
@@ -2959,6 +2990,41 @@ function calculateTotals_with_tax() {
         let qty = parseFloat(r.querySelector('.product-quentity').value) || 0;
         let avtsale = parseFloat(r.querySelector('.tax-select').value) || 0;
         let taxFactor = avtsale > 1 ? (avtsale / 100) : avtsale;
+
+        // --- فحص الكمية المتاحة (Available Quantity Check) ---
+        let availablequantity = parseFloat(r.querySelector('.product-available_quentity').value) || 0;
+
+        if (qty > availablequantity) {
+            Swal.fire({
+                icon: 'error',
+                title: 'تنبيه: الكمية غير متوفرة <br> <small>Warning: Insufficient Quantity</small>',
+                html: `
+                    <div style="direction: rtl; text-align: center;">
+                        <p style="font-weight: bold; color: #d33;">الكمية المطلوبة أكبر من الكمية المتاحة في المخزن!</p>
+                        <p dir="ltr">The requested quantity exceeds the available stock!</p>
+                        <hr>
+                        <div style="background: #f8f9fa; padding: 10px; border-radius: 5px;">
+                            <strong>الكمية المتاحة | Available Qty:</strong>
+                            <span style="color: #28a745; font-size: 1.2em;">${availablequantity}</span>
+                        </div>
+                    </div>
+                `,
+                position: 'center',
+                showConfirmButton: true,
+                confirmButtonText: 'موافق | OK',
+                confirmButtonColor: '#d33',
+                timer: 5000,
+                timerProgressBar: true
+            });
+
+            r.querySelector('.product-quentity').classList.add('is-invalid');
+            r.querySelector('.product-quentity').style.borderColor = 'red';
+            qty = availablequantity;
+            r.querySelector('.product-quentity').value = availablequantity;
+        } else {
+            r.querySelector('.product-quentity').classList.remove('is-invalid');
+            r.querySelector('.product-quentity').style.borderColor = '';
+        }
 
         // استخراج السعر قبل الضريبة للمقارنة
         let price = tax_with_price / (1 + taxFactor);
@@ -2987,13 +3053,13 @@ function calculateTotals_with_tax() {
                 timerProgressBar: true
             });
             r.querySelector('.product-price-tax').style.borderColor = 'red';
-            // إجبار السعر ليكون التكلفة + الضريبة
             tax_with_price = cost * (1 + taxFactor);
             r.querySelector('.product-price-tax').value = tax_with_price.toFixed(2);
             price = cost;
         } else {
             r.querySelector('.product-price-tax').style.borderColor = '';
         }
+
         let discound = parseFloat(r.querySelector('.product-discound').value) || 0;
         let discound_allow_Input = parseFloat($('#discound_allow').val()) || 0.15;
 
@@ -3016,7 +3082,9 @@ function calculateTotals_with_tax() {
                 timer: 6000,
                 timerProgressBar: true
             });
+            r.querySelector('.product-discound').value = 0;
         }
+
         let subtotal = price * qty;
         let tax = (subtotal - discound) * taxFactor;
         let totalRow = subtotal - discound + tax;
@@ -3031,7 +3099,6 @@ function calculateTotals_with_tax() {
         grand += totalRow;
         discountTotal += discound;
 
-        // حساب الربح للسطر الحالي
         let profit = price - cost;
         $('#profit').val(profit.toFixed(2));
     });
@@ -3041,6 +3108,11 @@ function calculateTotals_with_tax() {
     document.getElementById('totalTax').value = taxTotal.toFixed(2);
     document.getElementById('grandTotal').value = grand.toFixed(2);
 }
+
+
+
+
+
 
 function searchaboutproductfunction() {
     searchtext = $('#searchaboutproduct').val();
@@ -3181,6 +3253,7 @@ function chooseProduct(code, productcode, name, cost, sale_price, location, avai
                                 </div>
                             </td>
                             <td><input type="text" class="form-control product-cost" readonly value="0"></td>
+                            <td><input type="text" class="form-control product-available_quentity" readonly ></td>
 
                             <td><input type="text" name="products[${index}][price-tax]"
                                     class="form-control product-price-tax" value="0" min="0" onchange="calculateTotals_with_tax()"></td>
@@ -3259,6 +3332,7 @@ function chooseProduct(code, productcode, name, cost, sale_price, location, avai
         }
         row1.querySelector('.product-name').value = name;
         row1.querySelector('.product-cost').value = cost;
+        row1.querySelector('.product-available_quentity').value = availablequantity;
         row1.querySelector('.product-code').value = productcode;
         row1.querySelector('.product-price').value = sale_price;
         row1.querySelector('.product-discound').value = 0;

@@ -375,7 +375,7 @@
         <script src="{{ URL::asset('assets/plugins/jquery-simple-datetimepicker/jquery.simple-dtpicker.js') }}"></script>
         <!--Internal pickerjs js -->
         <script src="{{ URL::asset('assets/plugins/pickerjs/picker.min.js') }}"></script>
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
         <script>
             // تهيئة حقل التاريخ الافتراضي
             var date = $('.fc-datepicker').datepicker({
@@ -610,6 +610,9 @@
             // 5. أحداث الجلب التلقائي لبيانات العميل والمنتج
             // ==========================================
             $(document).ready(function () {
+                $('.select2').select2({
+                    width: '100%'
+                });
                 document.getElementById('loading-screen').style.display = 'none';
                 refreshAllInvoicesTable(); // تحميل الجدول فور فتح الصفحة
                 $('#invoice_number').hide();

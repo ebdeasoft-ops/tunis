@@ -1678,12 +1678,22 @@ class ProductsController extends Controller
         //return $data;
         return view('profile.show');
     }
-    public function getAllinvicesapurchasesjax()
+public function getAllinvicesapurchasesjax()
     {
         app()->setLocale(LaravelLocalization::getCurrentLocale());
-        $data = resource_purchases::where('branchs_id', Auth()->user()->branchs_id)->where('save', 1)->orderby('id', 'desc')->paginate(20);
+        
+        $query = resource_purchases::where('save', 1);
+
+        if (!in_array(auth()->user()->id, [17, 30, 11])) {
+            $query->where('branchs_id', auth()->user()->branchs_id);
+        }
+
+        $data = $query->orderby('id', 'desc')->paginate(20);
+
         return view('ajax_Recent_Invoices_purchases', compact('data'));
     }
+
+
 
     public function previousPurchasesInvoices()
     {
@@ -1696,46 +1706,95 @@ class ProductsController extends Controller
 
 
 
-    public function previousSalesInvoices()
+
+
+
+
+
+public function previousSalesInvoices()
     {
-        $data = Invoices::where('branchs_id', auth()->user()->branchs_id)
-            ->where('save', 1)
-            ->where('status', 0)
-            ->paginate(20);
+        $query = Invoices::where('save', 1)
+            ->where('status', 0);
+
+        if (!in_array(auth()->user()->id, [17, 30])) {
+            $query->where('branchs_id', auth()->user()->branchs_id);
+        }
+
+        $data = $query->paginate(20);
 
         return view('previousSalesInvoices', compact('data'));
     }
-
-    public function getAllinvicesajax()
+public function getAllinvicesajax()
     {
-        $data = $this->getBaseInvoiceQuery(0)->orderBy('id', 'desc')->paginate(20);
+        // Start building the query using the base method
+        $query = $this->getBaseInvoiceQuery(0);
+
+        // Apply branch restriction if the user's branch matches 17 or 30
+      if (!in_array(auth()->user()->id, [17, 30])) {
+                $query->where('branchs_id', auth()->user()->branchs_id);
+        }
+
+        // Order, paginate, and fetch the results
+        $data = $query->orderBy('id', 'desc')->paginate(20);
+
         return view('ajax_Recent_Invoices', compact('data'));
     }
 
-    public function searchAllInvoicespaginatenew($date)
+public function searchAllInvoicespaginatenew($date)
     {
-        $data = $this->getBaseInvoiceQuery(0)
-            ->where('created_at', 'LIKE', '%' . $date . '%')
-            ->paginate(20);
+        $query = $this->getBaseInvoiceQuery(0)
+            ->where('created_at', 'LIKE', '%' . $date . '%');
+
+       if (!in_array(auth()->user()->id, [17, 30])) {
+                $query->where('branchs_id', auth()->user()->branchs_id);
+        }
+
+        $data = $query->paginate(20);
 
         return view('ajax_Recent_Invoices', compact('data'));
     }
 
     public function searchaboutinvoiceByIdfunction($date)
     {
-        $data = $this->getBaseInvoiceQuery(0)->where('id', $date)->paginate(20);
+        $query = $this->getBaseInvoiceQuery(0)
+            ->where('id', $date);
+
+       if (!in_array(auth()->user()->id, [17, 30])) {
+                $query->where('branchs_id', auth()->user()->branchs_id);
+        }
+
+        $data = $query->paginate(20);
+
         return view('ajax_Recent_Invoices', compact('data'));
     }
 
     public function getinvoicesbycustomer($date)
     {
-        $data = $this->getBaseInvoiceQuery(0)
-            ->where('customer_id', $date)
-            ->orderBy('id', 'desc')
-            ->paginate(20);
+        $query = $this->getBaseInvoiceQuery(0)
+            ->where('customer_id', $date);
+
+       if (!in_array(auth()->user()->id, [17, 30])) {
+                $query->where('branchs_id', auth()->user()->branchs_id);
+        }
+
+        $data = $query->orderBy('id', 'desc')->paginate(20);
 
         return view('ajax_Recent_Invoices', compact('data'));
     }
+
+    
+
+
+
+
+
+
+
+
+
+
+
+
 
     public function previousRecieptInvoices()
     {

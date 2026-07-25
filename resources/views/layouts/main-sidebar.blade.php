@@ -290,30 +290,119 @@
                     </li>
                     @endcan
 
-                    @can('Transferring a product to another branch')
-                    <li>
-                        <a class="slide-item"
-                            href="{{ url('/sendProduct') }}">{{ __('home.send_product_from_brance') }}</a>
-                    </li>
-                    @endcan
-                    @can('Transferring a product to another branch')
-                    <li>
-                        <a class="slide-item"
-                            href="{{ url('/my-drafts-movements') }}">{{ __('home.pending_invoice_previes') }}</a>
-                    </li>
-                    @endcan
-                    @can('Receiving a product from another branch')
-                    <li>
-                        <a class="slide-item"
-                            href="{{ url('/reciveProduct') }}">{{ __('home.recive_product_from_brance') }}</a>
-                    </li>
-                    @endcan
+
                 </ul>
             </li>
             @endcan
 
+            @can('Transferring a product to another branch')
+            <!-- القائمة الرئيسية للمستودعات -->
+            <li class="slide">
+                <a class="side-menu__item" data-toggle="slide" href="#">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="side-menu__icon" viewBox="0 0 512 512">
+                        <path
+                            d="M0 32C0 14.3 14.3 0 32 0H480c17.7 0 32 14.3 32 32s-14.3 32-32 32V448c17.7 0 32 14.3 32 32s-14.3 32-32 32H304c0 17.7-14.3 32-32 32s-32-14.3-32-32H32c-17.7 0-32-14.3-32-32s14.3-32 32-32V64C14.3 64 0 49.7 0 32zM96 120c0-13.3 10.7-24 24-24h48c13.3 0 24 10.7 24 24v48c0 13.3-10.7 24-24 24H120c-13.3 0-24-10.7-24-24V120zm0 160c0-13.3 10.7-24 24-24h48c13.3 0 24 10.7 24 24v48c0 13.3-10.7 24-24 24H120c-13.3 0-24-10.7-24-24V280zM288 96h48c13.3 0 24 10.7 24 24v48c0 13.3-10.7 24-24 24H288c-13.3 0-24-10.7-24-24V120c0-13.3 10.7-24 24-24zm24 160h48c13.3 0 24 10.7 24 24v48c0 13.3-10.7 24-24 24H312c-13.3 0-24-10.7-24-24V280c0-13.3 10.7-24 24-24zM144 400H368V352H144v48z" />
+                    </svg>
+                    <span class="side-menu__label">{{ __('home.warehouses') }}</span>
+                    <i class="angle fe fe-chevron-down"></i>
+                </a>
 
+                <ul class="slide-menu">
 
+                    <!-- 1. قسم المستودعات الرئيسية (Type 2) -->
+                    @if(auth()->user()->branch && auth()->user()->branch->type == 2)
+                    <li class="slide">
+                        <a class="side-menu__item" data-toggle="slide" href="#">
+                            <span class="side-menu__label">{{ __('home.main_warehouse') }}</span>
+                            <i class="angle fe fe-chevron-down"></i>
+                        </a>
+                        <ul class="slide-menu">
+                            @can('Transferring a product to another branch')
+                            <li>
+                                <a class="slide-item"
+                                    href="{{ url('/sendProduct?branch_id=' .auth()->user()->branch) }}">{{ __('home.send_product_from_brance') }}</a>
+                            </li>
+                            @endcan
+                            @can('Receiving a product from another branch')
+                            <li>
+                                <a class="slide-item"
+                                    href="{{ url('/reciveProduct?branch_id=' .auth()->user()->branch) }}">{{ __('home.recive_product_from_brance') }}</a>
+                            </li>
+                            @endcan
+                            @can('Transferring a product to another branch')
+                            <li>
+                                <a class="slide-item"
+                                    href="{{ url('/my-drafts-movements') }}">{{ __('home.pending_invoice_previes') }}</a>
+                            </li>
+                            @endcan
+                            @can('Produects')
+                            <li>
+                                <a class="slide-item" href="{{ url('/showAllProducts?branch_id=' .auth()->user()->branch) }}">{{ __('home.stock') }}</a>
+                            </li>
+                            @endcan
+                        </ul>
+                    </li>
+                    @endif
+
+                    <!-- 2. قسم المستودعات الفرعية (Type 1) -->
+                    @php
+                    $subBranches = collect();
+                    if(auth()->user()->branch && auth()->user()->branch->type == 2) {
+                    $subBranches = \App\Models\branchs::where('branch_id', auth()->user()->branch->id)->where('type',
+                    1)->get();
+                    }
+                    @endphp
+
+                    @if(auth()->user()->branch && auth()->user()->branch->type == 2 && $subBranches->count() > 0)
+                    <li class="slide">
+                        <a class="side-menu__item" data-toggle="slide" href="#">
+                            <span class="side-menu__label">{{ __('home.secandry_warehouses') }}</span>
+                            <i class="angle fe fe-chevron-down"></i>
+                        </a>
+                        <ul class="slide-menu">
+                            @foreach($subBranches as $subBranch)
+                            <li class="slide">
+                                <a class="side-menu__item" data-toggle="slide" href="#">
+                                    <span class="side-menu__label">{{ $subBranch->name }}</span>
+                                    <i class="angle fe fe-chevron-down"></i>
+                                </a>
+                                <ul class="slide-menu">
+                                    @can('Transferring a product to another branch')
+                                    <li>
+                                        <a class="slide-item"
+                                            href="{{ url('/sendProduct?branch_id=' . $subBranch->id) }}">{{ __('home.send_product_from_brance') }}</a>
+                                    </li>
+                                    @endcan
+
+                                    @can('Receiving a product from another branch')
+                                    <li>
+                                        <a class="slide-item"
+                                            href="{{ url('/reciveProduct?branch_id=' . $subBranch->id) }}">{{ __('home.recive_product_from_brance') }}</a>
+                                    </li>
+                                    @endcan
+
+                                    @can('Transferring a product to another branch')
+                                    <li>
+                                        <a class="slide-item"
+                                            href="{{ url('/my-drafts-movements?branch_id=' . $subBranch->id) }}">{{ __('home.pending_invoice_previes') }}</a>
+                                    </li>
+                                    @endcan
+                                    @can('Produects')
+                                    <li>
+                                        <a class="slide-item"
+                                            href="{{ url('/showAllProducts') }}">{{ __('home.stock') }}</a>
+                                    </li>
+                                    @endcan
+                                </ul>
+                            </li>
+                            @endforeach
+                        </ul>
+                    </li>
+                    @endif
+
+                </ul>
+            </li>
+            @endcan
             @can('Deliveries')
             <li class="slide">
                 <a class="side-menu__item" data-toggle="slide" href="#">
@@ -593,7 +682,7 @@
                         </a>
 
                         <ul class="slide-menu">
-                    
+
                             @can('Daily transactions sheet')
                             <li>
                                 <a class="slide-item"

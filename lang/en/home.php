@@ -550,8 +550,9 @@ return [
     'cach_from_bank' => "Bank Transfer from Owner",
     'cach_bank' => "Cash from Bank",
     'shabka_bank' => "Transfer from Bank",
-    'send_product_from_brance' => "Send Product to Another Branch",
-    'recive_product_from_brance' => "Receive Product from Another Branch",
+// ... التراجم الموجودة مسبقاً
+    "send_product_from_brance" => "Issue Voucher", // أو Transfer Out
+    "recive_product_from_brance" => "Receive Voucher", // أو Transfer In
     'send_product_from_other_branch_other' => "Send Product to Other Branch",
     'recive_product_from_other_branch_other' => "Receive Product from Other Branch",
     'choosebranch_sender' => "Choose Sending Branch",
@@ -655,4 +656,8 @@ return [
     // --- ZATCA & E-Invoicing ---
     'previousSales_not_sended_Invoices' => "Invoices Not Sent to Zakat",
     'previousSales_sended_Invoices' => "Invoices Sent to Zakat",
+
+    'warehouses' => 'Warehouses',
+    'main_warehouse' => 'Main Warehouse',
+    'secandry_warehouses' => 'Secondary Warehouses',
 ];

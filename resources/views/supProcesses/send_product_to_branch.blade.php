@@ -102,7 +102,7 @@
                                 class="form-control">
                                 <option value="">اختر الفرع المستلم</option>
                                 @foreach (App\Models\branchs::get() as $section)
-                                @if($section->id != Auth()->user()->branchs_id)
+                                @if($section->id != $branchId)
                                 <option value="{{ $section->id }}"
                                     {{ isset($draftMovement) && $draftMovement->branch_to == $section->id ? 'selected' : '' }}>
                                     {{ $section->name }}
@@ -336,7 +336,7 @@ $('#SearchProduct').on('show.bs.modal', function() {
 
 function searchaboutproductfunction() {
     let searchtext = $('#searchaboutproduct').val();
-    let current_user_branch = "{{ $branchId ?? Auth()->user()->branchs_id  }}";
+    let current_user_branch = "{{ $branchId }}";
     if (searchtext.trim() == '') {
         searchtext = "1";
     }

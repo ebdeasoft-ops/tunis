@@ -168,28 +168,27 @@ public function exportPdf(Request $request)
     }
 
 
-    public function index(Request $request)
-    {
-        $draftMovement = null;
-        $draftItems = [];
-        // التحقق مما إذا كان هناك طلب لفتح مسودة معينة عبر الرابط مثل: sendProduct?draft_id=5
-        if ($request->has('draft_id')) {
+  public function index(Request $request)
+{
+    $draftMovement = null;
+    $draftItems = [];
+    
+    if ($request->has('draft_id')) {
+        $draftMovement = product_movement_another_branch::where('id', $request->draft_id)
+            ->where('branch_from', auth()->user()->branchs_id)
+            ->where('status', 'draft')
+            ->firstOrFail();
 
-            // 1. جلب الحركة الرئيسية وتأكيد أنها مسودة ومن نفس فرع المستخدم الحالي للأمان
-            $draftMovement = product_movement_another_branch::where('id', $request->draft_id)
-                ->where('branch_from', auth()->user()->branchs_id)
-                ->where('status', 'draft')
-                ->firstOrFail();
-
-            // 2. جلب المنتجات (البنود) التابعة لهذه المسودة مع بيانات المنتج الأساسية (كالاسم)
-            // تأكد من وجود علاقة باسم product داخل موديل البنود
-            $draftItems = product_movement_another_branch_items::with('product')
-                ->where('order_id', $draftMovement->id)
-                ->get();
-        }
-        // تمرير البيانات المتغيرات لملف الـ Blade سواء كانت مليئة بالبيانات أو فارغة (null)
-        return view('supProcesses.send_product_to_branch', compact('draftMovement', 'draftItems'));
+        $draftItems = product_movement_another_branch_items::with('product')
+            ->where('order_id', $draftMovement->id)
+            ->get();
     }
+
+    // جلب الـ branch_id من الرابط، وإذا لم يوجد، يتم استخدام فرع المستخدم الحالي
+    $branchId = $request->get('branch_id', auth()->user()->branchs_id);
+
+    return view('supProcesses.send_product_to_branch', compact('draftMovement', 'draftItems', 'branchId'));
+}
     /**
      * إنشاء أو تحديث أمر تحويل منتجات إلى فرع آخر (صرف من الفرع الحالي)
      */
@@ -474,7 +473,7 @@ public function showMyDrafts(Request $request)
         }
 
         $notregisterproductCount = 0;
-        $branchId = Auth()->user()->branchs_id;
+        $branchId = $request->branchId??Auth()->user()->branchs_id;
 
         // 2. المرور على مصفوفة المنتجات القادمة من الجدول
         // نستخدم index للوصول للكمية والسعر المقابل لكل منتج

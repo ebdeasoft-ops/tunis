@@ -36,7 +36,7 @@ return [
     'last_quotation_price' => 'اخر تسعيرة بدون ضريبة',
     'Out_of_Stock' => 'نفدت الكمية',
     "delivery_current_month" => "التسليمات الشهر الجاري",
-    'sel_product_withoud_tax' => "تسليم منتج لعميل ",
+    'sel_product_withoud_tax' => "تسليم منتج  ",
 
     'previous_deliver_Invoices' => 'التسليمات السابقة',
     'salesreturned_delivery' => 'مرتجع التسليمات',

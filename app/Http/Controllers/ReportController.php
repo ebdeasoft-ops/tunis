@@ -2113,12 +2113,11 @@ class ReportController extends Controller
         $accountIds = [$supplierId]; // الافتراضي: حساب واحد فقط
 
         // التحقق إذا كان نوع الحساب client_and_supplier ويمتلك رقماً ضريبياً
-        if ($financial_account && $financial_account->type == 'client_and_supplier' && !empty($financial_account->tax_no)) {
+        if ($financial_account && $request->type == 'client_and_supplier' && !empty($financial_account->tax_no)) {
             // جلب كل الحسابات التي تشابهه في نفس الرقم الضريبي لدمج حركاتهم معاً
             $similarAccounts = financial_accounts::where('tax_no', $financial_account->tax_no)
                 ->pluck('id')
                 ->toArray();
-
             if (!empty($similarAccounts)) {
                 $accountIds = $similarAccounts;
             }

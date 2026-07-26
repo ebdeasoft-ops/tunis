@@ -548,7 +548,8 @@ td .d-flex {
                             <input type="text" hidden=true class="form-control" id="saveinvice" name="saveinvice"
                                 value=0>
 
-                           
+                            <input hidden=true class="form-control" id="branchs_id" name="branchs_id"
+                                value="{{Auth()->user()->branchs_id}}">
                             <input hidden=true class="form-control" id="user_id" name="user_id"
                                 value="{{Auth()->user()->discount_allow_limit}}">
                             <?php
@@ -1900,7 +1901,6 @@ $('#clientnamesearch').select2({
                 $('#clientnamesearch').select2('close');
 
 
-                $('#createcustomer').modal().show();
                 return {
                     results: []
                 };

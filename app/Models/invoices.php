@@ -76,7 +76,11 @@ class invoices extends Model
         return $this->belongsTo(branchs::class,'branchs_id');
     }
     public function customer()
-{
-    return $this->belongsTo(customers::class,'customer_id');
-}
+    {
+        return $this->belongsTo(customers::class,'customer_id');
+    }
+    public function returnSales()
+    {
+        return $this->hasMany(return_sales::class, 'invoice_id');
+    }
 }

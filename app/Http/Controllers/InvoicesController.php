@@ -11,7 +11,7 @@ use Barryvdh\DomPDF\Facade\Pdf; // أو الكلاس المستعار الخاص
 use Mcamara\LaravelLocalization\Facades\LaravelLocalization;
 use DOMDocument;
 
-use DateTime; 
+use DateTime;
 use Ramsey\Uuid\Uuid;
 use Auth;
 use Illuminate\Http\Request;
@@ -76,7 +76,7 @@ class NumberToWord
     {
         // إزالة الفراغات وتحويل المدخل إلى نص رقمي نظيف
         $number = trim((string)$number);
-        
+
         if (empty($number) || !is_numeric($number) || $number == 0) {
             return 'صفر';
         }
@@ -157,18 +157,18 @@ class NumberToWord
                 if ($number == 1) return 'ألف';
                 if ($number == 2) return 'ألفان';
                 return $this->forOneToTwenty($number) . ' ' . $this->nameByDigit(4);
-            
+
             case 5: // عشرات الألوف
                 return $this->twoLength($number) . ' ' . $this->nameByDigit(6);
-            
+
             case 6: // مئات الألوف
                 return $this->threeLength($number) . ' ' . $this->nameByDigit(6);
-            
+
             case 7: // ملايين
                 if ($number == 1) return 'مليون';
                 if ($number == 2) return 'مليونان';
                 return $this->forOneToTwenty($number) . ' ' . $this->nameByDigit(7);
-            
+
             default:
                 return $_number;
         }
@@ -248,7 +248,7 @@ class InvoicesController extends Controller
 {
 
   public function generate_return_sale_pdf  ($request) {
-        
+
 
         $saleData = return_sales::where("invoice_id", $request)->get();
         $InvoiceData = invoices::find($request);
@@ -267,14 +267,14 @@ class InvoicesController extends Controller
 
         $fileName = $dateTime->format('Y-m-d H:i:s') ;
         $html = view('pdf.salereturn', $tran)->toArabicHTML();
-        
+
         $pdf = PDF::loadHTML($html)->output();
-        
+
         //Generate the pdf file
         $headers = array(
             "Content-type" => "application/pdf",
         );
-        
+
         // Create a stream response as a file download
         return response()->streamDownload(
             fn () => print($pdf), // add the content to the stream
@@ -283,10 +283,10 @@ class InvoicesController extends Controller
         );
 
 
-       
-        
+
+
     }
-    
+
 
 public function previousSales_not_sended_Invoices()
     {
@@ -359,12 +359,12 @@ public function previousSales_not_sended_Invoices_all_branchs()
         return view('products.reciptprinter', compact('data'));
     }
 
-    
+
 
 public function getAllinvicesajax_send_zatca_not_all_beanchs()
 {
     LaravelLocalization::setLocale(LaravelLocalization::getCurrentLocale());
-    
+
     $startOfMonth = Carbon::now()->startOfMonth();
     $endOfToday   = Carbon::now()->endOfDay();
 
@@ -396,7 +396,7 @@ public function save_delivery_sale(Request $request)
         $bankamount = 0;
         $creaditamount = 0;
         $Bank_transfer = 0;
-        
+
         $customerId = $request->clientnamesearch;
         $paymentMethod = $request->payment_type;
         $branchId = Auth::user()->branchs_id;
@@ -796,24 +796,21 @@ public function save_delivery_sale(Request $request)
 
 
 
-
 public function dashboard()
 {
     $today = Carbon::today()->toDateString();
     $monthStart = Carbon::now()->startOfMonth()->toDateString();
-    
+
     // جلب نسبة الضريبة
     $avtSetting = Avt::find(1);
     $vat = $avtSetting ? $avtSetting->AVT : 0;
 
     /* ================= TODAY SALES ================= */
 
-    // 1. عدد فواتير اليوم النشطة
     $todayInvoicesCount = invoices::whereDate('created_at', $today)
         ->where('save', 1)
         ->count();
 
-    // 2. حساب أرباح اليوم (مع خصم المرتجعات والضريبة)
     $todaySales = invoices::whereDate('created_at', $today)
         ->where('save', 1)
         ->sum(DB::raw('cashamount + bankamount + creaditamount + Bank_transfer'));
@@ -824,13 +821,14 @@ public function dashboard()
     $todayEarnings = round($todaySales - ($todayReturns + ($todayReturns * $vat)), 2);
 
 
-    /* ================= MONTH SALES ================= */
+    /* ================= MONTH SALES (تعديل التواريخ) ================= */
 
-    $monthInvoicesCount = invoices::whereBetween('created_at', [$monthStart, $today])
+    $monthInvoicesCount = invoices::whereDate('created_at', '>=', $monthStart)
         ->where('save', 1)
         ->count();
 
-    $monthSales = invoices::whereBetween('created_at', [$monthStart, $today])
+    // جلب جميع مبيعات الشهر شاملة ساعات اليوم الحالي
+    $monthSales = invoices::whereDate('created_at', '>=', $monthStart)
         ->where('save', 1)
         ->sum(DB::raw('cashamount + bankamount + creaditamount + Bank_transfer'));
 
@@ -849,44 +847,51 @@ public function dashboard()
 
     $todayDeliveryNet = round($todayDeliverySales - $todayDeliveryReturns, 2);
 
-    $monthDeliveryCount = delivery_to_customer_withoud_tax_invoices::whereBetween('created_at', [$monthStart, $today])
+    $monthDeliveryCount = delivery_to_customer_withoud_tax_invoices::whereDate('created_at', '>=', $monthStart)
         ->where('save', 1)->count();
 
-    $monthDeliverySales = delivery_to_customer_withoud_tax_invoices::whereBetween('created_at', [$monthStart, $today])
+    $monthDeliverySales = delivery_to_customer_withoud_tax_invoices::whereDate('created_at', '>=', $monthStart)
         ->where('save', 1)
         ->sum(DB::raw('cashamount + bankamount + creaditamount + Bank_transfer'));
 
 
-    /* ================= PURCHASES ================= */
+    /* ================= PURCHASES (تعديل التواريخ) ================= */
 
     $todayPurchasesCount = resource_purchases::whereDate('created_at', $today)
         ->where('save', 1)->count();
 
     $todayPurchasesTotal = resource_purchases::whereDate('created_at', $today)
         ->where('save', 1)
-        ->sum(DB::raw('In_debt '));
+        ->sum(DB::raw('In_debt'));
 
-    $monthPurchasesCount = resource_purchases::whereBetween('created_at', [$monthStart, $today])
+    $monthPurchasesCount = resource_purchases::whereDate('created_at', '>=', $monthStart)
         ->where('save', 1)->count();
 
-    $monthPurchasesTotal = resource_purchases::whereBetween('created_at', [$monthStart, $today])
-        ->where('save', 1)->sum(DB::raw('In_debt '));
+    // جلب جميع مشتريات الشهر شاملة اليوم الحالي
+    $monthPurchasesTotal = resource_purchases::whereDate('created_at', '>=', $monthStart)
+        ->where('save', 1)->sum(DB::raw('In_debt'));
 
 
-    /* ================= ADDED: RETURNS COUNT (المضاف حديثاً) ================= */
+    /* ================= RETURNS COUNT ================= */
 
-    // حساب عدد فواتير مرتجعات المبيعات الفريدة لليوم
     $uniqueReturnSalesCount = return_sales::whereDate('created_at', $today)
         ->distinct('invoice_id')
         ->count('invoice_id');
 
-    // حساب عدد فواتير مرتجعات المشتريات المستردة لليوم
     $resourcePurchasesCount = resource_purchases::whereDate('created_at', '>=', $today)
         ->where('recoveredـpieces', '!=', 0)
         ->count();
 
+   $latestInvoices = invoices::with(['customer', 'returnSales'])
+    ->whereDate('created_at', $today)
+    ->where('save', 1)
+    ->latest()
+    ->take(5)
+    ->get();
 
-    // تمرير جميع المتغيرات إلى الـ View
+    $customersCount = customers::count();
+    $suppliersCount = supllier::count();
+
     return view('index', compact(
         'todayEarnings',
         'todayInvoicesCount',
@@ -900,8 +905,11 @@ public function dashboard()
         'todayPurchasesTotal',
         'monthPurchasesCount',
         'monthPurchasesTotal',
-        'uniqueReturnSalesCount',  // المتغير الجديد لمرتجعات المبيعات
-        'resourcePurchasesCount'   // المتغير الجديد لمرتجعات المشتريات
+        'uniqueReturnSalesCount',
+        'resourcePurchasesCount',
+        'latestInvoices',
+        'customersCount',
+        'suppliersCount'
     ));
 }
 
@@ -942,7 +950,7 @@ public function delivery_print_return_Invoice_return($request)
 
     $saleData = return_sales_deliverys::where("invoice_id", $request)->get();
     $InvoiceData = delivery_to_customer_withoud_tax_invoices::find($request);
-    
+
     $data = [
         'salesData'   => $saleData,
         'invoiceData' => $InvoiceData,
@@ -959,7 +967,7 @@ public function return_sale_delivery(Request $request)
 
     $product = sales_withoud_taxes::where('invoice_id', $request->invoice_no)->where('save', 1)->get();
     $InvoiceData = delivery_to_customer_withoud_tax_invoices::find($request->invoice_no);
-    
+
     if (!$InvoiceData || count($product) == 0) {
         $message = LaravelLocalization::getCurrentLocale() == 'ar' ? ' لم يتم العثور علي فاتورة بهذة الرقم' : 'No invoice with this number was found';
         session()->flash('notfountreturnproduct', $message);
@@ -1023,7 +1031,7 @@ public function delivery_product_to_customer()
 public function confirmpaymentconfirmpaymentdelivery_to_customer_withoud_tax_invoices($invoiceId, $cashamount, $bankamount, $creaditamount, $Bank_transfer, $paymentMethod, $customerId, $date2, $date12)
 {
     return DB::transaction(function () use ($invoiceId, $cashamount, $bankamount, $creaditamount, $Bank_transfer, $paymentMethod, $customerId) {
-        
+
         $cashamount     = $cashamount ?? 0;
         $bankamount     = $bankamount ?? 0;
         $creaditamount  = $creaditamount ?? 0;
@@ -1090,9 +1098,9 @@ public function confirmpaymentconfirmpaymentdelivery_to_customer_withoud_tax_inv
 
         foreach (temp_sales::where('invoice_id', $invoiceId)->get() as $sale) {
             $productdata = products::find($sale->product_id);
-            
+
             // تم تصحيح حرف الكشيدة بنجاح هنا دون أي تغيير في اسم الـ Model أو الحقول الأخرى
-            $total_cost += $productdata->purchasing_price * $sale->quantity; 
+            $total_cost += $productdata->purchasing_price * $sale->quantity;
 
             if (Auth()->user()->branchs_id == $productdata->branchs_id) {
                 sales_withoud_taxes::create([
@@ -1435,7 +1443,7 @@ public function showInvoiceRecentdelivery($request)
 
     $saleData = sales_withoud_taxes::where("invoice_id", $request)->where('quantity', '!=', 0)->get();
     $InvoiceData = delivery_to_customer_withoud_tax_invoices::find($request);
-    
+
     $totAL = round(($InvoiceData->Price - $InvoiceData->discount), 2);
     $totAL = number_format($totAL, 2);
 
@@ -1447,7 +1455,7 @@ public function showInvoiceRecentdelivery($request)
     } else {
         $decimal = $decimal;
     }
-    
+
     $setting = system_setting::find(1);
     $Total_Amount = $InvoiceData->Bank_transfer + $InvoiceData->creaditamount + $InvoiceData->bankamount + $InvoiceData->cashamount;
 
@@ -1487,13 +1495,13 @@ public function print_Invoice_withod_tax(Request $request)
 
         return view('products.sales', compact('products'));
     }
-    
+
     app()->setLocale(LaravelLocalization::getCurrentLocale());
     $avtSaleRate = Avt::find(1);
 
     $saleData = sales_withoud_taxes::where("invoice_id", $request->show_invoice_number)->where('quantity', '!=', 0)->get();
     $InvoiceData = delivery_to_customer_withoud_tax_invoices::find($request->show_invoice_number);
-    
+
     $totAL = round($InvoiceData->Price - $InvoiceData->discount);
     $totAL = number_format($totAL, 2);
 
@@ -1505,7 +1513,7 @@ public function print_Invoice_withod_tax(Request $request)
     } else {
         $decimal = $decimal;
     }
-    
+
     $setting = system_setting::find(1);
     $Total_Amount = $InvoiceData->Bank_transfer + $InvoiceData->creaditamount + $InvoiceData->bankamount + $InvoiceData->cashamount;
 
@@ -1570,14 +1578,14 @@ public function update_return_sale_delivery(Request $request)
 
     // Run everything inside a secure database transaction
     return DB::transaction(function () use ($request, $currentLocale) {
-        
+
         $avtSaleRate = Avt::find(1);
         $returnshabkavalue = 0;
-        
+
         $saleData = sales_withoud_taxes::findOrFail($request->id);
         $updateProduct = products::findOrFail($saleData->product_id);
         $invoiceData = delivery_to_customer_withoud_tax_invoices::findOrFail($saleData->invoice_id);
-        
+
         $total_cost_value = $updateProduct->purchasingـprice * $request->return_quentity;
         $paymentMethod = $request->pay_return_sale;
 
@@ -1585,7 +1593,7 @@ public function update_return_sale_delivery(Request $request)
         if ($updateProduct->branchs_id == $invoiceData->branchs_id) {
             $updateProduct->increment('numberofpice', $request->return_quentity);
             $updateProduct->decrement('numberـofـsales', $request->return_quentity);
-            
+
             $message = $currentLocale == 'ar' ? "تم عملية الاسترجاع بنجاح شكرا" : "The recovery process was successful. Thank you.";
             session()->flash('success', $message);
         } else {
@@ -1605,7 +1613,7 @@ public function update_return_sale_delivery(Request $request)
                     'numberofpice' => $mproduct->numberofpice + $request->return_quentity,
                     'purchasingـprice' => $updateProduct->purchasingـprice,
                 ]);
-                
+
                 $message = $currentLocale == 'ar' ? "تم عملية الاسترجاع بنجاح شكرا" : "The recovery process was successful. Thank you.";
                 session()->flash('success', $message);
             } else {
@@ -1626,10 +1634,10 @@ public function update_return_sale_delivery(Request $request)
                     'numberofpice' => $request->return_quentity,
                 ]);
 
-                $message = $currentLocale == 'ar' 
-                    ? "تم عملية الاسترجاع. المنتج المسترجع غير مسجل لديكم مسبقا تم تسجيل " . $updateProduct->product_name . " بنفس رقم المنتج شكرا" 
+                $message = $currentLocale == 'ar'
+                    ? "تم عملية الاسترجاع. المنتج المسترجع غير مسجل لديكم مسبقا تم تسجيل " . $updateProduct->product_name . " بنفس رقم المنتج شكرا"
                     : "The product is not previously registered. It has been registered with a name " . $updateProduct->product_name;
-                
+
                 session()->flash('createnewproduct', $message);
             }
         }
@@ -1700,7 +1708,7 @@ public function update_return_sale_delivery(Request $request)
             $finAccount = financial_accounts::where('orginal_type', 1)->where('orginal_id', $invoiceData->customer_id)->firstOrFail();
             $this->createCreditTransaction($finAccount->id, 0, 0, 0, 0, $invoiceData->id, $paymentMethod);
 
-       
+
             } else {
             // Credit/Debit adjustment to Customer accounts
             $customerData = customers::findOrFail($invoiceData->customer_id);
@@ -1835,7 +1843,7 @@ public function previousSalesUnsentInvoices()
     public function getAllInvoicesAjaxSentZatca()
     {
         app()->setLocale(LaravelLocalization::getCurrentLocale());
-        
+
         $data =invoices::where('branchs_id', Auth::user()->branchs_id)
             ->where('save', 1)
             ->where('sent_to_zatca', 1)
@@ -1849,7 +1857,7 @@ public function previousSalesUnsentInvoices()
     public function getAllInvoicesAjaxUnsentZatca()
     {
         app()->setLocale(LaravelLocalization::getCurrentLocale());
-        
+
         $data =invoices::where('branchs_id', Auth::user()->branchs_id)
             ->where('save', 1)
             ->where('sent_to_zatca', 0)
@@ -1977,7 +1985,7 @@ public function previousSalesUnsentInvoices()
         return DB::transaction(function () use ($request) {
             $customerId = $request->clientnamesearch;
             $customerData = Customers::find($customerId); // تم تقديم جلب بيانات العميل هنا لحل خطأ الـ Fatal Error
-            
+
             $pData = $this->preparePaymentData($request);
             $confirmInvoice = null;
 
@@ -2243,7 +2251,7 @@ public function previousSalesUnsentInvoices()
 
 
 
-    
+
     public function pending_invoice($invoiceId)
     {
 
@@ -2293,7 +2301,7 @@ public function get_invoice_peeding($invoiceId)
     $allProdctsD = [];
     foreach ($products as $index => $product) {
         $updateProduct = $product->productData;
-        
+
         if (!$updateProduct) continue;
 
         $allProdctsD[] = [
@@ -2382,9 +2390,9 @@ public function updatepaymentconfirmpayment_in_quotation($invoiceId, $cashamount
 
     $totalvat = round(($totalpricePurchases - ($totaldiscount + $invoice->discount)) * $avtSaleRate, 2);
     $total_invoice_on_invoice = $invoice->discount + $totaldiscount;
-    
+
     // توقيت موحد وثابت للعملية بالكامل
-    $currentDateTime = Carbon::now(); 
+    $currentDateTime = Carbon::now();
 
     // بدء المعاملة المالية الآمنة لمنع التضارب في قيود شجرة الحسابات
     DB::beginTransaction();
@@ -2456,11 +2464,11 @@ public function updatepaymentconfirmpayment_in_quotation($invoiceId, $cashamount
         $net_sales_amount = $total_value * 100 / 115;
 
         $customerdata = customers::find($invoice->customer_id);
-        
+
         // حساب الضريبة (102) وحساب المبيعات (112)
         $this->processAccountEntry(102, $vat_amount, $confirminvoice->id, $paymentMethod, $currentDateTime, 'creditor', $customerdata);
         $this->processAccountEntry(112, $net_sales_amount, $confirminvoice->id, $paymentMethod, $currentDateTime, 'creditor');
-        
+
         // حساب تكلفة البضاعة المباعة (183) وحساب المخزون (181)
         $this->processAccountEntry(183, $total_cost, $confirminvoice->id, $paymentMethod, $currentDateTime, 'debtor');
         $this->processAccountEntry(181, $total_cost, $confirminvoice->id, $paymentMethod, $currentDateTime, 'creditor');
@@ -2469,7 +2477,7 @@ public function updatepaymentconfirmpayment_in_quotation($invoiceId, $cashamount
         if ($creaditamount > 0 && $customerdata) {
             $customerdata->increment('Balance', $creaditamount);
             $customerAccount = financial_accounts::where('orginal_type', 1)->where('orginal_id', $invoice->customer_id)->first();
-            
+
             if ($customerAccount) {
                 $customerAccount->increment('current_balance', $creaditamount);
                 $customerAccount->increment('debtor_current', $creaditamount);
@@ -2507,7 +2515,7 @@ public function updatepaymentconfirmpayment_in_quotation($invoiceId, $cashamount
     // جهوزية بيانات الطباعة والتفقيط
     $totAL = number_format($total_value, 2, '.', '');
     list($whole, $decimal) = explode('.', $totAL);
-    
+
     $check = str_split($decimal);
     $decimal = ($check[0] == "0") ? (int)$check[1] : (int)$decimal;
 
@@ -2911,9 +2919,9 @@ function sent_to_zatca_return_items($request)
             }
 
         }
-   
 
-     
+
+
         $total_withot_tax_sum = 0;
         $tax_sum = 0;
         $total_with_tax_sum = 0;
@@ -2931,7 +2939,7 @@ function sent_to_zatca_return_items($request)
             $current_item_tax_rate = ($item->Added_Value > 0) ? 15 : 0; // افترضنا 15، يمكن استبدالها بـ $item->tax_rate لو متوفر
             $taxCategoryCode = ($current_item_tax_rate == 0) ? 'E' : 'S';
 
-    
+
             $total_with_tax = number_format($totlal_element, 2, '.', '');
             $total_withot_tax_sum = $total_withot_tax_sum + $total_withot_tax * 1;
             $tax_sum = $tax_sum + $tax;
@@ -3185,9 +3193,9 @@ function sendzatca_fromsale($request)
             }
 
         }
-   
 
-     
+
+
         $total_withot_tax_sum = 0;
         $tax_sum = 0;
         $total_with_tax_sum = 0;
@@ -3205,7 +3213,7 @@ function sendzatca_fromsale($request)
             $current_item_tax_rate = ($item->Added_Value > 0) ? 15 : 0; // افترضنا 15، يمكن استبدالها بـ $item->tax_rate لو متوفر
             $taxCategoryCode = ($current_item_tax_rate == 0) ? 'E' : 'S';
 
-    
+
             $total_with_tax = number_format($totlal_element, 2, '.', '');
             $total_withot_tax_sum = $total_withot_tax_sum + $total_withot_tax * 1;
             $tax_sum = $tax_sum + $tax;
@@ -3413,14 +3421,14 @@ function dwonloadxml($id)
     $xml = new DOMDocument;
     // Safe-fallback context matching cleared vs standard xml parameters
     $rawXml = base64_decode($invoice->clearedInvoice ?? $invoice->xml, true);
-    
+
     if (!$rawXml) {
         return "Failed to decode XML content.";
     }
 
     $xml->loadXML($rawXml);
     $xml->formatOutput = true;
-    
+
     $namefile = "invoice_" . $invoice->id . '_' . date("Y_m_d") . 'T' . date("H_i") . ".xml";
     $filepath = public_path('result.xml');
     $xml->save($filepath);
@@ -3441,7 +3449,7 @@ public function updateinvoicebyidforsaleupdate($invoiceNumber)
     }
 
     $avtSaleRate = Avt::find(1);
-    
+
     // Eager load productData to avoid N+1 query performance bottleneck
     $products =sales::with('productData')->where('invoice_id', $invoiceNumber)->get();
 
@@ -3552,8 +3560,8 @@ public function updatepaymentconfirmpaymentpurchases($invoiceId, $cashamount, $b
 
             $financial_account = financial_accounts::where('orginal_type', 2)->where('orginal_id', $invoice->suplier_id)->first();
                 $oldpayment = $financial_account->id;
-           
-            
+
+
 
             credittransactions::where('note', ' فاتورة مشتريات رقم :' . $invoiceId)
                 ->where('customer_id', $oldpayment)
@@ -3681,7 +3689,7 @@ public function updatepaymentconfirmpaymentpurchases($invoiceId, $cashamount, $b
             if ($financial_account) {
                 credittransactions::where('note',' فاتورة مشتريات رقم :' . $invoiceId)->where('customer_id', $financial_account->id)->delete();
 
-           
+
 
                 credittransactions::create([
                     'user_id'         => $userId,
@@ -3723,7 +3731,7 @@ public function updatepaymentconfirmpaymentpurchases($invoiceId, $cashamount, $b
 public function PreviousQuotes()
 {
     app()->setLocale(LaravelLocalization::getCurrentLocale());
-    
+
     // Ordered by id desc for quick retrieval
     $data = offer_price_to_customer::latest('id')->paginate(30);
 
@@ -3832,7 +3840,7 @@ if ($quoute->branchs_id != $branchId1) {
         // Gather structural data response safely with relational data mapping
         $allProdctsD = [];
         $insertedSales = temp_sales::with('productData')->where('invoice_id', $Invoice->id)->get();
-        
+
         foreach ($insertedSales as $index => $sale) {
             $productRef = $productsMap->get($sale->product_id);
             $allProdctsD[] = [
@@ -3880,12 +3888,12 @@ public function updatecustomerDataInvoice(Request $request)
         if ($invoices->Pay == 'Credit') {
             $avt = Avt::find(1);
             $saleavt = $avt ? $avt->AVT : 0;
-            
+
             $invoiceTotalWithTax = ($invoices->Price - $invoices->discount) * (1 + $saleavt);
 
             // Deduct from old customer balance
             customers::where('id', $invoices->customer_id)->decrement('Balance', $invoiceTotalWithTax);
-            
+
             // Add to new customer balance
             customers::where('id', $request->customerId)->increment('Balance', $invoiceTotalWithTax);
 
@@ -3922,7 +3930,7 @@ public function updatecustomerDataInvoice(Request $request)
                 ]);
         }
 
-        // Finally update invoice owner 
+        // Finally update invoice owner
         $invoices->update(['customer_id' => $request->customerId]);
     });
 
@@ -3993,7 +4001,7 @@ public function getByCode(Request $request)
             $invoiceNumber = $Invoice->id;
         } else {
             $InvoiceData = temp_invoice::findOrFail($invoiceNumber);
-            
+
             // Fixed bitwise single '&' typo to standard logical '&&'
             $newStatus = ($InvoiceData->status != 1 && $isSameBranch) ? 0 : 1;
 
@@ -4079,7 +4087,7 @@ public function saveInvoice($invoiceId)
 
         $sales =sales::where('invoice_id', $invoiceId)->get();
         $productIds = $sales->pluck('product_id')->unique();
-        
+
         // Eager load products map to avoid N+1 issues during stock deduction
         $productsMap = products::whereIn('id', $productIds)->get()->keyBy('id');
         $userBranchId = auth()->user()->branchs_id;
@@ -4108,7 +4116,7 @@ public function updatepaymentconfirmpaymentReciept($invoiceId, $cashamount, $ban
         // Condense nested balance manipulation into one atomic block
         if ($invoice->Pay == 'Credit') {
             $netBalanceAdjustment = -$totalPaidAmount;
-            
+
             if (!empty($creaditamount)) {
                 $netBalanceAdjustment += $creaditamount;
             }
@@ -4173,7 +4181,7 @@ private function updateAccountAndLogTransaction($accountId, $branchId, $balanceD
         $branchAccount->update([
             'debtor_current' => $branchAccount->debtor_current + $debtorAmount,
         ]);
-        
+
         // تسجيل الحركة المالية
         credittransactions::create([
             'user_id' => $userId,
@@ -4207,7 +4215,7 @@ public function updatepaymentconfirmpayment($invoiceId, $cashamount, $bankamount
 
     // تشغيل الـ Transaction لضمان عدم حدوث خطأ محاسبي
     DB::transaction(function () use ($invoice, $invoiceId, $cashamount, $bankamount, $creaditamount, $Bank_transfer, $paymentMethod, $another_bank) {
-        
+
         $branchId = auth()->user()->branchs_id;
         $userId = auth()->user()->id;
         $now = Carbon::now();
@@ -4215,14 +4223,14 @@ public function updatepaymentconfirmpayment($invoiceId, $cashamount, $bankamount
         // ✔️ الإصلاح: جلب كائن الخزنة واستخراج الـ ID الرقمي مباشرة لمنع انهيار السيرفر
         $cashAccountObj = financial_accounts::where('parent_account_number', 5)
             ->where('branchs_id', $branchId)
-            ->first(); 
+            ->first();
         $cashAccountId = $cashAccountObj ? $cashAccountObj->id : 5;
-        
+
         // جلب حساب البنك الخاص بالفرع ديناميكياً
         $branchBank = financial_accounts::where('parent_account_number', 4)
             ->where('branchs_id', $branchId)
             ->first();
-        $bankAccountId = $branchBank ? $branchBank->id : 4; 
+        $bankAccountId = $branchBank ? $branchBank->id : 4;
 
         // =========================================================
         // أولاً: إلغاء وتصفير أثر الدفعة القديمة (تنظيف كامل للحسابات)
@@ -4234,25 +4242,25 @@ public function updatepaymentconfirmpayment($invoiceId, $cashamount, $bankamount
             if (method_exists($this, 'adjustAccountBalance')) {
                 $this->adjustAccountBalance($cashAccountId, $branchId, -$invoice->cashamount);
             }
-            
+
             // تصفير القيود القديمة للكاش
             DB::table('credittransactions')
                 ->where('note', 'فاتورة مبيعات رقم :' . $invoiceId)
                 ->where('customer_id', $cashAccountId)
                 ->update(['save' => 0, 'recive_amount' => 0, 'debtor' => 0, 'creditor' => 0]);
-        } 
-        
+        }
+
         // 2. عكس أثر البنك/الشبكة القديم وتصفيره
         if (in_array($invoice->Pay, ['Shabka', 'Bank_transfer', 'Partition'])) {
             $oldBankAmount = $invoice->Bank_transfer + $invoice->bankamount;
             if ($oldBankAmount > 0) {
                 // تحديد البنك القديم الذي تم الحفظ عليه بناءً على الحقل المخزن تلافياً لأي تحديث خيارات
                 $oldTargetBankId =  $bankAccountId;
-                
+
                 if (method_exists($this, 'adjustAccountBalance')) {
                     $this->adjustAccountBalance($oldTargetBankId, $branchId, -$oldBankAmount);
                 }
-                
+
                 // تصفير قيود البنك القديمة المرتبطة بالفاتورة
                 DB::table('credittransactions')
                     ->where('note', 'فاتورة مبيعات رقم :' . $invoiceId)
@@ -4280,7 +4288,7 @@ public function updatepaymentconfirmpayment($invoiceId, $cashamount, $bankamount
                     ->where('customer_id', $customerFinancialAccount->id) // تأمين الاستعلام للتصفير الدقيق
                     ->update([
                         'user_id' => $userId,
-                        'customer_id' => 0, 
+                        'customer_id' => 0,
                         'recive_amount' => 0,
                         'branchs_id' => $branchId,
                         'pay_method' => 'update',
@@ -4296,7 +4304,7 @@ public function updatepaymentconfirmpayment($invoiceId, $cashamount, $bankamount
         // =========================================================
         // ثانياً: تطبيق وتوزيع المبالغ الجديدة بناءً على المدخلات
         // =========================================================
-        
+
         // تحديد البنك المستهدف الفعلي بناءً على اختيار الكاشير الحالي
         $targetBankId = ($another_bank == 4) ? 1157 : $bankAccountId;
 
@@ -4320,8 +4328,8 @@ public function updatepaymentconfirmpayment($invoiceId, $cashamount, $bankamount
                 'creditor' => 0,
                 'debtor' => $cashamount,
                 'save' => 1
-            ]);   
-            
+            ]);
+
                  $customerFinancialAccount = financial_accounts::where('orginal_type', 1)
                 ->where('orginal_id', $invoice->customer_id)
                 ->first();
@@ -4340,14 +4348,14 @@ public function updatepaymentconfirmpayment($invoiceId, $cashamount, $bankamount
                 'creditor' => 0,
                 'debtor' => 0,
                 'save' => 1
-            ]);   
+            ]);
 
         }
 
         // 2. إضافة حركة البنك الجديدة (في حساب البنك الصواب)
         if (($Bank_transfer + $bankamount) > 0) {
             $totalBank = $Bank_transfer + $bankamount;
-            
+
             if (method_exists($this, 'adjustAccountBalance')) {
                 $this->adjustAccountBalance($targetBankId, $branchId, $totalBank);
             }
@@ -4367,7 +4375,7 @@ public function updatepaymentconfirmpayment($invoiceId, $cashamount, $bankamount
                 'debtor' => $totalBank,
                 'save' => 1
             ]);
-            
+
                           $customerFinancialAccount = financial_accounts::where('orginal_type', 1)
                 ->where('orginal_id', $invoice->customer_id)
                 ->first();
@@ -4386,7 +4394,7 @@ public function updatepaymentconfirmpayment($invoiceId, $cashamount, $bankamount
                 'creditor' => 0,
                 'debtor' => 0,
                 'save' => 1
-            ]);   
+            ]);
         }
 
         // =========================================================
@@ -4400,7 +4408,7 @@ public function updatepaymentconfirmpayment($invoiceId, $cashamount, $bankamount
             'creaditamount' => $creaditamount,
             'Bank_transfer' => $Bank_transfer,
             'Pay' => $paymentMethod,
-            'another_bank' => $another_bank 
+            'another_bank' => $another_bank
         ]);
 
         // =========================================================
@@ -4486,7 +4494,7 @@ public function getlastprice($product_id, $customer_id)
     foreach ($sales as $saleData) {
         $totalQty = ($saleData->quantity + $saleData->quantityreturn);
         $discountPerUnit = ($totalQty > 0) ? round($saleData->Discount_Value / $totalQty, 2) : 0;
-        
+
         $netUnitPrice = $saleData->Unit_Price - $discountPerUnit;
         $costWithTax = $netUnitPrice * 1.15;
 
@@ -4514,7 +4522,7 @@ public function getlastprice_offer_price($product_id, $customer_id)
     $data_supplier = [];
     foreach ($items as $saleData) {
         $netPrice = $saleData->PriceWithoudTax - $saleData->Discount_Value;
-        
+
         $data_supplier[] = [
             'invoiceid' => $saleData->offer_id,
             'date'      => substr($saleData->offer_created_at, 0, 10),
@@ -4531,7 +4539,7 @@ function convertNumber($num = false)
     if (!$num && $num !== 0 && $num !== '0') {
         return false;
     }
-    
+
     $num = (int) $num;
     if ($num === 0) {
         return 'صفر';
@@ -4541,13 +4549,13 @@ function convertNumber($num = false)
         '', 'واحد', 'اثنين', 'ثلاثة', 'أربعة', 'خمسة', 'ستة', 'سبعة', 'ثمانية', 'تسعة', 'عشرة',
         'أحد عشر', 'اثنا عشر', 'ثلاثة عشر', 'أربعة عشر', 'خمسة عشر', 'ستة عشر', 'سبعة عشر', 'ثمانية عشر', 'تسعة عشر'
     );
-    
+
     $list2 = array('', 'عشرة', 'عشرون', 'ثلاثون', 'أربعون', 'خمسون', 'ستون', 'سبعون', 'ثمانون', 'تسعون');
-    
+
     $list3 = array(
-        '', 
-        array('ألف', 'ألفان', 'أف'), 
-        array('مليون', 'مليونان', 'ملايين'), 
+        '',
+        array('ألف', 'ألفان', 'أف'),
+        array('مليون', 'مليونان', 'ملايين'),
         array('مليار', 'ملياران', 'مليارات')
     );
 
@@ -4556,17 +4564,17 @@ function convertNumber($num = false)
     $max_length = $levels * 3;
     $num = substr('00' . $num, -$max_length);
     $num_levels = str_split($num, 3);
-    
+
     $words = array();
 
     for ($i = 0; $i < count($num_levels); $i++) {
         $levels--;
         $current_num = (int)$num_levels[$i];
-        
+
         if ($current_num === 0) continue;
 
         $block_words = '';
-        
+
         // 1. حساب المئات
         $hundreds = (int)($current_num / 100);
         if ($hundreds > 0) {
@@ -4575,7 +4583,7 @@ function convertNumber($num = false)
             elseif ($hundreds >= 3 && $hundreds <= 9) {
                 // إزالة التاء المربوطة من الرقم لإضافته للمئات (ثلاثمائة)
                 $prefix = str_replace('ة', '', $list1[$hundreds]);
-                if($hundreds == 8) $prefix = 'ثماني'; 
+                if($hundreds == 8) $prefix = 'ثماني';
                 $block_words .= $prefix . 'مائة';
             }
         }
@@ -4584,13 +4592,13 @@ function convertNumber($num = false)
         $tens = $current_num % 100;
         if ($tens > 0) {
             if ($block_words !== '') $block_words .= ' و';
-            
+
             if ($tens < 20) {
                 $block_words .= $list1[$tens];
             } else {
                 $singles = $tens % 10;
                 $ten_digit = (int)($tens / 10);
-                
+
                 if ($singles > 0) {
                     $block_words .= $list1[$singles] . ' و' . $list2[$ten_digit];
                 } else {
@@ -4603,7 +4611,7 @@ function convertNumber($num = false)
         if ($levels > 0) {
             $suffix = '';
             $unit = $list3[$levels];
-            
+
             if ($current_num == 1) {
                 $block_words = $unit[0]; // ألف أو مليون
             } elseif ($current_num == 2) {
@@ -4687,7 +4695,7 @@ public function generate_pdf($request)
     if (!$InvoiceData) {
          abort(404, 'Invoice not found');
     }
-    
+
     $saleData =sales::where("invoice_id", $request)->where('quantity', '!=', 0)->get();
     $setting = system_setting::find(1);
 
@@ -4736,8 +4744,8 @@ public function generate_pdf($request)
 
     // 8. تحميل الملف مباشرة في المتصفح
     return response()->streamDownload(
-        fn() => print ($pdf), 
-        "Invoice_No_" . $request . "_" . $fileName . ".pdf", 
+        fn() => print ($pdf),
+        "Invoice_No_" . $request . "_" . $fileName . ".pdf",
         $headers
     );
 }
@@ -4752,7 +4760,7 @@ public function showRecieptRecent($request)
     $saleData =sales::where("invoice_id", $request)->get();
     $InvoiceData = invoices::find($request);
     $setting = system_setting::find(1);
-    
+
     $Total_Amount = $InvoiceData->Bank_transfer + $InvoiceData->creaditamount + $InvoiceData->bankamount + $InvoiceData->cashamount;
 
     $data = [
@@ -4793,10 +4801,10 @@ public function changeCustomerInInvoice($orderId, $newUserId)
     if ($invoice && $invoice->Pay == 'Credit') {
         // الأكواد معطلة من قبلك بالـ comment، تركتها كما هي للرجوع إليها عند الحاجة
     }
-    
+
     // تأكد هنا إذا كنت تريد تحديث جدول الفواتير المؤقتة أم الأساسية
     temp_invoice::where('id', $orderId)->update(['customer_id' => $newUserId]);
-    
+
     return 'Done';
 }
 
@@ -4911,7 +4919,7 @@ public function increaseProduct(Request $request)
     $products = temp_sales::where('invoice_id', $saleData->invoice_id)->get();
     $allProdctsD = [];
     $i = 0;
-    
+
     foreach ($products as $product) {
         $updateProduct = Products::find($product->product_id);
         $i++;
@@ -5042,14 +5050,14 @@ public function returnAll(Request $request)
 {
     $locale = LaravelLocalization::getCurrentLocale();
     app()->setLocale($locale);
-    
+
     $page = $request->pagename;
     $avtSaleRate = Avt::find(1);
 
     // الحالة الأولى: إذا لم يتم تحديد فاتورة للاسترجاع الكامل
     if (empty($request->invoice_no_delete_All)) {
         $products = products::where('branchs_id', auth()->user()->branchs_id)->paginate(10);
-        
+
         // حماية أمنية: للتأكد من أن اسم الـ View الممرر آمن ولا يسبب خطأ 500
         if (!view()->exists($page)) {
             abort(404, "Page not found");
@@ -5067,12 +5075,12 @@ public function returnAll(Request $request)
         $saleData =sales::where('invoice_id', $InvoiceData->id)->get();
         $count = $saleData->count();
         $total_cost_value = 0;
-        
+
         $successMessage = $locale == 'ar' ? "تم عملية الاسترجاع بنجاح شكرا" : "The recovery process was successful. Thank you.";
 
         foreach ($saleData as $sale) {
             $updateProduct = products::findOrFail($sale->product_id);
-            
+
             // حساب تكلفة البضاعة المباعة المرتجعة بناءً على سعر الشراء القديم
             $total_cost_value += $updateProduct->purchasingـprice * $sale->quantity;
 
@@ -5113,10 +5121,10 @@ public function returnAll(Request $request)
                         'numberofpice' => $sale->quantity, // إسناد مباشر بدلاً من تحديث منفصل مكرر
                     ]);
 
-                    $newProductMessage = $locale == 'ar' 
-                        ? "تم عملية الاسترجاع . المنتج المسترجع غير مسجل لديكم مسبقا تم تسجيل " . $updateProduct->product_name . " بنفس رقم المنتج شكرا" 
+                    $newProductMessage = $locale == 'ar'
+                        ? "تم عملية الاسترجاع . المنتج المسترجع غير مسجل لديكم مسبقا تم تسجيل " . $updateProduct->product_name . " بنفس رقم المنتج شكرا"
                         : "The product is not previously registered. It has been registered with a name " . $updateProduct->product_name . " and a product number, such as the number below";
-                    
+
                     session()->flash('createnewproduct', $newProductMessage);
                 }
             }
@@ -5167,7 +5175,7 @@ public function returnAll(Request $request)
         // 1. معالجة حسابات طرق الدفع (شبكة، تحويل، كاش، آجل)
         if (in_array($paymentMethod, ["Shabka", "Bank_transfer", "Cash"])) {
             $accountId = in_array($paymentMethod, ["Shabka", "Bank_transfer"]) ? 4 : 5;
-            
+
             // الحساب الرئيسي
             $mainAccount = financial_accounts::findOrFail($accountId);
             $mainAccount->update([
@@ -5393,7 +5401,7 @@ public function updateproductallDataInvoices(Request $request)
     return DB::transaction(function () use ($request, $avtSaleRate) {
         $saleData = temp_sales::findOrFail($request->id);
         $productData = products::findOrFail($saleData->product_id);
-        
+
         $InvoiceData = temp_invoice::findOrFail($saleData->invoice_id);
 
         // 1. خصم القيم القديمة لحركة البيع المؤقتة من إجمالي الفاتورة المؤقتة
@@ -5430,7 +5438,7 @@ public function updateproductallDataInvoices(Request $request)
         // 4. تجميع كافة المنتجات الحالية داخل الفاتورة لإرسال الرد المحدث لـ Datatable / POS View
         $products = temp_sales::where('invoice_id', $saleData->invoice_id)->get();
         $allProdctsD = [];
-        
+
         foreach ($products as $index => $product) {
             $associatedProduct = products::find($product->product_id);
 
@@ -5619,14 +5627,14 @@ public function updateproductallDataInvoices(Request $request)
     app()->setLocale(LaravelLocalization::getCurrentLocale());
     $avtSaleRate = Avt::find(1);
     $returnshabkavalue = 0;
-    
+
     // 1. جلب البيانات الأساسية
     $saleData =sales::find($request->id);
     $updateProduct = products::find($saleData->product_id);
     $InvoiceData = invoices::find($saleData->invoice_id);
-    
+
     // توحيد استقبال كمية المرتجع لتفادي الأخطاء الإملائية في الطلب
-    $returnQuantity = $request->return_quantity ?? $request->return_quentity; 
+    $returnQuantity = $request->return_quantity ?? $request->return_quentity;
     $total_cost_value = $updateProduct->purchasingـprice * $returnQuantity;
     $paymentMethod = $InvoiceData->Pay;
 
@@ -5677,16 +5685,16 @@ public function updateproductallDataInvoices(Request $request)
             ]);
 
             $productname = $updateProduct->product_name;
-            $message = LaravelLocalization::getCurrentLocale() == 'ar' 
-                ? " تم عملية الاسترجاع. المنتج المسترجع غير مسجل لديكم مسبقا تم تسجيل " . $productname . " بنفس رقم المنتج شكرا " 
+            $message = LaravelLocalization::getCurrentLocale() == 'ar'
+                ? " تم عملية الاسترجاع. المنتج المسترجع غير مسجل لديكم مسبقا تم تسجيل " . $productname . " بنفس رقم المنتج شكرا "
                 : "The product is not previously registered. It has been registered with a name " . $productname;
-            
+
             session()->flash('createnewproduct', $message);
         }
     }
 
     // 3. تسجيل حركة مرتجع المبيعات (return_sales)
-    $isLastItem = (sales::where('invoice_id', $saleData->invoice_id)->where('quantity', '!=', 0)->count() == 1) 
+    $isLastItem = (sales::where('invoice_id', $saleData->invoice_id)->where('quantity', '!=', 0)->count() == 1)
                   && (($saleData->quantity - $returnQuantity) == 0);
 
     return_sales::create([
@@ -5867,7 +5875,7 @@ public function updateproductallDataInvoices(Request $request)
     $productconvert = [];
     $allInvoiceProducts =sales::where('invoice_id', $saleData->invoice_id)->get();
     $i = 0;
-    
+
     foreach ($allInvoiceProducts as $item) {
         if ($item->quantity > 0) {
             $i++;
@@ -6022,13 +6030,13 @@ public function updateproductallDataInvoices(Request $request)
     $avtSaleRate = Avt::find(1);
     // جلب الفاتورة مع التحقق من وجودها لحماية الكود من الانهيار
     $invoice = temp_invoice::find($invoiceId);
-    
+
     if (!$invoice) {
         return response()->json(['error' => 'Invoice not found'], 404);
     }
 
     // نسبة الضريبة (مثال: إذا كانت 15% فالمتغير يحمل 0.15، وإذا كانت 5% يحمل 0.05)
-    $taxRate = $avtSaleRate->AVT ?? 0.15; 
+    $taxRate = $avtSaleRate->AVT ?? 0.15;
 
     // 1. حساب الإجمالي الحالي للفاتورة (شامل الضريبة) قبل الخصم الجديد
     $currentPriceWithoutDiscount = $invoice->Price - $invoice->discount;
@@ -6050,7 +6058,7 @@ public function updateproductallDataInvoices(Request $request)
             'discount' => $invoice->discount + $calculatedDiscountValue
         ]);
         // إنعاش الكائن بالبيانات الجديدة من قاعدة البيانات مباشرة دون استعلام جديد
-        $invoice->refresh(); 
+        $invoice->refresh();
     }
 
     return [

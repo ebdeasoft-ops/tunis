@@ -12,7 +12,7 @@
 
     /* حل مشكلة المربع الغامق: جعل الرأس أبيض بحدود سوداء */
     .invoice-table th {
-        background-color: #fff !important; 
+        background-color: #fff !important;
         color: #000 !important;
         font-weight: bold;
         border: 1px solid #000 !important;
@@ -37,7 +37,7 @@
     .invoice-type-title {
         font-size: 19px !important;
         font-weight: 900;
-        background: #fff !important; 
+        background: #fff !important;
         margin: 15px 0;
         display: inline-block;
         padding: 10px 50px;
@@ -46,7 +46,7 @@
     }{
         font-size: 24px !important;
         font-weight: 900;
-        background: #fff !important; 
+        background: #fff !important;
         margin: 15px 0;
         display: inline-block;
         padding: 10px 50px;
@@ -56,7 +56,7 @@
     p.invoice-type-title {
         font-size: 24px !important;
         font-weight: 900;
-        background: #fff !important; 
+        background: #fff !important;
         margin: 15px 0;
         display: inline-block;
         padding: 10px 50px;
@@ -69,12 +69,12 @@
         .hide-on-print, #print_Button { display: none !important; }
         body { background: #fff !important; margin: 0; padding: 0; }
         .card { border: none !important; }
-        
+
         /* إلغاء أي تظليل تلقائي من المتصفح */
         .table-striped tbody tr:nth-of-type(odd) {
             background-color: transparent !important;
         }
-        
+
         @page {
             margin: 10mm;
             size: A4;
@@ -90,7 +90,7 @@
             text-align: center;
             background-color: white !important;
         }
-        
+
         * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
     }
 </style>
@@ -135,7 +135,7 @@
                                         </div>
                                     </div>
                                     <center><p class="invoice-type-title">تسليم منتجات</p></center>
-                                    
+
                                     <div class="double-border-box mb-3" dir="rtl">
                                         <table class="table table-borderless m-0 text-right">
                                             <tr>
@@ -195,8 +195,8 @@
                                                     @if($product->quantity != 0)
                                                     <tr>
                                                         <td>{{ ++$i }}</td>
-                                                        <td>{{ $product->productData->Product_Code }}</td>
-                                                        <td class="text-right font-weight-bold">{{ $product->productData->product_name }}</td>
+                                                        <td>{{ $product->productData->Product_Code ?? "" }}</td>
+                                                        <td class="text-right font-weight-bold">{{ $product->productData->product_name ?? "" }}</td>
                                                         <td>{{ number_format($product->Unit_Price, 2) }}</td>
                                                         <td class="hide-on-print">{{ $product->quantity + $product->reamingQuantity }}</td>
                                                         <td>{{ $product->quantity }}</td>

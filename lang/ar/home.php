@@ -12,6 +12,9 @@ return [
     | you want to customize your views to better match your application.
     |
     */
+    'type' => 'النوع',
+    'public' => 'عام',
+    'client_and_supplier' => 'عميل ومورد',
     'received_movements_report'=>'سندات  الاستلام ',
     'sent_movements_report'=>'سندات الصرف ',
     'no_attachments'=>"لا يوجد ",

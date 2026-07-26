@@ -91,44 +91,44 @@ class ReportController extends Controller
         }
     }
 
-    
-public function search_Expenses(Request $request)
-{
-    // 1. استرجاع البيانات (تم اختصار الكود بنفس منطقك)
-    $query = credittransactions::where('orginal_type', 3)
-        ->whereDate('created_at', '>=', $request->start_at)
-        ->whereDate('created_at', '<=', $request->end_at);
 
-    if ($request->branch != '-') {
-        $query->where('branchs_id', $request->branch);
+    public function search_Expenses(Request $request)
+    {
+        // 1. استرجاع البيانات (تم اختصار الكود بنفس منطقك)
+        $query = credittransactions::where('orginal_type', 3)
+            ->whereDate('created_at', '>=', $request->start_at)
+            ->whereDate('created_at', '<=', $request->end_at);
+
+        if ($request->branch != '-') {
+            $query->where('branchs_id', $request->branch);
+        }
+        if ($request->enpenses_reason != '-') {
+            $query->where('customer_id', $request->enpenses_reason);
+        }
+
+        $Invoices = $query->get();
+
+        // 2. التحقق مما إذا كان الطلب تصدير أم بحث
+        if ($request->has('export_excel')) {
+            // 1. حساب الإجماليات أولاً
+            $totals = [
+                'active' => $Invoices->where('vat', 1)->sum('recive_amount'),
+                'inactive' => $Invoices->where('vat', 0)->sum('recive_amount'),
+                'total' => $Invoices->sum('recive_amount')
+            ];
+
+            // 2. تمرير البيانات والإجماليات معاً
+            return Excel::download(new ExpensesExport($Invoices, $totals), 'expenses_report.xlsx');
+        }
+
+        return view('reports.printExpensesReport', compact('Invoices', 'request'));
     }
-    if ($request->enpenses_reason != '-') {
-        $query->where('customer_id', $request->enpenses_reason);
-    }
-
-    $Invoices = $query->get();
-
-    // 2. التحقق مما إذا كان الطلب تصدير أم بحث
-if ($request->has('export_excel')) {
-    // 1. حساب الإجماليات أولاً
-    $totals = [
-        'active'   => $Invoices->where('vat', 1)->sum('recive_amount'),
-        'inactive' => $Invoices->where('vat', 0)->sum('recive_amount'),
-        'total'    => $Invoices->sum('recive_amount')
-    ];
-
-    // 2. تمرير البيانات والإجماليات معاً
-    return Excel::download(new ExpensesExport($Invoices, $totals), 'expenses_report.xlsx');
-}
-
-    return view('reports.printExpensesReport', compact('Invoices', 'request'));
-}
 
 
 
 
 
-   public function exportExcel(Request $request) 
+    public function exportExcel(Request $request)
     {
         app()->setLocale(LaravelLocalization::getCurrentLocale());
 
@@ -146,7 +146,7 @@ if ($request->has('export_excel')) {
 
         // تطبيق فلتر الفرع إذا لم يكن عاماَ
         if ($request->filled('branch') && $request->branch != '-') {
-            $invoicesQuery->where(function($q) use ($request) {
+            $invoicesQuery->where(function ($q) use ($request) {
                 // فحص الحقلين لضمان عدم حدوث تعارض في الموديل الخاص بك
                 $q->where('branch_id', $request->branch)->orWhere('branchs_id', $request->branch);
             });
@@ -160,12 +160,12 @@ if ($request->has('export_excel')) {
         }
 
         $data = [
-            'sales'   => $invoicesQuery->get(),
+            'sales' => $invoicesQuery->get(),
             'returns' => $returnsQuery->get(),
         ];
 
         return \Excel::download(
-            new \App\Exports\SalesProfitsExport($data, $start_at, $end_at), 
+            new \App\Exports\SalesProfitsExport($data, $start_at, $end_at),
             'report.xlsx'
         );
     }
@@ -211,10 +211,10 @@ if ($request->has('export_excel')) {
             ->get();
 
         return view('reports.print_profit_loss', [
-            'data'     => $data,
+            'data' => $data,
             'start_at' => $request->start_at,
-            'end_at'   => $request->end_at,
-            'branch'   => $request->branch
+            'end_at' => $request->end_at,
+            'branch' => $request->branch
         ]);
     }
 
@@ -259,10 +259,10 @@ if ($request->has('export_excel')) {
             ->get();
 
         return view('reports.delivery_print_profit_loss', [
-            'data'     => $data,
+            'data' => $data,
             'start_at' => $request->start_at,
-            'end_at'   => $request->end_at,
-            'branch'   => $request->branch
+            'end_at' => $request->end_at,
+            'branch' => $request->branch
         ]);
     }
 
@@ -298,24 +298,24 @@ if ($request->has('export_excel')) {
             $data_list = [];
             foreach ($current_transactions as $item) {
                 $data_list[] = [
-                    'id'            => $item->id,
-                    'dely_record'   => $item->dely_record,
-                    'date'          => $item->created_at->format('Y-m-d'),
-                    'branch'        => $item->branch->name ?? '-',
-                    'user'          => $item->user->name ?? '-',
+                    'id' => $item->id,
+                    'dely_record' => $item->dely_record,
+                    'date' => $item->created_at->format('Y-m-d'),
+                    'branch' => $item->branch->name ?? '-',
+                    'user' => $item->user->name ?? '-',
                     'recive_amount' => $item->recive_amount,
-                    'depit'         => $item->debtor,
-                    'credit'        => $item->creditor,
-                    'note'          => $item->note,
+                    'depit' => $item->debtor,
+                    'credit' => $item->creditor,
+                    'note' => $item->note,
                 ];
             }
 
             $header_info = [
                 'account_name' => $financial_accounts->name,
-                'branch_name'  => $branch_name,
-                'start_at'     => $start_at,
-                'end_at'       => $end_at,
-                'currentdata'  => now()->format('Y-m-d H:i')
+                'branch_name' => $branch_name,
+                'start_at' => $start_at,
+                'end_at' => $end_at,
+                'currentdata' => now()->format('Y-m-d H:i')
             ];
 
             return \Maatwebsite\Excel\Facades\Excel::download(
@@ -343,7 +343,7 @@ if ($request->has('export_excel')) {
         // جلب جميع الآباء لـ السندات دفعة واحدة لتفادي الـ N+1 Query البطيئة جداً داخل الـ Loop
         $notes = $credittransactions->pluck('note')->filter()->unique();
         $parentNames = credittransactions::whereIn('note', $notes)
-            ->where(function($q) {
+            ->where(function ($q) {
                 $q->where('sent_abd_count', '!=', 0)->orWhere('sent_serf_count', '!=', 0);
             })
             ->with('financial_accounts_data')
@@ -377,22 +377,22 @@ if ($request->has('export_excel')) {
             }
 
             $List_dely_record[] = [
-                'id'             => $item->id,
-                'recive_amount'  => $item->recive_amount,
-                'depit'          => $item->debtor,
-                'credit'         => $item->creditor,
+                'id' => $item->id,
+                'recive_amount' => $item->recive_amount,
+                'depit' => $item->debtor,
+                'credit' => $item->creditor,
                 'current_blance' => $item->currentblance,
-                'dely_record'    => $item->dely_record,
-                'date_export'    => $item->date_export,
-                'date'           => $item->created_at->format('Y-m-d H:i:s'),
-                'note'           => $item->note . ' - (' . $payment . ') - ' . $name_parent,
-                'user'           => $item->user->name ?? '-',
-                'branch'         => $item->branch->name ?? '-',
+                'dely_record' => $item->dely_record,
+                'date_export' => $item->date_export,
+                'date' => $item->created_at->format('Y-m-d H:i:s'),
+                'note' => $item->note . ' - (' . $payment . ') - ' . $name_parent,
+                'user' => $item->user->name ?? '-',
+                'branch' => $item->branch->name ?? '-',
             ];
         }
 
         $credit = $LAST_credittransactions->sum('creditor');
-        $debit  = $LAST_credittransactions->sum('debtor');
+        $debit = $LAST_credittransactions->sum('debtor');
         $blance = $LAST_credittransactions->last()->currentblance ?? 0;
 
         // فرز مصفوفة البيانات تصاعدياً حسب التاريخ بشكل أسرع
@@ -415,12 +415,12 @@ if ($request->has('export_excel')) {
     {
         app()->setLocale(LaravelLocalization::getCurrentLocale());
         return view('reports.report_returns_sale_delivery');
-    }  
+    }
 
     public function search_report_returns_sale_delivery(Request $request)
     {
         app()->setLocale(LaravelLocalization::getCurrentLocale());
-        
+
         $query = return_sales_deliverys::whereDate('created_at', '>=', $request->start_at)
             ->whereDate('created_at', '<=', $request->end_at);
 
@@ -502,7 +502,7 @@ if ($request->has('export_excel')) {
     }
 
 
-      public function SalesPurchaseInPeriode()
+    public function SalesPurchaseInPeriode()
     {
         app()->setLocale(LaravelLocalization::getCurrentLocale());
         return view('reports.SalesPurchaseInPeriode');
@@ -510,10 +510,10 @@ if ($request->has('export_excel')) {
 
     public function search_SalesPurchaseInPeriode(Request $request)
     {
-// تحديد اسم الملف المنشأ بالتاريخ الحالي
-    $fileName = 'تقرير_المشتريات_والمبيعات_' . now()->format('Y-m-d') . '.xlsx';
-    
-    return Excel::download(new ProductsSalesAndPurchaseReport($request), $fileName);
+        // تحديد اسم الملف المنشأ بالتاريخ الحالي
+        $fileName = 'تقرير_المشتريات_والمبيعات_' . now()->format('Y-m-d') . '.xlsx';
+
+        return Excel::download(new ProductsSalesAndPurchaseReport($request), $fileName);
 
     }
 
@@ -521,12 +521,12 @@ if ($request->has('export_excel')) {
 
 
 
-    
 
 
 
 
-    
+
+
     public function sales_product_by_date()
     {
         app()->setLocale(LaravelLocalization::getCurrentLocale());
@@ -536,14 +536,14 @@ if ($request->has('export_excel')) {
     public function search_sales_product_by_date(Request $request)
     {
         $query = sales::whereDate('created_at', '>=', $request->start_at)
-           ->whereDate('created_at', '<=', $request->end_at)
+            ->whereDate('created_at', '<=', $request->end_at)
             ->where('save', 1);
 
         if ($request->branch != '-') {
             $query->where('branch_id', $request->branch);
         }
 
-        $productsQuery = $query->select('product_id') 
+        $productsQuery = $query->select('product_id')
             ->selectRaw('SUM(quantity) as total_quantity')
             ->selectRaw('SUM(quantity * Unit_Price) as total_sales_amount')
             ->groupBy('product_id')
@@ -600,8 +600,8 @@ if ($request->has('export_excel')) {
 
 
 
-    
-public function year_sales_report()
+
+    public function year_sales_report()
     {
         $currentYear = date('Y');
 
@@ -646,9 +646,9 @@ public function year_sales_report()
             $taxInvoice = $taxInvoicesData->get($month);
             $countsArray[] = $taxInvoice ? $taxInvoice->count : 0;
             $financialsArray[] = [
-                'total_cash'     => $taxInvoice ? $taxInvoice->total_cash ?? 0 : 0,
-                'total_bank'     => $taxInvoice ? $taxInvoice->total_bank ?? 0 : 0,
-                'total_credit'   => $taxInvoice ? $taxInvoice->total_credit ?? 0 : 0,
+                'total_cash' => $taxInvoice ? $taxInvoice->total_cash ?? 0 : 0,
+                'total_bank' => $taxInvoice ? $taxInvoice->total_bank ?? 0 : 0,
+                'total_credit' => $taxInvoice ? $taxInvoice->total_credit ?? 0 : 0,
                 'total_transfer' => $taxInvoice ? $taxInvoice->total_transfer ?? 0 : 0,
             ];
 
@@ -656,9 +656,9 @@ public function year_sales_report()
             $nonTaxInvoice = $nonTaxInvoicesData->get($month);
             $nonTaxCountsArray[] = $nonTaxInvoice ? $nonTaxInvoice->count : 0;
             $nonTaxFinancialsArray[] = [
-                'total_cash'     => $nonTaxInvoice ? $nonTaxInvoice->total_cash ?? 0 : 0,
-                'total_bank'     => $nonTaxInvoice ? $nonTaxInvoice->total_bank ?? 0 : 0,
-                'total_credit'   => $nonTaxInvoice ? $nonTaxInvoice->total_credit ?? 0 : 0,
+                'total_cash' => $nonTaxInvoice ? $nonTaxInvoice->total_cash ?? 0 : 0,
+                'total_bank' => $nonTaxInvoice ? $nonTaxInvoice->total_bank ?? 0 : 0,
+                'total_credit' => $nonTaxInvoice ? $nonTaxInvoice->total_credit ?? 0 : 0,
                 'total_transfer' => $nonTaxInvoice ? $nonTaxInvoice->total_transfer ?? 0 : 0,
             ];
         }
@@ -700,33 +700,33 @@ public function year_sales_report()
 
         if ($request->branch == '-') {
             $expense = credittransactions::where('orginal_type', 3)->whereDate('created_at', '>=', $request->start_at)->whereDate('created_at', '<=', $request->end_at)->where('save', 1)->get();
-            
+
             $ids = financial_accounts::where('parent_account_number', 112)->pluck('id');
             $sales = credittransactions::whereIn('customer_id', $ids)->where('note', 'LIKE', '%فاتورة مبيعات%')->whereDate('created_at', '>=', $request->start_at)->whereDate('created_at', '<=', $request->end_at)->where('save', 1)->get();
-            
+
             $ids = financial_accounts::where('parent_account_number', 184)->pluck('id');
             $sales_return = credittransactions::whereIn('customer_id', $ids)->where('note', 'LIKE', '%فاتورة مرتجع مبيعات%')->whereDate('created_at', '>=', $request->start_at)->whereDate('created_at', '<=', $request->end_at)->where('save', 1)->get();
-            
+
             $ids = financial_accounts::where('parent_account_number', 183)->pluck('id');
             $purchase = credittransactions::whereIn('customer_id', $ids)->where('note', 'LIKE', '%فاتورة مبيعات%')->whereDate('created_at', '>=', $request->start_at)->whereDate('created_at', '<=', $request->end_at)->where('save', 1)->get();
-            
+
             $ids = financial_accounts::where('parent_account_number', 181)->pluck('id');
             $purchase_return = credittransactions::whereIn('customer_id', $ids)->where('note', 'LIKE', '%مرتجع مشتريات فاتورة%')->whereDate('created_at', '>=', $request->start_at)->whereDate('created_at', '<=', $request->end_at)->where('save', 1)->get();
-            
+
             $ids = financial_accounts::where('parent_account_number', 183)->pluck('id');
             $sales_return_cost = credittransactions::whereIn('customer_id', $ids)->where('note', 'LIKE', '%فاتورة مرتجع مبيعات%')->whereDate('created_at', '>=', $request->start_at)->whereDate('created_at', '<=', $request->end_at)->where('save', 1)->get();
         } else {
             $expense = credittransactions::where('branchs_id', $request->branch)->where('orginal_type', 3)->whereDate('created_at', '>=', $request->start_at)->whereDate('created_at', '<=', $request->end_at)->where('save', 1)->get();
-            
+
             $financial_accounts_data = financial_accounts::where('parent_account_number', 112)->where('branchs_id', $request->branch)->first();
             $sales = $financial_accounts_data ? credittransactions::where('branchs_id', $request->branch)->where('note', 'LIKE', '%فاتورة مبيعات%')->where('customer_id', $financial_accounts_data->id)->whereDate('created_at', '>=', $request->start_at)->whereDate('created_at', '<=', $request->end_at)->where('save', 1)->get() : collect();
-            
+
             $financial_accounts_data = financial_accounts::where('parent_account_number', 184)->where('branchs_id', $request->branch)->first();
             $sales_return = $financial_accounts_data ? credittransactions::where('branchs_id', $request->branch)->where('note', 'LIKE', '%فاتورة مرتجع مبيعات%')->where('customer_id', $financial_accounts_data->id)->whereDate('created_at', '>=', $request->start_at)->whereDate('created_at', '<=', $request->end_at)->where('save', 1)->get() : collect();
-            
+
             $financial_accounts_data = financial_accounts::where('parent_account_number', 183)->where('branchs_id', $request->branch)->first();
             $purchase = $financial_accounts_data ? credittransactions::where('branchs_id', $request->branch)->where('note', 'LIKE', '%فاتورة مبيعات%')->where('customer_id', $financial_accounts_data->id)->whereDate('created_at', '>=', $request->start_at)->whereDate('created_at', '<=', $request->end_at)->where('save', 1)->get() : collect();
-            
+
             $financial_accounts_data = financial_accounts::where('parent_account_number', 181)->where('branchs_id', $request->branch)->first();
             $purchase_return = $financial_accounts_data ? credittransactions::where('branchs_id', $request->branch)->where('customer_id', $financial_accounts_data->id)->where('note', 'LIKE', '%مرتجع مشتريات فاتورة%')->whereDate('created_at', '>=', $request->start_at)->whereDate('created_at', '<=', $request->end_at)->where('save', 1)->get() : collect();
 
@@ -745,14 +745,14 @@ public function year_sales_report()
         $financial_accounts_main = financial_accounts::where('parent_account_number', 181)->where('branchs_id', auth()->user()->branchs_id)->first();
 
         $data = [
-            'expense'           => $expense_total_value,
-            'sales'             => $sales_total_value,
+            'expense' => $expense_total_value,
+            'sales' => $sales_total_value,
             'sales_return_cost' => $sales_return_total_value_cost,
-            'sales_return'      => $sales_return_total_value,
-            'purchase'          => $purchase_total_value,
-            'purchase_return'   => $purchase_return_total_value,
-            'stockopining'      => $financial_accounts_main ? $financial_accounts_main->debtor_opening : 0,
-            'stockclosing'      => $financial_accounts_main ? $financial_accounts_main->debtor_end : 0,
+            'sales_return' => $sales_return_total_value,
+            'purchase' => $purchase_total_value,
+            'purchase_return' => $purchase_return_total_value,
+            'stockopining' => $financial_accounts_main ? $financial_accounts_main->debtor_opening : 0,
+            'stockclosing' => $financial_accounts_main ? $financial_accounts_main->debtor_end : 0,
         ];
 
         return view('reports.print_profit_and_lost', compact('data'))
@@ -764,7 +764,7 @@ public function year_sales_report()
     public function cost_center_search(Request $request)
     {
         app()->setLocale(LaravelLocalization::getCurrentLocale());
-        
+
         if ($request->cost_center == '-') {
             $data = credittransactions::where('cost_center', '!=', 0)->whereDate('created_at', '>=', $request->start_at)->whereDate('created_at', '<=', $request->end_at)->where('save', 1)->get();
         } else {
@@ -777,7 +777,7 @@ public function year_sales_report()
     public function search_sales_and_return(Request $request)
     {
         app()->setLocale(LaravelLocalization::getCurrentLocale());
-        
+
         if ($request->branch == '-') {
             $Invoices = invoices::whereDate('created_at', '>=', $request->start_at)->whereDate('created_at', '<=', $request->end_at)->where('save', 1)->get();
             $Invoicesreturn = return_sales::whereDate('created_at', '>=', $request->start_at)->whereDate('created_at', '<=', $request->end_at)->get();
@@ -787,7 +787,7 @@ public function year_sales_report()
         }
 
         $data = [
-            'invoices'    => $Invoices,
+            'invoices' => $Invoices,
             'returnsales' => $Invoicesreturn
         ];
 
@@ -828,7 +828,7 @@ public function year_sales_report()
 
             $lastdate = $credittransactions == null ? '-' : $credittransactions->created_at;
             $crrunt_balence = $financial_account->creditor_current - $financial_account->debtor_current;
-            
+
             $invoices = resource_purchases::where('suplier_id', $financial_account->orginal_id)
                 ->where('Pay_Method_Name', 'Credit')
                 ->get();
@@ -876,18 +876,18 @@ public function year_sales_report()
             }
 
             $data[] = [
-                'Acount_number'  => $financial_account->account_number,
-                'name'           => $financial_account->name,
-                'life_creadit'   => $life_creadit,
+                'Acount_number' => $financial_account->account_number,
+                'name' => $financial_account->name,
+                'life_creadit' => $life_creadit,
                 'crrunt_balence' => $crrunt_balence_value,
-                'lastdate'       => $lastdate,
-                'f_0_t_10'       => $f_0_t_10,
-                'f_11_t_30'      => $f_11_t_30,
-                'f_31_t_60'      => $f_31_t_60,
-                'f_61_t_90'      => $f_61_t_90,
-                'f_91_t_120'     => $f_91_t_120,
-                'f_121_t_180'    => $f_121_t_180,
-                'f_181_t_00'     => $f_181_t_00
+                'lastdate' => $lastdate,
+                'f_0_t_10' => $f_0_t_10,
+                'f_11_t_30' => $f_11_t_30,
+                'f_31_t_60' => $f_31_t_60,
+                'f_61_t_90' => $f_61_t_90,
+                'f_91_t_120' => $f_91_t_120,
+                'f_121_t_180' => $f_121_t_180,
+                'f_181_t_00' => $f_181_t_00
             ];
         }
 
@@ -904,7 +904,7 @@ public function year_sales_report()
 
 
 
-/**
+    /**
      * إعادة هيكلة ديون العملاء - تم تنظيفها وإزالة التكرار وإصلاح حاسبة الأيام
      */
     public function search_Customer_debt_restructuring(Request $request)
@@ -929,7 +929,7 @@ public function year_sales_report()
 
             $lastdate = $credittransactions == null ? '-' : $credittransactions->created_at;
             $crrunt_balence = $financial_account->creditor_current - $financial_account->debtor_current;
-            
+
             $invoices = invoices::where('customer_id', $financial_account->orginal_id)
                 ->where('Pay', 'Credit')
                 ->where('save', 1)
@@ -978,18 +978,18 @@ public function year_sales_report()
             }
 
             $data[] = [
-                'Acount_number'  => $financial_account->account_number,
-                'name'           => $financial_account->name,
-                'life_creadit'   => $life_creadit,
+                'Acount_number' => $financial_account->account_number,
+                'name' => $financial_account->name,
+                'life_creadit' => $life_creadit,
                 'crrunt_balence' => $crrunt_balence_value,
-                'lastdate'       => $lastdate,
-                'f_0_t_10'       => $f_0_t_10,
-                'f_11_t_30'      => $f_11_t_30,
-                'f_31_t_60'      => $f_31_t_60,
-                'f_61_t_90'      => $f_61_t_90,
-                'f_91_t_120'     => $f_91_t_120,
-                'f_121_t_180'    => $f_121_t_180,
-                'f_181_t_00'     => $f_181_t_00
+                'lastdate' => $lastdate,
+                'f_0_t_10' => $f_0_t_10,
+                'f_11_t_30' => $f_11_t_30,
+                'f_31_t_60' => $f_31_t_60,
+                'f_61_t_90' => $f_61_t_90,
+                'f_91_t_120' => $f_91_t_120,
+                'f_121_t_180' => $f_121_t_180,
+                'f_181_t_00' => $f_181_t_00
             ];
         }
 
@@ -1031,14 +1031,14 @@ public function year_sales_report()
             $mainRecord = \App\Models\DailyRecord::where('id', $item->dely_record)->first();
 
             $List_dely_record[] = [
-                'name'        => $item->financial_accounts_data->name ?? '-',
-                'method_pay'  => __('home.credit'),
-                'debtor'      => $item->debtor,
-                'creditor'    => $item->creditor,
+                'name' => $item->financial_accounts_data->name ?? '-',
+                'method_pay' => __('home.credit'),
+                'debtor' => $item->debtor,
+                'creditor' => $item->creditor,
                 'dely_record' => $item->dely_record,
-                'date'        => $item->created_at,
-                'note'        => $item->note,
-                'main_note'   => $mainRecord ? $mainRecord->general_notes : '-',
+                'date' => $item->created_at,
+                'note' => $item->note,
+                'main_note' => $mainRecord ? $mainRecord->general_notes : '-',
             ];
         }
 
@@ -1060,7 +1060,7 @@ public function year_sales_report()
         app()->setLocale(LaravelLocalization::getCurrentLocale());
         $reamingamount = 0;
         $supplier = supllier::find($request->UserId);
-        
+
         $Invoices = resource_purchases::where('suplier_id', $request->UserId)
             ->whereDate('created_at', '>=', $request->start_at)
             ->whereDate('created_at', '<=', $request->end_at)
@@ -1090,33 +1090,33 @@ public function year_sales_report()
             foreach ($returnsales as $returnsale) {
                 $invoice = orderTosupllier::find($returnsale->order_owner);
                 $resource_purchases = resource_purchases::where('orderId', $returnsale->order_owner)->first();
-                
+
                 if ($invoice && $invoice->suplier_id == $request->UserId) {
                     $totalpricefinal = $returnsale->purchasingـprice * $returnsale->returns_purchase;
                     $totaladdedvalue = $totalpricefinal * $saleavt;
-                    
+
                     $pays = '';
                     if ($resource_purchases) {
                         $pays = match ($resource_purchases->Pay_Method_Name) {
-                            'Cash'          => __('report.cash'),
-                            'Shabka'        => __('report.shabka'),
-                            'Credit'        => __('report.credit'),
+                            'Cash' => __('report.cash'),
+                            'Shabka' => __('report.shabka'),
+                            'Credit' => __('report.credit'),
                             'Bank_transfer' => __('home.Bank_transfer'),
-                            default         => __('home.Partition of the amount'),
+                            default => __('home.Partition of the amount'),
                         };
                     }
 
                     $type = ($resource_purchases && $resource_purchases->Pay_Method_Name == "Credit") ? 1 : 0;
 
                     $dataInvoices[] = [
-                        'id'          => $returnsale->order_owner,
-                        'data'        => $returnsale->updated_at,
-                        'branch'      => '',
-                        'payment'     => $pays,
-                        'user'        => '-',
-                        'type'        => 2,
+                        'id' => $returnsale->order_owner,
+                        'data' => $returnsale->updated_at,
+                        'branch' => '',
+                        'payment' => $pays,
+                        'user' => '-',
+                        'type' => 2,
                         'typepayment' => $type,
-                        'amoint'      => $totaladdedvalue + $totalpricefinal
+                        'amoint' => $totaladdedvalue + $totalpricefinal
                     ];
                 }
             }
@@ -1125,11 +1125,11 @@ public function year_sales_report()
         if ($Invoices != null) {
             foreach ($Invoices as $product) {
                 $pays = match ($product->Pay_Method_Name) {
-                    'Cash'          => __('report.cash'),
-                    'Shabka'        => __('report.shabka'),
-                    'Credit'        => __('report.credit'),
+                    'Cash' => __('report.cash'),
+                    'Shabka' => __('report.shabka'),
+                    'Credit' => __('report.credit'),
                     'Bank_transfer' => __('home.Bank_transfer'),
-                    default         => __('home.Partition of the amount'),
+                    default => __('home.Partition of the amount'),
                 };
 
                 $totalprice = 0;
@@ -1140,36 +1140,36 @@ public function year_sales_report()
                 }
 
                 $dataInvoices[] = [
-                    'id'          => $product->orderId,
-                    'data'        => $product->created_at,
-                    'branch'      => $product->branch->name ?? '',
-                    'payment'     => $pays,
-                    'user'        => "-",
-                    'type'        => 1,
+                    'id' => $product->orderId,
+                    'data' => $product->created_at,
+                    'branch' => $product->branch->name ?? '',
+                    'payment' => $pays,
+                    'user' => "-",
+                    'type' => 1,
                     'typepayment' => $product->Pay_Method_Name == "Credit" ? 1 : 0,
-                    'amoint'      => $totalAddedvalue + $totalprice - $product->discount
+                    'amoint' => $totalAddedvalue + $totalprice - $product->discount
                 ];
             }
         }
 
         foreach ($credittransactions as $product) {
             $pays = match ($product->Pay_Method_Name) {
-                'Cash'          => __('report.cash'),
-                'Shabka'        => __('report.shabka'),
-                'Credit'        => __('report.credit'),
+                'Cash' => __('report.cash'),
+                'Shabka' => __('report.shabka'),
+                'Credit' => __('report.credit'),
                 'Bank_transfer' => __('home.Bank_transfer'),
-                default         => __('home.Partition of the amount'),
+                default => __('home.Partition of the amount'),
             };
 
             $dataInvoices[] = [
-                'id'          => $product->id,
-                'data'        => $product->created_at,
-                'branch'      => $product->currentblance,
-                'payment'     => $pays,
-                'user'        => '-',
-                'type'        => 3,
+                'id' => $product->id,
+                'data' => $product->created_at,
+                'branch' => $product->currentblance,
+                'payment' => $pays,
+                'user' => '-',
+                'type' => 3,
                 'typepayment' => $product->Pay_Method_Name == "Credit" ? 1 : 0,
-                'amoint'      => $product->paidـamount
+                'amoint' => $product->paidـamount
             ];
         }
 
@@ -1208,7 +1208,7 @@ public function year_sales_report()
         });
 
         $data = [$credittransactions, $dataInvoices, round($reamingamount, 2)];
-        
+
         return view('reports.print_supplier_account_statement', compact('data'))
             ->with('start_at', $request->start_at)
             ->with('end_at', $request->end_at)
@@ -1252,7 +1252,7 @@ public function year_sales_report()
                 $preg = 'CONSTRAINT `(.*?)` FOREIGN KEY \(`(.*?)`\) REFERENCES `(.*?)` \(`(.*?)`\)';
                 preg_match_all('/' . $preg . '/', $show_table_row["Create Table"], $matches, PREG_SET_ORDER);
                 $createTableWithoutConstraints = preg_replace('/,?\s*' . $preg . ',?/', '', $show_table_row["Create Table"]);
-                
+
                 if ($matches) {
                     $alterTableQuery = "ALTER TABLE `$table` ";
                     foreach ($matches as $match) {
@@ -1267,7 +1267,7 @@ public function year_sales_report()
             $statement = $connect->prepare("SELECT * FROM " . $table);
             $statement->execute();
             $total_row = $statement->rowCount();
-            
+
             if (!$total_row) {
                 continue;
             }
@@ -1280,7 +1280,7 @@ public function year_sales_report()
 
             $values = [];
             $output .= "\nINSERT INTO $table (" . implode(", ", $columns) . ") VALUES \n";
-            
+
             while ($single_result = $statement->fetch(\PDO::FETCH_ASSOC)) {
                 $rowValues = [];
                 foreach (array_values($single_result) as $value) {
@@ -1317,194 +1317,195 @@ public function year_sales_report()
 
 
 
-public function search_product_sales_purchases(Request $request)
-{
-    // ضبط اللغة الحالية للتقرير
-    app()->setLocale(LaravelLocalization::getCurrentLocale());
+    public function search_product_sales_purchases(Request $request)
+    {
+        // ضبط اللغة الحالية للتقرير
+        app()->setLocale(LaravelLocalization::getCurrentLocale());
 
-    $productId = $request->productNo ?? '-';
-    if ($productId == '-') {
-        session()->flash('notfountreturnproduct', __('home.productnotfount'));
-        return view('reports.product_sales_purchases', ['Invoices' => []])
-            ->with('branch_Id', $request->branch);
-    }
+        $productId = $request->productNo ?? '-';
+        if ($productId == '-') {
+            session()->flash('notfountreturnproduct', __('home.productnotfount'));
+            return view('reports.product_sales_purchases', ['Invoices' => []])
+                ->with('branch_Id', $request->branch);
+        }
 
-    $branch = $request->branch;
-    $startAt = $request->start_at;
-    $endAt = $request->end_at;
+        $branch = $request->branch;
+        $startAt = $request->start_at;
+        $endAt = $request->end_at;
 
-    // 1. بناء الاستعلامات الأساسية مع شحن العلاقات (Eager Loading) لمنع N+1 Problem
-    $salesQuery = sales::with('productData')
-        ->where('product_id', $productId)
-        ->whereDate('created_at', '>=', $startAt)
-        ->whereDate('created_at', '<=', $endAt)
-        ->where('save', 1);
+        // 1. بناء الاستعلامات الأساسية مع شحن العلاقات (Eager Loading) لمنع N+1 Problem
+        $salesQuery = sales::with('productData')
+            ->where('product_id', $productId)
+            ->whereDate('created_at', '>=', $startAt)
+            ->whereDate('created_at', '<=', $endAt)
+            ->where('save', 1);
 
-    $returnSalesQuery = return_sales::with('productData')
-        ->where('product_id', $productId)
-        ->where('return_quantity', '!=', 0)
-        ->whereDate('created_at', '>=', $startAt)
-        ->whereDate('created_at', '<=', $endAt);
+        $returnSalesQuery = return_sales::with('productData')
+            ->where('product_id', $productId)
+            ->where('return_quantity', '!=', 0)
+            ->whereDate('created_at', '>=', $startAt)
+            ->whereDate('created_at', '<=', $endAt);
 
-    $orderDetailsQuery = orderDetails::with('productData')
-        ->where('product_id', $productId)
-        ->whereDate('created_at', '>=', $startAt)
-        ->whereDate('created_at', '<=', $endAt)
-        ->where('save', 1);
+        $orderDetailsQuery = orderDetails::with('productData')
+            ->where('product_id', $productId)
+            ->whereDate('created_at', '>=', $startAt)
+            ->whereDate('created_at', '<=', $endAt)
+            ->where('save', 1);
 
-    $movementsQuery = product_movement_another_branch_items::with('product')
-        ->where('product_id', $productId)
-        ->whereDate('created_at', '>=', $startAt)
-        ->whereDate('created_at', '<=', $endAt);
+        $movementsQuery = product_movement_another_branch_items::with('product')
+            ->where('product_id', $productId)
+            ->whereDate('created_at', '>=', $startAt)
+            ->whereDate('created_at', '<=', $endAt);
 
-    $stockUpdateQuery = stock_update::with('productData')
-        ->where('product_id', $productId)
-        ->whereDate('created_at', '>=', $startAt)
-        ->whereDate('created_at', '<=', $endAt);
+        $stockUpdateQuery = stock_update::with('productData')
+            ->where('product_id', $productId)
+            ->whereDate('created_at', '>=', $startAt)
+            ->whereDate('created_at', '<=', $endAt);
 
-    // 2. تطبيق فلتر الفرع بشكل صحيح إذا تم تحديده
-    if ($branch != '-') {
-        $salesQuery->where('branch_id', $branch);
-        $returnSalesQuery->where('branch_id', $branch);
-        $orderDetailsQuery->where('branch_id', $branch);
-        // ملاحظة: إذا كانت جداول التحويلات والتحديثات تحتوي على branch_id قم بتفعيل الفلاتر لها هنا أيضاً:
-        // $movementsQuery->where('branch_id', $branch);
-        // $stockUpdateQuery->where('branch_id', $branch);
-    }
+        // 2. تطبيق فلتر الفرع بشكل صحيح إذا تم تحديده
+        if ($branch != '-') {
+            $salesQuery->where('branch_id', $branch);
+            $returnSalesQuery->where('branch_id', $branch);
+            $orderDetailsQuery->where('branch_id', $branch);
+            // ملاحظة: إذا كانت جداول التحويلات والتحديثات تحتوي على branch_id قم بتفعيل الفلاتر لها هنا أيضاً:
+            // $movementsQuery->where('branch_id', $branch);
+            // $stockUpdateQuery->where('branch_id', $branch);
+        }
 
-    // 3. جلب البيانات دفعة واحدة من قاعدة البيانات
-    $sales = $salesQuery->get();
-    $return_sales = $returnSalesQuery->get();
-    $orderDetails = $orderDetailsQuery->get();
-    $product_movement_another_branch_items = $movementsQuery->get();
-    $stock_update = $stockUpdateQuery->get();
+        // 3. جلب البيانات دفعة واحدة من قاعدة البيانات
+        $sales = $salesQuery->get();
+        $return_sales = $returnSalesQuery->get();
+        $orderDetails = $orderDetailsQuery->get();
+        $product_movement_another_branch_items = $movementsQuery->get();
+        $stock_update = $stockUpdateQuery->get();
 
-    $products = [];
+        $products = [];
 
-    // --- معالجة حركات تحويل الفروع ---
-    foreach ($product_movement_another_branch_items as $item) {
-        $products[] = [
-            'id'              => $item->order_id,
-            'Product_id'      => $item->product_id,
-            'Product_Code'    => $item->product->Product_Code ?? '',
-            'product_name'    => $item->product->product_name ?? '',
-            'created_at'      => $item->created_at,
-            'quantity'        => $item->quantity,
-            'discount'        => 0,
-            'price'           => 0,
-            'operation'       => $item->order_id != 0 ? __('home.send_product_from_other_branch_other') : __('home.recive_product_from_brance'),
-            'type'            => 9,
-            'current_balance' => 0,
-        ];
-    }
-
-    // --- معالجة تسويات جرد المخزن (زيادة / عجز) ---
-    foreach ($stock_update as $item) {
-        $products[] = [
-            'id'              => $item->id,
-            'Product_id'      => $item->product_id,
-            'Product_Code'    => $item->productData->Product_Code ?? '',
-            'product_name'    => $item->productData->product_name ?? '',
-            'created_at'      => $item->created_at,
-            'quantity'        => $item->productincrease == 0 ? $item->productdecrease : $item->productincrease,
-            'price'           => 0,
-            'discount'        => 0,
-            'operation'       => $item->productincrease == 0 ? __('home.decreasequentity') : __('home.increasequantity'),
-            'type'            => $item->productincrease == 0 ? 6 : 5,
-            'current_balance' => $item->product_name, // أو الحقل المخصص للرصيد الحالي
-        ];
-    }
-
-    // --- معالجة مرتجعات المبيعات ---
-    foreach ($return_sales as $item) {
-        // تحسين: جلب آخر مبيعات بناءً على التاريخ الحالي للحركة دون استهلاك الذاكرة
-        $resentsales = sales::where('product_id', $item->product_id)
-            ->where('created_at', '<=', $item->created_at)
-            ->orderBy('id', 'desc')
-            ->first();
-
-        $products[] = [
-            'id'              => $item->invoice_id,
-            'Product_id'      => $item->product_id,
-            'Product_Code'    => $item->productData->Product_Code ?? '',
-            'product_name'    => $item->productData->product_name ?? '',
-            'created_at'      => $item->created_at,
-            'quantity'        => $item->return_quantity,
-            'price'           => $item->return_Unit_Price,
-            'discount'        => $item->discountvalue,
-            'operation'       => __('home.salesـreturned'),
-            'type'            => 2,
-            'current_balance' => $resentsales ? ($resentsales->reamingQuantity + $item->return_quantity) : $item->return_quantity,
-        ];
-    }
-
-    // --- معالجة حركات المبيعات ---
-    foreach ($sales as $item) {
-        // نستخدم المجموعات المجلوبة محلياً بدلاً من الاستعلام المتكرر بقاعدة البيانات
-        $itemreturn = $return_sales->where('invoice_id', $item->invoice_id)->first();
-        $countreturn = $itemreturn ? $itemreturn->discountvalue : 0;
-
-        $products[] = [
-            'id'              => $item->invoice_id,
-            'Product_id'      => $item->product_id,
-            'Product_Code'    => $item->productData->Product_Code ?? '',
-            'product_name'    => $item->productData->product_name ?? '',
-            'created_at'      => $item->created_at,
-            'quantity'        => $item->quantity + $item->quantityreturn,
-            'discount'        => $item->Discount_Value + $countreturn,
-            'price'           => $item->Unit_Price,
-            'operation'       => __('home.sales'),
-            'current_balance' => $item->reamingQuantity,
-            'type'            => 1
-        ];
-    }
-
-    // --- معالجة حركات المشتريات ومرتجع المشتريات ---
-    foreach ($orderDetails as $item) {
-        if ($item->returns_purchase != 0) {
+        // --- معالجة حركات تحويل الفروع ---
+        foreach ($product_movement_another_branch_items as $item) {
             $products[] = [
-                'id'              => $item->order_owner,
-                'Product_id'      => $item->product_id,
-                'Product_Code'    => $item->productData->Product_Code ?? '',
-                'product_name'    => $item->product_name,
-                'created_at'      => $item->updated_at,
-                'quantity'        => $item->returns_purchase,
-                'price'           => $item->purchasingـprice,
-                'discount'        => 0,
-                'operation'       => __('home.purchase_return'),
-                'type'            => 4,
-                'current_balance' => $item->reamingQuantity - $item->returns_purchase,
+                'id' => $item->order_id,
+                'Product_id' => $item->product_id,
+                'Product_Code' => $item->product->Product_Code ?? '',
+                'product_name' => $item->product->product_name ?? '',
+                'created_at' => $item->created_at,
+                'quantity' => $item->quantity,
+                'discount' => 0,
+                'price' => 0,
+                'operation' => $item->order_id != 0 ? __('home.send_product_from_other_branch_other') : __('home.recive_product_from_brance'),
+                'type' => 9,
+                'current_balance' => 0,
             ];
         }
 
-        $products[] = [
-            'id'              => $item->order_owner,
-            'Product_id'      => $item->product_id,
-            'Product_Code'    => $item->productData->Product_Code ?? '',
-            'product_name'    => $item->product_name,
-            'created_at'      => $item->created_at,
-            'quantity'        => $item->numberofpice,
-            'price'           => $item->purchasingـprice,
-            'discount'        => 0,
-            'operation'       => __('home.purchases'),
-            'type'            => 3,
-            'current_balance' => $item->reamingQuantity + $item->numberofpice,
+        // --- معالجة تسويات جرد المخزن (زيادة / عجز) ---
+        foreach ($stock_update as $item) {
+            $products[] = [
+                'id' => $item->id,
+                'Product_id' => $item->product_id,
+                'Product_Code' => $item->productData->Product_Code ?? '',
+                'product_name' => $item->productData->product_name ?? '',
+                'created_at' => $item->created_at,
+                'quantity' => $item->productincrease == 0 ? $item->productdecrease : $item->productincrease,
+                'price' => 0,
+                'discount' => 0,
+                'operation' => $item->productincrease == 0 ? __('home.decreasequentity') : __('home.increasequantity'),
+                'type' => $item->productincrease == 0 ? 6 : 5,
+                'current_balance' => $item->product_name, // أو الحقل المخصص للرصيد الحالي
+            ];
+        }
+
+        // --- معالجة مرتجعات المبيعات ---
+        foreach ($return_sales as $item) {
+            // تحسين: جلب آخر مبيعات بناءً على التاريخ الحالي للحركة دون استهلاك الذاكرة
+            $resentsales = sales::where('product_id', $item->product_id)
+                ->where('created_at', '<=', $item->created_at)
+                ->orderBy('id', 'desc')
+                ->first();
+
+            $products[] = [
+                'id' => $item->invoice_id,
+                'Product_id' => $item->product_id,
+                'Product_Code' => $item->productData->Product_Code ?? '',
+                'product_name' => $item->productData->product_name ?? '',
+                'created_at' => $item->created_at,
+                'quantity' => $item->return_quantity,
+                'price' => $item->return_Unit_Price,
+                'discount' => $item->discountvalue,
+                'operation' => __('home.salesـreturned'),
+                'type' => 2,
+                'current_balance' => $resentsales ? ($resentsales->reamingQuantity + $item->return_quantity) : $item->return_quantity,
+            ];
+        }
+
+        // --- معالجة حركات المبيعات ---
+        foreach ($sales as $item) {
+            // نستخدم المجموعات المجلوبة محلياً بدلاً من الاستعلام المتكرر بقاعدة البيانات
+            $itemreturn = $return_sales->where('invoice_id', $item->invoice_id)->first();
+            $countreturn = $itemreturn ? $itemreturn->discountvalue : 0;
+
+            $products[] = [
+                'id' => $item->invoice_id,
+                'Product_id' => $item->product_id,
+                'Product_Code' => $item->productData->Product_Code ?? '',
+                'product_name' => $item->productData->product_name ?? '',
+                'created_at' => $item->created_at,
+                'quantity' => $item->quantity + $item->quantityreturn,
+                'discount' => $item->Discount_Value + $countreturn,
+                'price' => $item->Unit_Price,
+                'operation' => __('home.sales'),
+                'current_balance' => $item->reamingQuantity,
+                'type' => 1
+            ];
+        }
+
+        // --- معالجة حركات المشتريات ومرتجع المشتريات ---
+        foreach ($orderDetails as $item) {
+            if ($item->returns_purchase != 0) {
+                $products[] = [
+                    'id' => $item->order_owner,
+                    'Product_id' => $item->product_id,
+                    'Product_Code' => $item->productData->Product_Code ?? '',
+                    'product_name' => $item->product_name,
+                    'created_at' => $item->updated_at,
+                    'quantity' => $item->returns_purchase,
+                    'price' => $item->purchasingـprice,
+                    'discount' => 0,
+                    'operation' => __('home.purchase_return'),
+                    'type' => 4,
+                    'current_balance' => $item->reamingQuantity - $item->returns_purchase,
+                ];
+            }
+
+            $products[] = [
+                'id' => $item->order_owner,
+                'Product_id' => $item->product_id,
+                'Product_Code' => $item->productData->Product_Code ?? '',
+                'product_name' => $item->product_name,
+                'created_at' => $item->created_at,
+                'quantity' => $item->numberofpice,
+                'price' => $item->purchasingـprice,
+                'discount' => 0,
+                'operation' => __('home.purchases'),
+                'type' => 3,
+                'current_balance' => $item->reamingQuantity + $item->numberofpice,
+            ];
+        }
+
+        // 4. ترتيب المصفوفة بالكامل تصاعدياً حسب تاريخ الحركة باستخدام Laravel Collections (أنظف وأسرع)
+        $sortedProducts = collect($products)->sortBy('created_at')->values()->all();
+
+        $data = [
+            'products' => $sortedProducts,
+            'start_at' => $startAt,
+            'end_at' => $endAt
         ];
+
+        return view('reports.print_sales_and_purchases', compact('data'))
+            ->with('start', $startAt)
+            ->with('end', $endAt);
     }
 
-    // 4. ترتيب المصفوفة بالكامل تصاعدياً حسب تاريخ الحركة باستخدام Laravel Collections (أنظف وأسرع)
-    $sortedProducts = collect($products)->sortBy('created_at')->values()->all();
-
-    $data = [
-        'products' => $sortedProducts,
-        'start_at' => $startAt,
-        'end_at'   => $endAt
-    ];
-
-    return view('reports.print_sales_and_purchases', compact('data'))
-        ->with('start', $startAt)
-        ->with('end', $endAt);
-}
 
 
 
@@ -1515,8 +1516,7 @@ public function search_product_sales_purchases(Request $request)
 
 
 
-
-/**
+    /**
      * دالة مساعدة مشتركة (Private) لبناء بيانات كرت الصنف
      * تم عزلها هنا لمنع تكرار الكود بين دالتي العرض والطباعة
      */
@@ -1578,16 +1578,16 @@ public function search_product_sales_purchases(Request $request)
         // 1. حركات التحويلات
         foreach ($product_movement_items as $item) {
             $products[] = [
-                'id'              => $item->order_id,
-                'Product_id'      => $item->product_id,
-                'Product_Code'    => $item->product->Product_Code ?? '',
-                'product_name'    => $item->product->product_name ?? '',
-                'created_at'      => $item->created_at,
-                'quantity'        => $item->quantity,
-                'discount'        => 0,
-                'price'           => 0,
-                'operation'       => $item->order_id != 0 ? __('home.send_product_from_other_branch_other') : __('home.recive_product_from_brance'),
-                'type'            => 9,
+                'id' => $item->order_id,
+                'Product_id' => $item->product_id,
+                'Product_Code' => $item->product->Product_Code ?? '',
+                'product_name' => $item->product->product_name ?? '',
+                'created_at' => $item->created_at,
+                'quantity' => $item->quantity,
+                'discount' => 0,
+                'price' => 0,
+                'operation' => $item->order_id != 0 ? __('home.send_product_from_other_branch_other') : __('home.recive_product_from_brance'),
+                'type' => 9,
                 'current_balance' => 0,
             ];
         }
@@ -1595,16 +1595,16 @@ public function search_product_sales_purchases(Request $request)
         // 2. التسويات الجردية
         foreach ($stock_update as $item) {
             $products[] = [
-                'id'              => $item->id,
-                'Product_id'      => $item->product_id,
-                'Product_Code'    => $item->productData->Product_Code ?? '',
-                'product_name'    => $item->productData->product_name ?? '',
-                'created_at'      => $item->created_at,
-                'quantity'        => $item->productincrease == 0 ? $item->productdecrease : $item->productincrease,
-                'price'           => 0,
-                'discount'        => 0,
-                'operation'       => $item->productincrease == 0 ? __('home.decreasequentity') : __('home.increasequantity'),
-                'type'            => $item->productincrease == 0 ? 6 : 5,
+                'id' => $item->id,
+                'Product_id' => $item->product_id,
+                'Product_Code' => $item->productData->Product_Code ?? '',
+                'product_name' => $item->productData->product_name ?? '',
+                'created_at' => $item->created_at,
+                'quantity' => $item->productincrease == 0 ? $item->productdecrease : $item->productincrease,
+                'price' => 0,
+                'discount' => 0,
+                'operation' => $item->productincrease == 0 ? __('home.decreasequentity') : __('home.increasequantity'),
+                'type' => $item->productincrease == 0 ? 6 : 5,
                 'current_balance' => $item->product_name,
             ];
         }
@@ -1617,16 +1617,16 @@ public function search_product_sales_purchases(Request $request)
                 ->first();
 
             $products[] = [
-                'id'              => $item->invoice_id,
-                'Product_id'      => $item->product_id,
-                'Product_Code'    => $item->productData->Product_Code ?? '',
-                'product_name'    => $item->productData->product_name ?? '',
-                'created_at'      => $item->created_at,
-                'quantity'        => $item->return_quantity,
-                'price'           => $item->return_Unit_Price,
-                'discount'        => $item->discountvalue,
-                'operation'       => __('home.salesـreturned'),
-                'type'            => 2,
+                'id' => $item->invoice_id,
+                'Product_id' => $item->product_id,
+                'Product_Code' => $item->productData->Product_Code ?? '',
+                'product_name' => $item->productData->product_name ?? '',
+                'created_at' => $item->created_at,
+                'quantity' => $item->return_quantity,
+                'price' => $item->return_Unit_Price,
+                'discount' => $item->discountvalue,
+                'operation' => __('home.salesـreturned'),
+                'type' => 2,
                 'current_balance' => $resentsales ? ($resentsales->reamingQuantity + $item->return_quantity) : $item->return_quantity,
             ];
         }
@@ -1637,17 +1637,17 @@ public function search_product_sales_purchases(Request $request)
             $countreturn = $itemreturn ? $itemreturn->discountvalue : 0;
 
             $products[] = [
-                'id'              => $item->invoice_id,
-                'Product_id'      => $item->product_id,
-                'Product_Code'    => $item->productData->Product_Code ?? '',
-                'product_name'    => $item->productData->product_name ?? '',
-                'created_at'      => $item->created_at,
-                'quantity'        => $item->quantity + $item->quantityreturn,
-                'discount'        => $item->Discount_Value + $countreturn,
-                'price'           => $item->Unit_Price,
-                'operation'       => __('home.sales'),
+                'id' => $item->invoice_id,
+                'Product_id' => $item->product_id,
+                'Product_Code' => $item->productData->Product_Code ?? '',
+                'product_name' => $item->productData->product_name ?? '',
+                'created_at' => $item->created_at,
+                'quantity' => $item->quantity + $item->quantityreturn,
+                'discount' => $item->Discount_Value + $countreturn,
+                'price' => $item->Unit_Price,
+                'operation' => __('home.sales'),
                 'current_balance' => $item->reamingQuantity,
-                'type'            => 1
+                'type' => 1
             ];
         }
 
@@ -1655,31 +1655,31 @@ public function search_product_sales_purchases(Request $request)
         foreach ($orderDetails as $item) {
             if ($item->returns_purchase != 0) {
                 $products[] = [
-                    'id'              => $item->order_owner,
-                    'Product_id'      => $item->product_id,
-                    'Product_Code'    => $item->productData->Product_Code ?? '',
-                    'product_name'    => $item->product_name,
-                    'created_at'      => $item->updated_at,
-                    'quantity'        => $item->returns_purchase,
-                    'price'           => $item->purchasingـprice,
-                    'discount'        => 0,
-                    'operation'       => __('home.purchase_return'),
-                    'type'            => 4,
+                    'id' => $item->order_owner,
+                    'Product_id' => $item->product_id,
+                    'Product_Code' => $item->productData->Product_Code ?? '',
+                    'product_name' => $item->product_name,
+                    'created_at' => $item->updated_at,
+                    'quantity' => $item->returns_purchase,
+                    'price' => $item->purchasingـprice,
+                    'discount' => 0,
+                    'operation' => __('home.purchase_return'),
+                    'type' => 4,
                     'current_balance' => $item->reamingQuantity - $item->returns_purchase,
                 ];
             }
 
             $products[] = [
-                'id'              => $item->order_owner,
-                'Product_id'      => $item->product_id,
-                'Product_Code'    => $item->productData->Product_Code ?? '',
-                'product_name'    => $item->product_name,
-                'created_at'      => $item->created_at,
-                'quantity'        => $item->numberofpice,
-                'price'           => $item->purchasingـprice,
-                'discount'        => 0,
-                'operation'       => __('home.purchases'),
-                'type'            => 3,
+                'id' => $item->order_owner,
+                'Product_id' => $item->product_id,
+                'Product_Code' => $item->productData->Product_Code ?? '',
+                'product_name' => $item->product_name,
+                'created_at' => $item->created_at,
+                'quantity' => $item->numberofpice,
+                'price' => $item->purchasingـprice,
+                'discount' => 0,
+                'operation' => __('home.purchases'),
+                'type' => 3,
                 'current_balance' => $item->reamingQuantity + $item->numberofpice,
             ];
         }
@@ -1693,7 +1693,7 @@ public function search_product_sales_purchases(Request $request)
     public function print_sales_and_purchases(Request $request)
     {
         app()->setLocale(LaravelLocalization::getCurrentLocale());
-        
+
         $products = $this->getProductLifecycleData($request);
         if (is_null($products)) {
             session()->flash('notfountreturnproduct', __('home.productnotfount'));
@@ -1712,12 +1712,12 @@ public function search_product_sales_purchases(Request $request)
         $InvoiceData = invoices::find($request);
 
         $data = [
-            "invoicetotal_price"      => $InvoiceData->Price - $InvoiceData->discount,
+            "invoicetotal_price" => $InvoiceData->Price - $InvoiceData->discount,
             "invoicetotal_addedvalue" => ($InvoiceData->Price - $InvoiceData->discount) * ($avtSaleRate->AVT ?? 0),
-            "invoicetotal_discount"   => $InvoiceData->discount,
-            'salesData'               => $saleData,
-            'invoiceData'             => $InvoiceData,
-            'taxrat'                  => $avtSaleRate->AVT ?? 0,
+            "invoicetotal_discount" => $InvoiceData->discount,
+            'salesData' => $saleData,
+            'invoiceData' => $InvoiceData,
+            'taxrat' => $avtSaleRate->AVT ?? 0,
         ];
 
         return view('reports.printInvoicesAllItemsWithReturned', compact('data'));
@@ -1732,7 +1732,7 @@ public function search_product_sales_purchases(Request $request)
         foreach ($customers as $customer) {
             $now = Carbon::now()->addHours(3); // تم تصحيح الـ Syntax Error هنا ليعمل بنجاح
             $start = Carbon::parse($customer->updated_at);
-            
+
             if ($now->diffInDays($start) > $customer->grace_period_in_days) {
                 $Customersـexceededـgraceـperiod[] = $customer;
             }
@@ -1750,67 +1750,204 @@ public function search_product_sales_purchases(Request $request)
     }
 
     // --- واجهات العرض البسيطة (تم تجميعها واختصارها للحفاظ على نظافة الملف) ---
-    public function product_sales_purchases() { app()->setLocale(LaravelLocalization::getCurrentLocale()); return view('reports.product_sales_purchases'); }
-    public function Bank_Transfer() { app()->setLocale(LaravelLocalization::getCurrentLocale()); return view('reports.Bank_Transfer', ['data' => []]); }
-    public function ConvertBoxtobankReport() { app()->setLocale(LaravelLocalization::getCurrentLocale()); return view('reports.convert_cash_to_bank', ['data' => []]); }
-    public function Bank_Statement() { app()->setLocale(LaravelLocalization::getCurrentLocale()); return view('reports.bankDecument', ['data' => []]); }
-    public function transactionsToMasterBranch() { app()->setLocale(LaravelLocalization::getCurrentLocale()); return view('reports.transactionsToMasterBranch', ['data' => []]); }
-    public function products_Transfer() { app()->setLocale(LaravelLocalization::getCurrentLocale()); return view('reports.product_Transfer', ['data' => []]); }
-    public function Delivery_notes() { app()->setLocale(LaravelLocalization::getCurrentLocale()); return view('reports.Delivery_notes'); }
-    public function VAT() { app()->setLocale(LaravelLocalization::getCurrentLocale()); return view('reports.VAT'); }
-    public function Best_selling_products() { app()->setLocale(LaravelLocalization::getCurrentLocale()); return view('reports.Best_selling_products'); }
-    public function budgetsheet() { app()->setLocale(LaravelLocalization::getCurrentLocale()); return view('reports.budget sheet'); }
-    public function shift_detailes() { app()->setLocale(LaravelLocalization::getCurrentLocale()); return view('reports.shift_detailes'); }
-    public function Supplier_credit_payment() { app()->setLocale(LaravelLocalization::getCurrentLocale()); return view('reports.Supplier_credit_payment'); }
-    public function Customer_account_statement() { app()->setLocale(LaravelLocalization::getCurrentLocale()); return view('reports.Customer_account_statement'); }
-    public function TransFerCashTothenNextDay() { app()->setLocale(LaravelLocalization::getCurrentLocale()); return view('reports.TransFerCashTothenNextDay'); }
-    public function print_supplierList() { app()->setLocale(LaravelLocalization::getCurrentLocale()); return view('reports.print_supplierList'); }
-    public function print_customeList() { app()->setLocale(LaravelLocalization::getCurrentLocale()); return view('reports.print_customeList'); }
-    public function Customerlist() {
-    app()->setLocale(LaravelLocalization::getCurrentLocale());
+    public function product_sales_purchases()
+    {
+        app()->setLocale(LaravelLocalization::getCurrentLocale());
+        return view('reports.product_sales_purchases');
+    }
+    public function Bank_Transfer()
+    {
+        app()->setLocale(LaravelLocalization::getCurrentLocale());
+        return view('reports.Bank_Transfer', ['data' => []]);
+    }
+    public function ConvertBoxtobankReport()
+    {
+        app()->setLocale(LaravelLocalization::getCurrentLocale());
+        return view('reports.convert_cash_to_bank', ['data' => []]);
+    }
+    public function Bank_Statement()
+    {
+        app()->setLocale(LaravelLocalization::getCurrentLocale());
+        return view('reports.bankDecument', ['data' => []]);
+    }
+    public function transactionsToMasterBranch()
+    {
+        app()->setLocale(LaravelLocalization::getCurrentLocale());
+        return view('reports.transactionsToMasterBranch', ['data' => []]);
+    }
+    public function products_Transfer()
+    {
+        app()->setLocale(LaravelLocalization::getCurrentLocale());
+        return view('reports.product_Transfer', ['data' => []]);
+    }
+    public function Delivery_notes()
+    {
+        app()->setLocale(LaravelLocalization::getCurrentLocale());
+        return view('reports.Delivery_notes');
+    }
+    public function VAT()
+    {
+        app()->setLocale(LaravelLocalization::getCurrentLocale());
+        return view('reports.VAT');
+    }
+    public function Best_selling_products()
+    {
+        app()->setLocale(LaravelLocalization::getCurrentLocale());
+        return view('reports.Best_selling_products');
+    }
+    public function budgetsheet()
+    {
+        app()->setLocale(LaravelLocalization::getCurrentLocale());
+        return view('reports.budget sheet');
+    }
+    public function shift_detailes()
+    {
+        app()->setLocale(LaravelLocalization::getCurrentLocale());
+        return view('reports.shift_detailes');
+    }
+    public function Supplier_credit_payment()
+    {
+        app()->setLocale(LaravelLocalization::getCurrentLocale());
+        return view('reports.Supplier_credit_payment');
+    }
+    public function Customer_account_statement()
+    {
+        app()->setLocale(LaravelLocalization::getCurrentLocale());
+        return view('reports.Customer_account_statement');
+    }
+    public function TransFerCashTothenNextDay()
+    {
+        app()->setLocale(LaravelLocalization::getCurrentLocale());
+        return view('reports.TransFerCashTothenNextDay');
+    }
+    public function print_supplierList()
+    {
+        app()->setLocale(LaravelLocalization::getCurrentLocale());
+        return view('reports.print_supplierList');
+    }
+    public function print_customeList()
+    {
+        app()->setLocale(LaravelLocalization::getCurrentLocale());
+        return view('reports.print_customeList');
+    }
+    public function Customerlist()
+    {
+        app()->setLocale(LaravelLocalization::getCurrentLocale());
 
-    // تحديد تاريخ البداية (أول السنة) وتاريخ النهاية (اليوم)
-    $startDate ='2025'. '-01-01';
-    $endDate = date('Y-m-d');
+        // تحديد تاريخ البداية (أول السنة) وتاريخ النهاية (اليوم)
+        $startDate = '2025' . '-01-01';
+        $endDate = date('Y-m-d');
 
-    $customers = financial_accounts::whereIn('orginal_type', [1, 2])
-        // 1. مجموع الدائن (Credit)
-        ->withSum(['credittransactions as total_credit' => function($query) use ($startDate, $endDate) {
-            $query->where('save', 1)
-                  ->whereBetween('created_at', [$startDate, $endDate]);
-        }], 'creditor')
-        // 2. مجموع المدين (Debit)
-        ->withSum(['credittransactions as total_debit' => function($query) use ($startDate, $endDate) {
-            $query->where('save', 1)
-                  ->whereBetween('created_at', [$startDate, $endDate]);
-        }], 'debtor') // تأكد أن اسم الحقل في جدول العمليات هو 'debtor'
-        ->get();
+        $customers = financial_accounts::whereIn('orginal_type', [1, 2])
+            // 1. مجموع الدائن (Credit)
+            ->withSum([
+                'credittransactions as total_credit' => function ($query) use ($startDate, $endDate) {
+                    $query->where('save', 1)
+                        ->whereBetween('created_at', [$startDate, $endDate]);
+                }
+            ], 'creditor')
+            // 2. مجموع المدين (Debit)
+            ->withSum([
+                'credittransactions as total_debit' => function ($query) use ($startDate, $endDate) {
+                    $query->where('save', 1)
+                        ->whereBetween('created_at', [$startDate, $endDate]);
+                }
+            ], 'debtor') // تأكد أن اسم الحقل في جدول العمليات هو 'debtor'
+            ->get();
 
-    return view('reports.customerList', compact('customers'));
+        return view('reports.customerList', compact('customers'));
 
     }
-    public function customerـpurchases() { app()->setLocale(LaravelLocalization::getCurrentLocale()); return view('reports.customerpurchases'); }
-    public function purchasproducttocustomer() { app()->setLocale(LaravelLocalization::getCurrentLocale()); return view('reports.purchasproducttocustomer'); }
-    public function credit_collection() { app()->setLocale(LaravelLocalization::getCurrentLocale()); return view('reports.credit_collection'); }
-    public function purchasereports() { app()->setLocale(LaravelLocalization::getCurrentLocale()); return view('reports.purchasereports'); }
-    public function Purchasesـfromـsuppliers() { app()->setLocale(LaravelLocalization::getCurrentLocale()); return view('reports.Purchases_from_suppliers'); }
-    public function PurchasesـfromـsuppliersNew() { app()->setLocale(LaravelLocalization::getCurrentLocale()); return view('reports.purchaseFromSupplierreports'); }
-    public function Refundـofـresourceـpurchases() { app()->setLocale(LaravelLocalization::getCurrentLocale()); return view('reports.Refund_of_resource_purchases'); }
-    public function Requestـaـquoteـfromـtheـsupplier() { app()->setLocale(LaravelLocalization::getCurrentLocale()); return view('reports.Request_A_quote_from_supplier'); }
-    public function product_sales() { app()->setLocale(LaravelLocalization::getCurrentLocale()); return view('reports.product_sales'); }
-    public function report_returns_sale() { app()->setLocale(LaravelLocalization::getCurrentLocale()); return view('reports.report_returns_sale'); }
-    public function salesـprofits() { app()->setLocale(LaravelLocalization::getCurrentLocale()); return view('reports.sales_profits'); }
-    public function supplierList() { app()->setLocale(LaravelLocalization::getCurrentLocale()); return view('reports.supplierList'); }
-    public function showallBranchs() { app()->setLocale(LaravelLocalization::getCurrentLocale()); return view('users.show_branchs'); }
-    public function wherehouse() { app()->setLocale(LaravelLocalization::getCurrentLocale()); return view('users.AddWherehouse'); }
-    public function Expenses() { app()->setLocale(LaravelLocalization::getCurrentLocale()); return view('reports.Expenses'); }
-    public function Creditsales() { app()->setLocale(LaravelLocalization::getCurrentLocale()); return view('reports.Creditsales'); }
-    public function employeeـsales() { app()->setLocale(LaravelLocalization::getCurrentLocale()); return view('reports.employeesales'); }
-    
-    public function stockquantity() 
-    { 
-        app()->setLocale(LaravelLocalization::getCurrentLocale()); 
-        return view('reports.stockquantity', ['data' => ['display' => 1]])->with('branchdata', '-/==/1'); 
+    public function customerـpurchases()
+    {
+        app()->setLocale(LaravelLocalization::getCurrentLocale());
+        return view('reports.customerpurchases');
+    }
+    public function purchasproducttocustomer()
+    {
+        app()->setLocale(LaravelLocalization::getCurrentLocale());
+        return view('reports.purchasproducttocustomer');
+    }
+    public function credit_collection()
+    {
+        app()->setLocale(LaravelLocalization::getCurrentLocale());
+        return view('reports.credit_collection');
+    }
+    public function purchasereports()
+    {
+        app()->setLocale(LaravelLocalization::getCurrentLocale());
+        return view('reports.purchasereports');
+    }
+    public function Purchasesـfromـsuppliers()
+    {
+        app()->setLocale(LaravelLocalization::getCurrentLocale());
+        return view('reports.Purchases_from_suppliers');
+    }
+    public function PurchasesـfromـsuppliersNew()
+    {
+        app()->setLocale(LaravelLocalization::getCurrentLocale());
+        return view('reports.purchaseFromSupplierreports');
+    }
+    public function Refundـofـresourceـpurchases()
+    {
+        app()->setLocale(LaravelLocalization::getCurrentLocale());
+        return view('reports.Refund_of_resource_purchases');
+    }
+    public function Requestـaـquoteـfromـtheـsupplier()
+    {
+        app()->setLocale(LaravelLocalization::getCurrentLocale());
+        return view('reports.Request_A_quote_from_supplier');
+    }
+    public function product_sales()
+    {
+        app()->setLocale(LaravelLocalization::getCurrentLocale());
+        return view('reports.product_sales');
+    }
+    public function report_returns_sale()
+    {
+        app()->setLocale(LaravelLocalization::getCurrentLocale());
+        return view('reports.report_returns_sale');
+    }
+    public function salesـprofits()
+    {
+        app()->setLocale(LaravelLocalization::getCurrentLocale());
+        return view('reports.sales_profits');
+    }
+    public function supplierList()
+    {
+        app()->setLocale(LaravelLocalization::getCurrentLocale());
+        return view('reports.supplierList');
+    }
+    public function showallBranchs()
+    {
+        app()->setLocale(LaravelLocalization::getCurrentLocale());
+        return view('users.show_branchs');
+    }
+    public function wherehouse()
+    {
+        app()->setLocale(LaravelLocalization::getCurrentLocale());
+        return view('users.AddWherehouse');
+    }
+    public function Expenses()
+    {
+        app()->setLocale(LaravelLocalization::getCurrentLocale());
+        return view('reports.Expenses');
+    }
+    public function Creditsales()
+    {
+        app()->setLocale(LaravelLocalization::getCurrentLocale());
+        return view('reports.Creditsales');
+    }
+    public function employeeـsales()
+    {
+        app()->setLocale(LaravelLocalization::getCurrentLocale());
+        return view('reports.employeesales');
+    }
+
+    public function stockquantity()
+    {
+        app()->setLocale(LaravelLocalization::getCurrentLocale());
+        return view('reports.stockquantity', ['data' => ['display' => 1]])->with('branchdata', '-/==/1');
     }
 
 
@@ -1830,7 +1967,7 @@ public function search_product_sales_purchases(Request $request)
 
 
 
-   public function Requestـoffersـfromـsuppliers()
+    public function Requestـoffersـfromـsuppliers()
     {
         app()->setLocale(LaravelLocalization::getCurrentLocale());
         return view('reports.Request_offers_from_suppliers');
@@ -1880,7 +2017,7 @@ public function search_product_sales_purchases(Request $request)
     public function searchtransactionsToMasterBranch(Request $request)
     {
         app()->setLocale(LaravelLocalization::getCurrentLocale());
-        
+
         $query = transferMoney_to_mainbranch::whereDate('created_at', '>=', $request->start_at)
             ->whereDate('created_at', '<=', $request->end_at);
 
@@ -1889,8 +2026,8 @@ public function search_product_sales_purchases(Request $request)
         }
 
         $data = [
-            'start_at'     => $request->start_at,
-            'end_at'       => $request->end_at,
+            'start_at' => $request->start_at,
+            'end_at' => $request->end_at,
             'transactions' => $query->get()
         ];
 
@@ -1920,9 +2057,9 @@ public function search_product_sales_purchases(Request $request)
             ->get();
 
         $data = [
-            "start_at"    => $request->start_at,
-            "end_at"      => $request->end_at,
-            "branch_to"   => $request->branch_to,
+            "start_at" => $request->start_at,
+            "end_at" => $request->end_at,
+            "branch_to" => $request->branch_to,
             "branch_from" => $request->branch_from,
             "transctions" => $transctions
         ];
@@ -1969,15 +2106,34 @@ public function search_product_sales_purchases(Request $request)
         $supplierId = $request->supplierId;
         $branch_id = $request->branch;
 
-        if ($request->action == 'export') {
-            $financial_accounts = financial_accounts::find($supplierId);
-            $branch_name = $branch_id == '-' ? 'جميع الفروع' : (branchs::find($branch_id)->name ?? '-');
+        // 1. جلب الحساب المالي المختار
+        $financial_account = financial_accounts::find($supplierId);
 
-            $query_base = credittransactions::where('customer_id', $supplierId)->where('save', 1);
-            if ($branch_id != '-') {
-                $query_base->where('branchs_id', $branch_id);
+        // 2. تحديد الـ IDs بناءً على نوع الحساب
+        $accountIds = [$supplierId]; // الافتراضي: حساب واحد فقط
+
+        // التحقق إذا كان نوع الحساب client_and_supplier ويمتلك رقماً ضريبياً
+        if ($financial_account && $financial_account->type == 'client_and_supplier' && !empty($financial_account->tax_no)) {
+            // جلب كل الحسابات التي تشابهه في نفس الرقم الضريبي لدمج حركاتهم معاً
+            $similarAccounts = financial_accounts::where('tax_no', $financial_account->tax_no)
+                ->pluck('id')
+                ->toArray();
+
+            if (!empty($similarAccounts)) {
+                $accountIds = $similarAccounts;
             }
+        }
 
+        $branch_name = $branch_id == '-' ? 'جميع الفروع' : (branchs::find($branch_id)->name ?? '-');
+
+        // جلب المعاملات بناءً على الحسابات المحددة (سواء حساب واحد أو عدة حسابات لها نفس الرقم الضريبي للعميل والمورد)
+        $query_base = credittransactions::whereIn('customer_id', $accountIds)->where('save', 1);
+
+        if ($branch_id != '-') {
+            $query_base->where('branchs_id', $branch_id);
+        }
+
+        if ($request->action == 'export') {
             $LAST_query = clone $query_base;
             $opening_transactions = $LAST_query->where('created_at', '<', $start_at)->get();
             $opening_credit = $opening_transactions->sum('creditor');
@@ -1990,24 +2146,24 @@ public function search_product_sales_purchases(Request $request)
             $data_list = [];
             foreach ($current_transactions as $item) {
                 $data_list[] = [
-                    'id'            => $item->id,
-                    'dely_record'   => $item->dely_record,
-                    'date'          => $item->created_at->format('Y-m-d'),
-                    'branch'        => $item->branch->name ?? '-',
-                    'user'          => $item->user->name ?? '-',
+                    'id' => $item->id,
+                    'dely_record' => $item->dely_record,
+                    'date' => $item->created_at->format('Y-m-d'),
+                    'branch' => $item->branch->name ?? '-',
+                    'user' => $item->user->name ?? '-',
                     'recive_amount' => $item->recive_amount,
-                    'depit'         => $item->debtor,
+                    'depit' => $item->debtor,
                     'credit' => $item->creditor,
-                    'note'          => $item->note,
+                    'note' => $item->note,
                 ];
             }
 
             $header_info = [
-                'account_name' => $financial_accounts->name,
-                'branch_name'  => $branch_name,
-                'start_at'     => $start_at,
-                'end_at'       => $end_at,
-                'currentdata'  => now()->format('Y-m-d H:i')
+                'account_name' => $financial_account->name ?? '-',
+                'branch_name' => $branch_name,
+                'start_at' => $start_at,
+                'end_at' => $end_at,
+                'currentdata' => now()->format('Y-m-d H:i')
             ];
 
             return Excel::download(
@@ -2017,37 +2173,31 @@ public function search_product_sales_purchases(Request $request)
         }
 
         // العرض عبر الـ View العادي
-        $branch_name = '-';
-        $query_last = credittransactions::where('customer_id', $supplierId)->whereDate('created_at', '<', $start_at)->where('save', 1);
-        $query_curr = credittransactions::where('customer_id', $supplierId)->whereDate('created_at', '>=', $start_at)->whereDate('created_at', '<=', $end_at)->where('save', 1);
+        $query_last = (clone $query_base)->whereDate('created_at', '<', $start_at);
+        $query_curr = (clone $query_base)->whereDate('created_at', '>=', $start_at)->whereDate('created_at', '<=', $end_at);
 
         if ($branch_id != '-') {
             $branch = branchs::find($branch_id);
             $branch_name = __('home.branch') . ' : ' . ($branch->name ?? '-');
-            $query_last->where('branchs_id', $branch_id);
-            $query_curr->where('branchs_id', $branch_id);
         }
 
         $LAST_credittransactions = $query_last->get();
-        // جلب العلاقات مع الحركات الحالية لتجنب الـ N+1 Problem
         $credittransactions = $query_curr->with(['user', 'branch', 'financial_accounts_data'])->get();
-        $financial_accounts = financial_accounts::find($supplierId);
 
         $List_dely_record = [];
         foreach ($credittransactions as $item) {
             $parent_name = credittransactions::where('note', $item->note)
-                ->where(function($q) {
+                ->where(function ($q) {
                     $q->where('sent_abd_count', '!=', 0)->orWhere('sent_serf_count', '!=', 0);
                 })->first();
 
             $name_parent = $parent_name ? ($parent_name->financial_accounts_data->name ?? '-') : '-';
 
-            // تحديد طريقة الدفع عبر مصفوفة مدمجة بدلاً من الـ Multi-if الطويلة
             $paymentMap = [
-                'Cash'          => __('report.cash'),
+                'Cash' => __('report.cash'),
                 'Bank_transfer' => __('home.Bank_transfer'),
-                'Shabka'        => __('report.shabka'),
-                'Partition'     => __('home.Partition of the amount')
+                'Shabka' => __('report.shabka'),
+                'Partition' => __('home.Partition of the amount')
             ];
 
             $payment = $paymentMap[$item->type] ?? null;
@@ -2056,17 +2206,17 @@ public function search_product_sales_purchases(Request $request)
             }
 
             $List_dely_record[] = [
-                'id'             => $item->id,
-                'recive_amount'  => $item->recive_amount,
-                'depit'          => $item->debtor,
-                'credit'         => $item->creditor,
+                'id' => $item->id,
+                'recive_amount' => $item->recive_amount,
+                'depit' => $item->debtor,
+                'credit' => $item->creditor,
                 'current_blance' => $item->currentblance,
-                'dely_record'    => $item->dely_record,
-                'date_export'    => $item->date_export,
-                'date'           => $item->created_at,
-                'note'           => "{$item->note}-({$payment})-{$name_parent}",
-                'user'           => $item->user->name ?? '-',
-                'branch'         => $item->branch->name ?? '-',
+                'dely_record' => $item->dely_record,
+                'date_export' => $item->date_export,
+                'date' => $item->created_at,
+                'note' => "{$item->note}-({$payment})-{$name_parent}",
+                'user' => $item->user->name ?? '-',
+                'branch' => $item->branch->name ?? '-',
             ];
         }
 
@@ -2074,14 +2224,14 @@ public function search_product_sales_purchases(Request $request)
         $debit = $LAST_credittransactions->sum('debtor');
         $blance = $LAST_credittransactions->last()->currentblance ?? 0;
 
-        // الترتيب باستخدام Laravel Collection بدلاً من الطريقة التقليدية لـ PHP
+        // الترتيب بالتاريخ لضمان عرض الحركات مرتبة زمنياً بشكل صحيح
         $data = collect($List_dely_record)->sortBy('date')->values()->all();
 
         return view('reports.print_acoount_statment', compact('data'))
             ->with('start_at', $start_at)
             ->with('end_at', $end_at)
-            ->with('account_name', $financial_accounts->name ?? '-')
-            ->with('account_id', $financial_accounts->id ?? null)
+            ->with('account_name', $financial_account->name ?? '-')
+            ->with('account_id', $financial_account->id ?? null)
             ->with('blance', $blance)
             ->with('debit', $debit)
             ->with('credit', $credit)
@@ -2102,10 +2252,10 @@ public function search_product_sales_purchases(Request $request)
         $credittransactions = credittransactions::with($relations)->whereDate('created_at', '>=', $start)->whereDate('created_at', '<=', $end)->whereNotIn('pay_method', ['Cash', 'Credit']);
         $transactiontosuplliers = transactiontosuplliers::with($relations)->whereDate('created_at', '>=', $start)->whereDate('created_at', '<=', $end)->whereNotIn('Pay_Method_Name', ['Cash', 'Credit']);
         $expenses = expenses::with($relations)->whereDate('created_at', '>=', $start)->whereDate('created_at', '<=', $end)->where('Pay_Method_Name', '!=', 'Cash');
-        
+
         // تم إضافة معالج علاقة المورد الأساسية هنا لحل المشكلة الكبرى
         $resource_purchases = resource_purchases::with(['branch', 'orderTosupllier.user'])->whereDate('created_at', '>=', $start)->whereDate('created_at', '<=', $end)->whereNotIn('Pay_Method_Name', ['Cash', 'Credit'])->where('save', 1);
-        
+
         $cash_from__bank = cash_from__bank::with($relations)->whereDate('created_at', '>=', $start)->whereDate('created_at', '<=', $end)->where('payment_method', '!=', 'Cash');
         $convertcashboxToBank = convertcashboxToBank::with($relations)->whereDate('created_at', '>=', $start)->whereDate('created_at', '<=', $end);
         $Cash_withdrawal_from_the_bank = Cash_withdrawal_from_the_bank::with($relations)->whereDate('created_at', '>=', $start)->whereDate('created_at', '<=', $end);
@@ -2185,23 +2335,23 @@ public function search_product_sales_purchases(Request $request)
             ->with('start_at', $request->start_at)
             ->with('end_at', $request->end_at);
     }
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-   /**
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    /**
      * دالة مساعدة موحدة لتحويل طرق الدفع إلى نصوص مترجمة
      */
     private function getPaymentMethodLabel($payMethod)
@@ -2223,7 +2373,7 @@ public function search_product_sales_purchases(Request $request)
         $startAt = $request->start_at;
         $endAt = $request->end_at;
 
-        $customer =customers::findOrFail($customerId);
+        $customer = customers::findOrFail($customerId);
         $remainingAmount = $customer->opeing_blance ?? 0; // يفضل تصحيحها في قاعدة البيانات لاحقاً إلى opening_balance
 
         // جلب البيانات مع العلاقات دفعة واحدة لتفادي الـ N+1 Query
@@ -2263,7 +2413,7 @@ public function search_product_sales_purchases(Request $request)
         // حساب ضريبة المرتجعات السابقة للفترة
         $saleAvt = Avt::find(1)?->AVT ?? 0.15;
         $previousReturnSales = return_sales::where('created_at', '<', $startAt)->get();
-        
+
         foreach ($previousReturnSales as $return) {
             if ($return->invoice && $return->invoice->customer_id == $customerId && $return->invoice->Pay == "Credit") {
                 $baseAmount = ($return->return_Unit_Price * $return->return_quantity) - $return->discountvalue - $return->discountoninvoice;
@@ -2394,7 +2544,7 @@ public function search_product_sales_purchases(Request $request)
             $financialAccount = financial_accounts::where('parent_account_number', 102)
                 ->where('branchs_id', $request->branch)
                 ->first();
-            
+
             if (!$financialAccount) {
                 return redirect()->back()->withErrors(['error' => 'الحساب المالي لهذا الفرع غير موجود']);
             }
@@ -2431,23 +2581,23 @@ public function search_product_sales_purchases(Request $request)
         $totalreturnpurchase = round(($purachasereturntax / 0.15), 2);
 
         $data = [
-            'returncountsales'         => $returnsales->count(),
-            'returncountpurchases'     => $return_purchase->count(),
-            'salesreturntax'           => $salesreturntax,
+            'returncountsales' => $returnsales->count(),
+            'returncountpurchases' => $return_purchase->count(),
+            'salesreturntax' => $salesreturntax,
             'salesreturn_withodtaxtax' => $salesreturn_withodtaxtax,
-            'purachasereturntax'       => $purachasereturntax,
-            'totalpurchase'            => $totalpurchase,
-            'totalreturnpurchase'      => $totalreturnpurchase,
-            'totalVatPrachese_tax'     => $totalVatPrachese, 
-            'totalVatSales'            => $totalVatSales,    
-            'totalVatPrachese'         => $totalVatPrachese,
-            'total_sale'               => $totalsales,
-            'totalvarExpenses'         => $totalvarExpenses,
-            'countsales'               => $invoices->count(),
-            'countpurchase'            => $resource_purchases->count(),
-            'countexpanses'            => $expenses->count(),
-            'start_at'                 => $startAt,
-            'end_at'                   => $endAt,
+            'purachasereturntax' => $purachasereturntax,
+            'totalpurchase' => $totalpurchase,
+            'totalreturnpurchase' => $totalreturnpurchase,
+            'totalVatPrachese_tax' => $totalVatPrachese,
+            'totalVatSales' => $totalVatSales,
+            'totalVatPrachese' => $totalVatPrachese,
+            'total_sale' => $totalsales,
+            'totalvarExpenses' => $totalvarExpenses,
+            'countsales' => $invoices->count(),
+            'countpurchase' => $resource_purchases->count(),
+            'countexpanses' => $expenses->count(),
+            'start_at' => $startAt,
+            'end_at' => $endAt,
         ];
 
         return view('reports.print_VAT', compact('data'));
@@ -2473,7 +2623,7 @@ public function search_product_sales_purchases(Request $request)
 
 
 
-public function search_purchasereports(Request $request)
+    public function search_purchasereports(Request $request)
     {
         app()->setLocale(LaravelLocalization::getCurrentLocale());
         $supplierId = $request->productname;
@@ -2496,7 +2646,7 @@ public function search_purchasereports(Request $request)
     public function search_customerـpurchases(Request $request)
     {
         app()->setLocale(LaravelLocalization::getCurrentLocale());
-        
+
         $branch = $request->branch;
         $userId = $request->UserId;
 
@@ -2565,12 +2715,12 @@ public function search_purchasereports(Request $request)
 
 
 
-public function search_budgetsheet(Request $request)
+    public function search_budgetsheet(Request $request)
     {
         app()->setLocale(LaravelLocalization::getCurrentLocale());
 
         $start_at = $request->start_at;
-        $end_at = $request->end_at. ' 23:59:59';
+        $end_at = $request->end_at . ' 23:59:59';
 
         $branch = $request->branch;
 
@@ -2605,7 +2755,7 @@ public function search_budgetsheet(Request $request)
         $purchaseQuery = resource_purchases::where('save', 1)->whereBetween('created_at', [$start_at, $end_at]);
         $bankBalanceQuery = cash_from__bank::whereBetween('created_at', [$start_at, $end_at]);
         $withdrawalQuery = Cash_withdrawal_from_the_bank::whereBetween('created_at', [$start_at, $end_at]);
-        
+
         $creditTransBase = credittransactions::whereBetween('created_at', [$start_at, $end_at]);
 
         $branchname = __('users.allbranchs');
@@ -2615,20 +2765,20 @@ public function search_budgetsheet(Request $request)
             $returnsales = $returnSalesQuery->get();
             $returnpurchases = $returnPurchasesQuery->get();
             $pirchese = $purchaseQuery->get();
-            
+
             $credittransactions = (clone $creditTransBase)->where('note', 'LIKE', '%سند قبض%')->where('decument_id', 0)->get();
             $transactiontosuplliers = (clone $creditTransBase)->where('type_decument', 2)->get();
-            
+
             $transactiont_dely_record_bank = (clone $creditTransBase)->where('customer_id', 4)->where('note', 'LIKE', '%قيد يومي%')->where('dely_record', 0)->where('parent_dely_record', '!=', 0)->get();
             $transactiont_dely_record_cash = (clone $creditTransBase)->where('customer_id', 5)->where('note', 'LIKE', '%قيد يومي%')->where('dely_record', 0)->where('parent_dely_record', '!=', 0)->get();
 
             $bankblance = $bankBalanceQuery->get();
             $Cash_withdrawal_from_the_bank = $withdrawalQuery->get();
             $Transfer_cash_to_the_next_dayList = Transfer_cash_to_the_next_day::whereDate('created_at', $end_at)->get();
-            
+
             $start_atlastday = date("Y-m-d", strtotime('-24 hours', strtotime($start_at)));
             $titalnextdayesall = Transfer_cash_to_the_next_day::whereBetween('created_at', [$start_atlastday, $end_at])->get();
-            
+
             $date = date("Y-m-d", strtotime('-24 hours', strtotime($end_at)));
             $totalconvertlastDayList = Transfer_cash_to_the_next_day::whereDate('created_at', $end_at)->get();
             $Transfer_cash_from_the_last_dayList = Transfer_cash_to_the_next_day::whereDate('created_at', $date)->get();
@@ -2641,20 +2791,20 @@ public function search_budgetsheet(Request $request)
             $returnsales = $returnSalesQuery->where('branch_id', $branch)->get();
             $returnpurchases = $returnPurchasesQuery->where('branchs_id', $branch)->get();
             $pirchese = $purchaseQuery->where('branchs_id', $branch)->get();
-            
+
             $credittransactions = (clone $creditTransBase)->where('branchs_id', $branch)->where('note', 'LIKE', '%سند قبض%')->where('decument_id', 0)->get();
             $transactiontosuplliers = (clone $creditTransBase)->where('branchs_id', $branch)->where('type_decument', 2)->get();
-            
+
             $transactiont_dely_record_bank = (clone $creditTransBase)->where('branchs_id', $branch)->where('customer_id', 4)->where('parent_dely_record', '!=', 0)->where('note', 'LIKE', '%قيد يومي%')->where('dely_record', 0)->get();
             $transactiont_dely_record_cash = (clone $creditTransBase)->where('branchs_id', $branch)->where('customer_id', 5)->where('parent_dely_record', '!=', 0)->where('note', 'LIKE', '%قيد يومي%')->where('dely_record', 0)->get();
 
             $bankblance = $bankBalanceQuery->where('branchs_id', $branch)->get();
             $Cash_withdrawal_from_the_bank = $withdrawalQuery->where('branchs_id', $branch)->get();
-            
+
             $start_atlastday = date("Y-m-d", strtotime('-24 hours', strtotime($start_at)));
             $titalnextdayesall = Transfer_cash_to_the_next_day::where('branchs_id', $branch)->whereBetween('created_at', [$start_atlastday, $end_at])->get();
             $Transfer_cash_to_the_next_dayList = Transfer_cash_to_the_next_day::where('branchs_id', $branch)->whereDate('created_at', $end_at)->get();
-            
+
             $date = date("Y-m-d", strtotime('-24 hours', strtotime($end_at)));
             $Transfer_cash_from_the_last_dayList = Transfer_cash_to_the_next_day::where('branchs_id', $branch)->whereDate('created_at', $date)->get();
             $totalconvertlastDayList = Transfer_cash_to_the_next_day::where('branchs_id', $branch)->whereBetween('created_at', [$start_at, $end_at])->get();
@@ -2685,7 +2835,8 @@ public function search_budgetsheet(Request $request)
 
             foreach ($invoicesId as $id) {
                 $cominvoice = $allInvoicesMap[$id] ?? null;
-                if (!$cominvoice) continue;
+                if (!$cominvoice)
+                    continue;
 
                 $currentReturnSales = return_sales::where('invoice_id', $id)->whereBetween('created_at', [$start_at, $end_at])->get();
                 $valuewithoudtax = 0;
@@ -2700,18 +2851,18 @@ public function search_budgetsheet(Request $request)
                 $totalWithTax = $valuewithoudtax + ($valuewithoudtax * $saleavt);
 
                 match ($cominvoice->payment_return) {
-                    'Cash'          => $returnsalescash += $totalWithTax,
-                    'Credit'        => $returnsalescredit += $totalWithTax,
-                    'Shabka'        => $returnsalesshabka += $totalWithTax,
+                    'Cash' => $returnsalescash += $totalWithTax,
+                    'Credit' => $returnsalescredit += $totalWithTax,
+                    'Shabka' => $returnsalesshabka += $totalWithTax,
                     'Bank_transfer' => $returnSalesBankTransfer += $totalWithTax,
-                    default         => $returnSalespartial += $totalWithTax,
+                    default => $returnSalespartial += $totalWithTax,
                 };
             }
         }
 
         // 6. احتساب مرتجعات المشتريات (تقليل الاستعلامات داخل الـ Loop)
         $returnpurchasecash = $returnpurchasecredit = $returnpurchasebanktransfer = $returnpurchaseshabka = 0;
-        
+
         if ($returnpurchases->isNotEmpty()) {
             $orderIds = $returnpurchases->pluck('orderId')->unique()->toArray();
             $allOrderDetails = orderDetails::whereIn('order_owner', $orderIds)->get()->groupBy('order_owner');
@@ -2740,17 +2891,17 @@ public function search_budgetsheet(Request $request)
                 }
 
                 match ($returnpurchase->Pay_Method_Name) {
-                    'Cash'          => $returnpurchasecash += $finalAmount,
-                    'Credit'        => $returnpurchasecredit += $finalAmount,
+                    'Cash' => $returnpurchasecash += $finalAmount,
+                    'Credit' => $returnpurchasecredit += $finalAmount,
                     'Bank_transfer' => $returnpurchasebanktransfer += $finalAmount,
-                    default         => $returnpurchaseshabka += $finalAmount,
+                    default => $returnpurchaseshabka += $finalAmount,
                 };
             }
         }
 
         // 7. احتساب مبيعات ومصاريف المشتريات الأصلية لكل فاتورة شراء
         $purchesecash = $purchesecredit = $purchasebankTransfer = $purcheseshabka = $shippingandunloadingCost = 0;
-        
+
         if ($pirchese->isNotEmpty()) {
             $purchaseOrderIds = $pirchese->pluck('orderId')->unique()->toArray();
             $purchaseOrderDetails = orderDetails::whereIn('order_owner', $purchaseOrderIds)->where('save', 1)->get()->groupBy('order_owner');
@@ -2773,19 +2924,25 @@ public function search_budgetsheet(Request $request)
 
         $credittransaction_banktransfer = collect($transactiont_dely_record_bank)->where('debtor', '>', 0)->sum('debtor') + collect($credittransactions)->where('type', 'Bank_transfer')->sum('recive_amount');
         $transactiontosuplliers_banktransfer = collect($transactiont_dely_record_bank)->where('debtor', '<=', 0)->sum('creditor');
-        
+
         $credittransaction_shabka = collect($credittransactions)->where('type', '!=', 'Cash')->where('type', '!=', 'Bank_transfer')->sum('recive_amount');
 
         $expense_cash = $expense_banktransfer = $expense_shabka = 0;
         foreach ($transactiontosuplliers as $ts) {
             if ($ts->orginal_type != 3) {
-                if ($ts->Pay_Method_Name == 'Cash') $transactiontosuplliers_cash += $ts->recive_amount;
-                elseif ($ts->Pay_Method_Name == 'Bank_transfer') $transactiontosuplliers_banktransfer += $ts->recive_amount;
-                else $transactiontosuplliers_shabka += $ts->recive_amount;
+                if ($ts->Pay_Method_Name == 'Cash')
+                    $transactiontosuplliers_cash += $ts->recive_amount;
+                elseif ($ts->Pay_Method_Name == 'Bank_transfer')
+                    $transactiontosuplliers_banktransfer += $ts->recive_amount;
+                else
+                    $transactiontosuplliers_shabka += $ts->recive_amount;
             } else {
-                if ($ts->Pay_Method_Name == 'Cash') $expense_cash += $ts->recive_amount;
-                elseif ($ts->Pay_Method_Name == 'Bank_transfer') $expense_banktransfer += $ts->recive_amount;
-                else $expense_shabka += $ts->recive_amount;
+                if ($ts->Pay_Method_Name == 'Cash')
+                    $expense_cash += $ts->recive_amount;
+                elseif ($ts->Pay_Method_Name == 'Bank_transfer')
+                    $expense_banktransfer += $ts->recive_amount;
+                else
+                    $expense_shabka += $ts->recive_amount;
             }
         }
 
@@ -2845,8 +3002,8 @@ public function search_budgetsheet(Request $request)
             'benfitBank_transfer' => 0,
             'convertcashboxToBankitemamount' => $convertcashboxToBankitemamount
         ];
-        
-        
+
+
         return view('reports.print_budget_sheet', compact('data'));
     }
 
@@ -2858,13 +3015,13 @@ public function search_budgetsheet(Request $request)
 
 
 
-/**
+    /**
      * طباعة حركة تحويل المنتجات بين الفروع
      */
     public function print_Transfer_products($invoiceId)
     {
         $data = [
-            "invoice"      => product_movement_another_branch::find($invoiceId),
+            "invoice" => product_movement_another_branch::find($invoiceId),
             "itemsdetails" => product_movement_another_branch_items::where('order_id', $invoiceId)->get()
         ];
 
@@ -2877,26 +3034,26 @@ public function search_budgetsheet(Request $request)
     public function addetions(Request $request)
     {
         $start_at = $request->start_at;
-        $end_at   = $request->end_at;
-        $branch   = $request->branch;
+        $end_at = $request->end_at;
+        $branch = $request->branch;
 
         // مصفوفة لتسهيل بناء الاستعلامات وتقليل التكرار
         $models = [
-            'invoices'                => invoices::query(),
-            'purchases'               => resource_purchases::query(),
-            'credit_transactions'     => credittransactions::query(),
-            'supplier_transactions'   => transactiontosuplliers::query(),
-            'expenses'                => expenses::query(),
+            'invoices' => invoices::query(),
+            'purchases' => resource_purchases::query(),
+            'credit_transactions' => credittransactions::query(),
+            'supplier_transactions' => transactiontosuplliers::query(),
+            'expenses' => expenses::query(),
         ];
 
         // تطبيق فلاتر التاريخ والفرع على كل الموديلات دفعة واحدة
         foreach ($models as $key => $query) {
             $query->whereDate('created_at', '>=', $start_at)
-                  ->whereDate('created_at', '<=', $end_at);
+                ->whereDate('created_at', '<=', $end_at);
 
             if ($branch !== '-') {
                 // الحقل الافتراضي هو branchs_id ما عدا invoices فهو branch_id (يرجى التأكد من قاعدة بياناتك)
-                $branchField = ($key === 'invoices') ? 'branchs_id' : 'branchs_id'; 
+                $branchField = ($key === 'invoices') ? 'branchs_id' : 'branchs_id';
                 $query->where($branchField, $branch);
             }
         }
@@ -2910,10 +3067,10 @@ public function search_budgetsheet(Request $request)
 
         // 2. حساب المدفوعات النقدية (المشتريات + سندات الصرف للموردين + المصاريف)
         $purchesecash = $models['purchases']->where('Pay_Method_Name', 'Cash')->sum('In_debt');
-        
+
         // تنظيف الحروف العشوائية مثل الكشيدة (ـ) في أسماء الحقول
         $transactiontosuplliers_cash = $models['supplier_transactions']->where('Pay_Method_Name', 'Cash')->sum('paidـamount');
-        $expenses_cash               = $models['expenses']->where('Pay_Method_Name', 'Cash')->sum('Theـamountـpaid');
+        $expenses_cash = $models['expenses']->where('Pay_Method_Name', 'Cash')->sum('Theـamountـpaid');
 
         // الحسبة النهائية للدرج
         return ($salescash + $credittransaction_cash) - ($expenses_cash + $transactiontosuplliers_cash + $purchesecash);
@@ -2925,13 +3082,13 @@ public function search_budgetsheet(Request $request)
     public function search_Purchases_from_suppliers(Request $request)
     {
         app()->setLocale(LaravelLocalization::getCurrentLocale());
-        
-        $pay    = $request->pay;
+
+        $pay = $request->pay;
         $branch = $request->branch;
 
         $query = resource_purchases::whereDate('created_at', '>=', $request->start_at)
-                                   ->whereDate('created_at', '<=', $request->end_at)
-                                   ->where('save', 1);
+            ->whereDate('created_at', '<=', $request->end_at)
+            ->where('save', 1);
 
         if ($request->clientnamesearch !== '-') {
             $query->where('suplier_id', $request->clientnamesearch);
@@ -2953,31 +3110,31 @@ public function search_budgetsheet(Request $request)
 
         foreach ($Invoices as $invoice) {
             $invoiceSubtotal = 0;
-            $invoiceTax      = 0;
-            
+            $invoiceTax = 0;
+
             // جلب التفاصيل المخزنة مسبقاً في الذاكرة للمجموعات
             $details = $allDetails->get($invoice->orderId) ?? collect();
 
             foreach ($details as $product) {
                 $qty = $product->numberofpice + $product->returns_purchase;
                 $invoiceSubtotal += ($qty * $product->purchasing_price);
-                $invoiceTax      += ($qty * ($product->Added_Value ?? 0));
+                $invoiceTax += ($qty * ($product->Added_Value ?? 0));
             }
 
             $invoicesDataArray[] = [
-                'orderId'             => $invoice->orderId,
+                'orderId' => $invoice->orderId,
                 'subtotal_before_tax' => $invoiceSubtotal,
-                'tax_amount'          => $invoiceTax,
+                'tax_amount' => $invoiceTax,
             ];
         }
 
         return view('reports.print_Purchases_from_suppliers', compact('Invoices', 'invoicesDataArray'))
             ->with([
-                'pay'        => $pay,
-                'branch'     => $branch,
+                'pay' => $pay,
+                'branch' => $branch,
                 'suplier_id' => $request->clientnamesearch,
-                'startat'    => $request->start_at,
-                'endat'      => $request->end_at
+                'startat' => $request->start_at,
+                'endat' => $request->end_at
             ]);
     }
 
@@ -2990,7 +3147,7 @@ public function search_budgetsheet(Request $request)
         $supplierId = $request->supplierId;
 
         $query = order_price_from_supplier::whereDate('created_at', '>=', $request->start_at)
-                                           ->whereDate('created_at', '<=', $request->end_at);
+            ->whereDate('created_at', '<=', $request->end_at);
 
         if ($supplierId !== '-') {
             $query->where('suplier_id', $supplierId);
@@ -3014,8 +3171,8 @@ public function search_budgetsheet(Request $request)
         $supplierId = $request->supplierId;
 
         $query = orderTosupllier::where('Limit_credit', '')
-                                ->whereDate('created_at', '>=', $request->start_at)
-                                ->whereDate('created_at', '<=', $request->end_at);
+            ->whereDate('created_at', '>=', $request->start_at)
+            ->whereDate('created_at', '<=', $request->end_at);
 
         if ($supplierId !== '-') {
             $query->where('suplier_id', $supplierId);
@@ -3040,10 +3197,10 @@ public function search_budgetsheet(Request $request)
         }
 
         $query = sales::where('product_id', $productId)
-                      ->where('quantity', '!=', 0)
-                      ->whereDate('created_at', '>=', $request->start_at)
-                      ->whereDate('created_at', '<=', $request->end_at)
-                      ->where('save', 1);
+            ->where('quantity', '!=', 0)
+            ->whereDate('created_at', '>=', $request->start_at)
+            ->whereDate('created_at', '<=', $request->end_at)
+            ->where('save', 1);
 
         if ($request->branch !== '-') {
             $query->where('branch_id', $request->branch);
@@ -3062,9 +3219,9 @@ public function search_budgetsheet(Request $request)
         app()->setLocale(LaravelLocalization::getCurrentLocale());
 
         $Invoices = invoices::whereDate('created_at', '>=', $request->start_at)
-                            ->whereDate('created_at', '<=', $request->end_at)
-                            ->where('Pay', 'SHABKA')
-                            ->get();
+            ->whereDate('created_at', '<=', $request->end_at)
+            ->where('Pay', 'SHABKA')
+            ->get();
 
         return view('reports.networksales', compact('Invoices'));
     }
@@ -3077,10 +3234,10 @@ public function search_budgetsheet(Request $request)
         app()->setLocale(LaravelLocalization::getCurrentLocale());
 
         $Invoices = invoices::where('user_id', $request->productname)
-                            ->whereDate('created_at', '>=', $request->start_at)
-                            ->whereDate('created_at', '<=', $request->end_at)
-                            ->where('save', 1)
-                            ->get();
+            ->whereDate('created_at', '>=', $request->start_at)
+            ->whereDate('created_at', '<=', $request->end_at)
+            ->where('save', 1)
+            ->get();
 
         return view('reports.employeesales', compact('Invoices'));
     }
@@ -3093,9 +3250,9 @@ public function search_budgetsheet(Request $request)
         app()->setLocale(LaravelLocalization::getCurrentLocale());
 
         $Invoices = invoices::whereDate('created_at', '>=', $request->start_at)
-                            ->whereDate('created_at', '<=', $request->end_at)
-                            ->where('Pay', 'Cash')
-                            ->get();
+            ->whereDate('created_at', '<=', $request->end_at)
+            ->where('Pay', 'Cash')
+            ->get();
 
         return view('reports.Cashsales', compact('Invoices'));
     }
@@ -3108,7 +3265,7 @@ public function search_budgetsheet(Request $request)
         app()->setLocale(LaravelLocalization::getCurrentLocale());
 
         $query = return_sales::whereDate('created_at', '>=', $request->start_at)
-                             ->whereDate('created_at', '<=', $request->end_at);
+            ->whereDate('created_at', '<=', $request->end_at);
 
         if ($request->branch !== '-') {
             $query->where('branch_id', $request->branch);
@@ -3131,7 +3288,7 @@ public function search_budgetsheet(Request $request)
 
         $data = [
             'invoiceData' => invoices::where('id', $request)->first(),
-            'salesData'   => return_sales::where('invoice_id', $request)->get()
+            'salesData' => return_sales::where('invoice_id', $request)->get()
         ];
 
         return view('reports.report_returns_sale_details', compact('data'));
@@ -3153,7 +3310,7 @@ public function search_budgetsheet(Request $request)
 
 
 
-/**
+    /**
      * تقرير أرباح المبيعات والمبيعات المرتجعة
      */
     public function sales_profitssearch(Request $request)
@@ -3161,16 +3318,16 @@ public function search_budgetsheet(Request $request)
         app()->setLocale(LaravelLocalization::getCurrentLocale());
 
         $start = $request->start_at;
-        $end   = $request->end_at;
+        $end = $request->end_at;
 
         // بناء استعلام المبيعات ديناميكياً
         $salesQuery = sales::whereDate('created_at', '>=', $start)
-                           ->whereDate('created_at', '<=', $end)
-                           ->where('save', 1);
+            ->whereDate('created_at', '<=', $end)
+            ->where('save', 1);
 
         // بناء استعلام المرتجعات ديناميكياً
         $returnsQuery = return_sales::whereDate('created_at', '>=', $start)
-                                    ->whereDate('created_at', '<=', $end);
+            ->whereDate('created_at', '<=', $end);
 
         // تصفية بحسب المستخدم إذا تم تحديده
         if ($request->userid !== '-') {
@@ -3182,18 +3339,18 @@ public function search_budgetsheet(Request $request)
         if ($request->branch !== '-') {
             $salesQuery->where('branch_id', $request->branch);
             // انتبه هنا: الكود القديم استخدم branchs_id في المبيعات و branch_id في المرتجعات! قمت بتثبيتها بناءً على كودك
-            $returnsQuery->where('branch_id', $request->branch); 
+            $returnsQuery->where('branch_id', $request->branch);
         }
 
         $data = [
-            'sales'   => $salesQuery->get(),
+            'sales' => $salesQuery->get(),
             'returns' => $returnsQuery->get(),
         ];
 
         return view('reports.printReportProfitSales', compact('data'))
             ->with([
-                'start'     => $start,
-                'end'       => $end,
+                'start' => $start,
+                'end' => $end,
                 'branch_id' => $request->branch
             ]);
     }
@@ -3206,9 +3363,9 @@ public function search_budgetsheet(Request $request)
         app()->setLocale(LaravelLocalization::getCurrentLocale());
 
         $Invoices = invoices::whereDate('created_at', '>=', $request->start_at)
-                            ->whereDate('created_at', '<=', $request->end_at)
-                            ->where('Pay', 'Credit')
-                            ->get();
+            ->whereDate('created_at', '<=', $request->end_at)
+            ->where('Pay', 'Credit')
+            ->get();
 
         return view('reports.Creditsales', compact('Invoices'));
     }
@@ -3222,10 +3379,10 @@ public function search_budgetsheet(Request $request)
 
         // تنظيف التواريخ بشكل آمن بدلاً من str_split
         $start = substr($startat, 0, 10);
-        $end   = substr($end_at, 0, 10);
+        $end = substr($end_at, 0, 10);
 
         $query = transactiontosuplliers::whereDate('created_at', '>=', $start)
-                                       ->whereDate('created_at', '<=', $end);
+            ->whereDate('created_at', '<=', $end);
 
         if ($supplierId !== '-') {
             $query->where('orginal_id', $supplierId);
@@ -3245,10 +3402,10 @@ public function search_budgetsheet(Request $request)
         app()->setLocale(LaravelLocalization::getCurrentLocale());
 
         $start = substr($startat, 0, 10);
-        $end   = substr($end_at, 0, 10);
+        $end = substr($end_at, 0, 10);
 
         $query = invoices::whereDate('created_at', '>=', $start)
-                         ->whereDate('created_at', '<=', $end);
+            ->whereDate('created_at', '<=', $end);
 
         if ($branch !== '-') {
             $query->where('branchs_id', $branch);
@@ -3272,13 +3429,13 @@ public function search_budgetsheet(Request $request)
         app()->setLocale(LaravelLocalization::getCurrentLocale());
 
         $start = substr($startat, 0, 10);
-        $end   = substr($end_at, 0, 10);
+        $end = substr($end_at, 0, 10);
 
         $Invoices = invoices::where('user_id', $usertId)
-                            ->whereDate('created_at', '>=', $start)
-                            ->whereDate('created_at', '<=', $end)
-                            ->where('save', 1)
-                            ->get();
+            ->whereDate('created_at', '>=', $start)
+            ->whereDate('created_at', '<=', $end)
+            ->where('save', 1)
+            ->get();
 
         return view('reports.print_report_employee_sales', compact('Invoices'));
     }
@@ -3291,10 +3448,10 @@ public function search_budgetsheet(Request $request)
         app()->setLocale(LaravelLocalization::getCurrentLocale());
 
         $start = substr($startat, 0, 10);
-        $end   = substr($end_at, 0, 10);
+        $end = substr($end_at, 0, 10);
 
         $query = orderDetails::whereDate('created_at', '>=', $start)
-                             ->whereDate('created_at', '<=', $end);
+            ->whereDate('created_at', '<=', $end);
 
         if ($productId !== '-') {
             $query->where('product_id', $productId);
@@ -3313,10 +3470,10 @@ public function search_budgetsheet(Request $request)
         app()->setLocale(LaravelLocalization::getCurrentLocale());
 
         $start = substr($startat, 0, 10);
-        $end   = substr($end_at, 0, 10);
+        $end = substr($end_at, 0, 10);
 
         $query = resource_purchases::whereDate('created_at', '>=', $start)
-                                   ->whereDate('created_at', '<=', $end);
+            ->whereDate('created_at', '<=', $end);
 
         if ($supplierId && $supplierId !== '-') {
             $query->where('suplier_id', $supplierId);
@@ -3342,11 +3499,11 @@ public function search_budgetsheet(Request $request)
         app()->setLocale(LaravelLocalization::getCurrentLocale());
 
         $start = substr($startat, 0, 10);
-        $end   = substr($end_at, 0, 10);
+        $end = substr($end_at, 0, 10);
 
         $query = resource_purchases::where('recovered_pieces', '!=', 0) // تم تعديل الحرف العربي الكشيدة
-                                   ->whereDate('created_at', '>=', $start)
-                                   ->whereDate('created_at', '<=', $end);
+            ->whereDate('created_at', '>=', $start)
+            ->whereDate('created_at', '<=', $end);
 
         if ($branch_id !== '-') {
             $query->where('branchs_id', $branch_id);
@@ -3365,10 +3522,10 @@ public function search_budgetsheet(Request $request)
         app()->setLocale(LaravelLocalization::getCurrentLocale());
 
         $start = substr($startat, 0, 10);
-        $end   = substr($end_at, 0, 10);
+        $end = substr($end_at, 0, 10);
 
         $query = offer_price_to_customer::whereDate('created_at', '>=', $start)
-                                         ->whereDate('created_at', '<=', $end);
+            ->whereDate('created_at', '<=', $end);
 
         if ($userId !== '-') {
             $query->where('customer_id', $userId);
@@ -3387,10 +3544,10 @@ public function search_budgetsheet(Request $request)
         app()->setLocale(LaravelLocalization::getCurrentLocale());
 
         $start = substr($startat, 0, 10);
-        $end   = substr($end_at, 0, 10);
+        $end = substr($end_at, 0, 10);
 
         $query = order_price_from_supplier::whereDate('created_at', '>=', $start)
-                                           ->whereDate('created_at', '<=', $end);
+            ->whereDate('created_at', '<=', $end);
 
         if ($supplierId !== '-') {
             $query->where('suplier_id', $supplierId);
@@ -3412,10 +3569,10 @@ public function search_budgetsheet(Request $request)
         app()->setLocale(LaravelLocalization::getCurrentLocale());
 
         $start = substr($startat, 0, 10);
-        $end   = substr($end_at, 0, 10);
+        $end = substr($end_at, 0, 10);
 
         $query = resource_purchases::whereDate('created_at', '>=', $start)
-                                   ->whereDate('created_at', '<=', $end);
+            ->whereDate('created_at', '<=', $end);
 
         if ($orderId !== '-') {
             $query->where('orderId', $orderId);
@@ -3434,11 +3591,11 @@ public function search_budgetsheet(Request $request)
         app()->setLocale(LaravelLocalization::getCurrentLocale());
 
         $start = substr($startat, 0, 10);
-        $end   = substr($end_at, 0, 10);
+        $end = substr($end_at, 0, 10);
 
         $query = orderTosupllier::where('Limit_credit', '')
-                                ->whereDate('created_at', '>=', $start)
-                                ->whereDate('created_at', '<=', $end);
+            ->whereDate('created_at', '>=', $start)
+            ->whereDate('created_at', '<=', $end);
 
         if ($supplierId !== '-') {
             $query->where('suplier_id', $supplierId);
@@ -3457,11 +3614,11 @@ public function search_budgetsheet(Request $request)
         app()->setLocale(LaravelLocalization::getCurrentLocale());
 
         $start = substr($startat, 0, 10);
-        $end   = substr($end_at, 0, 10);
+        $end = substr($end_at, 0, 10);
 
         $query = invoices::whereDate('created_at', '>=', $start)
-                         ->whereDate('created_at', '<=', $end)
-                         ->where('save', 1);
+            ->whereDate('created_at', '<=', $end)
+            ->where('save', 1);
 
         if ($UserId !== '-') {
             $query->where('customer_id', $UserId);
@@ -3483,13 +3640,13 @@ public function search_budgetsheet(Request $request)
         app()->setLocale(LaravelLocalization::getCurrentLocale());
 
         $start = substr($startat, 0, 10);
-        $end   = substr($end_at, 0, 10);
+        $end = substr($end_at, 0, 10);
 
         $query = sales::where('product_id', $productId)
-                      ->where('quantity', '!=', 0)
-                      ->whereDate('created_at', '>=', $start)
-                      ->whereDate('created_at', '<=', $end)
-                      ->where('save', 1);
+            ->where('quantity', '!=', 0)
+            ->whereDate('created_at', '>=', $start)
+            ->whereDate('created_at', '<=', $end)
+            ->where('save', 1);
 
         if ($branch !== '-') {
             $query->where('branch_id', $branch);
@@ -3508,11 +3665,11 @@ public function search_budgetsheet(Request $request)
         app()->setLocale(LaravelLocalization::getCurrentLocale());
 
         $start = substr($startat, 0, 10);
-        $end   = substr($end_at, 0, 10);
+        $end = substr($end_at, 0, 10);
 
         $query = invoices::whereDate('created_at', '>=', $start)
-                         ->whereDate('created_at', '<=', $end)
-                         ->where('save', 1);
+            ->whereDate('created_at', '<=', $end)
+            ->where('save', 1);
 
         $typeinvoise = '';
 
@@ -3525,7 +3682,7 @@ public function search_budgetsheet(Request $request)
         }
 
         $data = [
-            'invoices'    => $query->get(),
+            'invoices' => $query->get(),
             'typeinvoise' => $typeinvoise,
             'salesreport' => 'no'
         ];
@@ -3541,11 +3698,11 @@ public function search_budgetsheet(Request $request)
         app()->setLocale(LaravelLocalization::getCurrentLocale());
 
         $start = substr($startat, 0, 10);
-        $end   = substr($end_at, 0, 10);
+        $end = substr($end_at, 0, 10);
 
         $query = invoices::whereDate('created_at', '>=', $start)
-                         ->whereDate('created_at', '<=', $end)
-                         ->where('save', 1);
+            ->whereDate('created_at', '<=', $end)
+            ->where('save', 1);
 
         if ($customer_id !== '-') {
             $query->where('customer_id', $customer_id);
@@ -3571,7 +3728,7 @@ public function search_budgetsheet(Request $request)
         app()->setLocale(LaravelLocalization::getCurrentLocale());
 
         return Excel::download(
-            new Export_invoices($branch, $pay, $startat, $end_at), 
+            new Export_invoices($branch, $pay, $startat, $end_at),
             'INVOICES_FROM_' . $startat . '_TO' . $end_at . '.xlsx'
         );
     }
@@ -3583,16 +3740,16 @@ public function search_budgetsheet(Request $request)
     {
         app()->setLocale(LaravelLocalization::getCurrentLocale());
 
-        $branch      = $request->branch; 
-        $pay         = $request->pay;
-        $startat     = $request->start_at;
-        $end_at      = $request->end_at;
+        $branch = $request->branch;
+        $pay = $request->pay;
+        $startat = $request->start_at;
+        $end_at = $request->end_at;
         $customer_id = $request->customer_id;
 
         $fileName = 'INVOICES_FROM_' . $startat . '_TO_' . $end_at . '.xlsx';
 
         return Excel::download(
-            new Export_invoices($branch, $pay, $startat, $end_at, $customer_id), 
+            new Export_invoices($branch, $pay, $startat, $end_at, $customer_id),
             $fileName
         );
     }
@@ -3605,21 +3762,21 @@ public function search_budgetsheet(Request $request)
         app()->setLocale(LaravelLocalization::getCurrentLocale());
 
         return Excel::download(
-            new Export_invoices_purshase($branch, $pay, $supplier, $startat, $end_at), 
+            new Export_invoices_purshase($branch, $pay, $supplier, $startat, $end_at),
             'INVOICES_FROM_' . $startat . '_TO' . $end_at . '.xlsx'
         );
     }
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
+
+
+
+
     /**
      * طباعة تقرير الفواتير التفصيلي بحسب خيارات متعددة
      */
@@ -3628,11 +3785,11 @@ public function search_budgetsheet(Request $request)
         app()->setLocale(LaravelLocalization::getCurrentLocale());
 
         $start = substr($startat, 0, 10);
-        $end   = substr($end_at, 0, 10);
+        $end = substr($end_at, 0, 10);
 
         $query = invoices::whereDate('created_at', '>=', $start)
-                         ->whereDate('created_at', '<=', $end)
-                         ->where('save', 1);
+            ->whereDate('created_at', '<=', $end)
+            ->where('save', 1);
 
         $salesreport = 'no';
         $typeinvoise = $pay;
@@ -3660,13 +3817,13 @@ public function search_budgetsheet(Request $request)
         }
 
         $data = [
-            'invoices'    => $query->get(),
+            'invoices' => $query->get(),
             'typeinvoise' => $typeinvoise,
             'salesreport' => $salesreport
         ];
 
         $view = ($typeinvoise === 'Seles report') ? 'reports.printReportsales' : 'reports.printReportInvoices';
-        
+
         return view($view, compact('data'));
     }
 
@@ -3701,7 +3858,7 @@ public function search_budgetsheet(Request $request)
     public function financial_accounts_Export(Request $request)
     {
         $start_at = $request->query('start_at', date('Y-01-01'));
-        $end_at   = $request->query('end_at', date('Y-m-d'));
+        $end_at = $request->query('end_at', date('Y-m-d'));
 
         return Excel::download(
             new financial_accounts_Export($start_at, $end_at),
@@ -3720,12 +3877,12 @@ public function search_budgetsheet(Request $request)
     /**
      * جرد المخزون وتصديره Excel
      */
-public function Stocktaking( $request)
-{
-    // إذا أرسل المستخدم ID فرع نستخدمه، وإلا نأخذ الخاص بالمستخدم
-    $branchId = $request ;
-    return Excel::download(new Exportproducts($branchId), 'Stocktaking_Report.xlsx');
-}
+    public function Stocktaking($request)
+    {
+        // إذا أرسل المستخدم ID فرع نستخدمه، وإلا نأخذ الخاص بالمستخدم
+        $branchId = $request;
+        return Excel::download(new Exportproducts($branchId), 'Stocktaking_Report.xlsx');
+    }
 
 
     /**
@@ -3744,8 +3901,8 @@ public function Stocktaking( $request)
         app()->setLocale(LaravelLocalization::getCurrentLocale());
 
         $query = invoices::whereDate('created_at', '>=', $request->start_at)
-                         ->whereDate('created_at', '<=', $request->end_at)
-                         ->where('save', 1);
+            ->whereDate('created_at', '<=', $request->end_at)
+            ->where('save', 1);
 
         if ($request->UserId !== '-') {
             $query->where('customer_id', $request->UserId);
@@ -3772,10 +3929,10 @@ public function Stocktaking( $request)
         app()->setLocale(LaravelLocalization::getCurrentLocale());
 
         $start = substr($startat, 0, 10);
-        $end   = substr($end_at, 0, 10);
+        $end = substr($end_at, 0, 10);
 
         $query = return_sales::whereDate('created_at', '>=', $start)
-                             ->whereDate('created_at', '<=', $end);
+            ->whereDate('created_at', '<=', $end);
 
         if ($branch !== '-') {
             $query->where('branch_id', $branch);
@@ -3821,31 +3978,32 @@ public function Stocktaking( $request)
         app()->setLocale(LaravelLocalization::getCurrentLocale());
 
         $query = sales::select('product_id', 'branch_id', DB::raw('SUM(quantity) as total_sold'))
-                      ->with(['productData', 'branch']) // التحميل المسبق للعلاقات لـ Eager Loading
-                      ->whereDate('created_at', '>=', $start_at)
-                      ->whereDate('created_at', '<=', $end_at)
-                      ->where('quantity', '>', 0)
-                      ->where('save', 1);
+            ->with(['productData', 'branch']) // التحميل المسبق للعلاقات لـ Eager Loading
+            ->whereDate('created_at', '>=', $start_at)
+            ->whereDate('created_at', '<=', $end_at)
+            ->where('quantity', '>', 0)
+            ->where('save', 1);
 
         if ($branch !== '-') {
             $query->where('branch_id', $branch);
         }
 
         $salesData = $query->groupBy('product_id', 'branch_id')
-                           ->orderBy('total_sold', 'DESC')
-                           ->get();
+            ->orderBy('total_sold', 'DESC')
+            ->get();
 
         $bestselling = [];
         foreach ($salesData as $sale) {
-            if (!$sale->productData) continue; // تخطي الحذف العشوائي إن وُجد
-            
+            if (!$sale->productData)
+                continue; // تخطي الحذف العشوائي إن وُجد
+
             $bestselling[] = [
-                'productcode'  => $sale->productData->Product_Code,
-                'productname'  => $sale->productData->product_name,
+                'productcode' => $sale->productData->Product_Code,
+                'productname' => $sale->productData->product_name,
                 'numberofsall' => $sale->total_sold,
-                'branch'       => $sale->branch->name ?? 'N/A',
-                'end_at'       => $end_at,
-                'start_at'     => $start_at
+                'branch' => $sale->branch->name ?? 'N/A',
+                'end_at' => $end_at,
+                'start_at' => $start_at
             ];
         }
 
@@ -3861,22 +4019,22 @@ public function Stocktaking( $request)
         app()->setLocale(LaravelLocalization::getCurrentLocale());
 
         // جلب الإعدادات الضريبية الافتراضية للبيع والشراء
-        $saleavt      = Avt::find(1)->AVT ?? 0.15;
+        $saleavt = Avt::find(1)->AVT ?? 0.15;
         $purchasesavt = Avt::find(2)->AVT ?? 0.15;
 
         // تهيئة المتغيرات الأساسية
-        $totalVatSales    = 0;
+        $totalVatSales = 0;
         $totalvarExpenses = 0;
         $totalVatPrachese = 0;
         $purachasereturntax = 0;
-        $salesreturntax   = 0;
+        $salesreturntax = 0;
 
         // 1. استعلام الفواتير والمصاريف
-        $invoiceQuery  = invoices::whereDate('created_at', '>=', $start_at)->whereDate('created_at', '<=', $end_at)->where('save', 1);
-        $expenseQuery  = expenses::where('expensesAvt', 1)->whereDate('created_at', '>=', $start_at)->whereDate('created_at', '<=', $end_at);
+        $invoiceQuery = invoices::whereDate('created_at', '>=', $start_at)->whereDate('created_at', '<=', $end_at)->where('save', 1);
+        $expenseQuery = expenses::where('expensesAvt', 1)->whereDate('created_at', '>=', $start_at)->whereDate('created_at', '<=', $end_at);
         $purchaseQuery = resource_purchases::whereDate('created_at', '>=', $start_at)->whereDate('created_at', '<=', $end_at)->where('save', 1);
         $orderDetailsQuery = orderDetails::whereDate('created_at', '>=', $start_at)->whereDate('created_at', '<=', $end_at)->where('save', 1);
-        $returnSalesQuery  = return_sales::whereDate('created_at', '>=', $start_at)->whereDate('created_at', '<=', $end_at);
+        $returnSalesQuery = return_sales::whereDate('created_at', '>=', $start_at)->whereDate('created_at', '<=', $end_at);
 
         // تصفية الفروع إن وجدت
         if ($branch !== '-') {
@@ -3886,11 +4044,11 @@ public function Stocktaking( $request)
             $returnSalesQuery->where('branch_id', $branch);
         }
 
-        $invoices          = $invoiceQuery->get();
-        $expenses          = $expenseQuery->get();
+        $invoices = $invoiceQuery->get();
+        $expenses = $expenseQuery->get();
         $resource_purchases = $purchaseQuery->get();
-        $ordersDetails     = $orderDetailsQuery->get();
-        $returnsales       = $returnSalesQuery->get();
+        $ordersDetails = $orderDetailsQuery->get();
+        $returnsales = $returnSalesQuery->get();
 
         // 2. الحسابات الرياضية للمبيعات والمصاريف
         foreach ($invoices as $invoice) {
@@ -3908,7 +4066,7 @@ public function Stocktaking( $request)
             if ($branch !== '-' && $branch != ($orderDetailes->productData->branchs_id ?? '')) {
                 continue;
             }
-            $totalVatPrachese   += $orderDetailes->Added_Value * $orderDetailes->numberofpice;
+            $totalVatPrachese += $orderDetailes->Added_Value * $orderDetailes->numberofpice;
             $purachasereturntax += $orderDetailes->Added_Value * $orderDetailes->returns_purchase;
 
             if ($orderDetailes->returns_purchase > 0) {
@@ -3924,18 +4082,18 @@ public function Stocktaking( $request)
         }
 
         $data = [
-            'returncountsales'     => count($countofreturnsaleslist),
+            'returncountsales' => count($countofreturnsaleslist),
             'returncountpurchases' => count($countofreturnpurshaseslist),
-            'salesreturntax'       => $salesreturntax,
-            'purachasereturntax'   => $purachasereturntax,
-            'countsales'           => count($invoices),
-            'countpurchase'        => count($resource_purchases),
-            'countexpanses'        => count($expenses),
-            'start_at'             => $start_at,
-            'end_at'               => $end_at,
-            'totalVatSales'        => $totalVatSales,
-            'totalVatPrachese'     => $totalVatPrachese,
-            'totalvarExpenses'     => $totalvarExpenses - round($totalvarExpenses * 100 / 115)
+            'salesreturntax' => $salesreturntax,
+            'purachasereturntax' => $purachasereturntax,
+            'countsales' => count($invoices),
+            'countpurchase' => count($resource_purchases),
+            'countexpanses' => count($expenses),
+            'start_at' => $start_at,
+            'end_at' => $end_at,
+            'totalVatSales' => $totalVatSales,
+            'totalVatPrachese' => $totalVatPrachese,
+            'totalvarExpenses' => $totalvarExpenses - round($totalvarExpenses * 100 / 115)
         ];
 
         return view('reports.print_VAT', compact('data'));
@@ -3956,8 +4114,8 @@ public function Stocktaking( $request)
     public function search_updatestockquentity(Request $request)
     {
         $stock_update = stock_update::whereDate('created_at', '>=', $request->start_at)
-                                    ->whereDate('created_at', '<=', $request->end_at)
-                                    ->get();
+            ->whereDate('created_at', '<=', $request->end_at)
+            ->get();
 
         return view('reports.print_stock_update', compact('stock_update'));
     }

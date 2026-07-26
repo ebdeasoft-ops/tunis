@@ -66,75 +66,94 @@
 
                 <div class="card-header pb-0">
 
-                    <form action="{{ url(Mcamara\LaravelLocalization\Facades\LaravelLocalization::getCurrentLocale() . '/' . ($page = 'account_statement')) }}" method="POST" role="search" autocomplete="off">
+                    <form
+                        action="{{ url(Mcamara\LaravelLocalization\Facades\LaravelLocalization::getCurrentLocale() . '/' . ($page = 'account_statement')) }}"
+                        method="POST" role="search" autocomplete="off">
                         {{ csrf_field() }}
 
                         <div class="row">
 
                             <div class="col-lg-3" id="start_at">
-                                <label class="parent-label" for="exampleFormControlSelect1"> {{ __('report.fromdate') }}</label>
+                                <label class="parent-label" for="exampleFormControlSelect1">
+                                    {{ __('report.fromdate') }}</label>
                                 <div class="input-group">
                                     <div class="input-group-prepend">
                                         <div class="input-group-text">
                                             <i class="fas fa-calendar-alt"></i>
                                         </div>
-                                    </div><input class="form-control parent-input fc-datepicker" value="{{ $start_at ?? '' }}" name="start_at" placeholder="YYYY-MM-DD" type="text" required>
+                                    </div><input class="form-control parent-input fc-datepicker"
+                                        value="{{ $start_at ?? '' }}" name="start_at" placeholder="YYYY-MM-DD"
+                                        type="text" required>
                                 </div><!-- input-group -->
                             </div>
 
                             <div class="col-lg-3" id="end_at">
-                                <label class="parent-label" for="exampleFormControlSelect1"> {{ __('report.todate') }}</label>
+                                <label class="parent-label" for="exampleFormControlSelect1">
+                                    {{ __('report.todate') }}</label>
                                 <div class="input-group">
                                     <div class="input-group-prepend">
                                         <div class="input-group-text">
                                             <i class="fas fa-calendar-alt"></i>
                                         </div>
-                                    </div><input class="form-control parent-input fc-datepicker" name="end_at" value="{{ $end_at ?? '' }}" placeholder="YYYY-MM-DD" type="text" required>
+                                    </div><input class="form-control parent-input fc-datepicker" name="end_at"
+                                        value="{{ $end_at ?? '' }}" placeholder="YYYY-MM-DD" type="text" required>
                                 </div><!-- input-group -->
                             </div>
 
-                            <div class="col-lg-3 mg-t-20 mg-lg-t-0" id="type">
+                            <div class="col-lg-2 mg-t-20 mg-lg-t-0" id="type">
                                 <p class="mg-b-10 parent-label"> {{ __('home.saerch_by_numberaccount_or_name') }} </p>
                                 <select class="form-control parent-input select2" name="supplierId" required>
 
 
                                     @foreach (App\Models\financial_accounts::get() as $section)
-                                    <option style="font-size: 15px" value="{{ $section->id }}"> {{ $section->name }} </option>
+                                    <option style="font-size: 15px" value="{{ $section->id }}"> {{ $section->name }}
+                                    </option>
                                     @endforeach
                                 </select>
                             </div><!-- col-4 -->
 
-                       
-                 
-                              <div class="col-lg-3" id="type">
-                                    <p class="mg-b-10 parent-label"> {{ __('users.branch') }} </p>
-                                    <select class="form-control parent-input" name="branch" required>
+
+
+                            <div class="col-lg-2" id="type">
+                                <p class="mg-b-10 parent-label"> {{ __('users.branch') }} </p>
+                                <select class="form-control parent-input" name="branch" required>
                                     @if(Auth()->user()->branchs_id==1||Auth()->user()->branchs_id==9)
-                                        <option value="-" selected>{{ __('users.allbranchs') }}
-                                        </option>
-                                            @endif
-                                        @foreach (App\Models\branchs::get() as $branch)
-                                        @if(Auth()->user()->branchs_id==1||Auth()->user()->branchs_id==$branch->id)
+                                    <option value="-" selected>{{ __('users.allbranchs') }}
+                                    </option>
+                                    @endif
+                                    @foreach (App\Models\branchs::get() as $branch)
+                                    @if(Auth()->user()->branchs_id==1||Auth()->user()->branchs_id==$branch->id)
 
-                                            <option style="font-size:15px" value="{{ $branch->id }}"> {{ $branch->name }}</option>
-                                       @endif
-                                            @endforeach
-                                 
-                                    </select>
+                                    <option style="font-size:15px" value="{{ $branch->id }}"> {{ $branch->name }}
+                                    </option>
+                                    @endif
+                                    @endforeach
 
-                                </div>
-       </div>
-                        
+                                </select>
+
+                            </div>
+
+                            <div class="col-lg-2 mg-t-20 mg-lg-t-0" id="type">
+                                <p class="mg-b-10 parent-label">{{ __('home.type') }}</p>
+                                <select class="form-control parent-input select2" name="type" required>
+                                    <option style="font-size: 15px" value="public">{{ __('home.public') }}</option>
+                                    <option style="font-size: 15px" value="client_and_supplier">
+                                        {{ __('home.client_and_supplier') }}</option>
+                                </select>
+                            </div><!-- col-4 -->
+
+                        </div>
+
                         <br>
-                      <div class="d-flex justify-content-center mt-3">
-    <button type="submit" name="action" value="search" class="btn btn-success mx-2">
-        {{ __('home.search') }} <i class="las la-search"></i>
-    </button>
+                        <div class="d-flex justify-content-center mt-3">
+                            <button type="submit" name="action" value="search" class="btn btn-success mx-2">
+                                {{ __('home.search') }} <i class="las la-search"></i>
+                            </button>
 
-    <button type="submit" name="action" value="export" class="btn btn-primary mx-2">
-        تصدير Excel <i class="las la-file-excel"></i>
-    </button>
-</div>
+                            <button type="submit" name="action" value="export" class="btn btn-primary mx-2">
+                                تصدير Excel <i class="las la-file-excel"></i>
+                            </button>
+                        </div>
 
                     </form>
 
@@ -156,13 +175,14 @@
                           ?>
 
 
-                         <div class="table-responsive  ">
-                        <table style="border:2px solid rgba(0,0,0,.3);" class="table text-md-nowrap mb-0 table-striped invoice-table text-center">
+                        <div class="table-responsive  ">
+                            <table style="border:2px solid rgba(0,0,0,.3);"
+                                class="table text-md-nowrap mb-0 table-striped invoice-table text-center">
 
                                 <thead>
                                     <tr>
                                         <th class="border-bottom-0">#</th>
-                                                                                        <th class="border-bottom-0">{{ __('home.decoumentNo') }}</th>
+                                        <th class="border-bottom-0">{{ __('home.decoumentNo') }}</th>
 
                                         <th class="border-bottom-0">{{ __('report.date') }}</th>
 
@@ -171,11 +191,12 @@
                                         <th class="border-bottom-0"> {{ __('accountes.Theamountpaid') }}</th>
 
                                         <th class="border-bottom-0">{{ __('home.paymentmethod') }}</th>
-                                        <th class="border-bottom-0">{{ __('home.notesClient') }}</th>  <th class="border-bottom-0">{{ __('home.attachments') }}</th>
+                                        <th class="border-bottom-0">{{ __('home.notesClient') }}</th>
+                                        <th class="border-bottom-0">{{ __('home.attachments') }}</th>
                                     </tr>
 
                                 </thead>
-                                     <?php
+                                <?php
                                 $i = 0;
                                 ?>
                                 @foreach ($Invoices as $invoice)
@@ -198,7 +219,7 @@
 
 
 
-                           
+
                                 <?php
                                 $i++;
 
@@ -207,7 +228,7 @@
                                 <tbody>
                                     <tr>
                                         <td>{{ $i }}</td>
-                                                                                            <td>{{ $invoice->id}}</td>
+                                        <td>{{ $invoice->id}}</td>
 
                                         <td>{{ $date[0] }}</td>
                                         <td>{{ $invoice->user->name }}</td>
@@ -223,15 +244,16 @@
                                             @endif
                                         </td>
                                         <td>{{$invoice->note }}</td>
-                                       <?php
+                                        <?php
                                        $path=$invoice->attachments;
                                        ?>
-                                        <td><center>@if($path!=null)<a  target="_blank"
-href="{{ url('/' . ($page = 'openfile') .'/'.$path) }}"
-                                    >{{  __('home.show')}}</a>
-                                    @else
-                                    -
-                                    @endif</td>
+                                        <td>
+                                            <center>@if($path!=null)<a target="_blank"
+                                                    href="{{ url('/' . ($page = 'openfile') .'/'.$path) }}">{{  __('home.show')}}</a>
+                                                @else
+                                                -
+                                                @endif
+                                        </td>
 
                                     </tr>
 
@@ -251,10 +273,13 @@ href="{{ url('/' . ($page = 'openfile') .'/'.$path) }}"
                             <br> <br> <br>
                             <div class="d-flex justify-content-center">
 
-                                <a style="background-color: #419BB2;font-size:17px" class="btn btn-success p-1" href="{{ url('/' . ($page = 'print_Supplier_credit_payment') . '/' . $supplierId . '/' . $startat . '/' . $endat) }}">
+                                <a style="background-color: #419BB2;font-size:17px" class="btn btn-success p-1"
+                                    href="{{ url('/' . ($page = 'print_Supplier_credit_payment') . '/' . $supplierId . '/' . $startat . '/' . $endat) }}">
                                     {{ __('home.print') }}
                                     <svg style="width: 20px !important" class="svg-icon-buttons" viewBox="0 0 20 20">
-                                        <path d="M17.453,12.691V7.723 M17.453,12.691V7.723 M1.719,12.691V7.723 M18.281,12.691V7.723 M12.691,12.484H7.309c-0.228,0-0.414,0.187-0.414,0.414s0.187,0.414,0.414,0.414h5.383c0.229,0,0.414-0.187,0.414-0.414S12.92,12.484,12.691,12.484M12.691,14.555H7.309c-0.228,0-0.414,0.187-0.414,0.414s0.187,0.414,0.414,0.414h5.383c0.229,0,0.414-0.187,0.414-0.414S12.92,14.555,12.691,14.555 M12.691,12.484H7.309c-0.228,0-0.414,0.187-0.414,0.414s0.187,0.414,0.414,0.414h5.383c0.229,0,0.414-0.187,0.414-0.414S12.92,12.484,12.691,12.484 M12.691,14.555H7.309c-0.228,0-0.414,0.187-0.414,0.414s0.187,0.414,0.414,0.414h5.383c0.229,0,0.414-0.187,0.414-0.414S12.92,14.555,12.691,14.555 M12.691,14.555H7.309c-0.228,0-0.414,0.187-0.414,0.414s0.187,0.414,0.414,0.414h5.383c0.229,0,0.414-0.187,0.414-0.414S12.92,14.555,12.691,14.555M12.691,12.484H7.309c-0.228,0-0.414,0.187-0.414,0.414s0.187,0.414,0.414,0.414h5.383c0.229,0,0.414-0.187,0.414-0.414S12.92,12.484,12.691,12.484 M7.309,13.312h5.383c0.229,0,0.414-0.187,0.414-0.414s-0.186-0.414-0.414-0.414H7.309c-0.228,0-0.414,0.187-0.414,0.414S7.081,13.312,7.309,13.312 M12.691,14.555H7.309c-0.228,0-0.414,0.187-0.414,0.414s0.187,0.414,0.414,0.414h5.383c0.229,0,0.414-0.187,0.414-0.414S12.92,14.555,12.691,14.555 M16.625,6.066h-1.449V3.168c0-0.228-0.186-0.414-0.414-0.414H5.238c-0.228,0-0.414,0.187-0.414,0.414v2.898H3.375c-0.913,0-1.656,0.743-1.656,1.656v4.969c0,0.913,0.743,1.656,1.656,1.656h1.449v2.484c0,0.228,0.187,0.414,0.414,0.414h9.523c0.229,0,0.414-0.187,0.414-0.414v-2.484h1.449c0.912,0,1.656-0.743,1.656-1.656V7.723C18.281,6.81,17.537,6.066,16.625,6.066 M5.652,3.582h8.695v2.484H5.652V3.582zM14.348,16.418H5.652v-4.969h8.695V16.418z M17.453,12.691c0,0.458-0.371,0.828-0.828,0.828h-1.449v-2.484c0-0.228-0.186-0.414-0.414-0.414H5.238c-0.228,0-0.414,0.186-0.414,0.414v2.484H3.375c-0.458,0-0.828-0.37-0.828-0.828V7.723c0-0.458,0.371-0.828,0.828-0.828h13.25c0.457,0,0.828,0.371,0.828,0.828V12.691z M7.309,13.312h5.383c0.229,0,0.414-0.187,0.414-0.414s-0.186-0.414-0.414-0.414H7.309c-0.228,0-0.414,0.187-0.414,0.414S7.081,13.312,7.309,13.312M7.309,15.383h5.383c0.229,0,0.414-0.187,0.414-0.414s-0.186-0.414-0.414-0.414H7.309c-0.228,0-0.414,0.187-0.414,0.414S7.081,15.383,7.309,15.383 M12.691,14.555H7.309c-0.228,0-0.414,0.187-0.414,0.414s0.187,0.414,0.414,0.414h5.383c0.229,0,0.414-0.187,0.414-0.414S12.92,14.555,12.691,14.555 M12.691,12.484H7.309c-0.228,0-0.414,0.187-0.414,0.414s0.187,0.414,0.414,0.414h5.383c0.229,0,0.414-0.187,0.414-0.414S12.92,12.484,12.691,12.484 M12.691,12.484H7.309c-0.228,0-0.414,0.187-0.414,0.414s0.187,0.414,0.414,0.414h5.383c0.229,0,0.414-0.187,0.414-0.414S12.92,12.484,12.691,12.484M12.691,14.555H7.309c-0.228,0-0.414,0.187-0.414,0.414s0.187,0.414,0.414,0.414h5.383c0.229,0,0.414-0.187,0.414-0.414S12.92,14.555,12.691,14.555"></path>
+                                        <path
+                                            d="M17.453,12.691V7.723 M17.453,12.691V7.723 M1.719,12.691V7.723 M18.281,12.691V7.723 M12.691,12.484H7.309c-0.228,0-0.414,0.187-0.414,0.414s0.187,0.414,0.414,0.414h5.383c0.229,0,0.414-0.187,0.414-0.414S12.92,12.484,12.691,12.484M12.691,14.555H7.309c-0.228,0-0.414,0.187-0.414,0.414s0.187,0.414,0.414,0.414h5.383c0.229,0,0.414-0.187,0.414-0.414S12.92,14.555,12.691,14.555 M12.691,12.484H7.309c-0.228,0-0.414,0.187-0.414,0.414s0.187,0.414,0.414,0.414h5.383c0.229,0,0.414-0.187,0.414-0.414S12.92,12.484,12.691,12.484 M12.691,14.555H7.309c-0.228,0-0.414,0.187-0.414,0.414s0.187,0.414,0.414,0.414h5.383c0.229,0,0.414-0.187,0.414-0.414S12.92,14.555,12.691,14.555 M12.691,14.555H7.309c-0.228,0-0.414,0.187-0.414,0.414s0.187,0.414,0.414,0.414h5.383c0.229,0,0.414-0.187,0.414-0.414S12.92,14.555,12.691,14.555M12.691,12.484H7.309c-0.228,0-0.414,0.187-0.414,0.414s0.187,0.414,0.414,0.414h5.383c0.229,0,0.414-0.187,0.414-0.414S12.92,12.484,12.691,12.484 M7.309,13.312h5.383c0.229,0,0.414-0.187,0.414-0.414s-0.186-0.414-0.414-0.414H7.309c-0.228,0-0.414,0.187-0.414,0.414S7.081,13.312,7.309,13.312 M12.691,14.555H7.309c-0.228,0-0.414,0.187-0.414,0.414s0.187,0.414,0.414,0.414h5.383c0.229,0,0.414-0.187,0.414-0.414S12.92,14.555,12.691,14.555 M16.625,6.066h-1.449V3.168c0-0.228-0.186-0.414-0.414-0.414H5.238c-0.228,0-0.414,0.187-0.414,0.414v2.898H3.375c-0.913,0-1.656,0.743-1.656,1.656v4.969c0,0.913,0.743,1.656,1.656,1.656h1.449v2.484c0,0.228,0.187,0.414,0.414,0.414h9.523c0.229,0,0.414-0.187,0.414-0.414v-2.484h1.449c0.912,0,1.656-0.743,1.656-1.656V7.723C18.281,6.81,17.537,6.066,16.625,6.066 M5.652,3.582h8.695v2.484H5.652V3.582zM14.348,16.418H5.652v-4.969h8.695V16.418z M17.453,12.691c0,0.458-0.371,0.828-0.828,0.828h-1.449v-2.484c0-0.228-0.186-0.414-0.414-0.414H5.238c-0.228,0-0.414,0.186-0.414,0.414v2.484H3.375c-0.458,0-0.828-0.37-0.828-0.828V7.723c0-0.458,0.371-0.828,0.828-0.828h13.25c0.457,0,0.828,0.371,0.828,0.828V12.691z M7.309,13.312h5.383c0.229,0,0.414-0.187,0.414-0.414s-0.186-0.414-0.414-0.414H7.309c-0.228,0-0.414,0.187-0.414,0.414S7.081,13.312,7.309,13.312M7.309,15.383h5.383c0.229,0,0.414-0.187,0.414-0.414s-0.186-0.414-0.414-0.414H7.309c-0.228,0-0.414,0.187-0.414,0.414S7.081,15.383,7.309,15.383 M12.691,14.555H7.309c-0.228,0-0.414,0.187-0.414,0.414s0.187,0.414,0.414,0.414h5.383c0.229,0,0.414-0.187,0.414-0.414S12.92,14.555,12.691,14.555 M12.691,12.484H7.309c-0.228,0-0.414,0.187-0.414,0.414s0.187,0.414,0.414,0.414h5.383c0.229,0,0.414-0.187,0.414-0.414S12.92,12.484,12.691,12.484 M12.691,12.484H7.309c-0.228,0-0.414,0.187-0.414,0.414s0.187,0.414,0.414,0.414h5.383c0.229,0,0.414-0.187,0.414-0.414S12.92,12.484,12.691,12.484M12.691,14.555H7.309c-0.228,0-0.414,0.187-0.414,0.414s0.187,0.414,0.414,0.414h5.383c0.229,0,0.414-0.187,0.414-0.414S12.92,14.555,12.691,14.555">
+                                        </path>
                                     </svg>
                                 </a>
                             </div>
@@ -319,18 +344,18 @@ href="{{ url('/' . ($page = 'openfile') .'/'.$path) }}"
 <!-- Internal form-elements js -->
 <script src="{{ URL::asset('assets/js/form-elements.js') }}"></script>
 <script>
-    var date = $('.fc-datepicker').datepicker({
-        dateFormat: 'yy-mm-dd'
-    }).val();
+var date = $('.fc-datepicker').datepicker({
+    dateFormat: 'yy-mm-dd'
+}).val();
 </script>
 <script>
-    $(document).ready(function() {
+$(document).ready(function() {
 
-        $(function() {
-            var timeout = 4000; // in miliseconds (3*1000)
-            $('.alert').delay(timeout).fadeOut(500);
-        });
-
+    $(function() {
+        var timeout = 4000; // in miliseconds (3*1000)
+        $('.alert').delay(timeout).fadeOut(500);
     });
+
+});
 </script>
 @endsection

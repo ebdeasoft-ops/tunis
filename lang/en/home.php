@@ -7,6 +7,9 @@ return [
     | English Language Lines - Full Version 2026
     |--------------------------------------------------------------------------
     */
+    'type' => 'Type',
+    'public' => 'Public',
+    'client_and_supplier' => 'Client & Supplier',
     'received_movements_report'=>'Previous Receipt Vouchers',
     'sent_movements_report'=>'Previous Dispatch Vouchers',
      'no_attachments'=>'no_attachments',

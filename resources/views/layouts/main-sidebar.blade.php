@@ -322,12 +322,11 @@
                                 <a class="slide-item"
                                     href="{{ url('/sendProduct?branch_id=' .auth()->user()->branchs_id) }}">{{ __('home.send_product_from_brance') }}</a>
                             </li>
-                            @endcan
-                            @can('Receiving a product from another branch')
                             <li>
                                 <a class="slide-item"
-                                    href="{{ url('/reciveProduct?branch_id=' .auth()->user()->branchs_id) }}">{{ __('home.recive_product_from_brance') }}</a>
+                                    href="{{ url('/reports/sent-movements?branch_id=' .auth()->user()->branchs_id) }}">{{ __('home.sent_movements_report') }}</a>
                             </li>
+
                             @endcan
                             @can('Transferring a product to another branch')
                             <li>
@@ -335,21 +334,27 @@
                                     href="{{ url('/my-drafts-movements?branch_id=' .auth()->user()->branchs_id) }}">{{ __('home.pending_invoice_previes') }}</a>
                             </li>
                             @endcan
-                            @can('Produects')
-                            <li>
-                                <a class="slide-item" href="{{ url('/showAllProducts_IN_Wherehouse?branch_id=' .auth()->user()->branchs_id) }}">{{ __('home.stock') }}</a>
-                            </li>
-                            @endcan
-
+                            @can('Receiving a product from another branch')
                             <li>
                                 <a class="slide-item"
-                                    href="{{ url('/reports/sent-movements?branch_id=' .auth()->user()->branchs_id) }}">{{ __('home.sent_movements_report') }}</a>
+                                    href="{{ url('/reciveProduct?branch_id=' .auth()->user()->branchs_id) }}">{{ __('home.recive_product_from_brance') }}</a>
                             </li>
-
                             <li>
                                 <a class="slide-item"
                                     href="{{ url('/reports/received-movements?branch_id=' .auth()->user()->branchs_id) }}">{{ __('home.received_movements_report') }}</a>
                             </li>
+                            @endcan
+
+
+                            @can('Produects')
+                            <li>
+                                <a class="slide-item"
+                                    href="{{ url('/showAllProducts_IN_Wherehouse?branch_id=' .auth()->user()->branchs_id) }}">{{ __('home.stock') }}</a>
+                            </li>
+                            @endcan
+
+
+
 
                         </ul>
                     </li>
@@ -383,21 +388,31 @@
                                         <a class="slide-item"
                                             href="{{ url('/sendProduct?branch_id=' . $subBranch->id) }}">{{ __('home.send_product_from_brance') }}</a>
                                     </li>
-                                    @endcan
-
-                                    @can('Receiving a product from another branch')
                                     <li>
                                         <a class="slide-item"
-                                            href="{{ url('/reciveProduct?branch_id=' . $subBranch->id) }}">{{ __('home.recive_product_from_brance') }}</a>
+                                            href="{{ url('/reports/sent-movements?branch_id=' . $subBranch->id) }}">{{ __('home.sent_movements_report') }}</a>
                                     </li>
-                                    @endcan
 
+
+                                    @endcan
                                     @can('Transferring a product to another branch')
                                     <li>
                                         <a class="slide-item"
                                             href="{{ url('/my-drafts-movements?branch_id=' . $subBranch->id) }}">{{ __('home.pending_invoice_previes') }}</a>
                                     </li>
                                     @endcan
+                                    @can('Receiving a product from another branch')
+                                    <li>
+                                        <a class="slide-item"
+                                            href="{{ url('/reciveProduct?branch_id=' . $subBranch->id) }}">{{ __('home.recive_product_from_brance') }}</a>
+                                    </li>
+                                    <li>
+                                        <a class="slide-item"
+                                            href="{{ url('/reports/received-movements?branch_id=' .$subBranch->id) }}">{{ __('home.received_movements_report') }}</a>
+                                    </li>
+                                    @endcan
+
+
                                     @can('Produects')
                                     <li>
                                         <a class="slide-item"

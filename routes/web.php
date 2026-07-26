@@ -731,6 +731,10 @@ Route::middleware([
         Route::get('reports/sent-movements', 'sentReport')->name('reports.sent');
         Route::get('reports/received-movements', 'receivedReport')->name('reports.received');
         Route::get('reports/product-movements-summary', 'productSummaryReport')->name('reports.summary');
+        Route::get('reports/sent/excel',  'exportExcel')->name('reports.sent.excel');
+        Route::get('reports/sent/pdf',  'exportPdf')->name('reports.sent.pdf');
+        Route::get('reports/recive/excel',  'exportReceivedExcel')->name('reports.recive.excel');
+        Route::get('reports/recive/pdf',  'exportReceivedPdf')->name('reports.recive.pdf');
     });
 
         Route::controller(UserController::class)->group(function () {

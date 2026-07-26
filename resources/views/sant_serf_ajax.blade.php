@@ -1,7 +1,7 @@
 @if (isset($data) && !empty($data) && count($data) > 0)
-    <div class="table-responsive">
-        <table class="table text-md-nowrap text-center our-table table-responsive" id="example2"
-            style="border: 2px solid rgba(0,0,0,.3); width: 100%;">
+<div class="table-responsive w-100" id="ajax_responce_allinvoicesDiv">
+    <table class="table text-md-nowrap text-center our-table w-100" id="example2"
+        style="border: 2px solid rgba(0,0,0,.3); width: 100% !important;">
             <thead>
                 <tr class="bg-light">
                     <th>{{ __('home.decoumentNo') }}</th>

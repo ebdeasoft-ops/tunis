@@ -1952,6 +1952,25 @@ $("#reciptprinter").click(function(e) {
 $(document).ready(function() {
     document.getElementById('printdiv').hidden = true
 
+    var parentBranchId = $('#Main_branchs_id').val(); // ID الفرع المختار فوق
+    var $childSelect = $('#branchs_id'); // القائمة الثانية
+
+    if(parentBranchId) {
+        $.ajax({
+            url: "{{ route('get.child.branches') }}", // سنقوم بإنشاء هذا المسار
+            type: "GET",
+            data: { id: parentBranchId },
+            success: function(data) {
+                $childSelect.empty(); // مسح الخيارات القديمة
+                // إضافة الخيارات الجديدة بناءً على رد السيرفر
+                $.each(data, function(key, value) {
+                    $childSelect.append('<option value="'+ value.id +'">'+ value.name +'</option>');
+                });
+                $childSelect.trigger('change.select2'); // تحديث Select2
+            }
+        });
+    }
+
 })
 
 

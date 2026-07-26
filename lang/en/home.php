@@ -7,7 +7,9 @@ return [
     | English Language Lines - Full Version 2026
     |--------------------------------------------------------------------------
     */
-
+    'received_movements_report'=>'Previous Receipt Vouchers',
+    'sent_movements_report'=>'Previous Dispatch Vouchers',
+     'no_attachments'=>'no_attachments',
     // --- التعديلات الأخيرة ---
     "transction_day" => "The Movement Today",
     "wherehouse" => "Create Sub Warehouse",

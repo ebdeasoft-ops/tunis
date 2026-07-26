@@ -12,6 +12,9 @@ return [
     | you want to customize your views to better match your application.
     |
     */
+    'received_movements_report'=>'سندات  الاستلام ',
+    'sent_movements_report'=>'سندات الصرف ',
+    'no_attachments'=>"لا يوجد ",
     "transction_day"=>"الحركة اليوم",
     "SalesPurchaseInPeriode" => "مشتريات و مبيعات فترة",
     "wherehouse" => "انشاء مخزن فرعي",

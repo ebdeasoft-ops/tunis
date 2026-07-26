@@ -10,9 +10,158 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use Mcamara\LaravelLocalization\Facades\LaravelLocalization;
 use Carbon\Carbon;
-
+use Maatwebsite\Excel\Facades\Excel;
+use Barryvdh\DomPDF\Facade\Pdf;
+use App\Exports\SentMovementsExport; // سنقوم بإنشائها أو يمكنك استخدام الكود المباشر
+use App\Exports\ReceivedMovementsExport; // سنقوم بإنشائها أو يمكنك استخدام الكود المباشر
 class ProductMovementAnotherBranchController extends Controller
 {
+
+
+
+
+
+
+public function exportReceivedPdf(Request $request)
+{
+    $currentBranchId = $request->get('branch_id', auth()->user()->branchs_id);
+
+    $query = product_movement_another_branch::with([
+        'branchfrom',
+        'branchto',
+        'userfrom',
+        'userto',
+        'items.product'
+    ])
+    ->where('branch_to', $currentBranchId); // حركات واردة للفرع
+
+    if ($request->filled('movement_id')) {
+        $query->where('id', $request->movement_id);
+    }
+
+    if ($request->filled('from_date')) {
+        $query->whereDate('created_at', '>=', $request->from_date);
+    }
+
+    if ($request->filled('to_date')) {
+        $query->whereDate('created_at', '<=', $request->to_date);
+    }
+
+    $movements = $query->latest()->get();
+// return $movements;
+    // فتح صفحة الـ Blade الخاصة بـ PDF الوارد
+    return view('pdf.received_movements_pdf', compact('movements'));
+}
+
+
+public function exportReceivedExcel(Request $request)
+{
+    $currentBranchId = $request->get('branch_id', auth()->user()->branchs_id);
+
+    $query = product_movement_another_branch::with([
+        'branchfrom',
+        'branchTo',
+        'userFrom',
+        'userTo',
+        'items.product'
+    ])
+    ->where('branch_to', $currentBranchId); // حركات واردة للفرع
+
+    if ($request->filled('movement_id')) {
+        $query->where('id', $request->movement_id);
+    }
+
+    if ($request->filled('from_date')) {
+        $query->whereDate('created_at', '>=', $request->from_date);
+    }
+
+    if ($request->filled('to_date')) {
+        $query->whereDate('created_at', '<=', $request->to_date);
+    }
+
+    $movements = $query->latest()->get();
+
+    $fileName = 'received_movements_' . date('Y-m-d') . '.xlsx';
+    
+    return Excel::download(new ReceivedMovementsExport($movements), $fileName);
+}
+
+
+
+
+
+
+
+
+
+
+public function exportPdf(Request $request)
+{
+    $currentBranchId = $request->get('branch_id', auth()->user()->branchs_id);
+
+    $query = product_movement_another_branch::with([
+        'branchfrom',
+        'branchto',
+        'userfrom',
+        'items.product'
+    ])
+    ->where('branch_from', $currentBranchId)
+    ->where('status', 'completed');
+
+    if ($request->filled('movement_id')) {
+        $query->where('id', $request->movement_id);
+    }
+
+    if ($request->filled('from_date')) {
+        $query->whereDate('created_at', '>=', $request->from_date);
+    }
+
+    if ($request->filled('to_date')) {
+        $query->whereDate('created_at', '<=', $request->to_date);
+    }
+
+    $movements = $query->latest()->get();
+
+    // 🌟 فتح صفحة الـ Blade مباشرة في المتصفح وبدون مكتبة PDF
+    return view('pdf.sent_movements_pdf', compact('movements'));
+}
+
+
+    public function exportExcel(Request $request)
+{
+    $currentBranchId = $request->get('branch_id', auth()->user()->branchs_id);
+
+    $query = product_movement_another_branch::with([
+        'branchTo',
+        'userFrom',
+        'userTo',
+        'items.product'
+    ])
+    ->where('branch_from', $currentBranchId)
+    ->where('status', 'completed');
+
+    if ($request->filled('movement_id')) {
+        $query->where('id', $request->movement_id);
+    }
+
+    if ($request->filled('from_date')) {
+        $query->whereDate('created_at', '>=', $request->from_date);
+    }
+
+    if ($request->filled('to_date')) {
+        $query->whereDate('created_at', '<=', $request->to_date);
+    }
+
+    $movements = $query->latest()->get();
+
+    // يمكنك تصدير البيانات مباشرة عبر CSV أو استخدام حزمة Excel
+    $fileName = 'sent_movements_' . date('Y-m-d') . '.xlsx';
+    
+    // مثال بسيط للتصدير (إذا كنت تستخدم Maatwebsite\Excel):
+    return Excel::download(new SentMovementsExport($movements), $fileName);
+    
+    // أو يمكنك توجيه الطلب بالطريقة المناسبة لديك.
+}
     public function __construct()
     {
         app()->setLocale(LaravelLocalization::getCurrentLocale());
@@ -450,50 +599,26 @@ public function show(\Illuminate\Http\Request $request)
         ];
     }
 
-   public function sentReport(Request $request)
-    {
-        // جلب فرع المستخدم الحالي إما من Request أو من Auth مباشرة
-        $currentBranchId = $request->get('branch_id', auth()->user()->branchs_id);
-
-        $query = product_movement_another_branch::with([
-            'branchTo',
-            'userFrom',
-            'userTo',
-            'items.product'
-        ])
-        ->where('branch_from', $currentBranchId)
-        ->where('status', 'completed');
-
-        // 🌟 إصلاح التاريخ: تحويل to_date لنهاية اليوم 23:59:59
-        if ($request->filled('from_date')) {
-            $query->whereDate('created_at', '>=', $request->from_date);
-        }
-
-        if ($request->filled('to_date')) {
-            $query->whereDate('created_at', '<=', $request->to_date);
-        }
-
-        $sentMovements = $query->latest()->get(); // استخدم get أو paginate
-
-        return view('reports.movements.sent_movements', compact('sentMovements'));
-    }
-
-    /**
-     * 2. تقرير المنتجات المَسْتَلَمَة في الفرع الحالي من الفروع الأخرى
-     */
-   public function receivedReport(Request $request)
+public function sentReport(Request $request)
 {
+    // جلب فرع المستخدم الحالي إما من Request أو من Auth مباشرة
     $currentBranchId = $request->get('branch_id', auth()->user()->branchs_id);
 
     $query = product_movement_another_branch::with([
-        'branchFrom',
+        'branchTo',
         'userFrom',
         'userTo',
         'items.product'
     ])
-    ->where('branch_to', $currentBranchId)
+    ->where('branch_from', $currentBranchId)
     ->where('status', 'completed');
 
+    // 🌟 إضافة شرط البحث برقم الحركة (Movement No.)
+    if ($request->filled('movement_id')) {
+        $query->where('id', $request->movement_id);
+    }
+
+    // إصلاح التاريخ: تحويل from_date و to_date
     if ($request->filled('from_date')) {
         $query->whereDate('created_at', '>=', $request->from_date);
     }
@@ -502,11 +627,54 @@ public function show(\Illuminate\Http\Request $request)
         $query->whereDate('created_at', '<=', $request->to_date);
     }
 
-    $receivedMovements = $query->latest()->get();
+    $sentMovements = $query->latest()->paginate(5); 
+
+    if ($request->ajax()) {
+        return view('reports.movements.partials.sent_movements_table', compact('sentMovements'))->render();
+    }
+
+    return view('reports.movements.sent_movements', compact('sentMovements'));
+}
+    /**
+     * 2. تقرير المنتجات المَسْتَلَمَة في الفرع الحالي من الفروع الأخرى
+     */
+ public function receivedReport(Request $request)
+{
+    // جلب فرع المستخدم الحالي إما من Request أو من Auth مباشرة
+    $currentBranchId = $request->get('branch_id', auth()->user()->branchs_id);
+
+    $query = product_movement_another_branch::with([
+        'branchFrom',
+        'branchTo',
+        'userFrom',
+        'userTo',
+        'items.product'
+    ])
+    ->where('branch_to', $currentBranchId)
+    ->where('status', 'completed');
+
+    // 🌟 إضافة شرط البحث برقم الحركة (Movement No.)
+    if ($request->filled('movement_id')) {
+        $query->where('id', $request->movement_id);
+    }
+
+    // إصلاح التاريخ: تحويل from_date و to_date
+    if ($request->filled('from_date')) {
+        $query->whereDate('created_at', '>=', $request->from_date);
+    }
+
+    if ($request->filled('to_date')) {
+        $query->whereDate('created_at', '<=', $request->to_date);
+    }
+
+    $receivedMovements = $query->latest()->paginate(5); 
+
+    if ($request->ajax()) {
+        return view('reports.movements.partials.received_movements_table', compact('receivedMovements'))->render();
+    }
 
     return view('reports.movements.received_movements', compact('receivedMovements'));
 }
-
     /**
      * 3. تقرير شامل وحركة منتج محدد (إرسال واستلام) تفصيلي
      */

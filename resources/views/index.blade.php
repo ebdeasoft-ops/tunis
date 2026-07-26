@@ -79,19 +79,19 @@
     <div class="col-12">
         <div class="card p-3 border-0 shadow-sm" style="border-radius: 12px;">
             <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
-                <span class="fw-bold text-muted"><i class="fas fa-bolt text-warning me-2"></i> إجراءات سريعة:</span>
+                <span class="fw-bold text-muted"><i class="fas fa-bolt text-warning me-2"></i> {{ __('home.quick_actions') }}</span>
                 <div>
                     <a href="{{ url('/goToSale') }}" class="btn btn-sm btn-primary rounded-pill px-3 me-2">
-                        <i class="fas fa-plus me-1"></i> فاتورة مبيعات جديدة
+                        <i class="fas fa-plus me-1"></i> {{ __('home.new_sales_invoice') }}
                     </a>
                     <a href="{{ url('/purchases') }}" class="btn btn-sm btn-outline-success rounded-pill px-3 me-2">
-                        <i class="fas fa-cart-plus me-1"></i> فاتورة مشتريات
+                        <i class="fas fa-cart-plus me-1"></i> {{ __('home.purchase_invoice') }}
                     </a>
                     <a href="{{ url('/addnewcustomer') }}" class="btn btn-sm btn-outline-info rounded-pill px-3 me-2">
-                        <i class="fas fa-user-plus me-1"></i> إضافة عميل
+                        <i class="fas fa-user-plus me-1"></i> {{ __('home.add_customer') }}
                     </a>
                     <a href="{{ url('/getproductspricetocustomer') }}" class="btn btn-sm btn-outline-dark rounded-pill px-3">
-                        <i class="fas fa-chart-line me-1"></i> عرض تسعيرة لعميل
+                        <i class="fas fa-chart-line me-1"></i> {{ __('home.customer_price_quote') }}
                     </a>
                 </div>
             </div>
@@ -177,7 +177,7 @@
         <div class="card h-100 shadow-sm border-0" style="border-radius: 16px;">
             <div class="card-header bg-white border-bottom py-3">
                 <h6 class="card-title mb-0 fw-bold fs-15 text-dark">
-                    <i class="fas fa-chart-bar text-primary me-2"></i> مقارنة المبيعات والمشتريات (الشهر الحالي)
+                    <i class="fas fa-chart-bar text-primary me-2"></i> {{ __('home.sales_purchases_comparison_current_month') }}
                 </h6>
             </div>
             <div class="card-body">
@@ -191,7 +191,7 @@
         <div class="card h-100 shadow-sm border-0" style="border-radius: 16px;">
             <div class="card-header bg-white border-bottom py-3">
                 <h6 class="card-title mb-0 fw-bold fs-15 text-dark">
-                    <i class="fas fa-users text-primary me-2"></i> العملاء والموردين
+                    <i class="fas fa-users text-primary me-2"></i> {{ __('home.customers_and_suppliers') }}
                 </h6>
             </div>
             <div class="card-body d-flex flex-column justify-content-between align-items-center">
@@ -202,14 +202,14 @@
 
                 <div class="d-flex justify-content-around w-100 mt-2 pt-2 border-top">
                     <div class="text-center">
-                        <span class="text-muted fs-11 fw-semibold d-block">إجمالي العملاء</span>
+                        <span class="text-muted fs-11 fw-semibold d-block">{{ __('home.total_customers') }}</span>
                         <span class="fw-bold fs-16 text-primary">
                             <i class="fas fa-user-tag fs-13 me-1"></i> {{ $customersCount }}
                         </span>
                     </div>
                     <div class="vr"></div>
                     <div class="text-center">
-                        <span class="text-muted fs-11 fw-semibold d-block">إجمالي الموردين</span>
+                        <span class="text-muted fs-11 fw-semibold d-block">{{ __('home.total_suppliers') }}</span>
                         <span class="fw-bold fs-16 text-warning">
                             <i class="fas fa-truck-loading fs-13 me-1"></i> {{ $suppliersCount }}
                         </span>
@@ -225,7 +225,7 @@
         <div class="card h-100 shadow-sm border-0" style="border-radius: 16px;">
             <div class="card-header bg-white border-bottom py-3">
                 <h6 class="card-title mb-0 fw-bold fs-15 text-dark">
-                    <i class="fas fa-box text-primary me-2"></i> المرتجعات والتسليم
+                    <i class="fas fa-box text-primary me-2"></i> {{ __('home.returns_and_delivery') }}
                 </h6>
             </div>
             <div class="card-body d-flex flex-column justify-content-around p-3">
@@ -235,7 +235,7 @@
                         <i class="fas fa-truck text-info fs-5"></i>
                     </div>
                     <div>
-                        <span class="text-muted fs-12 d-block">{{ __('home.sel_product_withoud_tax') }} (اليوم)</span>
+                        <span class="text-muted fs-12 d-block">{{ __('home.sel_product_withoud_tax') }} ({{ __('home.today') }})</span>
                         <h6 class="mb-0 fw-bold fs-13">{{ $todayDeliveryCount }} {{ __('home.invoice') }} <small class="text-success">({{ number_format($todayDeliveryNet, 2) }})</small></h6>
                     </div>
                 </div>
@@ -276,10 +276,10 @@
                     <div class="p-2 bg-primary-transparent rounded-circle me-2 d-flex align-items-center justify-content-center" style="width: 38px; height: 38px;">
                         <i class="fas fa-receipt text-primary fs-5"></i>
                     </div>
-                    <h6 class="card-title mb-0 fw-bold fs-15 text-dark">أحدث العمليات اليوم</h6>
+                    <h6 class="card-title mb-0 fw-bold fs-15 text-dark">{{ __('home.latest_transactions_today') }}</h6>
                 </div>
                 <a href="{{ url('/previousSalesInvoices') }}" class="btn btn-sm btn-outline-primary rounded-pill px-3 fw-semibold">
-                    عرض الكل <i class="fas fa-arrow-left ms-1 fs-11"></i>
+                    {{ __('home.view_all') }} <i class="fas fa-arrow-left ms-1 fs-11"></i>
                 </a>
             </div>
 
@@ -289,12 +289,12 @@
                     <table class="table table-hover align-middle mb-0 text-center" style="border-collapse: separate; border-spacing: 0;">
                         <thead>
                             <tr style="background-color: #f8fafc; color: #475569; font-size: 13px;">
-                                <th class="py-3 px-3 text-start">رقم الفاتورة</th>
-                                <th class="py-3 px-3 text-start">العميل</th>
-                                <th class="py-3 px-3">المبلغ الإجمالي</th>
-                                <th class="py-3 px-3">طريقة الدفع</th>
-                                <th class="py-3 px-3">الحالة</th>
-                                <th class="py-3 px-3 text-end">التوقيت</th>
+                                <th class="py-3 px-3 text-start">{{ __('home.invoice_number') }}</th>
+                                <th class="py-3 px-3 text-start">{{ __('home.customer') }}</th>
+                                <th class="py-3 px-3">{{ __('home.total_amount') }}</th>
+                                <th class="py-3 px-3">{{ __('home.payment_method') }}</th>
+                                <th class="py-3 px-3">{{ __('home.status') }}</th>
+                                <th class="py-3 px-3 text-end">{{ __('home.time') }}</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -310,14 +310,14 @@
                                     $isReturned = $invoice->returnSales && $invoice->returnSales->isNotEmpty();
 
                                     if ($isReturned) {
-                                        $paymentMethod = 'مرتجع مبيعات';
+                                        $paymentMethod = __('home.sales_return');
                                         $badgeStyle = 'background-color: #fee2e2; color: #dc2626; border: 1px solid #fca5a5;';
                                     } else {
                                         $payValue = strtolower(trim($invoice->Pay ?? ''));
 
                                         switch ($payValue) {
                                             case 'cash':
-                                                $paymentMethod = 'نقدي';
+                                                $paymentMethod = __('home.cash');
                                                 $badgeStyle = 'background-color: #dcfce7; color: #166534; border: 1px solid #86efac;';
                                                 break;
 
@@ -326,45 +326,45 @@
                                             case 'bank':
                                             case 'network':
                                             case 'span':
-                                                $paymentMethod = 'شبكة / مدى';
+                                                $paymentMethod = __('home.card_span');
                                                 $badgeStyle = 'background-color: #e0f2fe; color: #0369a1; border: 1px solid #7dd3fc;';
                                                 break;
 
                                             case 'bank_transfer':
                                             case 'transfer':
-                                                $paymentMethod = 'تحويل بنكي';
+                                                $paymentMethod = __('home.bank_transfer');
                                                 $badgeStyle = 'background-color: #fef3c7; color: #b45309; border: 1px solid #fde047;';
                                                 break;
 
                                             case 'partition':
                                             case 'more':
                                             case 'multi':
-                                                $paymentMethod = 'تجزئة';
+                                                $paymentMethod = __('home.split_payment');
                                                 $badgeStyle = 'background-color: #f3e8ff; color: #6b21a8; border: 1px solid #d8b4fe;';
                                                 break;
 
                                             case 'credit':
                                             case 'creadit':
                                             case 'dept':
-                                                $paymentMethod = 'آجل';
+                                                $paymentMethod = __('home.credit');
                                                 $badgeStyle = 'background-color: #ffe4e6; color: #be123c; border: 1px solid #fda4af;';
                                                 break;
 
                                             default:
                                                 if ($invoice->morepayment_way == 1) {
-                                                    $paymentMethod = 'تجزئة';
+                                                    $paymentMethod = __('home.split_payment');
                                                     $badgeStyle = 'background-color: #f3e8ff; color: #6b21a8; border: 1px solid #d8b4fe;';
                                                 } elseif (($invoice->bankamount ?? 0) > 0) {
-                                                    $paymentMethod = 'شبكة / مدى';
+                                                    $paymentMethod = __('home.card_span');
                                                     $badgeStyle = 'background-color: #e0f2fe; color: #0369a1; border: 1px solid #7dd3fc;';
                                                 } elseif (($invoice->Bank_transfer ?? 0) > 0) {
-                                                    $paymentMethod = 'تحويل بنكي';
+                                                    $paymentMethod = __('home.bank_transfer');
                                                     $badgeStyle = 'background-color: #fef3c7; color: #b45309; border: 1px solid #fde047;';
                                                 } elseif (($invoice->creaditamount ?? 0) > 0) {
-                                                    $paymentMethod = 'آجل';
+                                                    $paymentMethod = __('home.credit');
                                                     $badgeStyle = 'background-color: #ffe4e6; color: #be123c; border: 1px solid #fda4af;';
                                                 } else {
-                                                    $paymentMethod = $invoice->Pay ?? 'نقدي';
+                                                    $paymentMethod = $invoice->Pay ?? __('home.cash');
                                                     $badgeStyle = 'background-color: #dcfce7; color: #166534; border: 1px solid #86efac;';
                                                 }
                                                 break;
@@ -382,7 +382,7 @@
                                     <!-- اسم العميل -->
                                     <td class="py-3 px-3 text-start fw-semibold text-dark fs-14">
                                         <i class="far fa-user text-muted me-1 fs-12"></i>
-                                        {{ $invoice->customer->name ?? $invoice->customer->customer_name ?? 'عميل نقدي' }}
+                                        {{ $invoice->customer->name ?? $invoice->customer->customer_name ?? __('home.cash_customer') }}
                                     </td>
 
                                     <!-- المبلغ الإجمالي -->
@@ -404,15 +404,15 @@
                                     <td class="py-3 px-3">
                                         @if($isReturned)
                                             <span class="badge bg-danger-transparent text-danger px-2.5 py-1.5 rounded-pill fw-semibold fs-11">
-                                                <i class="fas fa-undo me-1"></i> مسترجعة
+                                                <i class="fas fa-undo me-1"></i> {{ __('home.returned') }}
                                             </span>
                                         @elseif($invoice->status == 1 || $invoice->save == 1)
                                             <span class="badge bg-success-transparent text-success px-2.5 py-1.5 rounded-pill fw-semibold fs-11">
-                                                <i class="fas fa-check-circle me-1"></i> مكتملة
+                                                <i class="fas fa-check-circle me-1"></i> {{ __('home.completed') }}
                                             </span>
                                         @else
                                             <span class="badge bg-warning-transparent text-warning px-2.5 py-1.5 rounded-pill fw-semibold fs-11">
-                                                <i class="fas fa-clock me-1"></i> معلقة
+                                                <i class="fas fa-clock me-1"></i> {{ __('home.pending') }}
                                             </span>
                                         @endif
                                     </td>
@@ -429,7 +429,7 @@
                                         <div class="mb-2">
                                             <i class="fas fa-inbox text-light fs-1"></i>
                                         </div>
-                                        <p class="mb-0 fw-semibold">لا توجد عمليات مبيعات مسجلة اليوم حتى الآن</p>
+                                        <p class="mb-0 fw-semibold">{{ __('home.no_transactions_today') }}</p>
                                     </td>
                                 </tr>
                             @endforelse
@@ -497,9 +497,13 @@ document.addEventListener("DOMContentLoaded", function () {
     new Chart(ctx, {
         type: 'bar',
         data: {
-            labels: ['إجمالي المبيعات', 'تسليمات بدون ضريبة', 'إجمالي المشتريات'],
+            labels: [
+                '{{ __('home.total_sales') }}',
+                '{{ __('home.tax_free_deliveries') }}',
+                '{{ __('home.total_purchases') }}'
+            ],
             datasets: [{
-                label: 'المبلغ (ر.س)',
+                label: '{{ __('home.amount_sar') }}',
                 data: [
                     {{ $monthSales ?? 0 }},
                     {{ $monthDeliverySales ?? 0 }},

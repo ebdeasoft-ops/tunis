@@ -3237,7 +3237,7 @@ function chooseProduct(code, productcode, name, cost, sale_price, location, avai
                         <tr data-index="${index}">
                             <td><input type="hidden" name="products[${index}][product_id]" class="product-id form-control">
                                 <input type="hidden" name="products[${index}][product_cost]" class="product_cost">
-                                <input type="text" class="form-control product-available_quentity" type="hidden" >
+                                <input  class="form-control product-available_quentity" type="hidden" >
 
                 </td>
                             <td class="align-middle text-center">${index + 1}</td>

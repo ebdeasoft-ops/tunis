@@ -3,12 +3,25 @@
     <style>
         /* تحسينات الطباعة */
         @media print {
-            #print_Button { display: none; }
-            .breadcrumb-header { display: none; }
-            body { border: none !important; margin: 0; padding: 0; }
-            .main-content { margin-right: 0 !important; }
+            #print_Button {
+                display: none;
+            }
+
+            .breadcrumb-header {
+                display: none;
+            }
+
+            body {
+                border: none !important;
+                margin: 0;
+                padding: 0;
+            }
+
+            .main-content {
+                margin-right: 0 !important;
+            }
         }
-        
+
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             line-height: 1.6;
@@ -33,7 +46,8 @@
             color: #fff !important;
         }
 
-        #example th, #example td {
+        #example th,
+        #example td {
             padding: 12px;
             border: 1px solid #dee2e6 !important;
             text-align: center;
@@ -75,10 +89,10 @@
                                 <h4 class="text-uppercase">{{ Nameen }}</h4>
                                 <p class="text-muted small">{{ describtionen }}<br>{{ STen }}<br>{{ Taxen }}</p>
                             </div>
-                            
+
                             <div class="text-center">
                                 @php $logo = camplogo; @endphp
-                                <img src="{{ asset('assets/img/brand/'.$logo) }}" class="header-logo" alt="logo">
+                                <img src="{{ asset('assets/img/brand/' . $logo) }}" class="header-logo" alt="logo">
                                 <h3 class="mt-3 text-dark border-bottom pb-2">{{ __('home.voucher') }}</h3>
                             </div>
 
@@ -102,16 +116,31 @@
                                 </thead>
                                 <tbody>
                                     @foreach($data['transaction'] as $item)
-                                    <tr>
-                                        <td class="font-weight-bold text-primary">{{ $item['sent_abd_count'] }}</td>
-                                        <td>{{ \Carbon\Carbon::parse($item['date_export'])->format('Y-m-d') }}</td>
-                                        <td>{{ $item['name'] }}</td>
-                                        <td class="font-weight-bold">{{ number_format($item['paid_amount'], 2) }}</td>
-                                        <td>
-                                            <span class="badge badge-light p-2">{{ $item['method_pay'] }}</span>
-                                        </td>
-                                        <td class="text-right">{{ $item['note'] ?? '---' }}</td>
-                                    </tr>
+                                                                    <?php
+
+                                        $pay = '';
+                                        if ($item['method_pay'] == "Cash") {
+                                            $pay = __('report.cash');
+                                        } elseif ($item['method_pay'] == "Shabka") {
+                                            $pay = __('report.shabka');
+                                        } elseif ($item['method_pay'] == "Credit") {
+                                            $pay = __('report.credit');
+                                        } elseif ($item['method_pay'] == "Bank_transfer") {
+                                            $pay = __('home.Bank_transfer');
+                                        } else {
+                                            $pay = __('home.Partition of the amount');
+                                        }
+                                                                        ?>
+                                                                    <tr>
+                                                                        <td class="font-weight-bold text-primary">{{ $item['sent_abd_count'] }}</td>
+                                                                        <td>{{ \Carbon\Carbon::parse($item['date_export'])->format('Y-m-d') }}</td>
+                                                                        <td>{{ $item['name'] }}</td>
+                                                                        <td class="font-weight-bold">{{ number_format($item['paid_amount'], 2) }}</td>
+                                                                        <td>
+                                                                            <span class="badge badge-light p-2">{{ $pay }}</span>
+                                                                        </td>
+                                                                        <td class="text-right">{{ $item['note'] ?? '---' }}</td>
+                                                                    </tr>
                                     @endforeach
                                 </tbody>
                             </table>
@@ -120,7 +149,7 @@
                         <div class="total-text-box text-center">
                             <h5 class="mb-1 text-success">{{ __('accountes.Theamountpaid') }} كتابةً:</h5>
                             <p class="mb-0" style="font-size: 1.2rem; font-weight: bold;">
-                                <span>{{ $data['totatextlriyales'] }}</span> 
+                                <span>{{ $data['totatextlriyales'] }}</span>
                                 <span class="mx-1">و</span>
                                 <span>{{ $data['totatextlrihalala'] }}</span>
                             </p>
@@ -141,7 +170,7 @@
 
                         <div class="text-center mt-4 no-print">
                             <hr>
-                            <button class="btn btn-primary btn-lg px-5 shadow-sm" id="print_Button" onclick="printDiv()"> 
+                            <button class="btn btn-primary btn-lg px-5 shadow-sm" id="print_Button" onclick="printDiv()">
                                 <i class="fas fa-print ml-2"></i> {{ __('home.print') }}
                             </button>
                         </div>

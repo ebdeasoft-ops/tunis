@@ -66,16 +66,16 @@
                                 <option value="">{{ __('home.Choose account') }}</option>
                                 @foreach(App\Models\financial_accounts::whereIn('parent_account_number', [4, 5])->where('branchs_id',
                                     Auth()->user()->branchs_id)->get() as $acc)
-                                    <option value="{{ $acc->id }}">{{ $acc->name }} ({{ $acc->account_number }})</option>
+                                    <option value="{{ $acc->id }}"data-parent="{{ $acc->parent_account_number }}">{{ $acc->name }} ({{ $acc->account_number }})</option>
                                 @endforeach
                             </select>
                         </div>
                         <div class="col-md-4">
                             <label class="parent-label">{{ __('home.Payment method') }}</label>
-                            <select name="payment_method" class="form-control" id="pay_method_select">
-                                <option value="cash">{{ __('home.Cash') }}</option>
+                            <select name="payment_method" class="form-control" id="payment_method">
+                                <option value="Cash">{{ __('home.Cash') }}</option>
                                 <option value="Shabka"> {{ __('report.shabka') }} </option>
-                                <option value="bank">{{ __('home.Bank transfer') }}</option>
+                                <option value="Bank_transfer">{{ __('home.Bank transfer') }}</option>
                             </select>
                             <input type="hidden" name="pay_method_type" id="pay_method_type" value="cash">
                         </div>
@@ -153,18 +153,20 @@
 
     <script>
 
-        $('#payment_account_id').on('change', function() {
-    // جلب الـ data-parent للخيار الذي تم تحديده
-    var parentAccount = $(this).find(':selected').data('parent');
+                        $('#main_account_id').on('change', function() {
+                // جلب الـ data-parent للخيار اللي تم تحديده
+                var parentAccount = $(this).find(':selected').data('parent');
 
-    if (parentAccount == 4) {
-        // إذا كان الأب 4 (خزينة مثلاً) -> يتم اختيار نقدي افتراضياً
-        $('#pay_method_type').val('Cash').trigger('change');
-    } else if (parentAccount == 5) {
-        // إذا كان الأب 5 (بنك مثلاً) -> يتم اختيار شبكة أو تحويل بنكي افتراضياً
-        $('#pay_method_type').val('Bank_transfer').trigger('change'); // أو 'Shabka' حسب رغبتك
-    }
-});
+                if (parentAccount == 5) {
+                    // إذا كان الأب 4 (خزينة) -> يقف على نقدي (Cash)
+                    $('#payment_method').val('Cash').trigger('change');
+                } else if (parentAccount == 4) {
+                    // إذا كان الأب 5 (بنك) -> يقف على حساب بنكي (Bank_transfer)
+                    $('#payment_method').val('Bank_transfer').trigger('change');
+                }
+            });
+
+
 
 
         let currentVoucherId = null;
@@ -266,7 +268,7 @@
             data.forEach(function (item) {
                 if (parseFloat(item.debtor) > 0) {
                     $('#date_input').val(item.date_export);
-                    $('#pay_method_select').val(item.pay_method).trigger('change');
+                    $('#payment_method').val(item.pay_method).trigger('change');
                     $('#main_account_id').val(item.customer_id).trigger('change');
                 }
                 else if (parseFloat(item.creditor) > 0) {
@@ -388,7 +390,6 @@
                         submitBtn.prop('disabled', false).html('<i class="fas fa-save ml-1"></i> {{ __('home.save_voucher') }}');
                     },
                     error: function (xhr) {
-                        console.log(xhr)
                         submitBtn.prop('disabled', false).html('<i class="fas fa-save ml-1"></i> {{ __('home.save_voucher') }}');
                         let errorMsg = xhr.responseJSON ? xhr.responseJSON.message : "{{ __('home.data_error') }}";
                         Swal.fire("{{ __('home.error') }}!", errorMsg, 'error');

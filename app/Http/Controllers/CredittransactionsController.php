@@ -89,7 +89,7 @@ class CredittransactionsController extends Controller
                     continue;
 
                 $total_receipt_amount += $amount;
-                $sub_account = financial_accounts::find($item['client_account_id']);
+                $sub_account = financial_accounts::find($item['account_id']);
 
                 if ($sub_account) {
                     $sub_account->increment('creditor_current', $amount);

@@ -3,6 +3,8 @@
 @section('css')
 <link href="{{ URL::asset('assets/plugins/owl-carousel/owl.carousel.css') }}" rel="stylesheet" />
 <link href="{{ URL::asset('assets/plugins/jqvmap/jqvmap.min.css') }}" rel="stylesheet">
+<!-- مكتبة Animate.css للحركات الاحترافية -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@500&display=swap" rel="stylesheet">
@@ -43,6 +45,22 @@
     max-height: 300px;
     overflow-y: auto;
 }
+
+/* تأثير تكبير ناعم عند الهوفر على الكاردز والبطاقات */
+.card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+.card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.05) !important;
+}
+
+/* تأخير زمني متدرج للحركات (Stagger) */
+.animate-delay-1 { animation-delay: 0.1s; }
+.animate-delay-2 { animation-delay: 0.2s; }
+.animate-delay-3 { animation-delay: 0.3s; }
+.animate-delay-4 { animation-delay: 0.4s; }
+.animate-delay-5 { animation-delay: 0.5s; }
 </style>
 @endsection
 
@@ -51,14 +69,14 @@
 @stop
 
 @section('page-header')
-<div class="breadcrumb-header justify-content-between align-items-center my-4 p-3 bg-white shadow-sm" style="border-radius: 15px;">
+<!-- هيدر الصفحة مع حركة النزول للأسفل -->
+<div class="breadcrumb-header justify-content-between align-items-center my-4 p-3 bg-white shadow-sm animate__animated animate__fadeInDown" style="border-radius: 15px;">
     <div class="left-content {{ App::getLocale() == 'en' ? 'text-left' : 'text-right' }}">
         <h2 class="main-content-title tx-24 mg-b-1 welcoming font-weight-bold" style="color: #004d44;">
             {{ __('home.welcome') }}
             <span class="text-dark">{{ Auth::user()->name }}</span> !
         </h2>
     </div>
-
 
     <div class="dropdown nav-item main-header-notification"></div>
 
@@ -74,8 +92,9 @@
         </div>
     </div>
 </div>
-<!-- شريط العمليات السريعة -->
-<div class="row mb-4">
+
+<!-- شريط العمليات السريعة مع حركات انسيابية -->
+<div class="row mb-4 animate__animated animate__fadeInUp animate-delay-1">
     <div class="col-12">
         <div class="card p-3 border-0 shadow-sm" style="border-radius: 12px;">
             <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
@@ -102,8 +121,8 @@
 
 @section('content')
 @can('Home')
-<!-- 1. صف البطاقات السريعة (KPIs) -->
-<div class="row row-sm mb-4">
+<!-- 1. صف البطاقات السريعة (KPIs) مع حركات متتابعة -->
+<div class="row row-sm mb-4 animate__animated animate__fadeInUp animate-delay-2">
     <div class="col-xl-3 col-lg-6 col-md-6 col-sm-12 mb-3 mb-xl-0">
         <div class="card bg-primary-gradient text-white">
             <div class="card-body">
@@ -169,11 +188,11 @@
     </div>
 </div>
 
-<!-- صف الرسم البياني والإحصائيات (3 أجزاء بجانب بعض) -->
+<!-- صف الرسوم البيانية والإحصائيات (كل رسمة مخصصة بحركة Animation مستقلة) -->
 <div class="row row-sm mb-4">
 
-    <!-- 1. الرسم البياني لمقارنة الأداء الشهري (نصف الشاشة 6/12) -->
-    <div class="col-xl-6 col-lg-12 mb-3 mb-xl-0">
+    <!-- 1. الرسم البياني الأول (مقارنة الأداء الشهري) مع حركة خاصة -->
+    <div class="col-xl-6 col-lg-12 mb-3 mb-xl-0 animate__animated animate__fadeInLeft animate-delay-3">
         <div class="card h-100 shadow-sm border-0" style="border-radius: 16px;">
             <div class="card-header bg-white border-bottom py-3">
                 <h6 class="card-title mb-0 fw-bold fs-15 text-dark">
@@ -186,8 +205,8 @@
         </div>
     </div>
 
-    <!-- 2. الشارت الدائري للعملاء والموردين (ربع الشاشة 3/12) -->
-    <div class="col-xl-3 col-lg-6 mb-3 mb-xl-0">
+    <!-- 2. الرسم البياني الدائري (العملاء والموردين) مع حركة صعود -->
+    <div class="col-xl-3 col-lg-6 mb-3 mb-xl-0 animate__animated animate__fadeInUp animate-delay-4">
         <div class="card h-100 shadow-sm border-0" style="border-radius: 16px;">
             <div class="card-header bg-white border-bottom py-3">
                 <h6 class="card-title mb-0 fw-bold fs-15 text-dark">
@@ -195,11 +214,9 @@
                 </h6>
             </div>
             <div class="card-body d-flex flex-column justify-content-between align-items-center">
-
                 <div style="height: 180px; width: 100%;">
                     <canvas id="partnersDoughnutChart"></canvas>
                 </div>
-
                 <div class="d-flex justify-content-around w-100 mt-2 pt-2 border-top">
                     <div class="text-center">
                         <span class="text-muted fs-11 fw-semibold d-block">{{ __('home.total_customers') }}</span>
@@ -215,13 +232,12 @@
                         </span>
                     </div>
                 </div>
-
             </div>
         </div>
     </div>
 
-    <!-- 3. ملخص المرتجعات والتسليم (ربع الشاشة 3/12) -->
-    <div class="col-xl-3 col-lg-6">
+    <!-- 3. صندوق ملخص المرتجعات والتسليم (مع حركة يمين لليسار) -->
+    <div class="col-xl-3 col-lg-6 animate__animated animate__fadeInRight animate-delay-4">
         <div class="card h-100 shadow-sm border-0" style="border-radius: 16px;">
             <div class="card-header bg-white border-bottom py-3">
                 <h6 class="card-title mb-0 fw-bold fs-15 text-dark">
@@ -229,7 +245,6 @@
                 </h6>
             </div>
             <div class="card-body d-flex flex-column justify-content-around p-3">
-
                 <div class="d-flex align-items-center mb-2">
                     <div class="p-2.5 bg-info-transparent rounded-circle me-3 text-center d-flex align-items-center justify-content-center" style="width: 42px; height: 42px;">
                         <i class="fas fa-truck text-info fs-5"></i>
@@ -259,18 +274,15 @@
                         <h6 class="mb-0 fw-bold fs-13">{{ $resourcePurchasesCount }} {{ __('home.invoice') }}</h6>
                     </div>
                 </div>
-
             </div>
         </div>
     </div>
-
 </div>
 
-<!-- صف أحدث العمليات -->
-<div class="row row-sm mb-4">
+<!-- صف أحدث العمليات والجدول مع حركة ظهور متأخرة -->
+<div class="row row-sm mb-4 animate__animated animate__fadeInUp animate-delay-5">
     <div class="col-12">
         <div class="card shadow-sm border-0" style="border-radius: 16px; overflow: hidden;">
-            <!-- هيدر الجدول -->
             <div class="card-header bg-white border-bottom d-flex justify-content-between align-items-center py-3 px-4">
                 <div class="d-flex align-items-center">
                     <div class="p-2 bg-primary-transparent rounded-circle me-2 d-flex align-items-center justify-content-center" style="width: 38px; height: 38px;">
@@ -283,7 +295,6 @@
                 </a>
             </div>
 
-            <!-- جسم الجدول -->
             <div class="card-body p-0">
                 <div class="table-responsive">
                     <table class="table table-hover align-middle mb-0 text-center" style="border-collapse: separate; border-spacing: 0;">
@@ -300,56 +311,37 @@
                         <tbody>
                             @forelse($latestInvoices as $invoice)
                                 @php
-                                    // 1. حساب إجمالي الفاتورة
                                     $totalAmount = ($invoice->cashamount ?? 0) + ($invoice->bankamount ?? 0) + ($invoice->creaditamount ?? 0) + ($invoice->Bank_transfer ?? 0);
                                     if($totalAmount == 0 && isset($invoice->Price)) {
                                         $totalAmount = $invoice->Price;
                                     }
-
-                                    // 2. التحقق مما إذا كانت الفاتورة مرتجع
                                     $isReturned = $invoice->returnSales && $invoice->returnSales->isNotEmpty();
-
                                     if ($isReturned) {
                                         $paymentMethod = __('home.sales_return');
                                         $badgeStyle = 'background-color: #fee2e2; color: #dc2626; border: 1px solid #fca5a5;';
                                     } else {
                                         $payValue = strtolower(trim($invoice->Pay ?? ''));
-
                                         switch ($payValue) {
                                             case 'cash':
                                                 $paymentMethod = __('home.cash');
                                                 $badgeStyle = 'background-color: #dcfce7; color: #166534; border: 1px solid #86efac;';
                                                 break;
-
-                                            case 'shabka':
-                                            case 'card':
-                                            case 'bank':
-                                            case 'network':
-                                            case 'span':
+                                            case 'shabka': case 'card': case 'bank': case 'network': case 'span':
                                                 $paymentMethod = __('home.card_span');
                                                 $badgeStyle = 'background-color: #e0f2fe; color: #0369a1; border: 1px solid #7dd3fc;';
                                                 break;
-
-                                            case 'bank_transfer':
-                                            case 'transfer':
+                                            case 'bank_transfer': case 'transfer':
                                                 $paymentMethod = __('home.bank_transfer');
                                                 $badgeStyle = 'background-color: #fef3c7; color: #b45309; border: 1px solid #fde047;';
                                                 break;
-
-                                            case 'partition':
-                                            case 'more':
-                                            case 'multi':
+                                            case 'partition': case 'more': case 'multi':
                                                 $paymentMethod = __('home.split_payment');
                                                 $badgeStyle = 'background-color: #f3e8ff; color: #6b21a8; border: 1px solid #d8b4fe;';
                                                 break;
-
-                                            case 'credit':
-                                            case 'creadit':
-                                            case 'dept':
+                                            case 'credit': case 'creadit': case 'dept':
                                                 $paymentMethod = __('home.credit');
                                                 $badgeStyle = 'background-color: #ffe4e6; color: #be123c; border: 1px solid #fda4af;';
                                                 break;
-
                                             default:
                                                 if ($invoice->morepayment_way == 1) {
                                                     $paymentMethod = __('home.split_payment');
@@ -372,35 +364,26 @@
                                     }
                                 @endphp
                                 <tr style="border-bottom: 1px solid #f1f5f9;">
-                                    <!-- رقم الفاتورة -->
                                     <td class="py-3 px-3 text-start">
                                         <span class="fw-bold px-2 py-1 rounded" style="background-color: #f1f5f9; color: #334155; font-family: monospace; font-size: 13px;">
                                             #{{ $invoice->invoice_number ?? $invoice->id }}
                                         </span>
                                     </td>
-
-                                    <!-- اسم العميل -->
                                     <td class="py-3 px-3 text-start fw-semibold text-dark fs-14">
                                         <i class="far fa-user text-muted me-1 fs-12"></i>
                                         {{ $invoice->customer->name ?? $invoice->customer->customer_name ?? __('home.cash_customer') }}
                                     </td>
-
-                                    <!-- المبلغ الإجمالي -->
                                     <td class="py-3 px-3">
                                         <span class="fw-extrabold fs-15 {{ $isReturned ? 'text-danger' : 'text-success' }}" style="letter-spacing: 0.3px;">
                                             {{ $isReturned ? '-' : '' }}{{ number_format($totalAmount, 2) }}
                                             <small class="fs-11 text-muted fw-normal me-1">{{ __('home.SAR') }}</small>
                                         </span>
                                     </td>
-
-                                    <!-- طريقة الدفع -->
                                     <td class="py-3 px-3">
                                         <span class="px-3 py-1 rounded-pill fw-bold fs-12 d-inline-block" style="{{ $badgeStyle }}">
                                             {{ $paymentMethod }}
                                         </span>
                                     </td>
-
-                                    <!-- الحالة -->
                                     <td class="py-3 px-3">
                                         @if($isReturned)
                                             <span class="badge bg-danger-transparent text-danger px-2.5 py-1.5 rounded-pill fw-semibold fs-11">
@@ -413,11 +396,9 @@
                                         @else
                                             <span class="badge bg-warning-transparent text-warning px-2.5 py-1.5 rounded-pill fw-semibold fs-11">
                                                 <i class="fas fa-clock me-1"></i> {{ __('home.pending') }}
-                                            </span>
+                                                </span>
                                         @endif
                                     </td>
-
-                                    <!-- الوقت -->
                                     <td class="py-3 px-3 text-end text-muted fs-12 fw-medium">
                                         <i class="far fa-clock me-1 text-light-gray"></i>
                                         {{ $invoice->created_at ? $invoice->created_at->diffForHumans() : '-' }}

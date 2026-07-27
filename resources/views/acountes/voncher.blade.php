@@ -152,6 +152,21 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <script>
+
+        $('#payment_account_id').on('change', function() {
+    // جلب الـ data-parent للخيار الذي تم تحديده
+    var parentAccount = $(this).find(':selected').data('parent');
+
+    if (parentAccount == 4) {
+        // إذا كان الأب 4 (خزينة مثلاً) -> يتم اختيار نقدي افتراضياً
+        $('#pay_method_type').val('Cash').trigger('change');
+    } else if (parentAccount == 5) {
+        // إذا كان الأب 5 (بنك مثلاً) -> يتم اختيار شبكة أو تحويل بنكي افتراضياً
+        $('#pay_method_type').val('Bank_transfer').trigger('change'); // أو 'Shabka' حسب رغبتك
+    }
+});
+
+
         let currentVoucherId = null;
         let rowIdx = 0;
 

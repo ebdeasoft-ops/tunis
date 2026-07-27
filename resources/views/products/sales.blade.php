@@ -359,14 +359,14 @@ td .d-flex {
                                 <col style="width:10%">
                                 <col style="width:15%">
                                 <col style="width:8%">
+                                <col style="width:9%">
+                                <col style="width:9%">
                                 <col style="width:7%">
-                                <col style="width:7%">
-                                <col style="width:7%">
                                 <col style="width:8%">
                                 <col style="width:8%">
+                                <col style="width:5%">
+                                <col style="width:6%">
                                 <col style="width:8%">
-                                <col style="width:8%">
-                                <col style="width:10%">
                                 <col style="width:8%">
                                 <thead>
                                     <tr>
@@ -381,6 +381,7 @@ td .d-flex {
                                         <th> {{ __('home.productprice') }} </th>
                                         <th>{{ __('home.quantity') }}</th>
                                         <th>{{ __('home.price') }}</th>
+
                                         <th>{{ __('home.discount') }}</th>
                                         <th style="width: 10%">{{ __('home.avt_rate') }}</th>
                                         <th>{{ __('home.addedValue') }}</th>
@@ -1596,7 +1597,8 @@ $('select[name="paymentmethod"]').on('change', function() {
 
     if (isBank) {
         // إذا اخترت البنك: نعطل الخيارات الأخرى، ونترك الشبكة والتحويل، ونُفعل الحقل ليصبح قابلاً للتعديل
-        $paymentType.find('option').not('[value="Shabka"], [value="Bank_transfer"]').hide().prop('disabled', true);
+        $paymentType.find('option').not('[value="Shabka"], [value="Bank_transfer"]').hide().prop('disabled',
+            true);
         $paymentType.val('Shabka').change();
         $paymentType.prop('disabled', false); // مسموح بالتعديل ويتم إرساله
 
@@ -1611,7 +1613,7 @@ $('select[name="paymentmethod"]').on('change', function() {
         $paymentType.find('option').not('[value="Partition"]').hide().prop('disabled', true);
         $paymentType.val('Partition').change();
         $paymentType.prop('disabled', false); // نتركه غير معطل كي يتم إرسال قيمته
-        
+
         $('#paymentmethod_MODALE').modal().show();
         var value = document.getElementById('grandTotal').value;
         document.getElementById('totalvalue').innerHTML = value * 1;
@@ -2597,7 +2599,7 @@ $("#formdata").on('submit', function(e) {
         if (result.isConfirmed) {
             if (isSubmitting) return false;
             isSubmitting = true;
-    $('#payment_type').prop('disabled', false);
+            $('#payment_type').prop('disabled', false);
 
             $('#massagesave').modal('show');
             var url = "{{ URL::to('save_invoice_sale') }}";
@@ -3235,6 +3237,8 @@ function chooseProduct(code, productcode, name, cost, sale_price, location, avai
                         <tr data-index="${index}">
                             <td><input type="hidden" name="products[${index}][product_id]" class="product-id form-control">
                                 <input type="hidden" name="products[${index}][product_cost]" class="product_cost">
+                                <input type="text" class="form-control product-available_quentity" type="hidden" >
+
                 </td>
                             <td class="align-middle text-center">${index + 1}</td>
 
@@ -3252,7 +3256,6 @@ function chooseProduct(code, productcode, name, cost, sale_price, location, avai
                                 </div>
                             </td>
                             <td><input type="text" class="form-control product-cost" readonly value="0"></td>
-                            <td><input type="text" class="form-control product-available_quentity" readonly ></td>
 
                             <td><input type="text" name="products[${index}][price-tax]"
                                     class="form-control product-price-tax" value="0" min="0" onchange="calculateTotals_with_tax()"></td>

@@ -12,6 +12,7 @@ return [
     | you want to customize your views to better match your application.
     |
     */
+    'invoice_number'=>'رقم الفاتورة',
     'type' => 'النوع',
     'public' => 'عام',
     'client_and_supplier' => 'عميل ومورد',
@@ -92,8 +93,8 @@ return [
 
     "connect_start" => "ابدأ الربط",
     'sendede_done' => "تم الارسال للزكاة ",
-    'not_sended' => "لم يتم ارسالها للزكاة",
-    'previousSales_not_sended_Invoices' => "الفواتير لم يتم للزكاة",
+    'not_sended' => "فواتير لم ترسل للزكاة",
+    'previousSales_not_sended_Invoices' => "الفواتير لم ترسل للزكاة",
     'previousSales_sended_Invoices' => "  الفواتير تم ارسلها للزكاة",
 
     'voucher' => 'سند قبض',

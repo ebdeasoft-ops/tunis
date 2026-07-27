@@ -170,6 +170,7 @@ public function exportPdf(Request $request)
 
   public function index(Request $request)
 {
+return $request;
     $draftMovement = null;
     $draftItems = [];
     
@@ -186,7 +187,7 @@ public function exportPdf(Request $request)
 
     // جلب الـ branch_id من الرابط، وإذا لم يوجد، يتم استخدام فرع المستخدم الحالي
     $branchId = $request->get('branch_id', auth()->user()->branchs_id);
-
+return  $branchId;
     return view('supProcesses.send_product_to_branch', compact('draftMovement', 'draftItems', 'branchId'));
 }
     /**

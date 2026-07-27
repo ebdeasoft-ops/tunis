@@ -36,10 +36,10 @@
                                 <td><span class="badge badge-info">{{ number_format($draft->Totalcost, 2) }}</span></td>
                                 <td>{{ $draft->created_at->format('Y-m-d H:i') }}</td>
                                 <td>
-                                    <a href="{{ url(Mcamara\LaravelLocalization\Facades\LaravelLocalization::getCurrentLocale().'/sendProduct?draft_id=' . $draft->id) }}"
-                                        class="btn btn-sm btn-primary">
-                                        <i class="las la-edit"></i> استكمال وتعديل المسودة
-                                    </a>
+                                 <a href="{{ url(Mcamara\LaravelLocalization\Facades\LaravelLocalization::getCurrentLocale().'/sendProduct?draft_id=' . $draft->id . '&branch_id=' . $branchId) }}"
+    class="btn btn-sm btn-primary">
+    <i class="las la-edit"></i> استكمال وتعديل المسودة
+</a>
                                 </td>
                             </tr>
                             @empty

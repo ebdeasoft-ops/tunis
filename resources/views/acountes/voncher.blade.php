@@ -373,6 +373,7 @@
                         submitBtn.prop('disabled', false).html('<i class="fas fa-save ml-1"></i> {{ __('home.save_voucher') }}');
                     },
                     error: function (xhr) {
+                        console.log(xhr)
                         submitBtn.prop('disabled', false).html('<i class="fas fa-save ml-1"></i> {{ __('home.save_voucher') }}');
                         let errorMsg = xhr.responseJSON ? xhr.responseJSON.message : "{{ __('home.data_error') }}";
                         Swal.fire("{{ __('home.error') }}!", errorMsg, 'error');

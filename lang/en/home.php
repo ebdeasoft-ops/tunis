@@ -7,12 +7,14 @@ return [
     | English Language Lines - Full Version 2026
     |--------------------------------------------------------------------------
     */
+    'invoice_number' => 'NO',
+
     'type' => 'Type',
     'public' => 'Public',
     'client_and_supplier' => 'Client & Supplier',
-    'received_movements_report'=>'Previous Receipt Vouchers',
-    'sent_movements_report'=>'Previous Dispatch Vouchers',
-     'no_attachments'=>'no_attachments',
+    'received_movements_report' => 'Previous Receipt Vouchers',
+    'sent_movements_report' => 'Previous Dispatch Vouchers',
+    'no_attachments' => 'no_attachments',
     // --- التعديلات الأخيرة ---
     "transction_day" => "The Movement Today",
     'quick_actions' => 'Quick Actions:',
@@ -588,7 +590,7 @@ return [
     'cach_from_bank' => "Bank Transfer from Owner",
     'cach_bank' => "Cash from Bank",
     'shabka_bank' => "Transfer from Bank",
-// ... التراجم الموجودة مسبقاً
+    // ... التراجم الموجودة مسبقاً
     "send_product_from_brance" => "Issue Voucher", // أو Transfer Out
     "recive_product_from_brance" => "Receive Voucher", // أو Transfer In
     'send_product_from_other_branch_other' => "Send Product to Other Branch",

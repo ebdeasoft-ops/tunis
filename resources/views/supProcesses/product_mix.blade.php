@@ -1,240 +1,204 @@
 @extends('layouts.master')
+
 @section('css')
-<!-- Internal Data table css -->
-<link href="{{ URL::asset('assets/plugins/datatable/css/dataTables.bootstrap4.min.css') }}" rel="stylesheet" />
-<link href="{{ URL::asset('assets/plugins/datatable/css/buttons.bootstrap4.min.css') }}" rel="stylesheet">
-<link href="{{ URL::asset('assets/plugins/datatable/css/responsive.bootstrap4.min.css') }}" rel="stylesheet" />
-<link href="{{ URL::asset('assets/plugins/datatable/css/jquery.dataTables.min.css') }}" rel="stylesheet">
-<link href="{{ URL::asset('assets/plugins/datatable/css/responsive.dataTables.min.css') }}" rel="stylesheet">
-<link href="{{ URL::asset('assets/plugins/select2/css/select2.min.css') }}" rel="stylesheet">
+    <!-- Internal Data table css -->
+    <link href="{{ URL::asset('assets/plugins/datatable/css/dataTables.bootstrap4.min.css') }}" rel="stylesheet" />
+    <link href="{{ URL::asset('assets/plugins/datatable/css/buttons.bootstrap4.min.css') }}" rel="stylesheet">
+    <link href="{{ URL::asset('assets/plugins/datatable/css/responsive.bootstrap4.min.css') }}" rel="stylesheet" />
+    <link href="{{ URL::asset('assets/plugins/datatable/css/jquery.dataTables.min.css') }}" rel="stylesheet">
+    <link href="{{ URL::asset('assets/plugins/datatable/css/responsive.dataTables.min.css') }}" rel="stylesheet">
+    <link href="{{ URL::asset('assets/plugins/select2/css/select2.min.css') }}" rel="stylesheet">
+    <!-- Internal Spectrum-colorpicker css -->
+    <link href="{{ URL::asset('assets/plugins/spectrum-colorpicker/spectrum.css') }}" rel="stylesheet">
 
-<!-- Internal Spectrum-colorpicker css -->
-<link href="{{ URL::asset('assets/plugins/spectrum-colorpicker/spectrum.css') }}" rel="stylesheet">
 
-<!-- Internal Select2 css -->
-<link href="{{ URL::asset('assets/plugins/select2/css/select2.min.css') }}" rel="stylesheet">
+<style>
+    /* إجبار كل النصوص والأرقام والعناصر داخل جداول العرض على الظهور باللون الأبيض الناصع */
+    #example, #example *, 
+    #tableTotalPrice, #tableTotalPrice * {
+        color: #ffffff !important;
+    }
+
+    /* إجبار الأزرار أو الروابط داخل الجدول إن وجدت على أن تكون واضحة */
+    #example a, #tableTotalPrice a {
+        color: #ffffff !important;
+    }
+</style>
+@endsection
 
 @section('title')
-{{__('home.product_mix')}}@stop
+    {{ __('home.product_mix') }}
 @endsection
-@section('page-header')
-<div class="main-parent">
-    <!-- breadcrumb -->
-    <div class="breadcrumb-header justify-content-between parent-heading">
-        <div class="my-auto">
-            <div class="d-flex">
-                <h4 class="content-title mb-0 my-auto">{{__('home.product_mix')}}</h4><span class="text-muted mt-1 tx-13 mr-2 mb-0">
-                </span>
-            </div>
 
-            
-           
-                                
+@section('page-header')
+    <!-- breadcrumb -->
+    <div class="breadcrumb-header justify-content-between align-items-center my-3">
+        <div class="my-auto">
+            <div class="d-flex align-items-center">
+                <h4 class="content-title mb-0 font-weight-bold text-primary">{{ __('home.product_mix') }}</h4>
+                <span class="text-muted mt-1 tx-13 mr-2 mb-0"></span>
+            </div>
         </div>
         <div class="choose-product">
-                                    <button style="background-color: #23395D;" class="modal-effect btn btn-sm btn-info p-2 m-1 button-eng" data-effect="effect-scale" data-toggle="modal" href="#updateinvoicefromsale" title="تحديد"><i style=" height: 100;font-weight:400 !important;
-                                                 width: 195px;
-                                                 font-size:13px" class="las"> {{ __('home.update_product_mix') }}</i>
-                                        <svg style="width: 18px;height:18px" xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-user-plus" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
-                                            <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
-                                            <path d="M8 7a4 4 0 1 0 8 0a4 4 0 0 0 -8 0"></path>
-                                            <path d="M16 19h6"></path>
-                                            <path d="M19 16v6"></path>
-                                            <path d="M6 21v-2a4 4 0 0 1 4 -4h4"></path>
-                                        </svg>
-                                    </button>
-                                </div>
+            <button style="background-color: #23395D;" class="modal-effect btn btn-sm btn-info px-3 py-2 shadow-sm font-weight-bold" data-effect="effect-scale" data-toggle="modal" href="#updateinvoicefromsale" title="تحديد">
+                <i class="las la-edit ml-1"></i> {{ __('home.update_product_mix') }}
+                <svg style="width: 18px; height: 18px; vertical-align: middle;" xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-user-plus mr-1" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                    <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+                    <path d="M8 7a4 4 0 1 0 8 0a4 4 0 0 0 -8 0"></path>
+                    <path d="M16 19h6"></path>
+                    <path d="M19 16v6"></path>
+                    <path d="M6 21v-2a4 4 0 0 1 4 -4h4"></path>
+                </svg>
+            </button>
+        </div>
     </div>
     <!-- breadcrumb -->
-    @endsection
-    @section('content')
+@endsection
+
+@section('content')
 
     @if (count($errors) > 0)
-    <div class="alert alert-danger">
-        <button aria-label="Close" class="close" data-dismiss="alert" type="button">
-            <span aria-hidden="true">&times;</span>
-        </button>
-        <strong>خطا</strong>
-        <ul>
-            @foreach ($errors->all() as $error)
-            <li>{{ $error }}</li>
-            @endforeach
-        </ul>
-    </div>
+        <div class="alert alert-danger alert-dismissible fade show shadow-sm" role="alert">
+            <button aria-label="Close" class="close" data-dismiss="alert" type="button">
+                <span aria-hidden="true">&times;</span>
+            </button>
+            <strong>خطأ</strong>
+            <ul class="mb-0 mt-1">
+                @foreach ($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
     @endif
+
     @if (session()->has('nodataprint'))
-    <div class="alert alert-warning  alert-dismissible fade show" role="alert">
-        <br>
-        <strong>{{ __('home.nodataprint') }}</strong>
-        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-            <span aria-hidden="true">&times;</span>
-        </button>
-    </div>
+        <div class="alert alert-warning alert-dismissible fade show shadow-sm" role="alert">
+            <strong>{{ __('home.nodataprint') }}</strong>
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
     @endif
-    <!-- row -->
+
+    <!-- Row Form Section -->
     <div class="row">
-
         <div class="col-xl-12">
-            <div style="border-radius:5px;margin-bottom:0" class="card mg-b-20 p-3">
-
-
-                <div style="border-radius: 5px" class="card pb-0 p-3">
-
+            <div class="card shadow-sm mb-4 border-0">
+                <div class="card-body">
+                    
                     <form action="{{ url(Mcamara\LaravelLocalization\Facades\LaravelLocalization::getCurrentLocale().'/'. ($page = 'AddproducttoSupllier')) }}" method="POST" role="search" autocomplete="off">
                         {{ csrf_field() }}
 
-
-
-
                         <div class="row">
-
-                        
-
-                        <div class="col">
-                                <label for="inputName" class="control-label parent-label"> {{__('home.productcode_mix')}}</label>
-                                <input readonly type="text" class="form-control parent-input " id="productcode_mix" name="productcode_mix" title="يرجي ادخال رقم الجوال " >
+                            <div class="col-md-4 mb-3">
+                                <label for="productcode_mix" class="control-label font-weight-bold text-muted">{{ __('home.productcode_mix') }}</label>
+                                <input readonly type="text" class="form-control bg-light" id="productcode_mix" name="productcode_mix">
                             </div>
 
-
-                            <div class="col">
-                                <label for="inputName" class="control-label parent-label"> {{__('home.mixproductname')}}</label>
-                                <input type="text" class="form-control parent-input " id="mixproductname" name="mixproductname" title="يرجي ادخال رقم الجوال " >
-                            </div>
-                            <div class="col">
-                                <label for="inputName" class="control-label parent-label"> {{__('home.cost')}} </label>
-                                <input type="text" class="form-control parent-input" id="mixproduct_cost" name="mixproduct_cost" value=0>
+                            <div class="col-md-4 mb-3">
+                                <label for="mixproductname" class="control-label font-weight-bold text-muted">{{ __('home.mixproductname') }}</label>
+                                <input type="text" class="form-control" id="mixproductname" name="mixproductname">
                             </div>
 
-
+                            <div class="col-md-4 mb-3">
+                                <label for="mixproduct_cost" class="control-label font-weight-bold text-muted">{{ __('home.cost') }}</label>
+                                <input type="text" class="form-control" id="mixproduct_cost" name="mixproduct_cost" value="0">
+                            </div>
                         </div>
 
-<br>
-<h3><p>{{__('home.component')}}</p></h3>
+                        <hr class="my-4">
+                        <h5 class="text-secondary font-weight-bold mb-3">{{ __('home.component') }}</h5>
 
-                        <div class="row">
-
-
-                            <!-- col-4 -->
-
-
-
-                            <input type="hidden" id="token_search" value="{{csrf_token() }}">
+                        <div class="row align-items-end">
+                            <input type="hidden" id="token_search" value="{{ csrf_token() }}">
                             <input type="hidden" id="productNo">
 
-
-                            <div class="col-lg-3 mg-lg-t-30" style=" height: 100; width: 300px;padding:0;">
-
-                                <div class="col-lg-3 mg-t-20 mg-lg-t-0">
-                                    <a style="background-color: #FBA10F;font-size: 13px;width : 128px;margin-top:5px" class="modal-effect btn btn-sm btn-info p-1 py-2" data-effect="effect-scale" data-toggle="modal" href="#SearchProduct" title="تحديد">{{__('home.chooose product')}}
-                                        <svg style="width: 16px;height:16px" xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-search" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
-                                            <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
-                                            <path d="M10 10m-7 0a7 7 0 1 0 14 0a7 7 0 1 0 -14 0"></path>
-                                            <path d="M21 21l-6 -6"></path>
-                                        </svg>
-                                    </a>
-                                </div>
+                            <div class="col-lg-3 mb-3">
+                                <a style="background-color: #FBA10F;" class="modal-effect btn btn-sm btn-warning text-white px-3 py-2 font-weight-bold shadow-sm w-100" data-effect="effect-scale" data-toggle="modal" href="#SearchProduct" title="تحديد">
+                                    {{ __('home.chooose product') }}
+                                    <svg style="width: 16px; height: 16px; vertical-align: middle;" xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-search mr-1" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                        <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+                                        <path d="M10 10m-7 0a7 7 0 1 0 14 0a7 7 0 1 0 -14 0"></path>
+                                        <path d="M21 21l-6 -6"></path>
+                                    </svg>
+                                </a>
                             </div>
 
-
-
-                            <div class="col-lg-4">
-                                <label for="inputName" class="control-label parent-label"> {{__('home.productname')}} </label>
-                                <input type="text" class="form-control parent-input" id="productnameshow" name="productnameshow" readonly >
-
+                            <div class="col-lg-4 mb-3">
+                                <label for="productnameshow" class="control-label font-weight-bold text-muted">{{ __('home.productname') }}</label>
+                                <input type="text" class="form-control bg-light" id="productnameshow" name="productnameshow" readonly>
                             </div>
-                            <div class="col-lg-2 col-md-6">
-                                <label for="inputName" class="control-label parent-label"> {{__('home.quantity')}} </label>
-                                <input type="text" class="form-control parent-input" id="quentity" name="quentity">
+
+                            <div class="col-lg-2 col-md-6 mb-3">
+                                <label for="quentity" class="control-label font-weight-bold text-muted">{{ __('home.quantity') }}</label>
+                                <input type="text" class="form-control" id="quentity" name="quentity">
                             </div>
-                            <div class="col-lg-3 col-md-6">
-                                <label for="inputName" class="control-label parent-label" required> {{__('home.cost')}} </label>
-                                <input type="number" class="form-control parent-input" id="cost_item" name="cost_item" readonly >
+
+                            <div class="col-lg-3 col-md-6 mb-3">
+                                <label for="cost_item" class="control-label font-weight-bold text-muted">{{ __('home.cost') }}</label>
+                                <input type="number" class="form-control bg-light" id="cost_item" name="cost_item" readonly>
                             </div>
                         </div>
-                        <br>
-                        <input type="number" class="form-control parent-input" id="orderNo" name="orderNo" hidden>
 
-                        <div class="d-flex justify-content-center">
-                            <button style="font-size: 15px;background-color: #419BB2;" type="submit" id="button_1" class="btn btn-success p-1">
-                                {{__('home.Add')}}
-                                <svg style="width: 20px;height:20px" class="svg-icon-buttons" viewBox="0 0 20 20">
+                        <input type="number" class="form-control" id="orderNo" name="orderNo" hidden>
+
+                        <div class="d-flex justify-content-center mt-4">
+                            <button style="background-color: #419BB2;" type="submit" id="button_1" class="btn text-white px-4 py-2 font-weight-bold shadow-sm">
+                                {{ __('home.Add') }}
+                                <svg style="width: 20px; height: 20px; vertical-align: middle;" class="svg-icon-buttons mr-1" viewBox="0 0 20 20">
                                     <path fill="none" d="M7.629,14.566c0.125,0.125,0.291,0.188,0.456,0.188c0.164,0,0.329-0.062,0.456-0.188l8.219-8.221c0.252-0.252,0.252-0.659,0-0.911c-0.252-0.252-0.659-0.252-0.911,0l-7.764,7.763L4.152,9.267c-0.252-0.251-0.66-0.251-0.911,0c-0.252,0.252-0.252,0.66,0,0.911L7.629,14.566z"></path>
                                 </svg>
                             </button>
                         </div>
-
-
-                        <br>
-
-
+                    </form>
 
                 </div>
-            </form>
+            </div>
 
+            <!-- Tables Section -->
+            <div class="card shadow-sm border-0 mb-4">
+                <div class="card-body">
+                    <div class="table-responsive hoverable-table">
+                        <table id="example" class="table table-bordered table-striped text-md-nowrap text-center" name="prodyctsavaliable">
+                            <thead class="thead-light">
+                                <tr>
+                                    <th>#</th>
+                                    <th>{{ __('home.productNo') }}</th>
+                                    <th>{{ __('home.product') }}</th>
+                                    <th>{{ __('home.quantity') }}</th>
+                                    <th>{{ __('home.price') }}</th>
+                                    <th>{{ __('home.addedValue') }}</th>
+                                    <th>{{ __('home.total') }}</th>
+                                    <th>{{ __('home.operations') }}</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>-</td>
+                                    <td>-</td>
+                                    <td>-</td>
+                                    <td>-</td>
+                                    <td>-</td>
+                                    <td>-</td>
+                                    <td>-</td>
+                                    <td>-</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
 
-            <br>
-
-
-
-
-            <?php $i = 0; ?>
-                <div style="border-radius: 5px" class="card mg-b-20 p-2 pt-5">
-                    <div class="card-body">
-                        <div class="">
-                            <table id="example" class="table key-buttons our-table text-md-nowrap text-center table-responsive" name='prodyctsavaliable'>
-                                <div class="table-responsive hoverable-table">
-                                    <col style="width:2%">
-                                    <col style="width:15%">
-                                    <col style="width:20%">
-                                    <col style="width:10%">
-                                    <col style="width:10%">
-                                    <col style="width:10%">
-                                    <col style="width:13%">
-                                    <col style="width:20%">
-                                    <thead>
+                    <!-- Total Price Table -->
+                    <div class="row justify-content-end mt-4">
+                        <div class="col-md-6">
+                            <div class="table-responsive">
+                                <table class="table table-bordered text-md-nowrap mb-0 table-striped text-center" id="tableTotalPrice" name="tableTotalPrice">
+                                    <thead class="thead-light">
                                         <tr>
-                                            <th style="font-size: 15px;padding:8px" class="border-bottom-0"># </th>
-                                            <th style="font-size: 15px;padding:8px" class="border-bottom-0">{{__('home.productNo')}} </th>
-                                            <th style="font-size: 15px;padding:8px" class="border-bottom-0">{{__('home.product')}}</th>
-                                            <th style="font-size: 15px;padding:8px" class="border-bottom-0">{{__('home.quantity')}}</th>
-                                            <th style="font-size: 15px;padding:8px" class="border-bottom-0">{{__('home.price')}}</th>
-                                            <th style="font-size: 15px;padding:8px" class="border-bottom-0">{{__('home.addedValue')}}</th>
-                                            <th style="font-size: 15px;padding:8px" class="border-bottom-0">{{__('home.total')}}</th>
-                                            <th style="font-size: 15px;padding:8px" class="border-bottom-0">{{__('home.operations')}}</th>
-
-
-
+                                            <th>{{ __('home.the amount') }}</th>
+                                            <th>{{ __('home.addedValue') }}</th>
+                                            <th>{{ __('home.total') }}</th>
                                         </tr>
                                     </thead>
-                                    <tbody>
-                                        <tr>
-                                            <td>-</td>
-                                            <td>-</td>
-                                            <td>-</td>
-                                            <td>-</td>
-                                            <td>-</td>
-                                            <td>-</td>
-                                            <td>-</td>
-                                            <td>-</td>
-
-                                        </tr>
-                                    </tbody>
-                            </table>
-                            <br>
-                            <div class="table-responsive mg-t-30 table-padding">
-                                <table class="table border text-md-nowrap mb-0 our-table table-striped text-center" id="tableTotalPrice" name="tableTotalPrice" width="50%">
-                                    <col style="width:15%">
-                                    <col style="width:15%">
-                                    <col style="width:15%">
-                                    <thead>
-                                        <tr>
-                                            <th style="font-size: 15px;padding:8px" class="border-bottom-0">{{ __('home.the amount') }}</th>
-                                            <th style="font-size: 15px;padding:8px" class="border-bottom-0">{{ __('home.addedValue') }}</th>
-                                            <th style="font-size: 15px;padding:8px" class="border-bottom-0">{{ __('home.total') }} </th>
-
-                                        </tr>
-                                    </thead>
-
                                     <tbody>
                                         <tr>
                                             <td>*</td>
@@ -242,214 +206,142 @@
                                             <td>*</td>
                                         </tr>
                                     </tbody>
-
                                 </table>
                             </div>
-                            <div class="d-flex justify-content-center mt-2">
+                        </div>
+                    </div>
 
-                                <form action="{{ url(Mcamara\LaravelLocalization\Facades\LaravelLocalization::getCurrentLocale() .'/'. ($page = 'printProductToSupllierOrder')) }}" method="POST" role="search" autocomplete="off">
-                                    {{ csrf_field() }}
+                    <!-- Print Form -->
+                    <div class="d-flex justify-content-center mt-3">
+                        <form action="{{ url(Mcamara\LaravelLocalization\Facades\LaravelLocalization::getCurrentLocale() .'/'. ($page = 'printProductToSupllierOrder')) }}" method="POST" role="search" autocomplete="off">
+                            {{ csrf_field() }}
+                            <input type="number" class="form-control" name="show_invoice_number" id="show_invoice_number" readonly required hidden>
+                            <input value="{{ Auth()->user()->branch->id }}" class="form-control" name="branchs_id" id="branchs_id" readonly required hidden>
+                        </form>
+                    </div>
 
+                </div>
+            </div>
 
-                                    <div class="d-flex justify-content-between">
-                                        <div class='row '>
-                                        <input type="number" class="form-control " name="show_invoice_number" id="show_invoice_number" title=" رقم الفاتورة " readonly required=true hidden>
-                                        <input value="{{ Auth()->user()->branch->id }}" class="form-control " name="branchs_id" id="branchs_id" title=" رقم الفاتورة " readonly required=true hidden>
+        </div>
+    </div>
+    <!-- row closed -->
 
-                                        </div>
-                                      
-             
-                                    </div>
-                                      <br>
-                             
+    <!-- Modal: ExampleModal2 -->
+    <div class="modal fade" id="exampleModal2" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content shadow">
+                <div class="modal-header">
+                    <h5 class="modal-title font-weight-bold" id="exampleModalLabel">{{ __('home.RETURNSPURCHASEpart') }}</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form action="{{ url(Mcamara\LaravelLocalization\Facades\LaravelLocalization::getCurrentLocale() . '/' . ($page = 'updatePurchaseOrder')) }}" method="post" autocomplete="off">
+                        {{ csrf_field() }}
+                        <div class="form-group">
+                            <input type="hidden" name="original_quantity" id="original_quantity" value="">
+                            <input type="hidden" name="id" id="id" value="">
+                            <input type="hidden" name="ordernumber" id="ordernumber" value="">
+                            <label for="product_name" class="col-form-label font-weight-bold">{{ __('home.product') }}</label>
+                            <input class="form-control bg-light" name="product_name" id="product_name" type="text" readonly>
+                        </div>
+                        <div class="form-group">
+                            <label for="return_quentity" class="col-form-label font-weight-bold">{{ __('home.numberofpicereturens') }}</label>
+                            <input class="form-control" name="return_quentity" id="return_quentity" type="text">
+                        </div>
+                        <div class="modal-footer">
+                            <button id="added_product" name="added_product" class="btn btn-primary px-4">{{ __('home.confirm') }}</button>
+                            <button type="button" class="btn btn-secondary px-3" data-dismiss="modal">{{ __('home.cancel') }}</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
 
-                                </form>
-                            </div>
-                            <br>
+    <!-- Modal: SearchProduct -->
+    <div class="modal fade" id="SearchProduct" name="SearchProduct" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" dir="rtl" aria-hidden="true">
+        <div class="modal-dialog modal-xl product-selection" role="document">
+            <div class="modal-content shadow">
+                <div class="modal-body">
+                    <div class="card-body">
+                        <div class="col-lg-4 mb-3 px-0">
+                            <label for="searchaboutproduct" class="control-label font-weight-bold text-muted">{{ __('home.searchaboutproduct') }}</label>
+                            <input autocomplete="off" dir="ltr" type="text" class="form-control" placeholder="{{ __('home.Search By Name or Product Number') }}" id="searchaboutproduct" name="searchaboutproduct" onkeyup="searchaboutproductfunction()">
+                        </div>
+                        
+                        <div class="table-responsive" id="ajax_responce_serarchDiv">
+                            <table class="table table-bordered table-striped text-md-nowrap text-center" id="SearchProductTable" width="100%">
+                                <thead class="thead-light">
+                                    <tr>
+                                        <th>#</th>
+                                        <th>{{ __('home.productNo') }}</th>
+                                        <th>{{ __('home.product') }}</th>
+                                        <th>{{ __('home.branch') }}</th>
+                                        <th>{{ __('home.productlocation') }}</th>
+                                        <th>{{ __('home.quantity') }}</th>
+                                        <th>{{ __('home.purchaseproductwithouttax') }}</th>
+                                        <th>{{ __('home.sellingproduct without tax') }}</th>
+                                        <th>{{ __('home.Add') }}</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>-</td>
+                                        <td>-</td>
+                                        <td>-</td>
+                                        <td>-</td>
+                                        <td>-</td>
+                                        <td>-</td>
+                                        <td>-</td>
+                                        <td>-</td>
+                                        <td>-</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="modal-footer px-0 pb-0 mt-3">
+                            <button type="button" class="btn btn-secondary px-4" data-dismiss="modal">{{ __('home.cancel') }}</button>
                         </div>
                     </div>
                 </div>
             </div>
-
-            <br />
-            </form>
-
         </div>
-
-
     </div>
 
-
-</div>
-</div>
-<!-- row closed -->
-</div>
-
-<div class="modal fade" id="exampleModal2" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
-    <div class="modal-dialog" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="exampleModalLabel">{{ __('home.RETURNSPURCHASEpart') }}</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-            <div class="modal-body">
-
-                <form action="{{ url(Mcamara\LaravelLocalization\Facades\LaravelLocalization::getCurrentLocale() . '/' . ($page = 'updatePurchaseOrder')) }}" method="post" autocomplete="off">
+    <!-- Modal: Update Invoice From Sale -->
+    <div class="modal fade" id="updateinvoicefromsale" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-special" role="document">
+            <div class="modal-content shadow">
+                <form>
+                    <div class="modal-header">
+                        <h6 class="modal-title font-weight-bold">{{ __('home.productcode_mix') }}</h6>
+                        <button aria-label="Close" class="close" data-dismiss="modal" type="button">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
                     {{ csrf_field() }}
-                    <div class="form-group">
-                        <input type="hidden" name="original_quantity" id="original_quantity" value="">
-
-                        <input type="hidden" name="id" id="id" value="">
-                        <input type="hidden" name="ordernumber" id="ordernumber" value="">
-                        <label for="recipient-name" class="col-form-label"> {{ __('home.product') }} </label>
-
-                        <input class="form-control" name="product_name" id="product_name" type="text" readonly>
+                    <div class="modal-body">
+                        <div class="form-group mb-0">
+                            <label for="updateinvoicebyidforsale" class="control-label font-weight-bold text-muted">{{ __('home.enterinvoicenumber') }}</label>
+                            <input autocomplete="off" type="text" class="form-control" id="updateinvoicebyidforsale" name="updateinvoicebyidforsale" required>
+                        </div>
                     </div>
-                    <div class="form-group">
-                        <label for="message-text" class="col-form-label">{{ __('home.numberofpicereturens') }}</label>
-                        <input class="form-control" name="return_quentity" id="return_quentity" type="text">
-
-                    </div>
-
                     <div class="modal-footer">
-                        <button id="added_product" name="added_product" class="btn btn-primary">{{__('home.confirm')}}</button>
-                        <button type="button" class="btn btn-secondary" data-dismiss="modal">{{ __('home.cancel') }}</button>
+                        <button style="background-color: #419BB2;" class="btn text-white px-4" data-dismiss="modal" id="updateinvoicebyidforsaleupdate">
+                            {{ __('home.search') }}
+                            <svg style="width: 18px; vertical-align: middle;" class="svg-icon-buttons mr-1" viewBox="0 0 20 20">
+                                <path fill="none" d="M7.629,14.566c0.125,0.125,0.291,0.188,0.456,0.188c0.164,0,0.329-0.062,0.456-0.188l8.219-8.221c0.252-0.252,0.252-0.659,0-0.911c-0.252-0.252-0.659-0.252-0.911,0l-7.764,7.763L4.152,9.267c-0.252-0.251-0.66-0.251-0.911,0c-0.252,0.252-0.252,0.66,0,0.911L7.629,14.566z"></path>
+                            </svg>
+                        </button>
                     </div>
                 </form>
             </div>
         </div>
     </div>
-</div>
-
-<!-- Container closed -->
-</div>
-
-
-
-{{-- Update ( 24/4/2023 ) --}}
-
-<div class="modal fade" id="SearchProduct" name="SearchProduct" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" dir='rtl' aria-hidden="true">
-    <div class="modal-dialog modal-xl product-selection" role="document">
-        <div class="modal-content">
-           
-            <div class="modal-body">
-
-
-                <div class="card-body">
-
-                    <div class="col-lg-4 mg-t-20 mg-lg-t-0">
-                        <label for="inputName" style="font-weight: bold" class="control-label parent-label"> {{__('home.searchaboutproduct')}} </label>
-                        <input autocomplete="off" dir="ltr" type="text" class="form-control parent-input" placeholder="{{ __('home.Search By Name or Product Number') }}" id="searchaboutproduct" name="searchaboutproduct" onkeyup="searchaboutproductfunction()">
-                    </div>
-                    <br>
-                    <div class="table-responsive" id="ajax_responce_serarchDiv">
-                        <table class="table text-md-nowrap text-center our-table" id="SearchProductTable" width="100%" style="border: 2px solid rgba(0,0,0,.3);">
-                            <col style="width:5%">
-                            <col style="width:14%">
-                            <col style="width:28%">
-                            <col style="width:10%">
-                            <col style="width:10%">
-                            <col style="width:13%">
-                            <col style="width:10%">
-                            <col style="width:10%">
-
-                            <thead>
-                                <tr>
-                                    <th style="font-size: 15px" class="border-bottom-0">#</th>
-                                    <th style="font-size: 15px" class="border-bottom-0">{{__('home.productNo')}} </th>
-                                    <th style="font-size: 15px" class="border-bottom-0" style="text-align:center">{{__('home.product')}}</th>
-                                    <th style="font-size: 15px" class="border-bottom-0" style="text-align:center">{{__('home.branch')}}</th>
-                                    <th style="font-size: 15px" class="border-bottom-0" style="text-align:center">{{__('home.productlocation')}}</th>
-
-                                    <th style="font-size: 15px" class="border-bottom-0">{{__('home.quantity')}}</th>
-                                    <th style="font-size: 13px" class="border-bottom-0">{{__('home.purchaseproductwithouttax')}}</th>
-                                    <th style="font-size: 13px" class="border-bottom-0">{{__('home.sellingproduct without tax')}}</th>
-                                    <th style="font-size: 15px" class="border-bottom-0">{{__('home.Add')}}</th>
-
-
-
-                                </tr>
-                            </thead>
-                            <tbody class="">
-                                <?php $i = 0;
-                                $data = 'm'; ?>
-
-                                <?php $i++ ?>
-
-                                <tr>
-                                    <td id="tableData" dir=ltr>-</td>
-                                    <td id="tableData" dir=ltr>-</td>
-                                    <td id="tableData" data-target="product_name">-</td>
-                                    <td id="tableData" data-target="product_name">-</td>
-                                    <td id="tableData" data-target="numberofpice">-</td>
-                                    <td id="tableData" data-target="numberofpice">-</td>
-                                    <td id="tableData" data-target="numberofpice">-</td>
-                                    <td id="tableData" data-target="numberofpice">-</td>
-                                    <td id="tableData">- </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                        <div>
-
-                        </div>
-                        <div class="row d-flex justify-content-between pagination-row">
-
-
-
-                        </div>
-
-                    </div>
-
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-dismiss="modal">{{__('home.cancel')}}</button>
-                    </div>
-
-                </div>
-
-
-            </div>
-        </div>
-
-    </div>
-</div>
-<div class="modal p-3" id="updateinvoicefromsale">
-        <div style="margin: 0 9% !important;" class="modal-dialog modal-dialog-centered modal-special" role="document">
-            <div class="modal-content modal-content-demo p-3">
-                <form>
-                    <div class="modal-header">
-                        <h6 class="modal-title"> {{ __('home.productcode_mix') }} </h6><button aria-label="Close" class="close close-special" data-dismiss="modal" type="button"><span aria-hidden="true">&times;</span></button>
-                    </div>
-                    {{ csrf_field() }}
-                    <div class="row mb-1">
-                        <div class="col-lg-6 col-md-6 col-md-4 mb-2">
-                            <label style="font-size: 12px;" for="inputName" class="control-label parent-label"> {{ __('home.enterinvoicenumber') }}</label>
-                            <input autocomplete="off" style="height:32px" type="text" class="form-control parent-input" id="updateinvoicebyidforsale" name="updateinvoicebyidforsale" title="{{ __('supprocesses.name') }}" required>
-                        </div>
-
-
-                    </div>
-
-
-                    <br>
-                    <div class="d-flex justify-content-center">
-                        <button style="background-color: #419BB2" class="btn btn-primary p-1" data-dismiss="modal" id="updateinvoicebyidforsaleupdate">
-                            {{ __('home.search') }}
-                            <svg style="width: 20px" class="svg-icon-buttons" viewBox="0 0 20 20">
-                                <path fill="none" d="M7.629,14.566c0.125,0.125,0.291,0.188,0.456,0.188c0.164,0,0.329-0.062,0.456-0.188l8.219-8.221c0.252-0.252,0.252-0.659,0-0.911c-0.252-0.252-0.659-0.252-0.911,0l-7.764,7.763L4.152,9.267c-0.252-0.251-0.66-0.251-0.911,0c-0.252,0.252-0.252,0.66,0,0.911L7.629,14.566z"></path>
-                            </svg>
-                        </button>
-                    </div>
-            </div>
-
-        </div>
-    </div>
-</div>
-
-{{-- End Update ( 24/4/2023 ) --}}
-
-
 
 @endsection
 @section('js')

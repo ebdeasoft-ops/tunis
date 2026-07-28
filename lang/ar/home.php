@@ -12,14 +12,14 @@ return [
     | you want to customize your views to better match your application.
     |
     */
-    'invoice_number'=>'رقم الفاتورة',
+    'invoice_number' => 'رقم الفاتورة',
     'type' => 'النوع',
     'public' => 'عام',
     'client_and_supplier' => 'عميل ومورد',
-    'received_movements_report'=>'سندات  الاستلام ',
-    'sent_movements_report'=>'سندات الصرف ',
-    'no_attachments'=>"لا يوجد ",
-    "transction_day"=>"الحركة اليوم",
+    'received_movements_report' => 'سندات  الاستلام ',
+    'sent_movements_report' => 'سندات الصرف ',
+    'no_attachments' => "لا يوجد ",
+    "transction_day" => "الحركة اليوم",
     "SalesPurchaseInPeriode" => "مشتريات و مبيعات فترة",
     "wherehouse" => "انشاء مخزن فرعي",
     "name_wherehouse" => "اسم المخزن الفرعي",
@@ -251,16 +251,14 @@ return [
 
 
 
-    'sales_product_by_date' => "مبيعات المنتجات خلال الفترة",
-    'purchase_product_by_date' => "مشتريات منتجات خلال فترة ",
+    'sales_product_by_date' => "مبيعات المنتجات",
+    'purchase_product_by_date' => "مشتريات المنتجات",
     'scandary' => "حساب فرعي  ",
-    'transction_day' => "حركات اليوم ",
     'update_deliy_record' => "تعديل القيد ",
     'barcode' => "طباعة الباركود",
     'discound_on_invoice' => '  الخصم علي الفاتورة ',
-    'year_sales_report' => "تقارير مبيعات السنة الحالية",
-
-    'Daily_Sales_Activity' => 'حركة المبيعات اليومية ',
+    'year_sales_report' => "مبيعات السنة",
+    'Daily_Sales_Activity' => ' المبيعات اليومية ',
     'balance_period' => 'رصيد المدة المحددة فقط',
     'pratiail_of_review' => "تم مراجعة جزء من التصفية ",
     'active_translate' => "تفعيل الترجمة",
@@ -279,7 +277,7 @@ return [
     'Supplier_debt_restructuring' => 'أعمار ديون الموردين',
 
     'unit_PICE' => 'حبه',
-    'sales_and_return' => 'مبيعات و مرتجع المبيعات شامل',
+    'sales_and_return' => 'مبيعات ومرتجع شامل',
     'unit_pice' => 'الوحدة',
     'unit_KG' => 'كجم',
     'unit_LETER' => 'لتر',

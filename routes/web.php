@@ -455,7 +455,7 @@ Route::middleware([
         Route::get('/wherehouse', 'wherehouse');
         Route::get('/salesـprofits', 'salesـprofits');
         Route::post('/salesReport', 'salesReportsearch');
-        Route::post('/salesـprofits', 'salesـprofitssearch');
+        Route::post('/salesـprofits', 'sales_profitssearch');
         Route::get('/salesReport', 'salesReport');
         Route::get('/Show_return_Sales_Details/{invoiceId}', 'Show_return_Sales_Details');
         Route::get('/printInvoicesReportdetails/{branch}/{paymethod}/{startat}/{endat}/{customer_id}', 'printReportsaleswithoud_deatails');

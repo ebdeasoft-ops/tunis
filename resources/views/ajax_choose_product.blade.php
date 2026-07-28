@@ -1,7 +1,7 @@
 @if (isset($data) && !empty($data) && count($data) > 0)
 <div class="table-responsive">
     <table class="table table-hover table-bordered text-md-nowrap text-center our-table align-middle" id="SearchProductTable" width="100%" style="border: 1px solid rgba(0,0,0,.15); box-shadow: 0 2px 4px rgba(0,0,0,0.04);">
-        
+
         <thead class="bg-light text-dark fw-bold">
             <tr>
                 <th style="font-size: 14px; vertical-align: middle;">#</th>
@@ -19,7 +19,7 @@
                 <th style="font-size: 14px; vertical-align: middle;">{{ __('home.Add') }}</th>
             </tr>
         </thead>
-        
+
         <tbody>
             @foreach ($data as $product)
                 @php
@@ -29,7 +29,7 @@
                         $supplierName = $orderproduct->orderTosupllier->supllier->name;
                     }
                 @endphp
-                
+
                 <tr id="product_row_{{{ $product->id }}}">
                     <td class="text-muted small" dir="ltr">{{ $product->id }}</td>
                     <td class="fw-bold text-secondary" dir="ltr">{{ $product->Product_Code }}</td>
@@ -42,7 +42,7 @@
                             {{ $product->numberofpice }}
                         </span>
                     </td>
-                    
+
                     @can('System setting')
                         <td class="table-light fw-bold text-dark">{{ $product->purchasingـprice }}</td>
                     @endcan
@@ -52,18 +52,18 @@
                         {{ $product->refnumber == null ? __('home.notdata') : str_replace("+", " - ", $product->refnumber) }}
                     </td>
                     <td>
-                        <button class="btn btn-success btn-sm px-3 shadow-sm d-inline-flex align-items-center" 
-                                type="button" 
-                                data-dismiss="modal" 
+                        <button class="btn btn-success btn-sm px-3 shadow-sm d-inline-flex align-items-center"
+                                type="button"
+                                data-dismiss="modal"
                                 onclick="chooseProduct('{{ $product->id }}','{{ addslashes($product->product_name) }}','{{ $product->purchasingـprice }}','{{ $product->sale_price }}','{{ $product->Product_Code }}','{{ $product->numberofpice }}')">
                             <i class="fe fe-plus me-1"></i> {{ __('home.Add') }}
                         </button>
-                    </td>                                                                        
+                    </td>
                 </tr>
             @endforeach
         </tbody>
     </table>
-    
+
     <div class="d-flex justify-content-start mt-3" id="ajax_pagination_in_search">
         {{ $data->links() }}
     </div>

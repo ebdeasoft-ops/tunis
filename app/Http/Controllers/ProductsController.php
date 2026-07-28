@@ -1689,7 +1689,7 @@ class ProductsController extends Controller
 public function getAllinvicesapurchasesjax()
     {
         app()->setLocale(LaravelLocalization::getCurrentLocale());
-        
+
         $query = resource_purchases::where('save', 1);
 
         if (!in_array(auth()->user()->id, [17, 30, 11])) {
@@ -1790,7 +1790,7 @@ public function searchAllInvoicespaginatenew($date)
         return view('ajax_Recent_Invoices', compact('data'));
     }
 
-    
+
 
 
 
@@ -3312,6 +3312,7 @@ public function searchAllInvoicespaginatenew($date)
 
     public function searchChooseProductpaginatenewSale($searchtext, $branchs_id)
     {
+
         if ($branchs_id == '-') {
             $data = products::where('product_name', 'LIKE', '%' . $searchtext . '%')
                 ->orWhere('Product_Code', 'LIKE', '%' . $searchtext . '%')
@@ -3348,6 +3349,7 @@ public function searchAllInvoicespaginatenew($date)
 
     public function searchChooseProductpaginatenewSaleBypost(Request $request)
     {
+
         $searchtext = $request->searchtext;
         $branchs_id = $request->branchs_id;
         $searchTerm = '%' . $searchtext . '%';
@@ -3374,7 +3376,7 @@ public function searchAllInvoicespaginatenew($date)
 
         return view('ajax_choose_product_sale', compact('data'))
             ->with('currentrow', $request->currentrow)
-            ->with('getLocale', LaravelLocalization::getCurrentLocale());
+            ->with('getLocale', $request->locale);
     }
 
     public function processOrderPurchase(Request $request, $date, $payment, $supplier, $shipping, $branchs_id, $another_bank)

@@ -1,7 +1,7 @@
 
           @if (@isset($data) && !@empty($data) && count($data) >0 )
           @php
-           $i=1;   
+           $i=1;
           @endphp
           <table class="table text-md-nowrap text-center  our-table"
                                              id="example2" width="100%"
@@ -15,8 +15,8 @@
                                                 <col style="width:10%">
                                                 <col style="width:15%">
                                                 <col style="width:15%">
-                                        
-            
+
+
                                                 <thead>
                                                     <tr>
                                                         <th style="font-size: 15px" class="border-bottom-0">#</th>
@@ -39,24 +39,24 @@
                                                         <th style="font-size: 13px" class="border-bottom-0">{{__('home.notesClient')}}</th>
                                                         <th style="color: #FF4F1F;font-size:12px" class="border-bottom-0">{{ __('home.operations') }}</th>
 
-            
-            
+
+
                                                     </tr>
                                                 </thead>
                                                 <tbody class="">
                                                     <?php $i = 0;
                                                     ?>
-            
+
                                                     @foreach ($data as $product)
                                                     <?php $i++ ?>
-            
+
                                                     <tr id="<?php echo $product['id']; ?>">
                                                         <td id="tableData" style=""  dir=ltr>{{ $product->id }}</td>
                                                         <td id="tableData" style=""  dir=ltr>{{ $product->Product_Code }}</td>
                                                         <td id="tableData" style=""  data-target="product_name">{{ $product->product_name }}</td>
 
                                                         <td id="tableData" style=""  data-target="product_name">{{ $product->branch->name }}</td>
-                                                        
+
                                                         <td id="tableData" style=""  data-target="numberofpice">{{ $product->product_group_data->group_ar }}</td>
                                                         <td id="tableData" style=""  data-target="numberofpice">{{ $product->Product_Location }}</td>
                                                         <td id="tableData" style=""  data-target="numberofpice">{{ $product->numberofpice }}</td>
@@ -65,7 +65,7 @@
                                                         <td id="tableData" style=""  data-target="numberofpice">{{ $product->purchasingـprice }}</td>
                                                         <td id="tableData" style=""  data-target="numberofpice">{{ $product->average_cost }}</td>
 
-                                                                        <td id="tableData"  data-target="numberofpice">{{ $product->Wholesale_price }}</td> 
+                                                                        <td id="tableData"  data-target="numberofpice">{{ $product->Wholesale_price }}</td>
                                                                         @endcan
 
                                                         <td id="tableData" style=""  data-target="numberofpice">{{ $product->sale_price }}</td>
@@ -73,8 +73,8 @@
                                                         <td id="tableData" style=""  data-target="numberofpice">{{ $product->notes }}</td>
 
                                                     <td>
-                                                              <button type="button" 
-        class="btn btn-warning-gradient btn-sm d-inline-flex align-items-center shadow-sm" 
+                                                              <button type="button"
+        class="btn btn-warning-gradient btn-sm d-inline-flex align-items-center shadow-sm"
         style="padding: 6px 15px; border-radius: 4px; font-weight: 600; gap: 5px;"
         data-dismiss="modal"
         onclick="replaceproduct('{{$product->id}}')">
@@ -100,8 +100,8 @@
             {{ $data->links() }}
         </div>
 
-         
-       
+
+
            @else
            <div class="alert alert-danger">
            {{__('home.notfounddata')}}             </div>

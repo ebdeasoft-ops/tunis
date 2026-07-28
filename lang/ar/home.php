@@ -12,7 +12,7 @@ return [
     | you want to customize your views to better match your application.
     |
     */
-    'invoice_number' => 'رقم الفاتورة',
+    'invoice_number'=>'رقم الفاتورة',
     'type' => 'النوع',
     'public' => 'عام',
     'client_and_supplier' => 'عميل ومورد',

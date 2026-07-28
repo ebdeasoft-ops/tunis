@@ -487,14 +487,15 @@ td .d-flex {
                                     Auth()->user()->branchs_id)->orwhere('parent_account_number',
                                     5)->where('parent_account_number', '!=', NULL)->where('branchs_id',
                                     Auth()->user()->branchs_id)->get() as $section)
-                                    <option value="{{ $section->id }}"> {{ $section->name }}
+                                    <option value="{{ $section->id }}"> {{ app()->getLocale() == 'en' ? $section->name_en : $section->name }}
                                         ({{ $section->account_number }})</option>
                                     @endforeach
                                     <option value="Credit"> {{ __('report.credit') }} </option>
                                     <option value="Partition"> {{ __('home.Partition of the amount') }} </option>
 
                                 </select>
-                            </div><!-- col-4 -->
+                            </div>
+                            <!-- col-4 -->
 
                             <div class="col-lg-2 mg-t-20 mg-lg-t-0" id="type">
                                 <p class="mg-b-10 parent-label"> . </p>
@@ -1716,20 +1717,20 @@ $("#updateinvoicebyidforsaleupdate").click(function(e) {
                               <td>
     <div class="d-flex align-items-center justify-content-center" style="width:100%;">
         <button class="btn btn-secondary rounded-circle d-flex align-items-center justify-content-center p-0"
-            style="width: 32px; height: 32px; min-width: 32px; min-height: 32px;" 
-            type="button" 
+            style="width: 32px; height: 32px; min-width: 32px; min-height: 32px;"
+            type="button"
             onclick="minusFunctionIndex(this)">−</button>
 
-        <input type="text" 
-            name="products[${index}][quentity]" 
-            style="width: 50px; text-align: center;" 
-            class="form-control product-quentity mx-2" 
-            oninput="calculateTotals()" 
+        <input type="text"
+            name="products[${index}][quentity]"
+            style="width: 50px; text-align: center;"
+            class="form-control product-quentity mx-2"
+            oninput="calculateTotals()"
             value="1">
 
         <button class="btn btn-secondary rounded-circle d-flex align-items-center justify-content-center p-0"
-            style="width: 32px; height: 32px; min-width: 32px; min-height: 32px;" 
-            type="button" 
+            style="width: 32px; height: 32px; min-width: 32px; min-height: 32px;"
+            type="button"
             onclick="plusFunctionIndex(this)">+</button>
     </div>
 </td>
@@ -2043,20 +2044,20 @@ function handleBarcode(scanned_barcode) {
    <td>
     <div class="d-flex align-items-center justify-content-center" style="width:100%;">
         <button class="btn btn-secondary rounded-circle d-flex align-items-center justify-content-center p-0"
-            style="width: 32px; height: 32px; min-width: 32px; min-height: 32px;" 
-            type="button" 
+            style="width: 32px; height: 32px; min-width: 32px; min-height: 32px;"
+            type="button"
             onclick="minusFunctionIndex(this)">−</button>
 
-        <input type="text" 
-            name="products[${index}][quentity]" 
-            style="width: 50px; text-align: center;" 
-            class="form-control product-quentity mx-2" 
-            oninput="calculateTotals()" 
+        <input type="text"
+            name="products[${index}][quentity]"
+            style="width: 50px; text-align: center;"
+            class="form-control product-quentity mx-2"
+            oninput="calculateTotals()"
             value="1">
 
         <button class="btn btn-secondary rounded-circle d-flex align-items-center justify-content-center p-0"
-            style="width: 32px; height: 32px; min-width: 32px; min-height: 32px;" 
-            type="button" 
+            style="width: 32px; height: 32px; min-width: 32px; min-height: 32px;"
+            type="button"
             onclick="plusFunctionIndex(this)">+</button>
     </div>
 </td>
@@ -3124,7 +3125,6 @@ function searchaboutproductfunction() {
     searchtext = $('#searchaboutproduct').val();
     branchs_id = $('#branchs_id').val();
     var token_search = $("#token_search").val();
-
     jQuery.ajax({
         url: "{{ URL::to('searchChooseProductpaginatenewSaleBypost')}}",
         type: 'post',
@@ -3133,9 +3133,11 @@ function searchaboutproductfunction() {
         data: {
             "_token": token_search,
             "searchtext": searchtext,
+            "locale" : "{{ app()->getLocale() }}", // ✅ صح
             "branchs_id": branchs_id,
             "currentrow": window.currentRow,
         },
+
         success: function(data) {
             $("#ajax_responce_serarchDiv").html(data);
             document.getElementById('searchaboutproduct').focus();
@@ -3160,6 +3162,7 @@ $('#SearchProduct').on('show.bs.modal', function(event) {
             "_token": token_search,
             "searchtext": searchtext,
             "branchs_id": branchs_id,
+            "locale" : "{{ app()->getLocale() }}", // ✅ صح
             "currentrow": window.currentRow,
         },
         success: function(data) {
@@ -3272,20 +3275,20 @@ function chooseProduct(code, productcode, name, cost, sale_price, location, avai
   <td>
     <div class="d-flex align-items-center justify-content-center" style="width:100%;">
         <button class="btn btn-secondary rounded-circle d-flex align-items-center justify-content-center p-0"
-            style="width: 32px; height: 32px; min-width: 32px; min-height: 32px;" 
-            type="button" 
+            style="width: 32px; height: 32px; min-width: 32px; min-height: 32px;"
+            type="button"
             onclick="minusFunctionIndex(this)">−</button>
 
-        <input type="text" 
-            name="products[${index}][quentity]" 
-            style="width: 50px; text-align: center;" 
-            class="form-control product-quentity mx-2" 
-            oninput="calculateTotals()" 
+        <input type="text"
+            name="products[${index}][quentity]"
+            style="width: 50px; text-align: center;"
+            class="form-control product-quentity mx-2"
+            oninput="calculateTotals()"
             value="1">
 
         <button class="btn btn-secondary rounded-circle d-flex align-items-center justify-content-center p-0"
-            style="width: 32px; height: 32px; min-width: 32px; min-height: 32px;" 
-            type="button" 
+            style="width: 32px; height: 32px; min-width: 32px; min-height: 32px;"
+            type="button"
             onclick="plusFunctionIndex(this)">+</button>
     </div>
 </td>

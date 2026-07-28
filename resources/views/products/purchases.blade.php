@@ -292,7 +292,7 @@ td .d-flex {
                                 <select class="form-control select2" name="paymentmethod" id="paymentmethod" required>
                                     @foreach (App\Models\financial_accounts::whereIn('parent_account_number', [4,
                                     5])->get() as $section)
-                                    <option value="{{ $section->id }}"> {{ $section->name }} </option>
+                                    <option value="{{ $section->id }}">{{ app()->getLocale() == 'en' ? $section->name_en : $section->name }} </option>
                                     @endforeach
                                     <option value="Credit"> {{ __('report.credit') }} </option>
                                 </select>
@@ -1364,29 +1364,35 @@ function renderExcelProducts(productsList) {
 
 
 $('#paymentmethod').on('change', function() {
+    var selectedOption = $(this).find(':selected');
     var selectedVal = $(this).val();
-    var selectedText = $(this).find(':selected').text();
+    var selectedText = selectedOption.text();
+    var parentAccount = selectedOption.data('parent'); // قراءة رقم الحساب الأب (5 = بنك)
     var $paymentType = $('#payment_type');
 
     // 1. إعادة تفعيل كافة الخيارات
     $paymentType.find('option').prop('disabled', false);
 
-    // 2. تطبيق المنطق
-    if (selectedText.includes('البنك')) {
+    // 2. تطبيق المنطق (التحقق من أنه بنك بناءً على data-parent أو النص عربي/إنجليزي)
+    if (parentAccount == 5 || selectedText.includes('البنك') || selectedText.toLowerCase().includes('bank')) {
+
         // إذا كان بنك: نعطل النقدي والآجل
         $paymentType.find('option[value="Cash"], option[value="Credit"]').prop('disabled', true);
         // نختار خيار بنكي افتراضي
         $paymentType.val('Shabka');
-    } 
-    else if (selectedVal == "Credit") {
+
+    } else if (selectedVal == "Credit") {
+
         // إذا كان آجل: نعطل الكل ما عدا الآجل
         $paymentType.find('option[value="Cash"], option[value="Shabka"], option[value="Bank_transfer"]').prop('disabled', true);
         $paymentType.val('Credit');
-    } 
-    else {
+
+    } else {
+
         // إذا كان نقدي: نعطل الكل ما عدا النقدي
         $paymentType.find('option[value="Shabka"], option[value="Bank_transfer"], option[value="Credit"]').prop('disabled', true);
         $paymentType.val('Cash');
+
     }
 
     // 3. التحديث الجوهري لمكتبة Select2
@@ -2262,6 +2268,7 @@ function searchaboutproductfunction() {
         data: {
             "_token": token_search,
             "searchtext": searchtext,
+            "locale" : "{{ app()->getLocale() }}", // ✅ صح
             "branchs_id": branchs_id,
             "currentrow": window.currentRow,
         },
@@ -2286,6 +2293,7 @@ $('#SearchProduct').on('show.bs.modal', function(event) {
         data: {
             "_token": token_search,
             "searchtext": searchtext,
+            "locale" : "{{ app()->getLocale() }}", // ✅ صح
             "branchs_id": branchs_id,
             "currentrow": window.currentRow,
         },

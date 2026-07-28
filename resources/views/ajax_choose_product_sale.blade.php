@@ -1,3 +1,4 @@
+{{ app()->setLocale($getLocale) }}
 @if (isset($data) && $data->isNotEmpty())
     <div class="table-responsive p-3">
         <table class="table text-center our-table" id="SearchProductTable">
@@ -49,11 +50,11 @@
                         <td class="text-muted small">{{ $product->notes ?? '-' }}</td>
                         <td>
                             <div class="d-flex flex-column align-items-center">
-                                <button class="btn btn-action btn-add" data-dismiss="modal" 
+                                <button class="btn btn-action btn-add" data-dismiss="modal"
                                     onclick="chooseProduct('{{$product->id}}','{{$product->Product_Code}}','{{$product->product_name}}','{{$product->purchasingـprice}}','{{$product->sale_price}}','{{$product->Product_Location}}','{{$product->numberofpice}}','{{$currentrow}}')">
                                     <i class="fa fa-plus-circle me-1"></i> {{ __('home.Add') }}
                                 </button>
-                                
+
                                 <div class="btn-group mt-1">
                                     <button class="btn btn-action btn-warning" data-dismiss="modal" onclick="replaceproduct('{{$product->id}}')">
                                         {{ __('home.transactions') }}

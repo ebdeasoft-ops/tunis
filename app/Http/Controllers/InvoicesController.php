@@ -247,6 +247,61 @@ class NumberToWord
 class InvoicesController extends Controller
 {
 
+
+    public function showInvoiceRecent__pending($request)
+    {
+        //
+        //  return $request;
+
+        app()->setLocale(LaravelLocalization::getCurrentLocale());
+
+        $avtSaleRate = Avt::find(1);
+
+        $saleData = temp_sales::where("invoice_id", $request)->where('quantity', '!=', 0)->get();
+        $InvoiceData = temp_invoice::find($request);
+  $totAL=round(($InvoiceData->Price - $InvoiceData->discount)+(($InvoiceData->Price - $InvoiceData->discount)*$avtSaleRate->AVT),2);
+                 $totAL= number_format($totAL, 2);
+
+
+        list($whole, $decimal) = explode('.',str_replace(",","",$totAL));
+         $numberToWord = new NumberToWord();
+         $check=str_split($decimal);
+         if($check[0]=="0"){
+           $decimal =(int)$check[1] ;
+         }
+         else{
+        $decimal =$decimal ;
+
+         }
+      $setting=system_setting::find(1);
+             $Total_Amount=$InvoiceData->Bank_transfer +  $InvoiceData->creaditamount + $InvoiceData->bankamount + $InvoiceData->cashamount;
+
+         $data = [
+            $setting->name_ar,
+            $setting->Tax,
+            (string)$InvoiceData->issue_date . 'T' . (string)$InvoiceData->issue_time,
+            number_format(($Total_Amount),2,'.',''),
+            number_format( (($Total_Amount*100/(100+($avtSaleRate->AVT*100)))) * $avtSaleRate->AVT,2,'.',''),
+        ];
+        $data[] = '';
+        $data[] ='';
+        $data[] = '';
+        $data[] = '';
+
+        $data = [
+            "invoicetotal_price" =>  number_format(($Total_Amount*100/(100+($avtSaleRate->AVT*100))),2,'.',''),
+            "invoicetotal_addedvalue" =>  number_format( (($Total_Amount*100/(100+($avtSaleRate->AVT*100)))) * $avtSaleRate->AVT,2,'.',''),
+            "invoicetotal_discount" => $InvoiceData->discount,
+            'salesData' => $saleData,
+            'invoiceData' =>  $InvoiceData,
+         'totatextlriyales'=>NumToArabic::number2Word(round((int)$whole,2)) .'  ريال',
+            'totatextlrihalala'=>$decimal!='00'?NumToArabic::number2Word(round((int)$decimal,2)). '   هللة':'فقط',
+
+        ];
+
+        return  view('products.printInvoicesReturnToClientRecentSales_pending', compact('data'));
+    }
+    
   public function generate_return_sale_pdf  ($request) {
 
 
@@ -5616,7 +5671,7 @@ public function updateproductallDataInvoices(Request $request)
                 'payment' => $InvoiceData->Pay,
                 "invoice_id" => $request->invoice_no
             ];
-            session()->flash('foundinvoice', '   تم العثور علي فاتورة ');
+            session()->flash('foundinvoice', __('home.invoice_found'));
 
             return view('products.salesreturned', compact('data'));
         }

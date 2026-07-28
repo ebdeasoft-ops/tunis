@@ -3205,7 +3205,9 @@ function checkDuplicateProduct(productId, currentIndex) {
 function chooseProduct(code, productcode, name, cost, sale_price, location, availablequantity, currentrow) {
     if (checkDuplicateProduct(code, currentrow)) {
         return; // منتج مكرر — توقف!
-    } else if (availablequantity <= 0) {
+    } 
+    // else if (availablequantity <= 0) {
+    else if (0) {
         // رسالة SweetAlert احترافية لتنبيه نقص المخزون
         Swal.fire({
             title: '<span style="color: #d33;">عذراً! المخزون غير كافٍ</span><br><small>Sorry! Insufficient Stock</small>',

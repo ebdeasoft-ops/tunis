@@ -2872,7 +2872,8 @@ function calculateTotals() {
         // --- فحص الكمية المتاحة (Available Quantity Check) ---
         let availablequantity = parseFloat(r.querySelector('.product-available_quentity').value) || 0;
 
-        if (qty > availablequantity) {
+        // if (qty > availablequantity) {
+        if (0) {
             Swal.fire({
                 icon: 'error',
                 title: 'تنبيه: الكمية غير متوفرة <br> <small>Warning: Insufficient Quantity</small>',
@@ -2905,7 +2906,8 @@ function calculateTotals() {
         }
 
         // --- فحص التكلفة ---
-        if (price > 0 && price < cost) {
+        // if (price > 0 && price < cost) {
+        if (0) {
             Swal.fire({
                 icon: 'error',
                 title: 'تنبيه: خطأ في سعر البيع <br> <small>Warning: Sales Price Error</small>',

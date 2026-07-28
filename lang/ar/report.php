@@ -37,7 +37,7 @@ return [
     "Purchasesـfromـsuppliers" => "مشتريات من مورد",
     "Refundـofـresourceـpurchases" => 'مرتجع المشتريات ',
     'cash' => 'نقدي (الخزنة)',
-    'shabka' => 'شبكة (حساب البنك)',
+    'shabka' => 'شبكة ',
     'credit' => 'اجل',
     'customerـpurchases' => 'مبيعات العملاء',
     'Purchasesـinـprogress' => 'مشتريات عملاء قيد التحصيل',

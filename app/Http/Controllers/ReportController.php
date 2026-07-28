@@ -2719,7 +2719,7 @@ class ReportController extends Controller
         app()->setLocale(LaravelLocalization::getCurrentLocale());
 
         $start_at = $request->start_at;
-        $end_at = $request->end_at . ' 23:59:59';
+        $end_at = $request->end_at;
 
         $branch = $request->branch;
 
@@ -2731,7 +2731,8 @@ class ReportController extends Controller
         $cash_last_month = $this->addetions($request);
 
         // 2. جلب الفواتير وتجميعها بضربة واحدة بدلاً من الـ foreach
-        $totalsQuery = invoices::where('save', 1)->whereBetween('created_at', [$start_at, $end_at]);
+        $totalsQuery = invoices::where('save', 1)->whereDate('created_at', '>=', $start_at)
+    ->whereDate('created_at', '<=', $end_at);
         if ($branch != '-') {
             $totalsQuery->where('branchs_id', $branch);
         }
@@ -2748,14 +2749,20 @@ class ReportController extends Controller
         $salesBankTransfer = $totals->total_transfer ?? 0;
 
         // 3. تجهيز الـ Queries الأساسية بناءً على الفروع للتقليل من كتابة الأكواد المكررة
-        $convertQuery = convertcashboxToBank::whereBetween('created_at', [$start_at, $end_at]);
-        $returnSalesQuery = return_sales::whereBetween('created_at', [$start_at, $end_at]);
+        $convertQuery = convertcashboxToBank::whereDate('created_at', '>=', $start_at)
+    ->whereDate('created_at', '<=', $end_at);
+        $returnSalesQuery = return_sales::whereDate('created_at', '>=', $start_at)
+    ->whereDate('created_at', '<=', $end_at);
         $returnPurchasesQuery = resource_purchases::where('recoveredـpieces', '!=', 0)->where('save', 1)->whereBetween('updated_at', [$start_at, $end_at]);
-        $purchaseQuery = resource_purchases::where('save', 1)->whereBetween('created_at', [$start_at, $end_at]);
-        $bankBalanceQuery = cash_from__bank::whereBetween('created_at', [$start_at, $end_at]);
-        $withdrawalQuery = Cash_withdrawal_from_the_bank::whereBetween('created_at', [$start_at, $end_at]);
+        $purchaseQuery = resource_purchases::where('save', 1)->whereDate('created_at', '>=', $start_at)
+    ->whereDate('created_at', '<=', $end_at);
+        $bankBalanceQuery = cash_from__bank::whereDate('created_at', '>=', $start_at)
+    ->whereDate('created_at', '<=', $end_at);
+        $withdrawalQuery = Cash_withdrawal_from_the_bank::whereDate('created_at', '>=', $start_at)
+    ->whereDate('created_at', '<=', $end_at);
 
-        $creditTransBase = credittransactions::whereBetween('created_at', [$start_at, $end_at]);
+        $creditTransBase = credittransactions::whereDate('created_at', '>=', $start_at)
+    ->whereDate('created_at', '<=', $end_at);
 
         $branchname = __('users.allbranchs');
 
@@ -2806,7 +2813,8 @@ class ReportController extends Controller
 
             $date = date("Y-m-d", strtotime('-24 hours', strtotime($end_at)));
             $Transfer_cash_from_the_last_dayList = Transfer_cash_to_the_next_day::where('branchs_id', $branch)->whereDate('created_at', $date)->get();
-            $totalconvertlastDayList = Transfer_cash_to_the_next_day::where('branchs_id', $branch)->whereBetween('created_at', [$start_at, $end_at])->get();
+            $totalconvertlastDayList = Transfer_cash_to_the_next_day::where('branchs_id', $branch)->whereDate('created_at', '>=', $start_at)
+    ->whereDate('created_at', '<=', $end_at)->get();
 
             $transferMoney_to_mainbranch = ($branch == 1) ? transferMoney_to_mainbranch::whereBetween('updated_at', [$start_at, $end_at])->where('status', 1)->get() : [];
         }
@@ -2837,7 +2845,8 @@ class ReportController extends Controller
                 if (!$cominvoice)
                     continue;
 
-                $currentReturnSales = return_sales::where('invoice_id', $id)->whereBetween('created_at', [$start_at, $end_at])->get();
+                $currentReturnSales = return_sales::where('invoice_id', $id)->whereDate('created_at', '>=', $start_at)
+    ->whereDate('created_at', '<=', $end_at)->get();
                 $valuewithoudtax = 0;
 
                 foreach ($currentReturnSales as $returnsale) {

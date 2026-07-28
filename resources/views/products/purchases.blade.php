@@ -1228,7 +1228,7 @@ td .d-flex {
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <!-- 6) Custom form elements -->
 
-
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 {{-- Select2 --}}
 
 <script>
@@ -1974,12 +1974,16 @@ $(document).ready(function() {
 })
 
 
-$("#formdata").on('submit', function(e) {
+$("#formdata").on('submit', function (e) {
     e.preventDefault();
 
-    // 1. التحقق من المورد (الموجود مسبقاً في كودك)
+    // 1. التحقق من المورد
     if ($('#clientnamesearch').val() == '-') {
-        alert("{{ __('home.entersuppliername') }}");
+        Swal.fire({
+            icon: 'error',
+            title: 'خطأ',
+            text: "{{ __('home.entersuppliername') }}"
+        });
         return;
     }
 
@@ -1999,39 +2003,81 @@ $("#formdata").on('submit', function(e) {
     });
 
     if (!isValid) {
-        alert(errorMessage);
-        return; // إيقاف تنفيذ الـ AJAX
+        Swal.fire({
+            icon: 'warning',
+            title: 'تنبيه',
+            text: errorMessage
+        });
+        return; // إيقاف التنفيذ
     }
 
-    // 3. إذا كانت البيانات سليمة، ابدأ عملية الحفظ
-    $('#massagesave').modal('show');
+    // 3. نافذة تأكيد قبل الحفظ (SweetAlert Confirmation)
+    Swal.fire({
+        title: 'هل تريد حفظ الفاتورة؟',
+        text: "يرجى التأكد من صحة البيانات قبل تأكيد الحفظ",
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'نعم، حفظ',
+        cancelButtonText: 'إلغاء'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            
+            // إظهار مؤشر التحميل أو المودال القديم لو حابب
+            Swal.fire({
+                title: 'جاري الحفظ...',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
 
-    var url = "{{ URL::to('save_invoice_purchase') }}";
-    $.ajax({
-        url: url,
-        type: 'post',
-        data: new FormData(this),
-        cache: false,
-        contentType: false,
-        processData: false,
-        success: function(data) {
-            // كود النجاح الخاص بك...
-            $('#show_invoice_number').val(data);
-            $('#orderId').val(data);
-            document.getElementById('printdiv').hidden = false;
-            document.getElementById('saveInvoice').hidden = true;
+            var formElement = document.getElementById('formdata');
+            var url = "{{ URL::to('save_invoice_purchase') }}";
 
-            setTimeout(() => {
-                $('#massagesave').modal('hide');
-            }, 1000);
-        },
-        error: function(respose) {
-            console.log(respose);
-            alert("حدث خطأ أثناء الحفظ، يرجى مراجعة البيانات");
+            $.ajax({
+                url: url,
+                type: 'post',
+                data: new FormData(formElement),
+                cache: false,
+                contentType: false,
+                processData: false,
+                success: function (data) {
+                    $('#show_invoice_number').val(data);
+                    $('#orderId').val(data);
+                    document.getElementById('printdiv').hidden = false;
+                    document.getElementById('saveInvoice').hidden = true;
+
+                    // رسالة نجاح الحفظ بنجاح
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'تم الحفظ بنجاح!',
+                        text: 'رقم الفاتورة: ' + data,
+                        timer: 2000,
+                        showConfirmButton: false
+                    });
+                },
+                error: function(respose) {
+                    console.log(respose);
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'خطأ!',
+                        text: 'حدث خطأ أثناء الحفظ، يرجى مراجعة البيانات'
+                    });
+                }
+            });
         }
     });
 });
 
+// منع إرسال النموذج عند الضغط على Enter داخل الحقول
+$('#formdata input').on('keypress', function(e) {
+    if (e.which == 13) {
+        e.preventDefault();
+        return false;
+    }
+});
 function removeRow(btn) {
     btn.closest('tr').remove();
 }

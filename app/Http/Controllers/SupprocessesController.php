@@ -24,36 +24,36 @@ class SupprocessesController extends Controller
 {
 
 
-public function importStockAjax(Request $request)
-{
-    try {
-        $rows = Excel::toCollection(new StockUpdateImport, $request->file('excel_file'))->first();
-        $selectedBranchId = $request->input('branch_id');
-        $allProdctsD = [];
+    public function importStockAjax(Request $request)
+    {
+        try {
+            $rows = Excel::toCollection(new StockUpdateImport, $request->file('excel_file'))->first();
+            $selectedBranchId = $request->input('branch_id');
+            $allProdctsD = [];
 
-        foreach ($rows as $row) {
-            // البحث عن المنتج في الفرع المحدد
-            $product = products::where('Product_Code', $row['product_code'])
-                               ->where('branchs_id', $selectedBranchId)
-                               ->first();
+            foreach ($rows as $row) {
+                // البحث عن المنتج في الفرع المحدد
+                $product = products::where('Product_Code', $row['product_code'])
+                    ->where('branchs_id', $selectedBranchId)
+                    ->first();
 
-            if ($product) {
-                $allProdctsD[] = [
-                    'product_id' => $product->id,
-                    'Product_Code' => $product->Product_Code,
-                    'product_name' => $product->product_name,
-                    'available_quantity' => $product->numberofpice, // الكمية الحالية في البرنامج
-                    'inventory_quantity' => $row['quantity'] ?? 0,   // الكمية التي تم جردها في الإكسيل
-                ];
+                if ($product) {
+                    $allProdctsD[] = [
+                        'product_id' => $product->id,
+                        'Product_Code' => $product->Product_Code,
+                        'product_name' => $product->product_name,
+                        'available_quantity' => $product->numberofpice, // الكمية الحالية في البرنامج
+                        'inventory_quantity' => $row['quantity'] ?? 0,   // الكمية التي تم جردها في الإكسيل
+                    ];
+                }
             }
-        }
 
-        return response()->json(['success' => true, 'data' => $allProdctsD]);
-    } catch (\Exception $e) {
-        return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
+            return response()->json(['success' => true, 'data' => $allProdctsD]);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
+        }
     }
-}
-   
+
     public function downloadTemplate()
     {
         return Excel::download(new StockUpdateTempleteExport, 'purchase_template.xlsx');
@@ -120,8 +120,8 @@ public function importStockAjax(Request $request)
         $costCenter = Cost_centers::create([
             'cost_center_ar' => $request->breanchName,
             'cost_center_en' => $request->expenses_reason_en ?? $request->breanchName,
-            'expensesAvt'    => 0,
-            'created_at'     => Carbon::now()->addHours(3)
+            'expensesAvt' => 0,
+            'created_at' => Carbon::now()->addHours(3)
         ]);
 
         if ($costCenter) {
@@ -130,9 +130,9 @@ public function importStockAjax(Request $request)
             session()->flash('notcreate', 'حدثت مشكلة اثناء انشاء مركز التكلفة');
         }
 
-return redirect()->back();
+        return redirect()->back();
 
-}
+    }
 
     /**
      * دالة رفع الصور المحسنة والمؤمنة
@@ -164,13 +164,13 @@ return redirect()->back();
     public function create_addnewProduct(Request $request)
     {
         $request->validate([
-            'product_name_ar'             => 'required',
-            'Section'                     => 'required',
-            'product_location'            => 'required',
-            'type'                        => 'nullable|string',
-            'brand'                       => 'nullable|string',
+            'product_name_ar' => 'required',
+            'Section' => 'required',
+            'product_location' => 'required',
+            'type' => 'nullable|string',
+            'brand' => 'nullable|string',
             'minmum_quantity_stock_alart' => 'required|numeric',
-            'Item_img'                    => 'nullable|mimes:png,jpg,jpeg|max:2000',
+            'Item_img' => 'nullable|mimes:png,jpg,jpeg|max:2000',
         ]);
 
         $photo = 'productunKnown.png';
@@ -181,29 +181,29 @@ return redirect()->back();
         DB::transaction(function () use ($request, $photo) {
             foreach (branchs::all() as $branch) {
                 $checkProduct = products::where('branchs_id', $branch->id)
-                                         ->where('Product_Code', $request->product_code)
-                                         ->exists();
+                    ->where('Product_Code', $request->product_code)
+                    ->exists();
 
                 if (!$checkProduct) {
                     $lastProduct = products::orderBy('id', 'DESC')->first();
                     $productCode = $request->product_code ?? ($lastProduct ? $lastProduct->id + 1 : 1);
 
                     $newProduct = products::create([
-                        'product_name'                => $request->product_name_ar . " " . $request->product_name_en,
-                        'name_en'                     => $request->product_name_en ?? '',
-                        'branchs_id'                  => $branch->id,
-                        'user_id'                     => auth()->user()->id,
-                        'Product_Location'            => $request->product_location,
-                        'Product_Code'                => $productCode,
-                        'Status'                      => 1,
-                        'notes'                       => $request->product_notes ?? "-",
-                        'unit'                        => $request->unit,
-                        'type'                        => $request->type,
-                        'brand'                       => $request->brand,
-                        'product_group'               => $request->product_group,
-                        'refnumber'                   => $request->refnumber,
+                        'product_name' => $request->product_name_ar . " " . $request->product_name_en,
+                        'name_en' => $request->product_name_en ?? '',
+                        'branchs_id' => $branch->id,
+                        'user_id' => auth()->user()->id,
+                        'Product_Location' => $request->product_location,
+                        'Product_Code' => $productCode,
+                        'Status' => 1,
+                        'notes' => $request->product_notes ?? "-",
+                        'unit' => $request->unit,
+                        'type' => $request->type,
+                        'brand' => $request->brand,
+                        'product_group' => $request->product_group,
+                        'refnumber' => $request->refnumber,
                         'minmum_quantity_stock_alart' => $request->minmum_quantity_stock_alart,
-                        'photo'                       => $photo,
+                        'photo' => $photo,
                     ]);
 
                     $newProduct->update([
@@ -211,7 +211,7 @@ return redirect()->back();
                     ]);
                 }
             }
-    });
+        });
 
         $message = app()->getLocale() == 'ar' ? 'تمت العملية بنجاح' : 'Process completed successfully';
         session()->flash('addProduct', $message);
@@ -225,11 +225,11 @@ return redirect()->back();
     public function addnewProductajax(Request $request)
     {
         $request->validate([
-            'product_name_ar'             => 'required',
-            'Section'                     => 'required',
-            'product_location'            => 'required',
-            'type'                        => 'nullable|string',
-            'brand'                       => 'nullable|string',
+            'product_name_ar' => 'required',
+            'Section' => 'required',
+            'product_location' => 'required',
+            'type' => 'nullable|string',
+            'brand' => 'nullable|string',
             'minmum_quantity_stock_alart' => 'required',
         ]);
 
@@ -238,8 +238,8 @@ return redirect()->back();
         DB::transaction(function () use ($request, &$addedSuccessfully) {
             foreach (branchs::all() as $branch) {
                 $checkProduct = products::where('branchs_id', $branch->id)
-                                         ->where('Product_Code', $request->product_code)
-                                         ->exists();
+                    ->where('Product_Code', $request->product_code)
+                    ->exists();
 
                 if ($checkProduct) {
                     continue;
@@ -249,23 +249,23 @@ return redirect()->back();
                 $productCode = $request->product_code ?? ($lastProduct ? $lastProduct->id + 1 : 1);
 
                 $newProduct = products::create([
-                    'product_name'                => $request->product_name_ar . " " . $request->product_name_en,
-                    'name_en'                     => $request->product_name_en,
-                    'branchs_id'                  => $branch->id,
-                    'user_id'                     => auth()->user()->id,
-                    'Product_Location'            => $request->product_location,
-                    'Product_Code'                => $productCode,
-                    'Status'                      => 1,
-                    'product_group'               => $request->product_group,
-                    'notes'                       => $request->product_notes ?? '-',
-                    'refnumber'                   => $request->refnumber,
-                    'unit'                        => $request->unit,
-                    'type'                        => $request->type,
-                    'brand'                       => $request->brand,
+                    'product_name' => $request->product_name_ar . " " . $request->product_name_en,
+                    'name_en' => $request->product_name_en,
+                    'branchs_id' => $branch->id,
+                    'user_id' => auth()->user()->id,
+                    'Product_Location' => $request->product_location,
+                    'Product_Code' => $productCode,
+                    'Status' => 1,
+                    'product_group' => $request->product_group,
+                    'notes' => $request->product_notes ?? '-',
+                    'refnumber' => $request->refnumber,
+                    'unit' => $request->unit,
+                    'type' => $request->type,
+                    'brand' => $request->brand,
                     'minmum_quantity_stock_alart' => $request->minmum_quantity_stock_alart,
-                    'purchasingـprice'            => $request->cost_price, // تم الإبقاء على مسمى عمود قاعدة بياناتك الحالي
-                    'sale_price'                  => $request->sale_price_create,
-                    'numberofpice'                => $request->numberofpice,
+                    'purchasingـprice' => $request->cost_price, // تم الإبقاء على مسمى عمود قاعدة بياناتك الحالي
+                    'sale_price' => $request->sale_price_create,
+                    'numberofpice' => $request->numberofpice,
                 ]);
 
                 $newProduct->update([
@@ -274,7 +274,7 @@ return redirect()->back();
 
                 $addedSuccessfully = true;
             }
-    });
+        });
 
         if ($addedSuccessfully) {
             return [app()->getLocale() == 'ar' ? 'تم اضافة المنتج بنجاح' : 'Product added successfully'];
@@ -299,7 +299,8 @@ return redirect()->back();
                 // استخدام Lock للسطر الحالي لمنع الـ Race Condition أثناء الجرد والتعديل بالتزامن
                 $productdata = products::lockForUpdate()->find($productId);
 
-                if (!$productdata) continue;
+                if (!$productdata)
+                    continue;
 
                 $decrease = $request->productdecrease[$key] ?? 0;
                 $increase = $request->productincrease[$key] ?? 0;
@@ -311,12 +312,12 @@ return redirect()->back();
                     stock_update::create([
                         'productdecrease' => $decrease,
                         'productincrease' => 0,
-                        'product_id'      => $productId,
-                        'product_name'    => $newQty,
-                        'branchs_id'      => auth()->user()->branchs_id,
-                        'user_id'         => auth()->user()->id,
-                        'created_at'      => Carbon::now(),
-                        'note'            => $note,
+                        'product_id' => $productId,
+                        'product_name' => $newQty,
+                        'branchs_id' => auth()->user()->branchs_id,
+                        'user_id' => auth()->user()->id,
+                        'created_at' => Carbon::now(),
+                        'note' => $note,
                     ]);
 
                     $productdata->update(['numberofpice' => $newQty]);
@@ -331,17 +332,17 @@ return redirect()->back();
                     stock_update::create([
                         'productdecrease' => 0,
                         'productincrease' => $increase,
-                        'product_id'      => $productId,
-                        'product_name'    => $newQty,
-                        'branchs_id'      => auth()->user()->branchs_id,
-                        'user_id'         => auth()->user()->id,
-                        'created_at'      => Carbon::now(),
-                        'note'            => $note,
+                        'product_id' => $productId,
+                        'product_name' => $newQty,
+                        'branchs_id' => auth()->user()->branchs_id,
+                        'user_id' => auth()->user()->id,
+                        'created_at' => Carbon::now(),
+                        'note' => $note,
                     ]);
                     $updatedproduct = true;
                 }
             }
-    });
+        });
 
         if ($updatedproduct) {
             $message = app()->getLocale() == 'ar' ? 'تم تعديل كميات المنتجات بنجاح' : "Products quantities modified successfully.";
@@ -361,35 +362,40 @@ return redirect()->back();
             'Item_img' => 'nullable|mimes:png,jpg,jpeg|max:2000',
         ]);
 
-        $photo = $request->hasFile('Item_img') 
-            ? $this->uploadImage('assets/admin/uploads', $request->file('Item_img')) 
+        $photo = $request->hasFile('Item_img')
+            ? $this->uploadImage('assets/admin/uploads', $request->file('Item_img'))
             : ($request->old_photo ?? 'productunKnown.png');
 
         $updateData = [
             'Product_Location' => $request->new_location,
-            'product_name'     => $request->productnameshow,
-            'main_product'     => $request->MAINproduct == 0 ? $productId : $request->MAINproduct,
-            'Product_Code'     => $request->productcode,
-            'refnumber'        => $request->refnumber,
-            'notes'            => $request->product_notes ?? ' ',
-            'photo'            => $photo,
+            'product_name' => $request->productnameshow,
+            'main_product' => $request->MAINproduct == 0 ? $productId : $request->MAINproduct,
+            'Product_Code' => $request->productcode,
+            'refnumber' => $request->refnumber,
+            'notes' => $request->product_notes ?? ' ',
+            'photo' => $photo,
         ];
 
-        if ($request->has('product_price')) $updateData['sale_price'] = $request->product_price;
-        if ($request->has('purachesepice')) $updateData['purchasingـprice'] = $request->purachesepice;
-        if ($request->has('Wholesale_price')) $updateData['Wholesale_price'] = $request->Wholesale_price;
+        if ($request->has('product_price'))
+            $updateData['sale_price'] = $request->product_price;
+        if ($request->has('purachesepice'))
+            $updateData['purchasingـprice'] = $request->purachesepice;
+        if ($request->has('Wholesale_price'))
+            $updateData['Wholesale_price'] = $request->Wholesale_price;
 
         DB::transaction(function () use ($productId, $updateData, $request) {
             products::where('id', $productId)->update($updateData);
 
             if ($request->hasAny(['product_price', 'purachesepice'])) {
                 $sharedUpdate = [];
-                if ($request->has('product_price')) $sharedUpdate['sale_price'] = $request->product_price;
-                if ($request->has('purachesepice')) $sharedUpdate['purchasingـprice'] = $request->purachesepice;
+                if ($request->has('product_price'))
+                    $sharedUpdate['sale_price'] = $request->product_price;
+                if ($request->has('purachesepice'))
+                    $sharedUpdate['purchasingـprice'] = $request->purachesepice;
 
                 products::where('Product_Code', $request->productcode)->update($sharedUpdate);
             }
-    });
+        });
 
         $message = app()->getLocale() == 'ar' ? 'تم تعديل بيانات المنتج والمنتجات المرتبطة بنجاح' : 'Product data modified successfully';
         session()->flash('productupdatedlocation', $message);
@@ -403,21 +409,21 @@ return redirect()->back();
     public function product_damage_add(Request $request)
     {
         $productId = $request->productNo;
-        
+
         DB::transaction(function () use ($productId, $request) {
             $product = products::lockForUpdate()->findOrFail($productId);
-            
+
             $product->update([
                 'numberofpice' => $product->numberofpice - $request->newquentity
             ]);
 
             ProductsDamage::create([
                 'damage_quantity' => $request->newquentity,
-                'product_id'      => $productId,
-                'product_name'    => $product->product_name,
-                'branchs_id'      => $product->branchs_id,
-                'user_id'         => auth()->user()->id,
-                'created_at'      => Carbon::now()->addHours(3),
+                'product_id' => $productId,
+                'product_name' => $product->product_name,
+                'branchs_id' => $product->branchs_id,
+                'user_id' => auth()->user()->id,
+                'created_at' => Carbon::now()->addHours(3),
             ]);
         });
 
@@ -444,18 +450,18 @@ return redirect()->back();
     {
         DB::transaction(function () use ($request) {
             supllier::where('id', $request->clientnamesearch)->update([
-                'name'       => $request->name,
-                'phone'      => $request->phone,
-                'comp_name'  => $request->name,
-                'email'      => $request->email ?? "supplier@gmail.com",
-                'location'   => $request->loction,
+                'name' => $request->name,
+                'phone' => $request->phone,
+                'comp_name' => $request->name,
+                'email' => $request->email ?? "supplier@gmail.com",
+                'location' => $request->loction,
                 'TaxـNumber' => $request->TaxـNumber ?? '0'
             ]);
 
             financial_accounts::where('orginal_id', $request->clientnamesearch)
-                              ->where('orginal_type', 2)
-                              ->update(['name' => $request->name]);
-    });
+                ->where('orginal_type', 2)
+                ->update(['name' => $request->name]);
+        });
 
         $message = app()->getLocale() == 'ar' ? 'تم تعديل البيانات بنجاح' : 'Data modified successfully';
         session()->flash('updateseccess', $message);
@@ -474,27 +480,27 @@ return redirect()->back();
 
         DB::transaction(function () use ($request) {
             customers::where('id', $request->clientnamesearch)->update([
-                'name'                => $request->nameclient,
-                'comp_name'           => $request->nameclient,
-                'street_name'         => $request->StreetName,
-                'building_number'     => $request->buildnumber,
+                'name' => $request->nameclient,
+                'comp_name' => $request->nameclient,
+                'street_name' => $request->StreetName,
+                'building_number' => $request->buildnumber,
                 'plot_identification' => $request->plot_identification,
-                'address'             => $request->city ?? "Client Address",
-                'sub_city'            => $request->sub_city ?? "Client Address",
-                'tax_no'              => $request->TaxـNumber ?? 0,
-                'phone'               => $request->phone ?? '05----------',
-                'email'               => $request->email ?? 'Email@gmail.com',
-                'notes'               => $request->product_notes ?? "لا توجد ملاحظات ",
-                'Limit_credit'        => $request->credit_limit,
-                'grace_period_in_days'=> $request->grace_period_in_days,
-                'postcode'            => $request->postcode,
-                'CRN'                 => $request->CRN,
+                'address' => $request->city ?? "Client Address",
+                'sub_city' => $request->sub_city ?? "Client Address",
+                'tax_no' => $request->TaxـNumber ?? 0,
+                'phone' => $request->phone ?? '05----------',
+                'email' => $request->email ?? 'Email@gmail.com',
+                'notes' => $request->product_notes ?? "لا توجد ملاحظات ",
+                'Limit_credit' => $request->credit_limit,
+                'grace_period_in_days' => $request->grace_period_in_days,
+                'postcode' => $request->postcode,
+                'CRN' => $request->CRN,
             ]);
 
             financial_accounts::where('orginal_id', $request->clientnamesearch)
-                              ->where('orginal_type', 1)
-                              ->update(['name' => $request->nameclient]);
-    });
+                ->where('orginal_type', 1)
+                ->update(['name' => $request->nameclient]);
+        });
 
         $message = app()->getLocale() == 'ar' ? 'تم تعديل البيانات بنجاح' : 'Data modified successfully';
         session()->flash('updateseccess', $message);
@@ -509,49 +515,51 @@ return redirect()->back();
     {
         $customer = DB::transaction(function () use ($request) {
             $newCustomer = customers::create([
-                'name'                 => $request->name,
-                'comp_name'            => $request->name,
-                'tax_no'               => $request->tax_no ?? 0,
-                'Balance'              => $request->Balance ?? 0,
-                'phone'                => $request->phone ?? '05----------',
-                'email'                => $request->email ?? 'Email@gmail.com',
-                'notes'                => $request->notes ?? "لا توجد ملاحظات ",
-                'Limit_credit'         => $request->Limit_credit,
+                'name' => $request->name,
+                'comp_name' => $request->name,
+                'tax_no' => $request->tax_no ?? 0,
+                'Balance' => $request->Balance ?? 0,
+                'phone' => $request->phone ?? '05----------',
+                'email' => $request->email ?? 'Email@gmail.com',
+                'notes' => $request->notes ?? "لا توجد ملاحظات ",
+                'Limit_credit' => $request->Limit_credit,
                 'grace_period_in_days' => $request->grace_period_in_days,
-                'street_name'          => $request->StreetName,
-                'building_number'      => $request->buildnumber,
-                'plot_identification'  => $request->plot_identification,
-                'address'              => $request->city ?? "Client Address",
-                'sub_city'             => $request->sub_city ?? "Client Address",
-                'postcode'             => $request->postcode,
-                'CRN'                  => $request->CRN,
+                'street_name' => $request->StreetName,
+                'building_number' => $request->buildnumber,
+                'plot_identification' => $request->plot_identification,
+                'address' => $request->city ?? "Client Address",
+                'sub_city' => $request->sub_city ?? "Client Address",
+                'postcode' => $request->postcode,
+                'CRN' => $request->CRN,
             ]);
 
             // حماية رقم الحساب من خلال الحساب التراكمي المباشر بدلاً من قراءة آخر صف غير محمية
             $nextAccountNumber = financial_accounts::where('account_type', 1)->where('orginal_type', 1)->max('account_number') + 1;
 
             financial_accounts::create([
-                'name'                  => $request->name,
-                'account_type'          => 1,
+                'name' => $request->name,
+                'account_type' => 1,
                 'parent_account_number' => 2,
-                'account_number'        => $nextAccountNumber,
-                'start_balance'         => 0,
-                'current_balance'       => 0,
-                'start_balance_status'  => 3,
-                'other_table_FK'        => NULL,
-                'notes'                 => NULL,
-                'added_by'              => auth()->user()->id ?? 1,
-                'updated_by'            => NULL,
-                'com_code'              => 1,
-                'date'                  => Carbon::now()->addHours(3),
-                'active'                => 1,
-                'is_parent'             => 0,
-                'orginal_id'            => $newCustomer->id,
-                'orginal_type'          => 1
+                'account_number' => $nextAccountNumber,
+                'start_balance' => 0,
+                'current_balance' => 0,
+                'start_balance_status' => 3,
+                'other_table_FK' => NULL,
+                'notes' => NULL,
+                'added_by' => auth()->user()->id ?? 1,
+                'updated_by' => NULL,
+                'com_code' => 1,
+                'date' => Carbon::now()->addHours(3),
+                'active' => 1,
+                'is_parent' => 0,
+                'orginal_id' => $newCustomer->id,
+                'orginal_type' => 1,
+                'tax_no' => $request->TaxـNumber ?? 0,
+
             ]);
 
             return $newCustomer;
-    });
+        });
 
         return response()->json($customer);
     }
@@ -559,53 +567,56 @@ return redirect()->back();
     public function create_addnewcustomer(Request $request)
     {
         $request->validate([
-            'name'                   => 'required',
-            'TaxـNumber'             => 'required|numeric',
-            'balance'                => 'required|numeric',
+            'name' => 'required',
+            'TaxـNumber' => 'required|numeric',
+            'balance' => 'required|numeric',
             'timeout_periodـinـdays' => 'required|numeric',
-            'credit_limit'           => 'required|numeric'
+            'credit_limit' => 'required|numeric'
         ]);
 
         DB::transaction(function () use ($request) {
             $newCustomer = customers::create([
-                'name'                 => $request->name,
-                'name_en'              => $request->name_en,
-                'comp_name'            => $request->name,
-                'tax_no'               => $request->TaxـNumber ?? 0,
-                'Balance'              => $request->balance ?? 0,
-                'phone'                => $request->phone ?? '05----------',
-                'email'                => $request->email ?? 'Email@gmail.com',
-                'notes'                => $request->product_notes ?? "لا توجد ملاحظات ",
-                'Limit_credit'         => $request->credit_limit,
+                'name' => $request->name,
+                'name_en' => $request->name_en,
+                'comp_name' => $request->name,
+                'tax_no' => $request->TaxـNumber ?? 0,
+                'Balance' => $request->balance ?? 0,
+                'phone' => $request->phone ?? '05----------',
+                'email' => $request->email ?? 'Email@gmail.com',
+                'notes' => $request->product_notes ?? "لا توجد ملاحظات ",
+                'Limit_credit' => $request->credit_limit,
                 'grace_period_in_days' => $request->grace_period_in_days,
-                'street_name'          => $request->StreetName,
-                'building_number'      => $request->buildnumber,
-                'plot_identification'  => $request->plot_identification,
-                'address'              => $request->city ?? "Client Address",
-                'sub_city'             => $request->sub_city ?? "Client Address",
-                'postcode'             => $request->postcode,
-                'CRN'                  => $request->CRN,
+                'street_name' => $request->StreetName,
+                'building_number' => $request->buildnumber,
+                'plot_identification' => $request->plot_identification,
+                'address' => $request->city ?? "Client Address",
+                'sub_city' => $request->sub_city ?? "Client Address",
+                'postcode' => $request->postcode,
+                'CRN' => $request->CRN,
             ]);
 
             $nextAccountNumber = financial_accounts::where('account_type', 1)->where('orginal_type', 1)->max('account_number') + 1;
 
             financial_accounts::create([
-                'name'                  => $request->name,
-                'account_type'          => 1,
+                'name' => $request->name,
+                'account_type' => 1,
                 'parent_account_number' => 2,
-                'account_number'        => $nextAccountNumber,
-                'start_balance'         => 0,
-                'current_balance'       => 0,
-                'start_balance_status'  => 3,
-                'added_by'              => auth()->user()->id ?? 1,
-                'com_code'              => 1,
-                'date'                  => Carbon::now()->addHours(3),
-                'active'                => 1,
-                'is_parent'             => 0,
-                'orginal_id'            => $newCustomer->id,
-                'orginal_type'          => 1
+                'account_number' => $nextAccountNumber,
+                'start_balance' => 0,
+                'current_balance' => 0,
+                'start_balance_status' => 3,
+                'added_by' => auth()->user()->id ?? 1,
+                'com_code' => 1,
+                'date' => Carbon::now()->addHours(3),
+                'active' => 1,
+                'is_parent' => 0,
+                'orginal_id' => $newCustomer->id,
+                'orginal_type' => 1,
+                'tax_no' => $request->TaxـNumber ?? 0,
+
+
             ]);
-    });
+        });
 
         $message = app()->getLocale() == 'ar' ? 'تم اضافة العميل بنجاح' : 'Client added successfully';
         session()->flash('newcustomer', $message);
@@ -616,44 +627,46 @@ return redirect()->back();
     public function create_addnewsupplier(Request $request)
     {
         $request->validate([
-            'name'       => 'required',
-            'email'      => 'required|email',
-            'phone'      => 'required',
-            'loction'    => 'required',
+            'name' => 'required',
+            'email' => 'required|email',
+            'phone' => 'required',
+            'loction' => 'required',
             'TaxـNumber' => 'required|numeric',
         ]);
 
         DB::transaction(function () use ($request) {
             $supplier = supllier::create([
-                'name'       => $request->name,
-                'name_en'    => $request->name_en,
-                'phone'      => $request->phone,
-                'comp_name'  => $request->name,
-                'email'      => $request->email,
-                'location'   => $request->loction,
-                'notes'      => $request->notes ?? "لا توجد",
+                'name' => $request->name,
+                'name_en' => $request->name_en,
+                'phone' => $request->phone,
+                'comp_name' => $request->name,
+                'email' => $request->email,
+                'location' => $request->loction,
+                'notes' => $request->notes ?? "لا توجد",
                 'TaxـNumber' => $request->TaxـNumber
             ]);
 
             $nextAccountNumber = financial_accounts::where('account_type', 2)->where('orginal_type', 2)->max('account_number') + 1;
 
             financial_accounts::create([
-                'name'                  => $request->name,
-                'account_type'          => 2,
+                'name' => $request->name,
+                'account_type' => 2,
                 'parent_account_number' => 1,
-                'account_number'        => $nextAccountNumber,
-                'start_balance'         => 0,
-                'current_balance'       => 0,
-                'start_balance_status'  => 3,
-                'added_by'              => auth()->user()->id ?? 1,
-                'com_code'              => 1,
-                'date'                  => Carbon::now()->addHours(3),
-                'active'                => 1,
-                'is_parent'             => 0,
-                'orginal_id'            => $supplier->id,
-                'orginal_type'          => 2
+                'account_number' => $nextAccountNumber,
+                'start_balance' => 0,
+                'current_balance' => 0,
+                'start_balance_status' => 3,
+                'added_by' => auth()->user()->id ?? 1,
+                'com_code' => 1,
+                'date' => Carbon::now()->addHours(3),
+                'active' => 1,
+                'is_parent' => 0,
+                'orginal_id' => $supplier->id,
+                'orginal_type' => 2,
+                'tax_no' => $request->TaxـNumber
+
             ]);
-    });
+        });
 
         $message = app()->getLocale() == 'ar' ? 'تم اضافة الموارد بنجاح' : 'Supplier added successfully';
         session()->flash('addnewsupplier', $message);
@@ -665,43 +678,60 @@ return redirect()->back();
     {
         $supplier = DB::transaction(function () use ($request) {
             $newSupplier = supllier::create([
-                'name'       => $request->name,
-                'phone'      => $request->phone,
-                'comp_name'  => $request->name,
-                'email'      => $request->email ?? "supplier@gmail.com",
-                'location'   => $request->loction,
-                'notes'      => $request->notes ?? "لا توجد",
+                'name' => $request->name,
+                'phone' => $request->phone,
+                'comp_name' => $request->name,
+                'email' => $request->email ?? "supplier@gmail.com",
+                'location' => $request->loction,
+                'notes' => $request->notes ?? "لا توجد",
                 'TaxـNumber' => $request->TaxـNumber
             ]);
 
             $nextAccountNumber = financial_accounts::where('account_type', 2)->where('orginal_type', 2)->max('account_number') + 1;
 
             financial_accounts::create([
-                'name'                  => $request->name,
-                'account_type'          => 2,
+                'name' => $request->name,
+                'account_type' => 2,
                 'parent_account_number' => 1,
-                'account_number'        => $nextAccountNumber,
-                'start_balance'         => 0,
-                'current_balance'       => 0,
-                'start_balance_status'  => 3,
-                'added_by'              => auth()->user()->id ?? 1,
-                'com_code'              => 1,
-                'date'                  => Carbon::now()->addHours(3),
-                'active'                => 1,
-                'is_parent'             => 0,
-                'orginal_id'            => $newSupplier->id,
-                'orginal_type'          => 2
+                'account_number' => $nextAccountNumber,
+                'start_balance' => 0,
+                'current_balance' => 0,
+                'start_balance_status' => 3,
+                'added_by' => auth()->user()->id ?? 1,
+                'com_code' => 1,
+                'date' => Carbon::now()->addHours(3),
+                'active' => 1,
+                'is_parent' => 0,
+                'orginal_id' => $newSupplier->id,
+                'orginal_type' => 2,
+                'tax_no' => $request->TaxـNumber
+
             ]);
 
             return $newSupplier;
-    });
+        });
 
         return response()->json($supplier);
     }
 
-    public function product_movement() { return view('supProcesses.product_movement'); }
-    public function product_damage() { return view('supProcesses.product damage'); }
-    public function addnewcustomer() { return view('supProcesses.addnewcustomer'); }
-    public function addnewsupplier() { return view('supProcesses.addnewsupplier'); }
-    public function stockAdjastment() { return view('supProcesses.stockAdjastment'); }
+    public function product_movement()
+    {
+        return view('supProcesses.product_movement');
+    }
+    public function product_damage()
+    {
+        return view('supProcesses.product damage');
+    }
+    public function addnewcustomer()
+    {
+        return view('supProcesses.addnewcustomer');
+    }
+    public function addnewsupplier()
+    {
+        return view('supProcesses.addnewsupplier');
+    }
+    public function stockAdjastment()
+    {
+        return view('supProcesses.stockAdjastment');
+    }
 }

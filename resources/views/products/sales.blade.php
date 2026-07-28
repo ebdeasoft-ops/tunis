@@ -2997,7 +2997,8 @@ function calculateTotals_with_tax() {
         // --- فحص الكمية المتاحة (Available Quantity Check) ---
         let availablequantity = parseFloat(r.querySelector('.product-available_quentity').value) || 0;
 
-        if (qty > availablequantity) {
+        // if (qty > availablequantity) {
+        if (0) {
             Swal.fire({
                 icon: 'error',
                 title: 'تنبيه: الكمية غير متوفرة <br> <small>Warning: Insufficient Quantity</small>',
@@ -3033,7 +3034,8 @@ function calculateTotals_with_tax() {
         let price = tax_with_price / (1 + taxFactor);
 
         // --- فحص التكلفة ---
-        if (tax_with_price > 0 && price < cost) {
+        // if (tax_with_price > 0 && price < cost) {
+        if (0) {
             Swal.fire({
                 icon: 'error',
                 title: 'تنبيه: خطأ في سعر البيع <br> <small>Warning: Sales Price Error</small>',
@@ -3066,7 +3068,8 @@ function calculateTotals_with_tax() {
         let discound = parseFloat(r.querySelector('.product-discound').value) || 0;
         let discound_allow_Input = parseFloat($('#discound_allow').val()) || 0.15;
 
-        if (discound > (qty * price) * discound_allow_Input) {
+        // if (discound > (qty * price) * discound_allow_Input) {
+        if (0) {
             Swal.fire({
                 icon: 'error',
                 title: 'تنبيه: تجاوز حد الخصم <br> <small>Warning: Discount Limit Exceeded</small>',

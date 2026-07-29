@@ -60,7 +60,7 @@
     .shadow-md {
         box-shadow: 0 4px 10px rgba(0, 0, 0, 0.12);
     }
-    
+
     .gap-3 {
         gap: 1rem;
     }
@@ -90,7 +90,7 @@
     }
 
     .gap-3 { gap: 1rem !important; }
-    
+
     /* تنسيق الحاوية */
     .bg-light-custom {
         background-color: #f8f9fa;
@@ -279,14 +279,14 @@
                     </select>
                 </div>
 
-          
+
                 <button class="modal-effect btn btn-sm text-white"
                     style="background-color: #23395D; border: 1px solid #1a2a44; border-radius: 3px; padding: 6px 14px; font-size: 11px; white-space: nowrap;"
                     data-toggle="modal" href="#createproduct">
                     <i class="fa fa-plus" style="margin-left: 5px;"></i> {{ __('supprocesses.addproduct') }}
                 </button>
 
-            
+
             </div>
         </div>
     </div>
@@ -366,11 +366,11 @@
                                         </tr>
                                     </thead>
                                 <tbody id="productsTableBody">
-                                 
+
                                 </tbody>
                             </table>
 
-                         <button type="button" class="btn addProductBtn shadow-sm text-white" 
+                         <button type="button" class="btn addProductBtn shadow-sm text-white"
         style="background-color: #419BB2; border-radius: 8px; padding: 8px 20px; border: none; transition: all 0.3s ease;"
         onclick="addRow()">
     <i class="fas fa-plus-circle me-1"></i> {{ __('supprocesses.addproduct') }}
@@ -398,8 +398,8 @@
     <div class="col-md-3">
         <div class="card bd-0 bg-light p-3 text-center shadow-sm">
             <label class="form-label fw-bold text-muted mb-1">{{ __('home.the amount') }}</label>
-            <input readonly type="text" id="totalSum" name="totalSum" 
-                   class="form-control text-center border-0 bg-transparent fw-bold tx-20" 
+            <input readonly type="text" id="totalSum" name="totalSum"
+                   class="form-control text-center border-0 bg-transparent fw-bold tx-20"
                    style="color: #444;" value="0.00">
         </div>
     </div>
@@ -407,8 +407,8 @@
     <div class="col-md-3">
         <div class="card bd-0 bg-danger-light p-3 text-center shadow-sm">
             <label class="form-label fw-bold text-danger mb-1">{{ __('home.discount') }}</label>
-            <input type="text" id="totaldiscound" name="totaldiscound" readonly 
-                   class="form-control text-center border-0 bg-transparent fw-bold text-danger tx-20" 
+            <input type="text" id="totaldiscound" name="totaldiscound" readonly
+                   class="form-control text-center border-0 bg-transparent fw-bold text-danger tx-20"
                    value="0.00">
         </div>
     </div>
@@ -416,8 +416,8 @@
     <div class="col-md-3">
         <div class="card bd-0 bg-primary-light p-3 text-center shadow-sm">
             <label class="form-label fw-bold text-primary mb-1">{{ __('home.addedValue') }}</label>
-            <input type="text" id="totalTax" name="totalTax" readonly 
-                   class="form-control text-center border-0 bg-transparent fw-bold text-primary tx-20" 
+            <input type="text" id="totalTax" name="totalTax" readonly
+                   class="form-control text-center border-0 bg-transparent fw-bold text-primary tx-20"
                    value="0.00">
         </div>
     </div>
@@ -425,8 +425,8 @@
     <div class="col-md-3">
         <div class="card bd-0 bg-success p-3 text-center shadow-sm border-2">
             <label class="form-label fw-bold text-white mb-1" style="font-size: 1.1rem;">{{ __('home.total') }}</label>
-            <input type="text" id="grandTotal" name="grandTotal" readonly 
-                   class="form-control text-center border-0 bg-transparent fw-bold text-white tx-24" 
+            <input type="text" id="grandTotal" name="grandTotal" readonly
+                   class="form-control text-center border-0 bg-transparent fw-bold text-white tx-24"
                    value="0.00">
         </div>
     </div>
@@ -450,8 +450,8 @@
             @foreach (App\Models\supllier::get() as $customer)
                 <option value="{{ $customer->id }}">
                     {{-- عرض الاسم والرقم الضريبي بشكل منسق --}}
-                        {{ $customer->name }} 
-             
+                        {{ $customer->name }}
+
                 </option>
             @endforeach
         </select>
@@ -465,11 +465,11 @@
             <span class="input-group-text bg-white border-end-0">
                 <i class="fas fa-pen-nib text-muted tx-12"></i>
             </span>
-            <input autocomplete="off" type="text" 
-                   class="form-control parent-input border-start-0 ps-0" 
-                   id="notes" name="notes" 
-                   onchange="makenoteoninvoice()" 
-                   value="-" 
+            <input autocomplete="off" type="text"
+                   class="form-control parent-input border-start-0 ps-0"
+                   id="notes" name="notes"
+                   onchange="makenoteoninvoice()"
+                   value="-"
                    placeholder="{{ __('home.enter_notes_here') }}">
         </div>
     </div>
@@ -501,8 +501,8 @@
                                 <br>
                                 <br>
     <div class="d-flex justify-content-center">
-    
-    <button type="submit" id="saveInvoice" name="saveInvoice" 
+
+    <button type="submit" id="saveInvoice" name="saveInvoice"
             class="btn btn-main-action shadow-md px-5 py-2 d-flex align-items-center">
         <span class="fw-bold tx-18">                            {{ __('supprocesses.save_data') }}
 </span>
@@ -529,11 +529,11 @@
 
     <div class="card bd-0 shadow-none bg-light-custom p-3">
         <div class="row row-sm justify-content-center text-center">
-            
+
             <input type="hidden" name="OrderNoprint" id="OrderNoprint">
 
             <div class="col-md-12 d-flex flex-wrap justify-content-center gap-3">
-                
+
                 <button type="submit" id="print_qoute" class="btn btn-primary-custom shadow-sm d-flex align-items-center px-4 py-2">
                     <span class="fw-bold">{{ __('home.print') }}</span>
                     <svg class="ms-2" style="width: 20px; height: 20px; fill: white;" viewBox="0 0 24 24">
@@ -1089,10 +1089,10 @@
                         </div>
 
                     </div>
-                    
-                    
+
+
                     @else
-                    
+
                                 <div class="row">
                         <div class="col-lg-4">
                             <label for="inputName" class="control-label parent-label"> {{ __('home.purachesepice') }}
@@ -1101,22 +1101,22 @@
                                 name="cost_price" value=0 onkeyup="convertToNumberpurchasersPrice()">
                         </div>
                         <div class="col-lg-4">
-                            <label for="inputName" class="control-label parent-label" required>{{ __('home.salepice') }} 
+                            <label for="inputName" class="control-label parent-label" required>{{ __('home.salepice') }}
                             </label>
                             <input autocomplete="off" type="text" class="form-control parent-input" id="sale_price_create" readonly
                                 value=0 name="sale_price_create" onkeyup="convertToNumbersalePrice()">
                         </div>
                         <div class="col-lg-4">
-                            <label for="inputName" class="control-label parent-label" required>{{ __('home.quantity') }} 
+                            <label for="inputName" class="control-label parent-label" required>{{ __('home.quantity') }}
                             </label>
                             <input autocomplete="off" type="text" class="form-control parent-input" id="quantity_create" readonly
                                 value=0 name="quantity_create" onkeyup="convertToNumbersalePrice()">
                         </div>
 
                     </div>
-                    
-                    
-                    
+
+
+
                                        @endif
 
                     {{-- 5 --}}
@@ -1237,9 +1237,11 @@
     <!--Internal  pickerjs js -->
     <script src="{{ URL::asset('assets/plugins/pickerjs/picker.min.js') }}"></script>
     <!-- Internal form-elements js -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
 
     <script>
-    
+
 
 function calculateTotals_with_tax() {
     let total = 0, taxTotal = 0, discountTotal = 0, grand = 0;
@@ -1265,7 +1267,7 @@ Swal.fire({
             <p dir="ltr">The entered price is lower than the registered selling price!</p>
             <hr>
             <div style="background: #f8f9fa; padding: 10px; border-radius: 5px;">
-                <strong>سعر النظام | System Price:</strong> 
+                <strong>سعر النظام | System Price:</strong>
                 <span style="color: #28a745; font-size: 1.2em;">${cost}</span>
             </div>
         </div>
@@ -1387,7 +1389,7 @@ if (discound > (qty*price) * discound_allow_Input) {
     // 5. الحسابات النهائية:
     // الصافي = 35 - 4.347826... = 30.652173...
     let netTotal = totalSum - finalDiscountTotal;
-    
+
     // الضريبة = 30.652173... * 0.15 = 4.597826...
     let taxTotal = netTotal * avtsale;
 
@@ -1400,7 +1402,7 @@ if (discound > (qty*price) * discound_allow_Input) {
     document.getElementById('totaldiscound').value = finalDiscountTotal.toFixed(2);
     document.getElementById('totalTax').value = taxTotal.toFixed(2);
     document.getElementById('grandTotal').value = Math.round(grandTotal * 100) / 100; // حل مشكلة 29.99
-    
+
     // تأكيد إضافي إذا كان الفرق ضئيل جداً نتيجة تقريب المتصفح
     if (Math.abs(grandTotal - 30) < 0.01) {
         document.getElementById('grandTotal').value = "30.00";
@@ -1435,7 +1437,7 @@ if (discound > (qty*price) * discound_allow_Input) {
                     document.getElementById("productsTableBody").innerHTML = "";
 
                     data['product'].forEach(async (product) => {
-                        
+
                         quentity = product['quantity']
 
                         let index = rowIndex - 1
@@ -1844,10 +1846,10 @@ $("#formdata").on('submit', function (e) {
 
         // أ. التأكد من اختيار صنف (ليس فارغاً)
         if (!productId || productId === "" || productId === "0") {
-            row.css('background-color', '#fff3cd'); 
+            row.css('background-color', '#fff3cd');
             isValid = false;
             errorMessage = "يرجى اختيار صنف صحيح في جميع الصفوف";
-            return false; 
+            return false;
         }
 
         // ب. التأكد من السعر والكمية
@@ -1869,7 +1871,7 @@ $("#formdata").on('submit', function (e) {
             text: errorMessage,
             confirmButtonText: 'موافق'
         });
-        return; 
+        return;
     }
 
     // 2. إذا كانت البيانات سليمة، ننتقل لنافذة التأكيد الخاصة بالمورد
@@ -1887,10 +1889,10 @@ $("#formdata").on('submit', function (e) {
     }).then((result) => {
         if (result.isConfirmed) {
             $('#massagesave').modal('show');
-            
+
             // تعديل الرابط ليتوجه إلى دالة حفظ المشتريات الجديدة بدلاً من القديمة
-            var url = "{{ URL::to('save_purchase_order') }}"; 
-            
+            var url = "{{ URL::to('save_purchase_order') }}";
+
             $.ajax({
                 url: url,
                 type: 'post',
@@ -1905,18 +1907,18 @@ $("#formdata").on('submit', function (e) {
                         $('#OrderNoprint').val(data);
                         document.getElementById('printdiv').hidden = false;
                         $('#saveInvoice').addClass('d-none');
-                        
+
                         // رابط الـ PDF المخصص لطباعة أمر الشراء
                         let link = "{{ URL::to('generate_pdf_purchase_order') }}/" + data;
                         $('#generate_pdf').attr('href', link);
 
                         setTimeout(() => {
                             $('#massagesave').modal('hide');
-                            Swal.fire({ 
-                                icon: 'success', 
-                                title: 'تم حفظ أمر الشراء بنجاح', 
-                                timer: 1500, 
-                                showConfirmButton: false 
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'تم حفظ أمر الشراء بنجاح',
+                                timer: 1500,
+                                showConfirmButton: false
                             });
                         }, 1000);
                     } else {
@@ -1937,7 +1939,7 @@ $("#formdata").on('submit', function (e) {
 function reorderRows() {
     // جلب كل الصفوف داخل جسم الجدول
     const rows = document.querySelectorAll('#productsTableBody tr');
-    
+
     rows.forEach((tr, i) => {
         // 1. تحديث رقم التسلسل الظاهري في العمود الثاني
         const rowNumberCell = tr.querySelector('td:nth-child(2)');
@@ -2120,7 +2122,7 @@ Swal.fire({
             <p dir="ltr">The entered price is lower than the registered selling price!</p>
             <hr>
             <div style="background: #f8f9fa; padding: 10px; border-radius: 5px;">
-                <strong>سعر النظام | System Price:</strong> 
+                <strong>سعر النظام | System Price:</strong>
                 <span style="color: #28a745; font-size: 1.2em;">${cost}</span>
             </div>
         </div>
@@ -2198,6 +2200,7 @@ r.querySelector('.product-discound').value=0
                 data: {
                     "_token": token_search,
                     "searchtext": searchtext,
+                    "locale" : "{{ app()->getLocale() }}",
                     "branchs_id": branchs_id,
                     "currentrow": window.currentRow,
                 },
@@ -2222,6 +2225,7 @@ r.querySelector('.product-discound').value=0
                 data: {
                     "_token": token_search,
                     "searchtext": searchtext,
+                    "locale" : "{{ app()->getLocale() }}",
                     "branchs_id": branchs_id,
                     "currentrow": window.currentRow,
                 },

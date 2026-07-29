@@ -539,7 +539,7 @@ Route::middleware([
         Route::get('/Customersـexceededـgraceـperiod', 'Customersـexceededـgraceـperiod');
         Route::get('/budgetsheet', 'budgetsheet');
         Route::post('/budgetsheet', 'search_budgetsheet');
-
+        Route::get('/reports/budget/children', 'getAccountChildren')->name('reports.budget.children');
         // المسارات السابقة للـ الكنترولر
         Route::post('/export_sales_excel', 'exportExcel')->name('export.sales.excel');
         Route::post('/printInvoicesReport_export_post', 'printInvoicesReport_export_post')->name('invoices.export.excel');

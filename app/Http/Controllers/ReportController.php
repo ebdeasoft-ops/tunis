@@ -566,12 +566,160 @@ class ReportController extends Controller
         app()->setLocale(LaravelLocalization::getCurrentLocale());
         return view('reports.profit_and_lost');
     }
+// جلب أبناء فرع معين عبر الـ AJAX عند الضغط عليه
+  
 
-    public function budgetsheet_general()
+  public function budgetsheet_general(Request $request)
     {
         app()->setLocale(LaravelLocalization::getCurrentLocale());
-        return view('reports.budgetsheet_general');
+
+        $currentYear = date('Y');
+        $start_at = $request->input('start_at', $currentYear . '-01-01');
+        $end_at = $request->input('end_at', $currentYear . '-12-31');
+
+        $types = acounts_type::whereIn('id', [1, 2, 3, 4, 5])->get();
+        $allAccounts = financial_accounts::all();
+
+        // جلب الحركات لكل الحسابات
+        $transactions = DB::table('credittransactions')
+            ->join('financial_accounts', 'credittransactions.customer_id', '=', 'financial_accounts.id')
+            ->where('credittransactions.save', 1)
+            ->whereBetween('credittransactions.created_at', ['2020-01-01', $end_at . ' 23:59:59'])
+            ->select(
+                'financial_accounts.id as account_row_id', 
+                DB::raw("SUM(CASE WHEN DATE(credittransactions.created_at) < '{$start_at}' THEN credittransactions.debtor ELSE 0 END) as open_debtor"),
+                DB::raw("SUM(CASE WHEN DATE(credittransactions.created_at) < '{$start_at}' THEN credittransactions.creditor ELSE 0 END) as open_creditor"),
+                DB::raw("SUM(CASE WHEN DATE(credittransactions.created_at) >= '{$start_at}' AND DATE(credittransactions.created_at) <= '{$end_at}' THEN credittransactions.debtor ELSE 0 END) as curr_debtor"),
+                DB::raw("SUM(CASE WHEN DATE(credittransactions.created_at) >= '{$start_at}' AND DATE(credittransactions.created_at) <= '{$end_at}' THEN credittransactions.creditor ELSE 0 END) as curr_creditor")
+            )
+            ->groupBy('financial_accounts.id')
+            ->get()
+            ->keyBy('account_row_id');
+
+   $accountTotals = [];
+        foreach ($allAccounts as $acc) {
+            // فحص مباشر من قاعدة البيانات: هل هذا الحساب لديه أبناء (parent_account_number يساوي id هذا الحساب أو رقم حسابه)؟
+            $hasChildren = DB::table('financial_accounts')
+                ->where('parent_account_number', $acc->id)
+                ->exists();
+
+            if ($hasChildren ) {
+                // إذا كان أباً (مثل الخزينة): نجعل أقماره صفراً تماماً لكي تظهر علامة (-)
+                $accountTotals[$acc->id] = [
+                    'debtor' => 0,
+                    'creditor' => 0,
+                    'balance' => 0,
+                    'is_parent' => true
+                ];
+            } else {
+                // إذا لم يكن أباً (حساب فرعي نهائي): نحسب حركاته المباشرة فقط
+                $totalDebtor = 0;
+                $totalCreditor = 0;
+                if(isset($transactions[$acc->id])) {
+                    $t = $transactions[$acc->id];
+                    $totalDebtor += ($t->open_debtor + $t->curr_debtor);
+                    $totalCreditor += ($t->open_creditor + $t->curr_creditor);
+                }
+                $accountTotals[$acc->id] = [
+                    'debtor' => $totalDebtor,
+                    'creditor' => $totalCreditor,
+                    'balance' => $totalDebtor - $totalCreditor,
+                    'is_parent' => false
+                ];
+            }
+        }
+            $rootAccounts = $allAccounts->whereIn('account_type', [1, 2, 3, 4, 5])
+            ->where(function($q) {
+                return $q->parent_account_number == null || $q->parent_account_number == 0;
+            });
+
+        return view('reports.budgetsheet_general', compact(
+            'rootAccounts', 
+            'types', 
+            'allAccounts',
+            'accountTotals',
+            'start_at', 
+            'end_at'
+        ));
     }
+
+    // دالة مساعدة داخل الـ Controller لحساب مجموع الحساب وأبنائه
+private static function calculateTotalWithChildren($accountId, $allAccounts, $transactions) {
+        $totalDebtor = 0;
+        $totalCreditor = 0;
+
+        $account = $allAccounts->firstWhere('id', $accountId);
+        if (!$account) return ['debtor' => 0, 'creditor' => 0, 'balance' => 0];
+
+        $accIdStr = trim((string)$account->id);
+
+        // جلب الأبناء المباشرين بالاعتماد على الـ ID فقط
+        $children = $allAccounts->filter(function($item) use ($accIdStr) {
+            $parentVal = trim((string)$item->parent_account_number);
+            return $parentVal === $accIdStr;
+        });
+
+        // إذا كان له أبناء، نجمع أرصدة أبنائه فقط
+        if ($children->isNotEmpty()) {
+            foreach($children as $child) {
+                $childTotals = self::calculateTotalWithChildren($child->id, $allAccounts, $transactions);
+                $totalDebtor += $childTotals['debtor'];
+                $totalCreditor += $childTotals['creditor'];
+            }
+        } else {
+            // إذا لم يكن له أبناء، نأخذ حركاته المباشرة فقط
+            if(isset($transactions[$accountId])) {
+                $t = $transactions[$accountId];
+                $totalDebtor += ($t->open_debtor + $t->curr_debtor);
+                $totalCreditor += ($t->open_creditor + $t->curr_creditor);
+            }
+        }
+
+        return [
+            'debtor' => $totalDebtor,
+            'creditor' => $totalCreditor,
+            'balance' => $totalDebtor - $totalCreditor
+        ];
+    }
+    
+    public function getAccountChildren(Request $request)
+    {
+        $accountId = $request->input('parent_id');
+        $start_at = $request->input('start_at');
+        $end_at = $request->input('end_at');
+
+        // البحث عن الحساب الأب لمعرفة رقم الحساب (account_number)
+        $parentAccount = financial_accounts::where('account_number', $accountId)->orWhere('id', $accountId)->first();
+        
+        $children = collect();
+        if ($parentAccount) {
+            // جلب الأبناء الذين يتبعون هذا الحساب
+            $children = financial_accounts::where('parent_account_number', $parentAccount->account_number)
+                ->orWhere('parent_account_number', $parentAccount->id)
+                ->get();
+        }
+
+        $accountIds = $children->pluck('id')->toArray();
+        
+        $directBalances = DB::table('credittransactions')
+            ->join('financial_accounts', 'credittransactions.customer_id', '=', 'financial_accounts.id')
+            ->where('credittransactions.save', 1)
+            ->whereIn('financial_accounts.id', $accountIds)
+            ->whereBetween('credittransactions.created_at', ['2020-01-01', $end_at . ' 23:59:59'])
+            ->select(
+                'financial_accounts.id as account_row_id', 
+                DB::raw("SUM(CASE WHEN DATE(credittransactions.created_at) < '{$start_at}' THEN credittransactions.debtor ELSE 0 END) as open_debtor"),
+                DB::raw("SUM(CASE WHEN DATE(credittransactions.created_at) < '{$start_at}' THEN credittransactions.creditor ELSE 0 END) as open_creditor"),
+                DB::raw("SUM(CASE WHEN DATE(credittransactions.created_at) >= '{$start_at}' AND DATE(credittransactions.created_at) <= '{$end_at}' THEN credittransactions.debtor ELSE 0 END) as curr_debtor"),
+                DB::raw("SUM(CASE WHEN DATE(credittransactions.created_at) >= '{$start_at}' AND DATE(credittransactions.created_at) <= '{$end_at}' THEN credittransactions.creditor ELSE 0 END) as curr_creditor")
+            )
+            ->groupBy('financial_accounts.id')
+            ->get()
+            ->keyBy('account_row_id');
+
+        return view('reports.partials.budget_ajax_rows', compact('children', 'directBalances', 'start_at', 'end_at'));
+    }
+
 
     public function low_sell()
     {

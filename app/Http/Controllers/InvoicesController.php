@@ -4265,7 +4265,7 @@ public function updatepaymentconfirmpayment($invoiceId, $cashamount, $bankamount
     // 1. التحقق من وجود الفاتورة أولاً
     $invoice = invoices::find($invoiceId);
     if (!$invoice) {
-        return response()->html("<div class='alert alert-danger'>الفاتورة غير موجودة</div>");
+return response("<div class='alert alert-danger'>الفاتورة غير موجودة</div>");
     }
 
     // تشغيل الـ Transaction لضمان عدم حدوث خطأ محاسبي

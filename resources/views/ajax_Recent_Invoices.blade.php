@@ -90,7 +90,7 @@
                                     <i class="fas fa-file-pdf"></i>
                                 </a>
 
-                                <a class="btn btn-sm btn-info modal-effect" 
+                               <a class="btn btn-sm btn-info modal-effect" 
                                    data-effect="effect-scale" 
                                    data-id="{{ $product->id }}" 
                                    data-totalinvoice="{{ $totalWithTax }}" 

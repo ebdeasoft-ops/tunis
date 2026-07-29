@@ -70,7 +70,7 @@ th {
 @endsection
 
 @section('title')
-General Budget
+{{ __('home.general_budget') }}
 @stop
 
 @section('page-header')
@@ -89,31 +89,41 @@ $currentDate = \Carbon\Carbon::now()->addHours(3)->format("Y-m-d H:i:s");
                 <div class="card-body">
 
                     <!-- Header -->
-                    <div class="invoice-header">
-                        <div class="billed-from ltr">
-                            <span style="font-size:25px">{{ $Nameen ?? 'Company Name' }}</span>
-                            <p>{{ $describtionen ?? '' }}</p>
-                            <p>{{ $STen ?? '' }}</p>
-                            <p>{{ $Taxen ?? '' }}</p>
-                        </div>
+                    <div class="invoice-header" style="display: flex;justify-content:space-between;width:100%">
 
-                        <div class="text-center">
-                            @php $logo = $camplogo ?? 'default.png'; @endphp
-                            <a href="https://ebdeasoft.com/"><img src="{{ asset('assets/img/brand').'/'.$logo }}"
+                        <div class="billed-from" style="width:33%;text-align: center;">
+                            <br>
+                            <span style="font-size:25px">{{Nameen}}</span>
+                            <br>
+                            <p dir=ltr> {{describtionen}} </p>
+                            <span dir=ltr>{{STen}} </span>
+                            <p dir=ltr> {{Taxen}} </p>
+
+                        </div>
+                        <div class="row">
+                            <?php
+$logo=camplogo;
+    ?>
+                            <a href="https://ebdeasoft.com/"><img src="{{ asset('assets\img\brand').'/'.$logo }}"
                                     class="logo-1" alt="logo" style="width: 110px; height: 70px;"></a>
+
                         </div>
 
-                        <div class="billed-from rtl">
-                            <span style="font-size:25px">{{ $Namear ?? 'اسم الشركة' }}</span>
-                            <p>{{ $describtionar ?? '' }}</p>
-                            <p>{{ $STar ?? '' }}</p>
-                            <p>{{ $Taxar ?? '' }}</p>
-                        </div>
-                    </div>
 
+                        <div class="billed-from" style="width:33%;text-align: center;">
+                            <br>
+
+                            <span style="font-size:25px">{{Namear}}</span>
+                            <br>
+                            <p> {{describtionar}}</p>
+                            <p>{{STar}}</p>
+                            <p>{{Taxar}}</p>
+
+                        </div><!-- billed-from -->
+                    </div><!-- invoice-header -->
                     <!-- Title -->
                     <div class="invoice-title">
-                        <h3>تقرير الميزانية العامة للسنة الحالية | General Budget Report</h3>
+                        <h3>تقرير ميزان المراجعة | Trial Balance Report</h3>
                     </div>
 
                     <!-- Dates -->

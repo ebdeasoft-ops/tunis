@@ -12,6 +12,7 @@ return [
     | you want to customize your views to better match your application.
     |
     */
+    'general_budget'=>"الميزانية العامة",
     'invoice_number'=>'رقم الفاتورة',
     'type' => 'النوع',
     'public' => 'عام',

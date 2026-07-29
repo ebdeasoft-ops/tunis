@@ -293,6 +293,8 @@ Route::middleware([
         Route::post('/vocher.store', 'store_kabt_Decument')->name('vocher.store');
         Route::delete('/voucher/delete-full/{sent_abd_count}', 'destroy_full_voucher');
         Route::get('voucher/edit/{sent_abd_count}', 'edit_full_voucher');
+        Route::get('general_budget', 'general_budget');
+        Route::post('/general_budget_search',  'budgetsheet')->name('budgetsheet');
         Route::get('getDetailsJS_Kabd/{serf_count}', 'getDetailsJS_Kabd');
         Route::post('/voucher-update-all', 'updateAllVoucher')->name('voucher.update.all');
         Route::get('get-receipt-details/{serf_count}', 'getReceiptDetails');

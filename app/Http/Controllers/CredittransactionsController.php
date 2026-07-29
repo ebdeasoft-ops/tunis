@@ -20,6 +20,86 @@ use Illuminate\Support\Facades\DB; // هذا هو السطر الذي كان ي�
 use Illuminate\Support\Facades\Auth;
 class CredittransactionsController extends Controller
 {
+
+public function general_budget()
+{
+
+    return view('acountes.general_budget_search');
+}
+public function budgetsheet(Request $request)
+{
+    // 1. استقبال البيانات القادمة من نموذج البحث
+    $date = $request->input('date');
+    $branch = $request->input('branch');
+
+    // 2. جلب جميع الحسابات من جدول financial_accounts الأساسي
+    $accountsQuery = DB::table('financial_accounts');
+
+    if ($branch && $branch != '-') {
+        $accountsQuery->where('branch_id', $branch);
+    }
+
+    $allAccounts = $accountsQuery->get();
+
+    // جلب الـ IDs التي تُستخدم كـ parent لأي حساب آخر في الجدول
+    $parentIds = $allAccounts->pluck('parent_account_number')->unique()->filter()->toArray();
+
+    // تصفية الحسابات لتشمل فقط الحسابات النهائية التي ليس لها أبناء (is_parent = 0 ولا تظهر في قائمة الآباء)
+    $finalAccounts = $allAccounts->filter(function ($account) use ($parentIds) {
+        return $account->is_parent == 0 && !in_array($account->id, $parentIds);
+    });
+
+    // 3. حساب الرصيد للحسابات النهائية فقط
+    $finalAccounts->each(function ($account) use ($date, $branch) {
+        
+        // الحالة الثانية: حساب فرعي نهائي (ليس له أبناء) -> نأخذ حركاته مباشرة
+        $transQuery = DB::table('credittransactions')
+            ->where('customer_id', $account->id); // أو account_id حسب عمود الربط لديك
+
+        // تصفية حركات الفرع إذا تم تحديده
+        if ($branch && $branch != '-') {
+            $transQuery->where('branchs_id', $branch);
+        }
+
+        // تصفية حركات التاريخ (حتى التاريخ المحدد)
+        if ($date) {
+            $transQuery->where('created_at', '<=', $date . ' 23:59:59');
+        }
+
+        $totals = $transQuery->select(
+            DB::raw('SUM(debtor) as total_debtor'),
+            DB::raw('SUM(creditor) as total_creditor')
+        )->first();
+
+        // جمع المدين (الافتتاحي + الحركات)
+        $movDebit = $totals->total_debtor ?? 0;
+        $totalDebit =  $movDebit;
+
+        // جمع الدائن (الافتتاحي + الحركات)
+        $movCredit = $totals->total_creditor ?? 0;
+        $totalCredit =  $movCredit;
+
+        // حساب الرصيد النهائي حسب طبيعة الحساب
+        if ($account->account_type == 1) { 
+            // الأصول (طبيعتها مدين: مدين - دائن)
+            $account->current_balance = $totalDebit - $totalCredit;
+        } else { 
+            // الخصوم (2) وحقوق الملكية (5) (طبيعتها دائن: دائن - مدين)
+            $account->current_balance = $totalCredit - $totalDebit;
+        }
+    });
+
+    // 4. تصنيف الحسابات النهائية حسب أنواعها للرؤية في الواجهة (Blade)
+    $assets = $finalAccounts->where('account_type', 1);       // الأصول
+    $liabilities = $finalAccounts->where('account_type', 2);  // الخصوم
+    $equity = $finalAccounts->where('account_type', 5);       // حقوق الملكية
+
+    // جلب الفروع لعرضها في قائمة البحث بالواجهة
+    $branches = DB::table('branchs')->get();
+
+    // 5. إرسال البيانات إلى واجهة العرض (Blade)
+    return view('acountes.budgetsheet', compact('assets', 'liabilities', 'equity', 'branches', 'date', 'branch'));
+}
     /**
      * دالة موحدة لعكس حركات السند وتصفير تأثيرها على الأرصدة قبل الحذف أو التعديل
      * (تتعامل مع سندات القبض والصرف بناءً على نوع الحقل الممرر)

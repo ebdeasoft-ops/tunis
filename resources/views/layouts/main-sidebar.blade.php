@@ -659,11 +659,13 @@
                             href="{{ url('/financial_accounts') }}">{{ __('home.Financial_accounts') }}</a>
                     </li>
                     @endcan
-                    @can('General budget sheet')
+                     @can('Financial accounts')
                     <li>
-                        <a class="slide-item" href="{{ url('budgetsheet_general') }}">{{ __('report.budgetsheet') }}</a>
+                        <a class="slide-item"
+                            href="{{ url('/general_budget') }}">{{ __('home.general_budget') }}</a>
                     </li>
                     @endcan
+               
                     @can('List of customers')
                     <li>
                         <a class="slide-item"

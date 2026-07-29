@@ -8,6 +8,7 @@ return [
     |--------------------------------------------------------------------------
     */
     'invoice_number' => 'NO',
+    'general_budget'=>"General budget ",
 
     'type' => 'Type',
     'public' => 'Public',

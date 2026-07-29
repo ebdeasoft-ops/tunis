@@ -681,14 +681,13 @@ private static function calculateTotalWithChildren($accountId, $allAccounts, $tr
             'balance' => $totalDebtor - $totalCreditor
         ];
     }
-    
     public function getAccountChildren(Request $request)
     {
         $accountId = $request->input('parent_id');
         $start_at = $request->input('start_at');
         $end_at = $request->input('end_at');
 
-        // البحث عن الحساب الأب لمعرفة رقم الحساب (account_number)
+        // البحث عن الحساب الأب لمعرفة رقم الحساب (account_number) أو الـ id
         $parentAccount = financial_accounts::where('account_number', $accountId)->orWhere('id', $accountId)->first();
         
         $children = collect();
@@ -701,25 +700,44 @@ private static function calculateTotalWithChildren($accountId, $allAccounts, $tr
 
         $accountIds = $children->pluck('id')->toArray();
         
-        $directBalances = DB::table('credittransactions')
-            ->join('financial_accounts', 'credittransactions.customer_id', '=', 'financial_accounts.id')
-            ->where('credittransactions.save', 1)
-            ->whereIn('financial_accounts.id', $accountIds)
-            ->whereBetween('credittransactions.created_at', ['2020-01-01', $end_at . ' 23:59:59'])
-            ->select(
-                'financial_accounts.id as account_row_id', 
-                DB::raw("SUM(CASE WHEN DATE(credittransactions.created_at) < '{$start_at}' THEN credittransactions.debtor ELSE 0 END) as open_debtor"),
-                DB::raw("SUM(CASE WHEN DATE(credittransactions.created_at) < '{$start_at}' THEN credittransactions.creditor ELSE 0 END) as open_creditor"),
-                DB::raw("SUM(CASE WHEN DATE(credittransactions.created_at) >= '{$start_at}' AND DATE(credittransactions.created_at) <= '{$end_at}' THEN credittransactions.debtor ELSE 0 END) as curr_debtor"),
-                DB::raw("SUM(CASE WHEN DATE(credittransactions.created_at) >= '{$start_at}' AND DATE(credittransactions.created_at) <= '{$end_at}' THEN credittransactions.creditor ELSE 0 END) as curr_creditor")
-            )
-            ->groupBy('financial_accounts.id')
-            ->get()
-            ->keyBy('account_row_id');
+        $directBalances = collect();
+        if (!empty($accountIds)) {
+            $directBalances = DB::table('credittransactions')
+                ->join('financial_accounts', 'credittransactions.customer_id', '=', 'financial_accounts.id')
+                ->where('credittransactions.save', 1)
+                ->whereIn('financial_accounts.id', $accountIds)
+                ->whereBetween('credittransactions.created_at', ['2020-01-01', $end_at . ' 23:59:59'])
+                ->select(
+                    'financial_accounts.id as account_row_id', 
+                    DB::raw("SUM(CASE WHEN DATE(credittransactions.created_at) < '{$start_at}' THEN credittransactions.debtor ELSE 0 END) as open_debtor"),
+                    DB::raw("SUM(CASE WHEN DATE(credittransactions.created_at) < '{$start_at}' THEN credittransactions.creditor ELSE 0 END) as open_creditor"),
+                    DB::raw("SUM(CASE WHEN DATE(credittransactions.created_at) >= '{$start_at}' AND DATE(credittransactions.created_at) <= '{$end_at}' THEN credittransactions.debtor ELSE 0 END) as curr_debtor"),
+                    DB::raw("SUM(CASE WHEN DATE(credittransactions.created_at) >= '{$start_at}' AND DATE(credittransactions.created_at) <= '{$end_at}' THEN credittransactions.creditor ELSE 0 END) as curr_creditor")
+                )
+                ->groupBy('financial_accounts.id')
+                ->get()
+                ->keyBy('account_row_id');
+        }
+
+        // التأكد من أن أي ابن يعتبر "أباً" لفروع أخرى تصفير حركاته المباشرة
+        foreach ($children as $child) {
+            $hasSubChildren = DB::table('financial_accounts')
+                ->where('parent_account_number', $child->id)
+                ->orWhere('parent_account_number', $child->account_number)
+                ->exists();
+
+            if ($child->is_parent == 1 || $hasSubChildren) {
+                $directBalances[$child->id] = (object)[
+                    'open_debtor' => 0,
+                    'open_creditor' => 0,
+                    'curr_debtor' => 0,
+                    'curr_creditor' => 0
+                ];
+            }
+        }
 
         return view('reports.partials.budget_ajax_rows', compact('children', 'directBalances', 'start_at', 'end_at'));
     }
-
 
     public function low_sell()
     {
@@ -1978,34 +1996,47 @@ private static function calculateTotalWithChildren($accountId, $allAccounts, $tr
         app()->setLocale(LaravelLocalization::getCurrentLocale());
         return view('reports.print_customeList');
     }
-    public function Customerlist()
-    {
-        app()->setLocale(LaravelLocalization::getCurrentLocale());
+public function Customerlist()
+{
+    app()->setLocale(LaravelLocalization::getCurrentLocale());
 
-        // تحديد تاريخ البداية (أول السنة) وتاريخ النهاية (اليوم)
-        $startDate = '2025' . '-01-01';
-        $endDate = date('Y-m-d');
+    // تحديد تاريخ البداية (أول السنة الحالية 2026) وتاريخ النهاية (اليوم)
+    $startDate = date('Y') . '-01-01';
+    $endDate = date('Y-m-d');
 
-        $customers = financial_accounts::whereIn('orginal_type', [1, 2])
-            // 1. مجموع الدائن (Credit)
-            ->withSum([
-                'credittransactions as total_credit' => function ($query) use ($startDate, $endDate) {
-                    $query->where('save', 1)
-                        ->whereBetween('created_at', [$startDate, $endDate]);
+    $customers = financial_accounts::whereIn('orginal_type', [1, 2])
+        // 1. مجموع الدائن (Credit)
+        ->withSum([
+            'credittransactions as total_credit' => function ($query) use ($startDate, $endDate) {
+                $query->where('save', 1);
+                
+                if ($startDate) {
+                    $query->whereDate('created_at', '>=', $startDate);
                 }
-            ], 'creditor')
-            // 2. مجموع المدين (Debit)
-            ->withSum([
-                'credittransactions as total_debit' => function ($query) use ($startDate, $endDate) {
-                    $query->where('save', 1)
-                        ->whereBetween('created_at', [$startDate, $endDate]);
+                if ($endDate) {
+                    $query->whereDate('created_at', '<=', $endDate);
                 }
-            ], 'debtor') // تأكد أن اسم الحقل في جدول العمليات هو 'debtor'
-            ->get();
+            }
+        ], 'creditor')
+        // 2. مجموع المدين (Debit)
+        ->withSum([
+            'credittransactions as total_debit' => function ($query) use ($startDate, $endDate) {
+                $query->where('save', 1);
+                
+                if ($startDate) {
+                    $query->whereDate('created_at', '>=', $startDate);
+                }
+                if ($endDate) {
+                    $query->whereDate('created_at', '<=', $endDate);
+                }
+            }
+        ], 'debtor')
+        ->get();
 
-        return view('reports.customerList', compact('customers'));
+    return view('reports.customerList', compact('customers'));
+}
 
-    }
+
     public function customerـpurchases()
     {
         app()->setLocale(LaravelLocalization::getCurrentLocale());

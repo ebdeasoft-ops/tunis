@@ -43,6 +43,8 @@ use App\Models\stock_update;
 use App\Models\product_movement_another_branch;
 use App\Models\product_movement_another_branch_items;
 use App\Models\delivery_to_customer_withoud_tax_invoices;
+use App\Models\branchs;
+
 class ProductsController extends Controller
 {
 
@@ -820,7 +822,7 @@ class ProductsController extends Controller
         $total_discount = $request->totaldiscound;
         $total = $request->totalSum;
         $date = $request->date;
-
+     
         // تجهيز الوقت الموحد بناءً على شرطك الحالي
         $nowWithOffset = \Carbon\Carbon::now()->addHours(3);
         $createdAt = $date != '0' ? $date . ' ' . substr($nowWithOffset, 12) : $nowWithOffset;
@@ -828,7 +830,14 @@ class ProductsController extends Controller
 
         // استخدام الـ Transaction لضمان سلامة البيانات المحاسبية
         return DB::transaction(function () use ($request, $supplier, $payment, $shipping, $invoice_number_supplier, $invoice_order_purshase, $branchs_id, $total_Net, $totalTax, $total_discount, $total, $date, $createdAt, $updatedAt) {
+         $branchMainId= $request->branchs_id;
+        $branchsData=branchs::find($request->branchs_id);
 
+        if ($branchsData->type == 1) {
+            $branchMainId = $branchsData->branch_id;
+        } else {
+            $branchMainId = $request->branchs_id;
+        }
             // 1. إدارة أمر التوريد (Order to Supplier)
             if ($request->orderNo == 0) {
                 $createorder = orderTosupllier::create([
@@ -861,8 +870,8 @@ class ProductsController extends Controller
                 'branchs_id' => $branchs_id,
                 'created_at' => $createdAt,
                 'updated_at' => $updatedAt,
+                'branchMainId'=>$branchMainId==$branchs_id?0:$branchMainId
             ]);
-
             // 3. معالجة المنتجات وحساب التكاليف (توزيع الشحن وحساب متوسط التكلفة)
             $total_invoice_value = $total;
             $total_extra_costs = $shipping;
@@ -953,6 +962,7 @@ class ProductsController extends Controller
                     ]);
                 }
             }
+           $branchs_id=$branchMainId;
 
             // 5. حساب قيم الضريبة والصافي المحاسبي
             $total_value = $resource_purchases->In_debt;
@@ -1360,8 +1370,17 @@ class ProductsController extends Controller
         }
 
         app()->setLocale(LaravelLocalization::getCurrentLocale());
-        $data = resource_purchases::where('branchs_id', Auth::user()->branchs_id)->where('save', 1)->orderby('id', 'desc')->paginate(20);
-        return view('ajax_Recent_Invoices_purchases', compact('data'));
+$userBranchId = Auth::user()->branchs_id;
+
+$data = resource_purchases::where('save', 1)
+    ->where(function ($query) use ($userBranchId) {
+        $query->where('branchs_id', $userBranchId)
+              ->orWhere('branchMainId', $userBranchId);
+    })
+    ->orderBy('id', 'desc')
+    ->paginate(20);
+    
+    return view('ajax_Recent_Invoices_purchases', compact('data'));
     }
 
     public function openfilefile($path)
@@ -1654,8 +1673,20 @@ class ProductsController extends Controller
     public function searchaboutinvoiceByIdfunctionpurchases($date)
     {
         app()->setLocale(LaravelLocalization::getCurrentLocale());
-        $data = resource_purchases::where('branchs_id', Auth()->user()->branchs_id)->where('save', 1)->where('orderId', $date)->orwhere('Purchase_invoice_number', $date)->paginate(20);
-        return view('ajax_Recent_Invoices_purchases', compact('data'));
+$userBranchId = Auth()->user()->branchs_id;
+
+$data = resource_purchases::where('save', 1)
+    ->where(function ($query) use ($userBranchId) {
+        $query->where('branchs_id', $userBranchId)
+              ->orWhere('branchMainId', $userBranchId);
+    })
+    ->where(function ($query) use ($date) {
+        $query->where('orderId', $date)
+              ->orWhere('Purchase_invoice_number', $date);
+    })
+    ->orderBy('id', 'desc')
+    ->paginate(20);
+            return view('ajax_Recent_Invoices_purchases', compact('data'));
     }
 
 
@@ -1664,8 +1695,17 @@ class ProductsController extends Controller
     public function getinvoicesbyspplluer($date)
     {
         app()->setLocale(LaravelLocalization::getCurrentLocale());
-        $data = resource_purchases::where('branchs_id', Auth()->user()->branchs_id)->where('save', 1)->where('suplier_id', $date)->paginate(20);
-        return view('ajax_Recent_Invoices_purchases', compact('data'));
+$userBranchId = Auth()->user()->branchs_id;
+
+$data = resource_purchases::where('save', 1)
+    ->where(function ($query) use ($userBranchId) {
+        $query->where('branchs_id', $userBranchId)
+              ->orWhere('branchMainId', $userBranchId);
+    })
+    ->where('suplier_id', $date)
+    ->orderBy('id', 'desc')
+    ->paginate(20);
+            return view('ajax_Recent_Invoices_purchases', compact('data'));
     }
 
 
@@ -1687,19 +1727,27 @@ class ProductsController extends Controller
         return view('profile.show');
     }
 public function getAllinvicesapurchasesjax()
-    {
-        app()->setLocale(LaravelLocalization::getCurrentLocale());
+{
+    app()->setLocale(LaravelLocalization::getCurrentLocale());
 
-        $query = resource_purchases::where('save', 1);
+    $query = resource_purchases::where('save', 1);
 
-        if (!in_array(auth()->user()->id, [17, 30, 11])) {
-            $query->where('branchs_id', auth()->user()->branchs_id);
-        }
-
-        $data = $query->orderby('id', 'desc')->paginate(20);
-
-        return view('ajax_Recent_Invoices_purchases', compact('data'));
+    // التحقق من المستخدمين المستثنين أو تطبيق شرط الفروع
+    if (!in_array(auth()->user()->id, [17, 30, 11])) {
+        $userBranchId = auth()->user()->branchs_id;
+        
+        $query->where(function ($q) use ($userBranchId) {
+            $q->where('branchs_id', $userBranchId)
+              ->orWhere('branchMainId', $userBranchId);
+        });
     }
+
+    $data = $query->orderBy('id', 'desc')->paginate(20);
+
+    return view('ajax_Recent_Invoices_purchases', compact('data'));
+}
+
+
 
 
 
@@ -2420,10 +2468,16 @@ public function searchAllInvoicespaginatenew($date)
         $reversalData = $this->processInvoiceReversal($id);
 
         if ($reversalData) {
-            $data = resource_purchases::where('branchs_id', auth()->user()->branchs_id)
-                ->where('save', 1)
-                ->orderby('id', 'desc')
-                ->paginate(20);
+         $userBranchId = auth()->user()->branchs_id;
+
+$data = resource_purchases::where('save', 1)
+    ->where(function ($query) use ($userBranchId) {
+        $query->where('branchs_id', $userBranchId)
+              ->orWhere('branchMainId', $userBranchId);
+    })
+    ->orderBy('id', 'desc')
+    ->paginate(20);
+
 
             return view('ajax_Recent_Invoices_purchases', compact('data'));
         }
@@ -3374,9 +3428,10 @@ public function searchAllInvoicespaginatenew($date)
                     ->orWhere('notes', 'LIKE', $searchTerm);
             })->paginate(20);
 
-        return view('ajax_choose_product_sale', compact('data'))
-            ->with('currentrow', $request->currentrow)
-            ->with('getLocale', $request->locale);
+        // إرجاع الـ view مرة واحدة فقط في النهاية لكلتا الحالتين
+ return view('ajax_choose_product_sale', compact('data'))
+    ->with('currentrow', $request->currentrow)
+    ->with('getLocale', $request->input('locale'));
     }
 
     public function processOrderPurchase(Request $request, $date, $payment, $supplier, $shipping, $branchs_id, $another_bank)

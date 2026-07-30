@@ -26,7 +26,8 @@ class resource_purchases extends Model
         'created_at',
         'branchs_id',
         'updated_at',
-        'attachments'
+        'attachments',
+        'branchMainId'
     ];
     public function supllier()
     {

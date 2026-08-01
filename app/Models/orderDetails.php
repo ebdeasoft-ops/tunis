@@ -31,4 +31,8 @@ public function productData()
 {
     return $this->belongsTo(products::class,'product_id');
 }
+public function orderToSupplier()
+{
+    return $this->belongsTo(orderTosupllier::class, 'order_owner');
+}
 }

@@ -1,399 +1,339 @@
 @extends('layouts.master')
+
 @section('css')
 <style>
   @media print {
-    -webkit-print-color-adjust: exact;
-
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    
     @page {
+      size: A4;
+      margin: 5mm 8mm;
+    }
 
-      size: auto;
-      /* auto is the initial value */
-      margin: 11mm 17mm 22mm 17mm;
-      font-size: 28px;
+    html, body {
+      height: auto !important;
+      width: 100% !important;
+      margin: 0 !important;
+      padding: 0 !important;
+    }
 
+    body * {
+      visibility: visible;
+    }
+    
+    #print, #print * {
+      visibility: visible;
+    }
+
+    #print_Button, #reciptprinter {
+      display: none !important;
+    }
+
+    .card, .card-invoice {
+      border: none !important;
+      box-shadow: none !important;
+      padding: 0 !important;
+      margin: 0 !important;
     }
 
     .report-container {
-      width: 100%;
+      width: 100% !important;
+      border-collapse: collapse;
+      page-break-inside: auto !important;
     }
 
-    table.report-container {
-      page-break-after: always;
-            width: 100%;
-
+    tr {
+      page-break-inside: avoid !important;
+      page-break-after: auto !important;
     }
 
     thead.report-header {
-      display: table-header-group;
+      display: table-header-group !important;
     }
 
     tfoot.report-footer {
-      display: table-footer-group;
-    }
-
-    .report-content {
-      height: 50%;
+      display: table-footer-group !important;
     }
 
     .footer {
       position: fixed;
-      bottom: -2px;
-    }
-
-    .textend {
-      position: fixed;
-      text-align: center;
-      bottom: -40px;
+      bottom: 0;
       width: 100%;
-    }
-
-    .text {
-      width: 320px;
-      overflow: hidden;
-      white-space: pre-wrap;
-      text-overflow: ellipsis
-    }
-
-    .row-sm {
-      dir: "rtl"
-    }
-
-    .tx-18 {
-      font-size: 15px !important;
-
-    }
-
-    .tx-16 {
-      font-size: 12px !important;
-
-    }
-
-    .double {
-      border: 3px solid grey;
-      border-radius: 5px;
-      width: 200px;
-      font-size: 15px !important;
-
-    }
-
-    tr {
-      bgcolor="grey"
-    }
-
-
-    #reciptprinter {
-      display: none;
-    }
-
-    #print_Button {
-      display: none;
-    }
-
-    th {
-      /*background-color: grey;*/
-      font-size: 22px;
+      text-align: center;
+      font-size: 11px;
+      color: #555;
+      border-top: 1px solid #ddd;
+      padding-top: 5px;
     }
   }
 
-  .report-container {
-    width: 100%;
+  /* التصميم العام والشكل الفاخر على الشاشة */
+  .card-invoice {
+    background: #fff;
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
   }
 
-  .textend {
-    position: fixed;
+  .invoice-header-box {
+    border-bottom: 2px solid #2b2b2b;
+    padding-bottom: 15px;
+    margin-bottom: 20px;
+  }
+
+  .badge-delivery {
+    border: 2px solid #2b2b2b;
+    border-radius: 8px;
+    width: 300px;
+    font-size: 15px !important;
+    padding: 10px;
+    margin: 15px auto;
     text-align: center;
-    bottom: -20px;
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    font-weight: bold;
+    color: #333;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+  }
+
+  .table-custom {
     width: 100%;
+    margin-bottom: 1rem;
+    color: #212529;
+    border-collapse: collapse;
+  }
+
+  .table-custom th, .table-custom td {
+    padding: 10px 12px;
+    vertical-align: middle;
+    border: 1px solid #dee2e6;
+  }
+
+  .table-custom thead th {
+    background-color: #343a40 !important;
+    color: #fff !important;
+    font-size: 13px;
+    text-align: center;
+    border-color: #343a40;
+  }
+
+  .table-light-custom th {
+    background-color: #f1f3f5 !important;
+    color: #333 !important;
+    font-size: 13px;
+    border: 1px solid #ced4da;
+  }
+
+  .text-truncate-custom {
+    max-width: 250px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 </style>
 @endsection
+
 @section('title')
 معاينه طباعة المنتجات
 @stop
+
 @section('page-header')
 <div class="main-parent">
   <!-- breadcrumb -->
+</div>
+@endsection
 
-  <!-- breadcrumb -->
-  @endsection
-  @section('content')
-  <!-- row -->
-  <div class="row row-sm">
-    <div class="col-md-12 col-xl-12">
-      <div class=" main-content-body-invoice" id="print">
-        <div class="card card-invoice">
-          
-                 
-                           <div class="card-body">
-                               
+@section('content')
+<!-- row -->
+<div class="row row-sm">
+  <div class="col-md-12 col-xl-12">
+    <div class="main-content-body-invoice" id="print">
+      <div class="card card-invoice">
+        
+        <!-- زر الطباعة -->
+        <div class="row mb-4" style="display: flex; justify-content: flex-end; width: 100%;">
+          <button class="btn btn-dark px-4 py-2 shadow-sm" id="print_Button" onclick="printDiv()">
+            <i class="mdi mdi-printer ml-1"></i>{{__('home.print')}}
+          </button>
+        </div>
 
+        <div class="card-body p-0">
+          <table class="report-container">
 
-                    <button class="btn btn-danger float-left mt-3 mr-2 print-style p-1" id="print_Button" onclick="printDiv()">
-                      <i class="mdi mdi-printer ml-1"></i>{{__('home.print')}}</button>
-              
-                 
-            <table class="report-container">
-
-              <thead class="report-header">
-                <tr>
-                  <th class="report-header-cell">
-                    <div class="invoice-header margintop" style="display: flex;justify-content:space-between;width:100%" dir="ltr">
-
-
-                      <div class="billed-from" style="width:33%;text-align: center;">
-                        <br>
-                        <span style="font-size:16px">{{Nameen}}</span>
-                        <br>
-                        <p dir=ltr> {{describtionen}} </p>
-                        <p dir=ltr>{{STen}} </p>
-                        <p dir=ltr> {{Taxen}} </p>
-
-                      </div>
-
-
-
-                      <div class="row">
-                        <?php
-                        $logo = camplogo;
-                        ?>
-                        <a href="https://ebdeasoft.com/"><img src="{{ asset('assets\img\brand').'/'.$logo }}" class="logo-1" alt="logo" style="width: 110px; height: 100px;"></a>
-
-                      </div>
-
-                      <div class="billed-from" style="width:33%;text-align: center;">
-                        <br>
-
-                        <span style="font-size:16px">{{Namear}}</span>
-                        <br>
-                        <p> {{describtionar}}</p>
-                        <p>{{STar}}</p>
-                        <p>{{Taxar}}</p>
-
-                      </div><!-- billed-from -->
-
-                    </div><!-- invoice-header -->
-
-                    <center>
-                      <p class="double">  تسليم منتجات <br>Delivery of products</p>
-                    </center>
+            <thead class="report-header">
+              <tr>
+                <th class="report-header-cell" style="border: none; background: transparent !important;">
+                  
+                  <div class="invoice-header-box" style="display: flex; justify-content: space-between; width: 100%; align-items: center;" dir="ltr">
                     
-
-
-
-
-
-
-
-                    <br>
-
-                  </th>
-                </tr>
-              </thead>
-
-              <tbody class="report-content">
-                <tr>
-                  <td class="report-content-cell">
-
-                    <div class='row' style="justify-content: space-around;">
-                      <table style="border:2px solid rgba(0,0,0,.3);width:40%" class="table text-md-nowrap mb-0 table-striped invoice-table text-center">
-                        <thead>
-                          <tr class="row12">
-
-                            <th>CLIENT NAME <br>اسم العميل </th>
-                            <th class="tx-16">{{$data['supplier']->supllier->name}}</th>
-
-
-
-                          </tr>
-
-                          <tr>
-                            <th class="tx-16">TAX NUMBER<br>
-                              الرقم الضريبي </th>
-
-                            <th class="tx-16">{{$data['supplier']->supllier->tax_no}}</th>
-                          </tr>
-
-                        </thead>
-
-                      </table>
-
+                    <!-- بيانات الشركة إنجليزي -->
+                    <div style="width: 33%; text-align: left; font-size: 12px; line-height: 1.4;">
+                      <span style="font-size: 15px; font-weight: bold; color: #111;">{{Nameen ?? ''}}</span>
+                      <p style="margin: 2px 0;" dir="ltr">{{ describtionen ?? '' }}</p>
+                      <p style="margin: 2px 0;" dir="ltr">{{ STen ?? '' }}</p>
+                      <p style="margin: 2px 0; font-weight: bold;" dir="ltr">{{ Taxen ?? '' }}</p>
                     </div>
 
-
-
-                    <br>
-                    <br>
-                    <br>
-
-                    @if (isset($data))
-                    <?php $i = 0; ?>
-                    <div class="col-xl-12">
-                      <div class="mg-b-20">
-
-                        <div class=" mg-t-20 mt-3 mr-2 d-flex justify-content-center  ">
-                          <table style="border:2px solid rgba(0,0,0,.3);width:100%" class="table text-md-nowrap mb-0 table-striped invoice-table text-center">
-                            <thead>
-                              <tr>
-                                <th>NO<br>رقم</th>
-                                <th>Item NO <br> رقم منتج </th>
-                                <th>ITEM NAME<br>اسم الصنف </th>
-                                <th>PRODUCT PRICE<br>سعر القطعة </th>
-                                <th> QUANTITY <br>الكمية </th>
-                                <th>TOTAL AMOUNT<br>الاجمالي</th>
-                                <th> DISCOUNT<br>الخصم </th>
-                                <th> Total AFTER DISCOUNT<br>الاجمالي بعد الخصم</th>
-
-
-
-                              </tr>
-                            </thead>
-                            <tbody>
-                              <?php $i = 0;
-                              $totalpricePurchases = 0;
-                              $totalAddedValue = 0;
-                              $totaldiscount = 0;
-                              ?>
-                              @foreach ($data['items'] as $product)
-                              <?php $i++;
-                              $avt = App\Models\Avt::find(1);
-                              $totalpricePurchases += ($product->cost * $product->quantity);
-                              $totaldiscount += $product->discount;
-
-                              ?>
-                              <tr>
-                                <td>{{ $i }}</td>
-                                <td dir="ltr">
-                                  {{ $product->productData->Product_Code }}
-                                </td>
-                                <td>{{ $product->productData->product_name }}</td>
-                                <td>{{ $product->cost }}</td>
-                                <td>{{ $product->quantity }}</td>
-                                <td>{{ $product->quantity*$product->cost }}</td>
-                                <td>{{ $product->discount }}</td>
-                                <td>{{ round(($product->quantity * ($product->cost )) - $product->discount,2) }}
-                                </td>
-
-                              <tr>
-                                @endforeach
-                            </tbody>
-                          </table>
-
-                          <br>
-                        </div>
-                      </div>
+                    <!-- الشعار -->
+                    <div style="width: 33%; text-align: center;">
+                      <?php $logo = camplogo ?? ''; ?>
+                      <a href="https://ebdeasoft.com/">
+                        <img src="{{ asset('assets/img/brand').'/'.$logo }}" class="logo-1" alt="logo" style="width: 95px; height: 85px; object-fit: contain;">
+                      </a>
                     </div>
 
-                    <br>
-                    <br>
-                    <br>
-                    <div class="table-responsive mg-t-20 mt-3 mr-2 d-flex justify-content-around table-padding ">
-                      <table style="border:2px solid rgba(0,0,0,.3);width:60%" class="table text-md-nowrap mb-0 table-striped invoice-table text-center">
-                        <col style="width:10%">
-                        <col style="width:55%">
-                        <col style="width:15%">
-                        <col style="width:15%">
-                        <col style="width:15%">
-                        <thead>
-                          <tr>
-                            <th class="tx-17">SUB TOTAL <br>الاجمالي</th>
-                            <th class="tx-17">DISCOUNT <br>الخصم </th>
-                            <th class="tx-17">SUB TOTAL AFTER DISCOUNT <br> الاجمالي بعد الخصم</th>
-                            <?php
-                            $avt = App\Models\Avt::find(1); ?>
-                            <th class="tx-17">VALUE ADDED TAX ({{$avt->AVT*100}}%)
-                              <br>
-
-                              ضريبة القيمة المضافة({{$avt->AVT*100}}%)
-                            </th>
-                            <th class="tx-17">NET TOTAL<br>الاجمالي الكلي </th </tr>
-                        </thead>
-
-                        <body>
-                          <td>{{ round($totalpricePurchases,2)}}</td>
-
-                          <td>{{ round($totaldiscount,2) }}</td>
-                          <td>{{ round($totalpricePurchases,2)- round($totaldiscount,2) }}</td>
-                          <td>{{ round((round($totalpricePurchases,2)- round($totaldiscount,2))* $avt->AVT,2)}}</td>
-                          <td>{{( round((round($totalpricePurchases,2)- round($totaldiscount,2))* $avt->AVT,2)+(round($totalpricePurchases,2)- round($totaldiscount,2)) )}}</td>
-
-                        </body>
-
-                      </table>
+                    <!-- بيانات الشركة عربي -->
+                    <div style="width: 33%; text-align: right; font-size: 12px; line-height: 1.4;" dir="rtl">
+                      <span style="font-size: 15px; font-weight: bold; color: #111;">{{Namear ?? ''}}</span>
+                      <p style="margin: 2px 0;">{{ describtionar ?? '' }}</p>
+                      <p style="margin: 2px 0;">{{ STar ?? '' }}</p>
+                      <p style="margin: 2px 0; font-weight: bold;">{{ Taxar ?? '' }}</p>
                     </div>
-                    @endif
-                    <br />
-                    </form>
 
-                    <br>
+                  </div>
 
+                  <div class="text-center">
+                    <div class="badge-delivery">
+                      تسليم منتجات <br>
+                      <span style="font-size: 12px; color: #666; font-weight: normal;">Delivery of Products</span>
+                    </div>
+                  </div>
 
+                  <br>
+                </th>
+              </tr>
+            </thead>
 
+            <tbody class="report-content">
+              <tr>
+                <td class="report-content-cell" style="border: none; padding-top: 10px;">
 
-          </div>
-
-
-          </td>
-          </tr>
-          </tbody>
-          <tfoot class="report-footer">
-            <tr>
-              <td>
-                <br>
-              </td>
-            </tr>
-            <tr>
-              <td>
-                <br>
-              </td>
-            </tr>
-            <tr>
-              <td>
-                <br>
-              </td>
-            </tr>
-            <tr>
-              <td class="report-footer-cell">
-
-                <div class="footer" style="     
-       text-align: center;    " @if(Auth()->user()->branchs_id==1)
-
-                  <center> <span>
-                      {{addressar}}
-                    </span>
-                  </center>
-
-
-                  <center> <span> {{addressen}}
-                    </span>
-                  </center>
-
+                  @if (isset($data) && isset($data['supplier']))
+                  <!-- بيانات العميل/المورد -->
+                  <div style="display: flex; justify-content: center; width: 100%; margin-bottom: 25px;">
+                    <table class="table-custom table-light-custom text-center" style="width: 50%;">
+                      <thead>
+                        <tr>
+                          <th style="width: 45%;">CLIENT NAME <br> اسم العميل</th>
+                          <td style="font-weight: bold;" class="tx-16">{{$data['supplier']->supllier->name ?? ''}}</td>
+                        </tr>
+                        <tr>
+                          <th>TAX NUMBER <br> الرقم الضريبي</th>
+                          <td class="tx-16">{{$data['supplier']->supllier->tax_no ?? ''}}</td>
+                        </tr>
+                      </thead>
+                    </table>
+                  </div>
                   @endif
-              
 
-                </div>
-              </td>
-            </tr>
-          </tfoot>
+                  @if (isset($data) && isset($data['items']) && count($data['items']) > 0)
+                  <!-- جدول تفاصيل المنتجات -->
+                  <div style="margin-bottom: 25px;">
+                    <table class="table-custom text-center">
+                      <thead>
+                        <tr>
+                          <th>NO<br><span style="font-size:10px;">رقم</span></th>
+                          <th>Item NO<br><span style="font-size:10px;">رقم منتج</span></th>
+                          <th style="text-align: right; padding-right: 15px;">ITEM NAME<br><span style="font-size:10px;">اسم الصنف</span></th>
+                          <th>PRODUCT PRICE<br><span style="font-size:10px;">سعر القطعة</span></th>
+                          <th>QUANTITY<br><span style="font-size:10px;">الكمية</span></th>
+                          <th>TOTAL AMOUNT<br><span style="font-size:10px;">الاجمالي</span></th>
+                          <th>DISCOUNT<br><span style="font-size:10px;">الخصم</span></th>
+                          <th>Total AFTER DISCOUNT<br><span style="font-size:10px;">الاجمالي بعد الخصم</span></th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <?php 
+                        $i = 0;
+                        $totalpricePurchases = 0;
+                        $totaldiscount = 0;
+                        ?>
+                        @foreach ($data['items'] as $product)
+                          <?php 
+                          $i++;
+                          $lineTotal = ($product->cost * $product->quantity);
+                          $totalpricePurchases += $lineTotal;
+                          $totaldiscount += $product->discount;
+                          ?>
+                          <tr>
+                            <td>{{ $i }}</td>
+                            <td dir="ltr" style="font-family: monospace;">{{ $product->productData->Product_Code ?? '' }}</td>
+                            <td style="text-align: right; padding-right: 15px;" class="text-truncate-custom">{{ $product->productData->product_name ?? '' }}</td>
+                            <td>{{ number_format($product->cost, 2) }}</td>
+                            <td>{{ $product->quantity }}</td>
+                            <td>{{ number_format($lineTotal, 2) }}</td>
+                            <td>{{ number_format($product->discount, 2) }}</td>
+                            <td style="font-weight: bold;">{{ number_format(($lineTotal - $product->discount), 2) }}</td>
+                          </tr>
+                        @endforeach
+                      </tbody>
+                    </table>
+                  </div>
+
+                  <!-- جدول الإجماليات النهائية والضرائب -->
+                  <div style="margin-bottom: 20px;">
+                    <?php 
+                    $avt = App\Models\Avt::find(1); 
+                    $subTotal = round($totalpricePurchases, 2);
+                    $totalDisc = round($totaldiscount, 2);
+                    $subTotalAfterDisc = $subTotal - $totalDisc;
+                    $taxAmount = round($subTotalAfterDisc * ($avt->AVT ?? 0), 2);
+                    $grandTotal = round($taxAmount + $subTotalAfterDisc, 2);
+                    ?>
+                    
+                    <table class="table-custom text-center">
+                      <thead>
+                        <tr>
+                          <th>SUB TOTAL<br><span style="font-size:10px;">الاجمالي</span></th>
+                          <th>DISCOUNT<br><span style="font-size:10px;">الخصم</span></th>
+                          <th>SUB TOTAL AFTER DISCOUNT<br><span style="font-size:10px;">الاجمالي بعد الخصم</span></th>
+                          <th>VALUE ADDED TAX ({{($avt->AVT ?? 0)*100}}%)<br><span style="font-size:10px;">ضريبة القيمة المضافة</span></th>
+                          <th style="background-color: #212529 !important; color: #fff !important;">NET TOTAL<br><span style="font-size:10px;">الاجمالي الكلي</span></th>
+                        </tr>
+                        <tr>
+                          <td style="font-weight: bold;">{{ number_format($subTotal, 2) }}</td>
+                          <td style="font-weight: bold; color: #d9534f;">{{ number_format($totalDisc, 2) }}</td>
+                          <td style="font-weight: bold;">{{ number_format($subTotalAfterDisc, 2) }}</td>
+                          <td style="font-weight: bold;">{{ number_format($taxAmount, 2) }}</td>
+                          <td style="font-size: 16px; font-weight: bold; color: #28a745; background: #e8f5e9;">{{ number_format($grandTotal, 2) }}</td>
+                        </tr>
+                      </thead>
+                    </table>
+                  </div>
+                  @endif
+
+                </td>
+              </tr>
+            </tbody>
+
+            <!-- تذييل الصفحة -->
+            <tfoot class="report-footer">
+              <tr>
+                <td style="border: none;">
+                  <div class="footer">
+                    @if(Auth()->user()->branchs_id == 1)
+                      <span>{{ addressar ?? '' }}</span> | <span>{{ addressen ?? '' }}</span>
+                    @endif
+                  </div>
+                </td>
+              </tr>
+            </tfoot>
 
           </table>
 
           <input type="hidden" id="token_search" value="{{ csrf_token() }}">
 
-
         </div>
       </div>
     </div>
-  </div><!-- COL-END -->
+  </div>
 </div>
 <!-- row closed -->
-</div>
-<!-- Container closed -->
-</div>
 @endsection
-@section('js')
-<!--Internal  Chart.bundle js -->
-<script src="{{ URL::asset('assets/plugins/chart.js/Chart.bundle.min.js') }}"></script>
 
+@section('js')
+<!-- Internal Chart.bundle js -->
+<script src="{{ URL::asset('assets/plugins/chart.js/Chart.bundle.min.js') }}"></script>
 
 <script type="text/javascript">
   function printDiv() {
@@ -405,5 +345,4 @@
     location.reload();
   }
 </script>
-
 @endsection

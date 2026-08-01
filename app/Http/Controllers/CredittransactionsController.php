@@ -45,9 +45,9 @@ public function budgetsheet(Request $request)
     $parentIds = $allAccounts->pluck('parent_account_number')->unique()->filter()->toArray();
 
     // تصفية الحسابات لتشمل فقط الحسابات النهائية التي ليس لها أبناء (is_parent = 0 ولا تظهر في قائمة الآباء)
-    $finalAccounts = $allAccounts->filter(function ($account) use ($parentIds) {
-        return $account->is_parent == 0 && !in_array($account->id, $parentIds);
-    });
+   $finalAccounts = $allAccounts->filter(function ($account) use ($parentIds) {
+    return !in_array($account->id, $parentIds);
+});
 
     // 3. حساب الرصيد للحسابات النهائية فقط
     $finalAccounts->each(function ($account) use ($date, $branch) {

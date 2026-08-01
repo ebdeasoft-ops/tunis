@@ -458,9 +458,13 @@ class SupprocessesController extends Controller
                 'TaxـNumber' => $request->TaxـNumber ?? '0'
             ]);
 
+            // تحديث الاسم والرقم الضريبي في جدول الشجرة المالية أيضاً
             financial_accounts::where('orginal_id', $request->clientnamesearch)
                 ->where('orginal_type', 2)
-                ->update(['name' => $request->name]);
+                ->update([
+                    'name' => $request->name,
+                    'tax_no' => $request->TaxـNumber ?? '0'
+                ]);
         });
 
         $message = app()->getLocale() == 'ar' ? 'تم تعديل البيانات بنجاح' : 'Data modified successfully';
@@ -468,7 +472,6 @@ class SupprocessesController extends Controller
 
         return redirect()->back();
     }
-
     /**
      * تحديث بيانات العميل والحساب المالي التابع له بالتزامن
      */
@@ -497,9 +500,13 @@ class SupprocessesController extends Controller
                 'CRN' => $request->CRN,
             ]);
 
+            // تحديث الاسم والرقم الضريبي في جدول الشجرة المالية أيضاً
             financial_accounts::where('orginal_id', $request->clientnamesearch)
                 ->where('orginal_type', 1)
-                ->update(['name' => $request->nameclient]);
+                ->update([
+                    'name' => $request->nameclient,
+                    'tax_no' => $request->TaxـNumber ?? 0
+                ]);
         });
 
         $message = app()->getLocale() == 'ar' ? 'تم تعديل البيانات بنجاح' : 'Data modified successfully';
@@ -507,7 +514,6 @@ class SupprocessesController extends Controller
 
         return redirect()->back();
     }
-
     /**
      * إنشاء العميل محاسبياً وربطه التلقائي بشجرة الحسابات العامة (منع تعارض أرقام الحسابات)
      */
@@ -533,8 +539,20 @@ class SupprocessesController extends Controller
                 'CRN' => $request->CRN,
             ]);
 
-            // حماية رقم الحساب من خلال الحساب التراكمي المباشر بدلاً من قراءة آخر صف غير محمية
-            $nextAccountNumber = financial_accounts::where('account_type', 1)->where('orginal_type', 1)->max('account_number') + 1;
+            // تحديد الـ id الخاص بالحساب الأب للعملاء
+            // 1. جلب حساب الأب الفعلي للعملاء ديناميكياً (استبدل الـ ID بالـ ID الخاص بالحساب الرئيسي للعملاء في جدولك)
+            $parentAccount = financial_accounts::find(2); // مثال: الـ ID الخاص بحساب العملاء الرئيسي
+            $parentAccountNumber = $parentAccount ? $parentAccount->account_number : 12; // 12 كقيمة افتراضية لو غير موجود
+
+            // البحث الآمن عن أكبر رقم حساب فرعي يتبع للأب رقم 2
+            $maxAccountNumber = financial_accounts::where('parent_account_number', 2)
+                ->max('account_number');
+
+            if (!$maxAccountNumber) {
+                $nextAccountNumber = $parentAccountNumber . '1';
+            } else {
+                $nextAccountNumber = $maxAccountNumber + 1;
+            }
 
             financial_accounts::create([
                 'name' => $request->name,
@@ -554,8 +572,7 @@ class SupprocessesController extends Controller
                 'is_parent' => 0,
                 'orginal_id' => $newCustomer->id,
                 'orginal_type' => 1,
-                'tax_no' => $request->TaxـNumber ?? 0,
-
+                'tax_no' => $request->tax_no ?? 0,
             ]);
 
             return $newCustomer;
@@ -563,6 +580,7 @@ class SupprocessesController extends Controller
 
         return response()->json($customer);
     }
+
 
     public function create_addnewcustomer(Request $request)
     {
@@ -595,13 +613,27 @@ class SupprocessesController extends Controller
                 'CRN' => $request->CRN,
             ]);
 
-            $nextAccountNumber = financial_accounts::where('account_type', 1)->where('orginal_type', 1)->max('account_number') + 1;
+            // 1. جلب حساب الأب الفعلي للعملاء ديناميكياً (استبدل الـ ID بالـ ID الخاص بالحساب الرئيسي للعملاء في جدولك)
+            $parentAccount = financial_accounts::find(2); // مثال: الـ ID الخاص بحساب العملاء الرئيسي
+            $parentAccountNumber = $parentAccount ? $parentAccount->account_number : 12; // 12 كقيمة افتراضية لو غير موجود
+
+            // 2. البحث عن أكبر رقم حساب فرعي يتبع هذا الأب لتوليد التسلسل التالي
+            $maxAccountNumber = financial_accounts::where('parent_account_number', 2)
+                ->max('account_number');
+
+            if (!$maxAccountNumber) {
+                // إذا لم تكن هناك فروع تابعة، يبدأ بدمج كود الأب مع 1 (مثلاً 121)
+                $nextAccountNumber = $parentAccountNumber . '1';
+            } else {
+                // إذا وجد، يزيد واحد على الرقم الأكبر
+                $nextAccountNumber = $maxAccountNumber + 1;
+            }
 
             financial_accounts::create([
                 'name' => $request->name,
-                'account_type' => 1,
-                'parent_account_number' => 2,
-                'account_number' => $nextAccountNumber,
+                'account_type' => 1, // 1 للعملاء
+                'parent_account_number' => 2, // كود الأب ديناميكي
+                'account_number' => $nextAccountNumber,   // الرقم التسلسلي الجديد
                 'start_balance' => 0,
                 'current_balance' => 0,
                 'start_balance_status' => 3,
@@ -613,8 +645,6 @@ class SupprocessesController extends Controller
                 'orginal_id' => $newCustomer->id,
                 'orginal_type' => 1,
                 'tax_no' => $request->TaxـNumber ?? 0,
-
-
             ]);
         });
 
@@ -623,6 +653,7 @@ class SupprocessesController extends Controller
 
         return redirect()->back();
     }
+
 
     public function create_addnewsupplier(Request $request)
     {
@@ -646,17 +677,31 @@ class SupprocessesController extends Controller
                 'TaxـNumber' => $request->TaxـNumber
             ]);
 
-            $nextAccountNumber = financial_accounts::where('account_type', 2)->where('orginal_type', 2)->max('account_number') + 1;
+            // 1. جلب حساب الأب الفعلي (مثلاً بالـ ID الخاص به وليكن الأب الذي يمثل الموردين)
+            $parentAccount = financial_accounts::find(1); // استبدل الـ 2 بـ ID الأب الحقيقي للموردين في جدولك
+            $parentAccountNumber = $parentAccount->account_number; // أو أي account_number خاص بالأب لديك (مثل 2 أو 21 إلخ)
+
+            // 2. البحث عن أكبر رقم حساب فرعي يتبع لهذا الأب
+            $maxAccountNumber = financial_accounts::where('parent_account_number', 1)
+                ->max('account_number');
+
+            if (!$maxAccountNumber) {
+                // إذا لم يكن هناك فروع، يبدأ بدمج كود الأب مع 1 (مثل 211 أو 21)
+                $nextAccountNumber = $parentAccountNumber . '1';
+            } else {
+                // إذا وجد، يزيد واحد على الرقم الأكبر
+                $nextAccountNumber = $maxAccountNumber + 1;
+            }
 
             financial_accounts::create([
                 'name' => $request->name,
                 'account_type' => 2,
-                'parent_account_number' => 1,
+                'parent_account_number' => 1, // استخدام كود الأب الصحيح
                 'account_number' => $nextAccountNumber,
                 'start_balance' => 0,
                 'current_balance' => 0,
                 'start_balance_status' => 3,
-                'added_by' => auth()->user()->id ?? 1,
+                'added_by' => auth()->id() ?? 1,
                 'com_code' => 1,
                 'date' => Carbon::now()->addHours(3),
                 'active' => 1,
@@ -664,16 +709,14 @@ class SupprocessesController extends Controller
                 'orginal_id' => $supplier->id,
                 'orginal_type' => 2,
                 'tax_no' => $request->TaxـNumber
-
             ]);
         });
 
-        $message = app()->getLocale() == 'ar' ? 'تم اضافة الموارد بنجاح' : 'Supplier added successfully';
+        $message = app()->getLocale() == 'ar' ? 'تم اضافة المورد بنجاح' : 'Supplier added successfully';
         session()->flash('addnewsupplier', $message);
 
         return redirect()->back();
     }
-
     public function create_addnewsupplierajax(Request $request)
     {
         $supplier = DB::transaction(function () use ($request) {
@@ -687,13 +730,30 @@ class SupprocessesController extends Controller
                 'TaxـNumber' => $request->TaxـNumber
             ]);
 
-            $nextAccountNumber = financial_accounts::where('account_type', 2)->where('orginal_type', 2)->max('account_number') + 1;
+            // 1. تحديد الحساب الأب مباشرة باستخدام account_number الخاص به (مثلاً حساب الموردين الرئيسي لديك في الشجرة)
+            // يمكنك وضع الـ account_number الخاص بالأب هنا مباشرة
+
+            // التأكد من أن الأب موجود بالـ account_number الفعلي
+            $parentAccount = financial_accounts::find(1);
+            $parentAccountNumber = $parentAccount->account_number; // أو أي account_number خاص بالأب لديك (مثل 2 أو 21 إلخ)
+
+            // 2. البحث عن أكبر رقم حساب فرعي يتبع هذا الأب لتوليد الرقم التسلسلي التالي بناءً عليه
+            $maxAccountNumber = financial_accounts::where('parent_account_number', 1)
+                ->max('account_number');
+
+            if (!$maxAccountNumber) {
+                // إذا لم تكن هناك فروع تابعة له بعد، يبدأ بكود الأب مضافاً إليه 1 (مثل 2 مفصول أو مضاف كـ 21)
+                $nextAccountNumber = $parentAccountNumber . '1';
+            } else {
+                // إذا وجدت فروع سابقة، يأخذ الرقم الأكبر ويزيد عليه 1
+                $nextAccountNumber = $maxAccountNumber + 1;
+            }
 
             financial_accounts::create([
                 'name' => $request->name,
                 'account_type' => 2,
-                'parent_account_number' => 1,
-                'account_number' => $nextAccountNumber,
+                'parent_account_number' => 1, // استخدام account_number الخاص بالأب
+                'account_number' => $nextAccountNumber,          // الرقم التسلسلي الجديد المبني على account_number الأب
                 'start_balance' => 0,
                 'current_balance' => 0,
                 'start_balance_status' => 3,
@@ -705,7 +765,6 @@ class SupprocessesController extends Controller
                 'orginal_id' => $newSupplier->id,
                 'orginal_type' => 2,
                 'tax_no' => $request->TaxـNumber
-
             ]);
 
             return $newSupplier;
@@ -713,6 +772,8 @@ class SupprocessesController extends Controller
 
         return response()->json($supplier);
     }
+
+
 
     public function product_movement()
     {

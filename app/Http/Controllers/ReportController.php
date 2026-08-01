@@ -473,34 +473,38 @@ class ReportController extends Controller
         return view('reports.purchase_product_by_date');
     }
 
-    public function search_purchase_product_by_date(Request $request)
-    {
-        $query = orderDetails::whereDate('created_at', '>=', $request->start_at)
-            ->whereDate('created_at', '<=', $request->end_at)
-            ->where('save', 1);
+public function search_purchase_product_by_date(Request $request)
+{
+    $query = orderDetails::query()
+        ->join('resource_purchases', 'order_details.order_owner', '=', 'resource_purchases.orderId')
+        ->whereDate('order_details.created_at', '>=', $request->start_at)
+        ->whereDate('order_details.created_at', '<=', $request->end_at)
+        ->where('order_details.save', 1);
 
-        if ($request->branch != '-') {
-            $query->where('branch_id', $request->branch);
-        }
-
-        $productsQuery = $query->select('product_id')
-            ->selectRaw('SUM(numberofpice) as total_quantity')
-            ->selectRaw('SUM(numberofpice * purchasingـprice) as total_sales_amount')
-            ->groupBy('product_id')
-            ->with('productData');
-
-        $products = $productsQuery->get();
-
-        if ($request->action == 'export') {
-            return \Maatwebsite\Excel\Facades\Excel::download(
-                new \App\Exports\SalesProductExport($products),
-                'sales_products_report.xlsx'
-            );
-        }
-
-        return view('reports.print_purchase_product_by_date', compact('products'));
+    // فلترة الفرع مباشرة من جدول resource_purchases
+    if ($request->branch != '-') {
+        $query->where('resource_purchases.branchs_id', $request->branch);
     }
 
+    // التجميع حسب المنتج (مع تحديد order_details لتجنب تداخل الأعمدة)
+    $productsQuery = $query->select('order_details.product_id')
+        ->selectRaw('SUM(order_details.numberofpice) as total_quantity')
+        ->selectRaw('SUM(order_details.numberofpice * order_details.purchasingـprice) as total_sales_amount')
+        ->groupBy('order_details.product_id')
+        ->with('productData');
+
+    // إذا كان الطلب تصدير Excel
+    if ($request->action == 'export') {
+        $products = $productsQuery->get();
+        return \Maatwebsite\Excel\Facades\Excel::download(
+            new \App\Exports\SalesProductExport($products),
+            'sales_products_report.xlsx'
+        );
+    }
+
+    $products = $productsQuery->get();
+    return view('reports.print_purchase_product_by_date', compact('products'));
+}
 
     public function SalesPurchaseInPeriode()
     {
@@ -2258,6 +2262,59 @@ public function Customerlist()
         return view('reports.print_TransFerCashTothenNextDay', compact('data'))
             ->with('start_at', $request->start_at)
             ->with('end_at', $request->end_at);
+    }
+ public function search_stockquantity(Request $request)
+    {
+        app()->setLocale(LaravelLocalization::getCurrentLocale());
+        //  return  $request;
+        $display = $request->choosequantitytodisplay;
+
+        if ($request->branch == '-') {
+            if ($display == '==') {
+                if($request->Location== '-'){
+                    $products = products::where('numberofpice', $request->quantity)->get();
+                }
+                else{
+                 $products = products::where('Product_Location', 'LIKE', '%' . $request->Location . '%')->where('numberofpice', $request->quantity)->get();
+  
+                }
+            } else {
+                if($request->Location== '-'){
+
+                $products = products::where('numberofpice', $display, $request->quantity)->get();
+                }else{
+                    $products = products::where('Product_Location', 'LIKE', '%' . $request->Location . '%')->where('numberofpice', $display, $request->quantity)->get();
+ 
+                }
+            }
+
+        return view('reports.printstockquantity', compact('products'))->with('data', $request->end_at);
+
+
+            // return view('reports.stockquantity', compact('products'))->with('branchdata', '-' . "/" . $display . "/" . $request->quantity."/".$request->Location);
+        } else {
+            if ($display == '==') {
+                if($request->Location== '-'){
+                    $products = products::where('numberofpice', $request->quantity)->where('branchs_id', $request->branch)->get();
+                }
+                else{
+                 $products = products::where('Product_Location', 'LIKE', '%' . $request->Location . '%')->where('numberofpice', $request->quantity)->get();
+  
+                }
+            } else {
+                if($request->Location== '-'){
+                    $products = products::where('numberofpice', $display, $request->quantity)->where('branchs_id', $request->branch)->get();
+                }
+                else{
+                 $products = products::where('Product_Location', 'LIKE', '%' . $request->Location . '%')->where('numberofpice', $display, $request->quantity)->where('branchs_id', $request->branch)->get();
+  
+                }
+            }
+            //   return $products;
+        return view('reports.printstockquantity', compact('products'))->with('data', $request->end_at);
+
+            // return view('reports.stockquantity', compact('products'))->with('branchdata',  $request->branch . "/" . $display . "/" . $request->quantity."/".$request->Location);
+        }
     }
 
     public function search_shift_detailes(Request $request)

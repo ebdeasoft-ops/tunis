@@ -77,26 +77,39 @@
                             @endif
                         </td>
                         <td>
-                            <div class="btn-icon-list d-flex justify-content-center" style="gap: 4px;">
+                            <div class="btn-icon-list d-flex justify-content-center align-items-center" style="gap: 4px;">
+                                <!-- زر الطباعة / العرض -->
                                 <a href="showInvoiceRecent/{{ $product->id }}" class="btn btn-sm btn-primary" title="{{ __('home.show') }}">
                                     <i class="fas fa-print"></i>
                                 </a>
 
+                                <!-- زر الواتساب -->
                                 <a href="{{ $waFullUrl }}" target="_blank" class="btn btn-sm btn-success" style="background-color: #25d366; border: none;" title="واتساب">
                                     <i class="fab fa-whatsapp"></i>
                                 </a>
 
+                                <!-- زر التحميل PDF -->
                                 <a href="generate_pdf/{{ $product->id }}" target="_blank" class="btn btn-sm btn-secondary" title="{{ __('home.dwonloadpdf') }}">
                                     <i class="fas fa-file-pdf"></i>
                                 </a>
 
-                               <a class="btn btn-sm btn-info modal-effect" 
+                                <!-- زر تعديل طريقة الدفع -->
+                                <a class="btn btn-sm btn-info modal-effect" 
                                    data-effect="effect-scale" 
                                    data-id="{{ $product->id }}" 
                                    data-totalinvoice="{{ $totalWithTax }}" 
                                    data-toggle="modal" href="#paymentmethod" title="{{ __('home.updatepayment') }}">
                                     <i class="las la-pen"></i>
                                 </a>
+
+                                <!-- نموذج ورار مرتجع المبيعات -->
+                                <form action="{{ url(Mcamara\LaravelLocalization\Facades\LaravelLocalization::getCurrentLocale() . '/return_sale') }}" method="POST" role="search" autocomplete="off" style="display: inline-block; margin: 0;">
+                                    {{ csrf_field() }}
+                                    <input type="hidden" name="invoice_no" value="{{ $product->id }}">
+                                    <button style="background-color: #419BB2; border: none;" type="submit" class="btn btn-sm btn-success" title="{{ __('home.salesـreturned') }}">
+                                        <i class="las la-search" style="font-size:15px"></i>
+                                    </button>
+                                </form>
                             </div>
                         </td>
                     </tr>

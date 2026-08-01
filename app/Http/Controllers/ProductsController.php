@@ -1433,142 +1433,160 @@ $data = resource_purchases::where('save', 1)
         return view('ajax_choose_product_replace2', compact('data'));
     }
 
-    public function operationproducts($branchs_id, $productId)
-    {
-        app()->setLocale(LaravelLocalization::getCurrentLocale());
+ public function operationproducts($branchs_id, $productId)
+{
+    app()->setLocale(LaravelLocalization::getCurrentLocale());
 
-        // جلب كل الحركات المتعلقة بالمنتج دفعة واحدة مع علاقاتها لتجنب استعلامات N+1 داخل الحلقات
-        $orderDetails = orderDetails::with('supllier')->where('product_id', $productId)->where('save', 1)->get();
-        $sales = sales::with('invoice.customer')->where('product_id', $productId)->where('save', 1)->get();
-        $return_sales = return_sales::with('invoice.customer')->where('product_id', $productId)->get();
-        $product_movement_items = product_movement_another_branch_items::with('product', 'movement.branchto', 'movement.branchfrom')->where('product_id', $productId)->get();
-        $sales_withoud_taxes = sales_withoud_taxes::with('deliveryInvoice.customer')->where('product_id', $productId)->where('save', 1)->get();
-        $return_sales_deliverys = return_sales_deliverys::with('deliveryInvoice.customer')->where('product_id', $productId)->get();
-        $stock_update = stock_update::with('user')->where('product_id', $productId)->get();
+    // جلب البيانات مع تحميل العلاقات المرتبطة مسبقاً لتجنب الأخطاء
+    $orderDetails = orderDetails::with(['supllier', 'productData'])
+        ->where('product_id', $productId)
+        ->where('save', 1)
+        ->get();
 
-        $products = [];
+    $sales = sales::with(['invoice.customer', 'productData'])
+        ->where('product_id', $productId)
+        ->where('save', 1)
+        ->get();
 
-        foreach ($product_movement_items as $item) {
-            $invoice = $item->movement;
-            $products[] = [
-                'id' => $item->order_id,
-                'Product_Code' => $item->product->Product_Code ?? '',
-                'product_name' => $item->product->product_name ?? '',
-                'created_at' => $item->created_at,
-                'quantity' => $item->quantity,
-                'price' => $item->cost_per_each_withoud_tax,
-                'operation' => $item->order_id != 0 ? __('home.send_product_from_brance') : __('home.recive_product_from_other_branch_other'),
-                'type' => 3,
-                'man' => $item->order_id != 0 ? ($invoice->branchto->name ?? '-') : ($invoice->branchfrom->name ?? '-'),
-            ];
-        }
+    $return_sales = return_sales::with(['invoice.customer', 'productData'])
+        ->where('product_id', $productId)
+        ->get();
 
-        foreach ($return_sales as $item) {
-            $products[] = [
-                'id' => $item->invoice_id,
-                'Product_Code' => $item->productData->Product_Code ?? '',
-                'product_name' => $item->productData->product_name ?? '',
-                'created_at' => $item->created_at,
-                'quantity' => $item->return_quantity,
-                'price' => $item->return_Unit_Price,
-                'operation' => __('home.salesـreturned'),
-                'type' => 2,
-                'man' => $item->invoice->customer->name ?? '-',
-            ];
-        }
+    $product_movement_another_branch_items = product_movement_another_branch_items::with(['product', 'order'])
+        ->where('product_id', $productId)
+        ->get();
 
-        foreach ($sales as $item) {
-            $products[] = [
-                'id' => $item->invoice_id,
-                'Product_Code' => $item->productData->Product_Code ?? '',
-                'product_name' => $item->productData->product_name ?? '',
-                'created_at' => $item->created_at,
-                'quantity' => $item->quantity + $item->quantityreturn,
-                'price' => $item->Unit_Price,
-                'operation' => __('home.sales'),
-                'type' => 1,
-                'man' => $item->invoice->customer->name ?? '-',
-            ];
-        }
+    $sales_withoud_taxes = sales_withoud_taxes::with(['invoice.customer', 'productData'])
+        ->where('product_id', $productId)
+        ->where('save', 1)
+        ->get();
 
-        foreach ($return_sales_deliverys as $item) {
-            $products[] = [
-                'id' => $item->invoice_id,
-                'Product_Code' => $item->productData->Product_Code ?? '',
-                'product_name' => $item->productData->product_name ?? '',
-                'created_at' => $item->created_at,
-                'quantity' => $item->return_quantity,
-                'price' => $item->return_Unit_Price,
-                'operation' => __('home.delivery_return'),
-                'type' => 2,
-                'man' => $item->deliveryInvoice->customer->name ?? '-',
-            ];
-        }
+    $return_sales_deliverys = return_sales_deliverys::with(['invoice.customer', 'productData'])
+        ->where('product_id', $productId)
+        ->get();
 
-        foreach ($sales_withoud_taxes as $item) {
-            $products[] = [
-                'id' => $item->invoice_id,
-                'Product_Code' => $item->productData->Product_Code ?? '',
-                'product_name' => $item->productData->product_name ?? '',
-                'created_at' => $item->created_at,
-                'quantity' => $item->quantity + $item->quantityreturn,
-                'price' => $item->Unit_Price,
-                'operation' => __('home.sel_product_withoud_tax'),
-                'type' => 1,
-                'man' => $item->deliveryInvoice->customer->name ?? '-',
-            ];
-        }
+    $products = [];
 
-        foreach ($orderDetails as $item) {
-            $invoice = $item->orderToSupplier;
-            if ($item->returns_purchase > 0) {
-                $products[] = [
-                    'id' => $item->invoice_id,
-                    'Product_Code' => $item->productData->Product_Code ?? '',
-                    'product_name' => $item->productData->product_name ?? '',
-                    'created_at' => $item->updated_at,
-                    'quantity' => $item->returns_purchase,
-                    'price' => $item->purchasingـprice,
-                    'operation' => __('home.purchase_return'),
-                    'type' => 5,
-                    'man' => $invoice->supllier->name ?? '-',
-                ];
-            }
+    foreach ($product_movement_another_branch_items as $item) {
+        $invoice = $item->order; // استخدام العلاقة المتاحة بدلاً من البحث المتكرر find()
 
-            $products[] = [
-                'id' => $item->order_owner,
-                'Product_Code' => $item->product_id,
-                'product_name' => $item->product_name,
-                'created_at' => $item->created_at,
-                'quantity' => $item->numberofpice,
-                'price' => $item->purchasingـprice,
-                'man' => $invoice->supllier->name ?? '-',
-                'operation' => __('home.purchases'),
-                'type' => 4
-            ];
-        }
-
-        foreach ($stock_update as $item) {
-            $products[] = [
-                'id' => $item->order_owner,
-                'Product_Code' => $item->product_id,
-                'product_name' => $item->product_name,
-                'created_at' => $item->created_at,
-                'quantity' => $item->productincrease + $item->productdecrease,
-                'price' => '-',
-                'man' => $item->user->name ?? '-',
-                'operation' => $item->productincrease > 0 ? __('home.increasequantity') : __('home.decreasequentity'),
-                'type' => 40
-            ];
-        }
-
-        // فرز المصفوفة بناءً على التاريخ تصاعدياً
-        usort($products, function ($a, $b) {
-            return strtotime($a['created_at']) <=> strtotime($b['created_at']);
-        });
-
-        return view('ajax_choose_product_replace', compact('products'));
+        $products[] = [
+            'id' => $item->order_id,
+            'Product_Code' => $item->product->Product_Code ?? '-',
+            'product_name' => $item->product->product_name ?? '-',
+            'created_at' => $item->created_at,
+            'quantity' => $item->quantity,
+            'price' => $item->cost_per_each_withoud_tax,
+            'operation' => $item->order_id != 0 ? __('home.send_product_from_brance') : __('home.recive_product_from_other_branch_other'),
+            'type' => 3,
+            'man' => $item->order_id != 0 ? ($invoice->branchto->name ?? '-') : ($invoice->branchfrom->name ?? '-'),
+        ];
     }
+
+    foreach ($return_sales as $item) {
+        $invoice = $item->invoice;
+
+        $products[] = [
+            'id' => $item->invoice_id,
+            'Product_Code' => $item->productData->Product_Code ?? '-',
+            'product_name' => $item->productData->product_name ?? '-',
+            'created_at' => $item->created_at,
+            'quantity' => $item->return_quantity,
+            'price' => $item->return_Unit_Price,
+            'operation' => __('home.salesـreturned'),
+            'type' => 2,
+            'man' => $invoice->customer->name ?? '-',
+        ];
+    }
+
+    foreach ($sales as $item) {
+        $invoice = $item->invoice;
+
+        $products[] = [
+            'id' => $item->invoice_id,
+            'Product_Code' => $item->productData->Product_Code ?? '-',
+            'product_name' => $item->productData->product_name ?? '-',
+            'created_at' => $item->created_at,
+            'quantity' => $item->quantity + $item->quantityreturn,
+            'price' => $item->Unit_Price,
+            'operation' => __('home.sales'),
+            'type' => 1,
+            'man' => $invoice->customer->name ?? '-',
+        ];
+    }
+
+    foreach ($return_sales_deliverys as $item) {
+        $invoice = $item->invoice;
+
+        $products[] = [
+            'id' => $item->invoice_id,
+            'Product_Code' => $item->productData->Product_Code ?? '-',
+            'product_name' => $item->productData->product_name ?? '-',
+            'created_at' => $item->created_at,
+            'quantity' => $item->return_quantity,
+            'price' => $item->return_Unit_Price,
+            'operation' => __('home.delivery_return'),
+            'type' => 2,
+            'man' => $invoice->customer->name ?? '-',
+        ];
+    }
+
+    foreach ($sales_withoud_taxes as $item) {
+        $invoice = $item->invoice;
+
+        $products[] = [
+            'id' => $item->invoice_id,
+            'Product_Code' => $item->productData->Product_Code ?? '-',
+            'product_name' => $item->productData->product_name ?? '-',
+            'created_at' => $item->created_at,
+            'quantity' => $item->quantity + $item->quantityreturn,
+            'price' => $item->Unit_Price,
+            'operation' => __('home.sel_product_withoud_tax'),
+            'type' => 1,
+            'man' => $invoice->customer->name ?? '-',
+        ];
+    }
+
+    foreach ($orderDetails as $item) {
+        // استخدام العلاقة suplier التي عرفتها مسبقاً في موديل orderDetails
+        $supplierName = $item->supllier->supllier->name ?? '-';
+
+        if ($item->returns_purchase > 0) {
+            $products[] = [
+                'id' => $item->invoice_id ?? $item->id,
+                'Product_Code' => $item->productData->Product_Code ?? '-',
+                'product_name' => $item->productData->product_name ?? '-',
+                'created_at' => $item->updated_at,
+                'quantity' => $item->returns_purchase,
+                'price' => $item->purchasingـprice,
+                'operation' => __('home.purchase_return'),
+                'type' => 5,
+                'man' => $supplierName,
+            ];
+        }
+
+        $products[] = [
+            'id' => $item->order_owner,
+            'Product_Code' => $item->productData->Product_Code ?? $item->product_id,
+            'product_name' => $item->productData->product_name ?? $item->product_name,
+            'created_at' => $item->created_at,
+            'quantity' => $item->numberofpice,
+            'price' => $item->purchasingـprice,
+            'man' => $supplierName,
+            'operation' => __('home.purchases'),
+            'type' => 4
+        ];
+    }
+
+    // ترتيب العمليات حسب التاريخ تصاعدياً
+    if (!empty($products)) {
+        $dates = array_column($products, 'created_at');
+        array_multisort(array_map('strtotime', $dates), SORT_ASC, $products);
+    }
+
+    return view('ajax_choose_product_replace', compact('products'));
+}
+
 
     public function index()
     {

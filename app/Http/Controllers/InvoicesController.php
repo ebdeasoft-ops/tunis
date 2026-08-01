@@ -3824,7 +3824,6 @@ if ($quoute->branchs_id != $branchId1) {
 
         $userId = auth()->user()->id;
         $now = Carbon::now()->addHours(3);
-
         // 1. Create temporary invoice
         $Invoice = temp_invoice::create([
             'customer_id' => $quoute->customer_id ?? 1,
@@ -3914,7 +3913,8 @@ if ($quoute->branchs_id != $branchId1) {
         // Reset older sales quotes targets safely
        sales::where('invoice_id', $invoiceNumber)->update(['quantity' => 0]);
 
-        $customer = customers::find($Invoice->customer_id);
+        // $customer = customers::find($Invoice->customer_id);
+        $financial_accounts=financial_accounts::where('orginal_type',1)->where('orginal_id',$Invoice->customer_id )->first();
 
         return [
             "invoicetotal_price" => $Invoice->Price - $Invoice->discount,
@@ -3922,7 +3922,7 @@ if ($quoute->branchs_id != $branchId1) {
             "invoicetotal_discount" => $Invoice->discount,
             'invoice_number' => $Invoice->id,
             'pay' => $Invoice->pay,
-            'customer' => $customer,
+            'customer' => $financial_accounts,
             'product' => $allProdctsD,
             "invoice_id" => $invoiceNumber
         ];

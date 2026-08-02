@@ -2869,7 +2869,8 @@ function calculateTotals() {
         let price = parseFloat(r.querySelector('.product-price').value) || 0;
         let cost = parseFloat(r.querySelector('.product_cost').value) || 0;
         let qty = parseFloat(r.querySelector('.product-quentity').value) || 0;
-
+     let profit = price - cost;
+        $('#profit').val(profit.toFixed(2));
         // --- فحص الكمية المتاحة (Available Quantity Check) ---
         let availablequantity = parseFloat(r.querySelector('.product-available_quentity').value) || 0;
 

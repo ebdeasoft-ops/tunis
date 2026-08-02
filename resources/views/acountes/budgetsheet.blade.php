@@ -34,6 +34,10 @@
                 border: none !important;
                 box-shadow: none !important;
             }
+            /* إظهار التفاصيل عند الطباعة تلقائياً */
+            .collapse:not(.show) {
+                display: block !important;
+            }
         }
     </style>
 @endsection
@@ -125,133 +129,140 @@
 
                 <div class="card-body">
                     <div class="row">
-                        <!-- الأصول (Assets) -->
+                        
+                        <!-- حساب الأصول (Assets) -->
                         <div class="col-md-6">
-                            <h5 class="text-success border-bottom pb-2 font-weight-bold">الأصول</h5>
-                            <div class="table-responsive">
-                                <table class="table table-bordered table-striped">
-                                    <thead>
-                                        <tr>
-                                            <th>اسم الحساب</th>
-                                            <th>الرصيد</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        @php $totalAssets = 0; @endphp
-                                        @forelse($assets as $account)
-                                            <tr>
-                                                <td>{{ $account->name }}</td>
-                                                <td>
-                                                    @php 
-                                                        $balance = $account->current_balance ?? 0; 
-                                                        $totalAssets += $balance;
-                                                    @endphp
-                                                    {{ number_format($balance, 2) }}
-                                                </td>
-                                            </tr>
-                                        @empty
-                                            <tr>
-                                                <td colspan="2" class="text-center">لا توجد أصول مضافة</td>
-                                            </tr>
-                                        @endforelse
-                                    </tbody>
-                                    <tfoot>
-                                        <tr class="font-weight-bold bg-light">
-                                            <td>إجمالي الأصول</td>
-                                            <td>{{ number_format($totalAssets, 2) }}</td>
-                                        </tr>
-                                    </tfoot>
-                                </table>
+                            @php 
+                                $totalAssets = 0;
+                                foreach($assets as $acc) { $totalAssets += ($acc->current_balance ?? 0); }
+                            @endphp
+                            <div class="card border mb-3">
+                                <div class="card-body d-flex justify-content-between align-items-center bg-light">
+                                    <div>
+                                        <h5 class="text-success font-weight-bold mb-1">الأصول</h5>
+                                        <span class="text-muted tx-13">الإجمالي: <strong>{{ number_format($totalAssets, 2) }}</strong></span>
+                                    </div>
+                                    <button class="btn btn-sm btn-outline-success no-print" type="button" data-toggle="collapse" data-target="#assetsDetails" aria-expanded="false">
+                                        <i class="fas fa-list"></i> التفاصيل
+                                    </button>
+                                </div>
+                                <div class="collapse" id="assetsDetails">
+                                    <div class="table-responsive p-3 border-top">
+                                        <table class="table table-bordered table-striped mb-0">
+                                            <thead>
+                                                <tr>
+                                                    <th>اسم الحساب</th>
+                                                    <th>الرصيد</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                @forelse($assets as $account)
+                                                    <tr>
+                                                        <td>{{ $account->name }}</td>
+                                                        <td>{{ number_format($account->current_balance ?? 0, 2) }}</td>
+                                                    </tr>
+                                                @empty
+                                                    <tr>
+                                                        <td colspan="2" class="text-center">لا توجد أصول مضافة</td>
+                                                    </tr>
+                                                @endforelse
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
                             </div>
                         </div>
 
                         <!-- الخصوم وحقوق الملكية (Liabilities & Equity) -->
                         <div class="col-md-6">
-                            <h5 class="text-danger border-bottom pb-2 font-weight-bold">الخصوم وحقوق الملكية</h5>
                             
                             <!-- الخصوم -->
-                            <div class="table-responsive mb-3">
-                                <table class="table table-bordered table-striped">
-                                    <thead>
-                                        <tr class="table-secondary">
-                                            <th colspan="2" class="font-weight-bold">الخصوم</th>
-                                        </tr>
-                                        <tr>
-                                            <th>اسم الحساب</th>
-                                            <th>الرصيد</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        @php $totalLiabilities = 0; @endphp
-                                        @forelse($liabilities as $account)
-                                            <tr>
-                                                <td>{{ $account->name }}</td>
-                                                <td>
-                                                    @php 
-                                                        $balance = $account->current_balance ?? 0; 
-                                                        $totalLiabilities += $balance;
-                                                    @endphp
-                                                    {{ number_format($balance, 2) }}
-                                                </td>
-                                            </tr>
-                                        @empty
-                                            <tr>
-                                                <td colspan="2" class="text-center">لا توجد خصوم مضافة</td>
-                                            </tr>
-                                        @endforelse
-                                    </tbody>
-                                    <tfoot>
-                                        <tr class="font-weight-bold bg-light">
-                                            <td>إجمالي الخصوم</td>
-                                            <td>{{ number_format($totalLiabilities, 2) }}</td>
-                                        </tr>
-                                    </tfoot>
-                                </table>
+                            @php 
+                                $totalLiabilities = 0;
+                                foreach($liabilities as $acc) { $totalLiabilities += ($acc->current_balance ?? 0); }
+                            @endphp
+                            <div class="card border mb-3">
+                                <div class="card-body d-flex justify-content-between align-items-center bg-light">
+                                    <div>
+                                        <h5 class="text-danger font-weight-bold mb-1">الخصوم</h5>
+                                        <span class="text-muted tx-13">الإجمالي: <strong>{{ number_format($totalLiabilities, 2) }}</strong></span>
+                                    </div>
+                                    <button class="btn btn-sm btn-outline-danger no-print" type="button" data-toggle="collapse" data-target="#liabilitiesDetails" aria-expanded="false">
+                                        <i class="fas fa-list"></i> التفاصيل
+                                    </button>
+                                </div>
+                                <div class="collapse" id="liabilitiesDetails">
+                                    <div class="table-responsive p-3 border-top">
+                                        <table class="table table-bordered table-striped mb-0">
+                                            <thead>
+                                                <tr>
+                                                    <th>اسم الحساب</th>
+                                                    <th>الرصيد</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                @forelse($liabilities as $account)
+                                                    <tr>
+                                                        <td>{{ $account->name }}</td>
+                                                        <td>{{ number_format($account->current_balance ?? 0, 2) }}</td>
+                                                    </tr>
+                                                @empty
+                                                    <tr>
+                                                        <td colspan="2" class="text-center">لا توجد خصوم مضافة</td>
+                                                    </tr>
+                                                @endforelse
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
                             </div>
 
                             <!-- حقوق الملكية -->
-                            <div class="table-responsive">
-                                <table class="table table-bordered table-striped">
-                                    <thead>
-                                        <tr class="table-secondary">
-                                            <th colspan="2" class="font-weight-bold">حقوق الملكية</th>
-                                        </tr>
-                                        <tr>
-                                            <th>اسم الحساب</th>
-                                            <th>الرصيد</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        @php $totalEquity = 0; @endphp
-                                        @forelse($equity as $account)
-                                            <tr>
-                                                <td>{{ $account->name }}</td>
-                                                <td>
-                                                    @php 
-                                                        $balance = $account->current_balance ?? 0; 
-                                                        $totalEquity += $balance;
-                                                    @endphp
-                                                    {{ number_format($balance, 2) }}
-                                                </td>
-                                            </tr>
-                                        @empty
-                                            <tr>
-                                                <td colspan="2" class="text-center">لا توجد حسابات حقوق ملكية مضافة</td>
-                                            </tr>
-                                        @endforelse
-                                    </tbody>
-                                    <tfoot>
-                                        <tr class="font-weight-bold bg-light">
-                                            <td>إجمالي حقوق الملكية</td>
-                                            <td>{{ number_format($totalEquity, 2) }}</td>
-                                        </tr>
-                                        <tr class="font-weight-bold bg-dark text-white" style="background-color: #343a40 !important; color: #fff !important;">
-                                            <td>إجمالي الخصوم وحقوق الملكية</td>
-                                            <td>{{ number_format($totalLiabilities + $totalEquity, 2) }}</td>
-                                        </tr>
-                                    </tfoot>
-                                </table>
+                            @php 
+                                $totalEquity = 0;
+                                foreach($equity as $acc) { $totalEquity += ($acc->current_balance ?? 0); }
+                            @endphp
+                            <div class="card border mb-3">
+                                <div class="card-body d-flex justify-content-between align-items-center bg-light">
+                                    <div>
+                                        <h5 class="text-warning font-weight-bold mb-1">حقوق الملكية</h5>
+                                        <span class="text-muted tx-13">الإجمالي: <strong>{{ number_format($totalEquity, 2) }}</strong></span>
+                                    </div>
+                                    <button class="btn btn-sm btn-outline-warning no-print" type="button" data-toggle="collapse" data-target="#equityDetails" aria-expanded="false">
+                                        <i class="fas fa-list"></i> التفاصيل
+                                    </button>
+                                </div>
+                                <div class="collapse" id="equityDetails">
+                                    <div class="table-responsive p-3 border-top">
+                                        <table class="table table-bordered table-striped mb-0">
+                                            <thead>
+                                                <tr>
+                                                    <th>اسم الحساب</th>
+                                                    <th>الرصيد</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                @forelse($equity as $account)
+                                                    <tr>
+                                                        <td>{{ $account->name }}</td>
+                                                        <td>{{ number_format($account->current_balance ?? 0, 2) }}</td>
+                                                    </tr>
+                                                @empty
+                                                    <tr>
+                                                        <td colspan="2" class="text-center">لا توجد حسابات حقوق ملكية مضافة</td>
+                                                    </tr>
+                                                @endforelse
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
                             </div>
+
+                            <!-- إجمالي الخصوم وحقوق الملكية -->
+                            <div class="card bg-dark text-white text-center p-3">
+                                <h6 class="mb-0 font-weight-bold">إجمالي الخصوم وحقوق الملكية: {{ number_format($totalLiabilities + $totalEquity, 2) }}</h6>
+                            </div>
+
                         </div>
                     </div>
 

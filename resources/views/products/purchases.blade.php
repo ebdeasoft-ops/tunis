@@ -292,7 +292,8 @@ td .d-flex {
                                 <select class="form-control select2" name="paymentmethod" id="paymentmethod" required>
                                     @foreach (App\Models\financial_accounts::whereIn('parent_account_number', [4,
                                     5])->get() as $section)
-                                    <option value="{{ $section->id }}">{{ app()->getLocale() == 'en' ? $section->name_en : $section->name }} </option>
+                                    <option value="{{ $section->id }}">
+                                        {{ app()->getLocale() == 'en' ? $section->name_en : $section->name }} </option>
                                     @endforeach
                                     <option value="Credit"> {{ __('report.credit') }} </option>
                                 </select>
@@ -317,13 +318,14 @@ td .d-flex {
                                 <select class="form-control select2" id="Main_branchs_id">
                                     <option selected value="{{ Auth()->user()->branch->id }}">
                                         {{ Auth()->user()->branch->name }}</option>
-                                    @foreach (App\Models\branchs::where('id','!=',Auth()->user()->branch->id )->where('type',2 )->get()
+                                    @foreach (App\Models\branchs::where('id','!=',Auth()->user()->branch->id
+                                    )->where('type',2 )->get()
                                     as $section)
                                     <option value="{{ $section->id }}"> {{ $section->name }}</option>
                                     @endforeach
                                 </select>
                             </div>
-                         <div class="col-lg-1 mg-t-10">
+                            <div class="col-lg-1 mg-t-10">
                                 <label class="form-label fw-bold text-muted small">
                                     <i class="fas fa-store-alt me-1 text-info"></i> {{ __('home.name_wherehouse') }}
                                 </label>
@@ -1209,7 +1211,38 @@ td .d-flex {
 </div>
 
 
+<div class="modal fade product-selection" id="operation_product" name="main_product" tabindex="-1" role="dialog"
+    aria-labelledby="exampleModalLabel" dir='rtl' aria-hidden="true">
+    <div class="modal-dialog modal-xl" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
 
+
+                <div class="table-responsive" id="ajax_responce_operation_product_Div">
+
+
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                {{-- <button id="added_product" name="added_product" id="added_product"
+                        class="btn btn-primary">{{__('home.confirm')}}</button>
+                --}}
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">{{__('home.cancel')}}</button>
+            </div>
+
+        </div>
+
+
+    </div>
+</div>
+
+</div>
 
 
 @endsection
@@ -1232,21 +1265,23 @@ td .d-flex {
 {{-- Select2 --}}
 
 <script>
-
-    $('#Main_branchs_id').on('change', function() {
+$('#Main_branchs_id').on('change', function() {
     var parentBranchId = $(this).val(); // ID الفرع المختار فوق
     var $childSelect = $('#branchs_id'); // القائمة الثانية
 
-    if(parentBranchId) {
+    if (parentBranchId) {
         $.ajax({
             url: "{{ route('get.child.branches') }}", // سنقوم بإنشاء هذا المسار
             type: "GET",
-            data: { id: parentBranchId },
+            data: {
+                id: parentBranchId
+            },
             success: function(data) {
                 $childSelect.empty(); // مسح الخيارات القديمة
                 // إضافة الخيارات الجديدة بناءً على رد السيرفر
                 $.each(data, function(key, value) {
-                    $childSelect.append('<option value="'+ value.id +'">'+ value.name +'</option>');
+                    $childSelect.append('<option value="' + value.id + '">' + value.name +
+                        '</option>');
                 });
                 $childSelect.trigger('change.select2'); // تحديث Select2
             }
@@ -1269,12 +1304,15 @@ $('#excel_file').on('change', function(e) {
     let reader = new FileReader();
     reader.onload = function(e) {
         let data = new Uint8Array(e.target.result);
-        let workbook = XLSX.read(data, {type: 'array'});
+        let workbook = XLSX.read(data, {
+            type: 'array'
+        });
         let jsonData = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
 
         // التحقق من أن عدد الصفوف لا يتجاوز 100
         if (jsonData.length > 100) {
-            Swal.fire('خطأ!', 'عذراً، الملف يحتوي على ' + jsonData.length + ' صف. الحد الأقصى المسموح به هو 100 صف.', 'error');
+            Swal.fire('خطأ!', 'عذراً، الملف يحتوي على ' + jsonData.length +
+                ' صف. الحد الأقصى المسموح به هو 100 صف.', 'error');
             $('#excel_file').val(''); // مسح الملف المختار
             return;
         }
@@ -1384,13 +1422,15 @@ $('#paymentmethod').on('change', function() {
     } else if (selectedVal == "Credit") {
 
         // إذا كان آجل: نعطل الكل ما عدا الآجل
-        $paymentType.find('option[value="Cash"], option[value="Shabka"], option[value="Bank_transfer"]').prop('disabled', true);
+        $paymentType.find('option[value="Cash"], option[value="Shabka"], option[value="Bank_transfer"]').prop(
+            'disabled', true);
         $paymentType.val('Credit');
 
     } else {
 
         // إذا كان نقدي: نعطل الكل ما عدا النقدي
-        $paymentType.find('option[value="Shabka"], option[value="Bank_transfer"], option[value="Credit"]').prop('disabled', true);
+        $paymentType.find('option[value="Shabka"], option[value="Bank_transfer"], option[value="Credit"]').prop(
+            'disabled', true);
         $paymentType.val('Cash');
 
     }
@@ -1961,16 +2001,19 @@ $(document).ready(function() {
     var parentBranchId = $('#Main_branchs_id').val(); // ID الفرع المختار فوق
     var $childSelect = $('#branchs_id'); // القائمة الثانية
 
-    if(parentBranchId) {
+    if (parentBranchId) {
         $.ajax({
             url: "{{ route('get.child.branches') }}", // سنقوم بإنشاء هذا المسار
             type: "GET",
-            data: { id: parentBranchId },
+            data: {
+                id: parentBranchId
+            },
             success: function(data) {
                 $childSelect.empty(); // مسح الخيارات القديمة
                 // إضافة الخيارات الجديدة بناءً على رد السيرفر
                 $.each(data, function(key, value) {
-                    $childSelect.append('<option value="'+ value.id +'">'+ value.name +'</option>');
+                    $childSelect.append('<option value="' + value.id + '">' + value.name +
+                        '</option>');
                 });
                 $childSelect.trigger('change.select2'); // تحديث Select2
             }
@@ -1979,8 +2022,31 @@ $(document).ready(function() {
 
 })
 
+function replaceproduct(id) {
+    branchs_id = $('#branchs_id').val();
+    console.log(branchs_id)
+    console.log(" {{URL::to('operationproducts')}}/" + branchs_id + "/" + id)
+    jQuery.ajax({
+        url: " {{URL::to('operationproducts')}}/" + branchs_id + "/" + id,
+        type: 'get',
+        dataType: 'html',
+        cache: false,
 
-$("#formdata").on('submit', function (e) {
+        success: function(data) {
+            console.log('done')
+            $('#operation_product').modal().show();
+
+            $("#ajax_responce_operation_product_Div").html(data);
+        },
+        error: function() {
+
+        }
+    });
+
+
+}
+
+$("#formdata").on('submit', function(e) {
     e.preventDefault();
 
     // 1. التحقق من المورد
@@ -2029,7 +2095,7 @@ $("#formdata").on('submit', function (e) {
         cancelButtonText: 'إلغاء'
     }).then((result) => {
         if (result.isConfirmed) {
-            
+
             // إظهار مؤشر التحميل أو المودال القديم لو حابب
             Swal.fire({
                 title: 'جاري الحفظ...',
@@ -2049,7 +2115,7 @@ $("#formdata").on('submit', function (e) {
                 cache: false,
                 contentType: false,
                 processData: false,
-                success: function (data) {
+                success: function(data) {
                     $('#show_invoice_number').val(data);
                     $('#orderId').val(data);
                     document.getElementById('printdiv').hidden = false;
@@ -2084,6 +2150,7 @@ $('#formdata input').on('keypress', function(e) {
         return false;
     }
 });
+
 function removeRow(btn) {
     btn.closest('tr').remove();
 }
@@ -2210,7 +2277,7 @@ function calculateTotalDiscount() {
     totalbefore_discount = document.getElementById('totalSum').value;
     let discountTotal = 0;
 
-console.log(avtsale)
+    console.log(avtsale)
     document.querySelectorAll('#productsTableBody tr').forEach(r => {
 
         let discound = parseFloat(r.querySelector('.product-discound').value) || 0;
@@ -2218,7 +2285,7 @@ console.log(avtsale)
     });
 
 
-    discountTotal += (($('#discound_on_invoice').val() *100)/((avtsale*100)+100));
+    discountTotal += (($('#discound_on_invoice').val() * 100) / ((avtsale * 100) + 100));
     let taxTotal = (totalbefore_discount - discountTotal) * avtsale;
     let grand = (totalbefore_discount - discountTotal) + taxTotal;
     document.getElementById('totaldiscound').value = discountTotal.toFixed(2);
@@ -2268,7 +2335,7 @@ function searchaboutproductfunction() {
         data: {
             "_token": token_search,
             "searchtext": searchtext,
-            "locale" : "{{ app()->getLocale() }}", // ✅ صح
+            "locale": "{{ app()->getLocale() }}", // ✅ صح
             "branchs_id": branchs_id,
             "currentrow": window.currentRow,
         },
@@ -2293,7 +2360,7 @@ $('#SearchProduct').on('show.bs.modal', function(event) {
         data: {
             "_token": token_search,
             "searchtext": searchtext,
-            "locale" : "{{ app()->getLocale() }}", // ✅ صح
+            "locale": "{{ app()->getLocale() }}", // ✅ صح
             "branchs_id": branchs_id,
             "currentrow": window.currentRow,
         },

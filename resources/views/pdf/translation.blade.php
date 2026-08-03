@@ -387,7 +387,7 @@
                        return pack("H*", sprintf("%02X", $value));
                    }
                   $invoice=App\Models\invoices::find( $data['invoiceData']->id);
-                  $price=$invoice->cashamount+$invoice->Bank_transfer+$invoice->bankamount+$invoice->creaditamount;
+                  $price=$invoice->Price;
                 $avt = App\Models\Avt::find(1);
 
                   $price_befor_tax=$price*100/(100+($avt->AVT*100));
@@ -395,13 +395,10 @@
                   $invoicetotal_price = $price_befor_tax;
                   $invoicetotal_discount = $invoice->discount+$discountreturn;
 
-
-
-                  
                    $sellerName = sallerQrCode;
                    $varNumber = TaxQrCode;
                    $time =$invoice->created_at;
-$issue_time=substr($time, 11);
+                   $issue_time=substr($time, 11);
                    $issue_date=substr($time, 0, 10);
                    $time = (string)$issue_date . 'T' . (string)$issue_time;
 
@@ -417,7 +414,7 @@ $issue_time=substr($time, 11);
                    $total  = $HexTotal . $total;
                    $HexVATN = ConvertToHEX(5) . ConvertToHEX(strlen($tax));
                    $VATN  = $HexVATN . $tax;
-      $empty='';
+                 $empty='';
                  $Hexempty = ConvertToHEX(6) . ConvertToHEX(strlen($empty));
                  $empty6 = $Hexempty . $empty;
                  $Hexempty = ConvertToHEX(7) . ConvertToHEX(strlen($empty));

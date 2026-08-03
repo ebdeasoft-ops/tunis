@@ -1483,7 +1483,8 @@ $("#getinvoiceupdate").click(function(e) {
                                         <tr data-index="${index}">
 
                                             <td><input type="hidden" name="products[${index}][product_id]" value="${item.id}" class="product-id form-control">
-                                                        <input type="hidden" name="products[${index}][product_cost]" class="product_cost">
+                                            <input type="hidden" name="products[${index}][product_cost]" class="product_cost">
+                                <input  class="form-control product-available_quentity" type="hidden" >
 
                 </td>
                                             <td class="align-middle text-center">${index}</td>
@@ -1493,12 +1494,19 @@ $("#getinvoiceupdate").click(function(e) {
                                             <td class="text-start">
                                                 <input type="text" class="form-control product-name" name="products[${index}][product_name]"  value="${item.product_name}" >
                                             </td>
+                                                                        <td><input type="text" class="form-control product-cost" readonly value="-"></td>
+
                                             <td><input type="text" name="products[${index}][price-tax]" class="form-control product-price-tax" value="${priceWithTax.toFixed(2)}" onchange="calculateTotals_with_tax()"></td>
                                             <td><input type="text" name="products[${index}][price]" class="form-control product-price" value="${unitPrice.toFixed(2)}" onchange="calculateTotals()"></td>
                                             <td><input type="text" name="products[${index}][quentity]" class="form-control product-quentity" value="${quantity}" oninput="calculateTotals()"></td>
                                             <td><input type="text" name="products[${index}][totalprice_withodtax]" class="form-control product-totalprice_withodtax" value="${(unitPrice * quantity).toFixed(2)}" readonly></td>
                                             <td><input type="text" name="products[${index}][discound]" class="form-control product-discound" value="${discount}" onchange="calculateTotals()"></td>
+                                            <td><select class="form-control tax-select" oninput='calculateTotals()' name="products[${index}][tax_rate]">
+                            <option value="0.15">15%</option>
+                                <option value="0">{{ __('home.Exempt') }}</option>
+                            </select></td>
                                             <td><input type="text" name="products[${index}][tax]" class="form-control product-tax" value="${taxAmount.toFixed(2)}" readonly></td>
+                                            
                                             <td><input type="text" class="form-control product-total" value="${((unitPrice * quantity) + taxAmount - discount).toFixed(2)}" readonly></td>
                                             <td><button type="button" class="btn btn-danger btn-sm" onclick="removeRow(this)">{{ __('home.delete') }}</button></td>
                                         </tr>`;

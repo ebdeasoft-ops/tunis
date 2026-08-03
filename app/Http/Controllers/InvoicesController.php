@@ -3914,7 +3914,7 @@ if ($quoute->branchs_id != $branchId1) {
        sales::where('invoice_id', $invoiceNumber)->update(['quantity' => 0]);
 
         // $customer = customers::find($Invoice->customer_id);
-        $financial_accounts=financial_accounts::where('orginal_type',1)->where('orginal_id',$Invoice->customer_id )->first();
+        $financial_accounts=customers::find($Invoice->customer_id );
 
         return [
             "invoicetotal_price" => $Invoice->Price - $Invoice->discount,

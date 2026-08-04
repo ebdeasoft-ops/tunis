@@ -6,7 +6,7 @@
   @media print {
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
-
+    
     @page {
       size: A4;
       margin: 5mm 8mm;
@@ -22,7 +22,7 @@
     body * {
       visibility: visible;
     }
-
+    
     #print, #print * {
       visibility: visible;
     }
@@ -157,7 +157,7 @@
   <div class="col-md-12 col-xl-12">
     <div class="main-content-body-invoice" id="print">
       <div class="card card-invoice">
-
+        
         <!-- زر الطباعة -->
         <div class="row mb-4" style="display: flex; justify-content: flex-end; width: 100%;">
             <button class="btn btn-dark px-4 py-2 shadow-sm" id="print_Button" onclick="printDiv()">
@@ -173,7 +173,7 @@
               <tr>
                 <th style="border: none; background: transparent !important;">
                   <div class="invoice-header-box" style="display: flex; justify-content: space-between; width: 100%; align-items: center;" dir="ltr">
-
+                    
                     <!-- بيانات الشركة بالإنجليزية -->
                     <div style="width: 33%; text-align: left; font-size: 12px; line-height: 1.4;">
                       <span style="font-size: 15px; font-weight: bold; color: #111;">{{ Nameen ?? '' }}</span>
@@ -219,11 +219,11 @@
             <tbody class="report-content">
               <tr>
                 <td style="border: none; padding-top: 10px;">
-
+                  
                   @if($offer_price_to_customer)
                   <!-- تفاصيل العميل والتسعيرة -->
                   <div style="display: flex; justify-content: space-between; gap: 15px; margin-bottom: 20px;">
-
+                    
                     <!-- جدول بيانات العميل -->
                     <table class="table-custom table-light-custom text-center" style="width: 49%;">
                       <thead>
@@ -274,13 +274,13 @@
                         </tr>
                       </thead>
                       <tbody>
-                        <?php
+                        <?php 
                         $i = 0;
                         $totalpricePurchases = 0;
                         $totaldiscount = 0;
                         ?>
                         @foreach ($itemsRequest as $product)
-                          <?php
+                          <?php 
                           $i++;
                           $lineTotal = ($product->PriceWithoudTax * $product->quantity);
                           $totalpricePurchases += $lineTotal;
@@ -305,7 +305,7 @@
 
                   <!-- جدول الإجماليات النهائية -->
                   <div style="margin-bottom: 20px;">
-                    <?php $avt = App\Models\Avt::find(1);
+                    <?php $avt = App\Models\Avt::find(1); 
                           $subTotalAfterDisc = round($totalpricePurchases, 2) - round($totaldiscount + ($offer_price_to_customer->discount ?? 0), 2);
                           $taxValue = round($subTotalAfterDisc * ($avt->AVT ?? 0), 2);
                           $netTotalWithTax = round($subTotalAfterDisc + $taxValue, 2);
@@ -341,8 +341,8 @@
 
                   <!-- معلومات الحساب البنكي -->
                   <div class="bank-box mb-3">
-                    <strong>البنك:</strong> {{ bankname ?? 'غير متوفر' }} &nbsp;|&nbsp;
-                    <strong>رقم الحساب:</strong> <span dir="ltr">{{ bank_acount_number ?? '---' }}</span> &nbsp;|&nbsp;
+                    <strong>البنك:</strong> {{ bankname ?? 'غير متوفر' }} &nbsp;|&nbsp; 
+                    <strong>رقم الحساب:</strong> <span dir="ltr">{{ bank_acount_number ?? '---' }}</span> &nbsp;|&nbsp; 
                     <strong>الآيبان (IBAN):</strong> <span dir="ltr">{{ bank_acount_iban ?? '---' }}</span>
                   </div>
                   @endif

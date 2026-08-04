@@ -88,14 +88,14 @@
 
 
 
-    
+
       <?php
       $logo = camplogo;
       ?>
 
 
 
-   
+
     <table>
 
 
@@ -107,10 +107,10 @@
           <center><span class="tx-14 thick"> {{Taxen}} </span> </center>
 
         </td>
-      <td style="width:35%"><center>          
+      <td style="width:35%"><center>
         <img src="{{ public_path('assets/img/brand').'/'.$logo }}"
       style="width: 150px; height: 100px;">
-</center></td>  
+</center></td>
 
         <td style="width:30%">
         <center><span style="font-size:12px">{{Namear}}</span> </center>
@@ -120,10 +120,10 @@
 
         </td>
 
-     
+
       </tr>
 
-    
+
     </table>
   </div><!-- invoice-header -->
 
@@ -142,7 +142,7 @@
 
    <table dir="rtl" style="border:2px solid rgba(0,0,0,.3);width:100%; border-radius: 5px;" class="table double" >
               <tbody>
-            
+
 
 
 
@@ -161,22 +161,22 @@
                                         $pay = __('home.Partition of the amount');
                                     }
                                     ?>
-                                    
+
                                            <tr>
-                                                            
+
 
                   <td class="tx-16">{{ $data['invoiceData']->id}}</td>
                                     <td class="tx-16"> INVOICE NUMBER<br>رقم الفاتورة</td>
 
 
-              
+
                   <td class="tx-16">{{$data['invoiceData']->branch->name}}</td>
                                     <td class="tx-16"> BRANCH NAME<br>اسم الفرع </td>
 
 
                 </tr>
                                         <tr>
-                                        
+
 
                   <td class="tx-16">{{$pay}}</td>
                   <td class="tx-16">PAYMENT METHOD <br>طريقة الدفع </td>
@@ -185,13 +185,13 @@
 
 
 
-              
-               
+
+
                   <td class="tx-16">{{ $data['invoiceData']->created_at}}</td>
                                     <td class="tx-16"> INVOICE DATE<br>تاريخ الفاتورة </td>
 
-                               </tr> 
-             
+                               </tr>
+
               </tbody>
 
             </table>
@@ -200,7 +200,7 @@
 <table style="width:100%; border: 1px solid black;">
 
     <tr class="heading">
-    
+
 <br>
       <td>
 
@@ -219,7 +219,7 @@
 
 
                                 </tr>
-                                
+
                                  <tr   >
                                     <td class="tx-16">{{Taxen}}</td>
                                                                         <td class="tx-16">TAX NUMBER الرقم الضريبي </td>
@@ -228,28 +228,28 @@
 
                                                                         <td class="tx-16">TAX NUMBER الرقم الضريبي </td>
 
-                                                     
+
                                     </tr>
-                              
+
                                    <tr>
                                       <td class="tx-16">الرياض</td>
                                                                             <td class="tx-16">المدينة CITY  </td>
-                                                                            
-                                                                            
+
+
                                                                                   @if($data['invoiceData']->customer->address=='-')
                                       <td class="tx-16">{{$data['invoiceData']->customer->id==1?'-':$data['invoiceData']->customer->phone}}</td>
                                                                                 <td class="tx-16">رقم الجوال PHONE  </td>
 
                                       @else
-                                      
-                                      
-                                      
-                                      
+
+
+
+
 
                                                                             <td class="tx-16">{{$data['invoiceData']->customer->id==1?'-':$data['invoiceData']->customer->address}}</td>
 
                                                                             <td class="tx-16">المدينة CITY  </td>
-                                                                            
+
                                                                             @endif
 
                                 </tr>
@@ -282,8 +282,8 @@
                                 </tr>
                                   <tr>
                                       <td class="tx-16">4402 </td>
-                                      
-                                      
+
+
                                                                             <td class="tx-16"> رقم المبني   BUILDING  NUMBER </td>
 
                                                                             <td class="tx-16">{{$data['invoiceData']->customer->id==1?'-':$data['invoiceData']->customer->building_number}}</td>
@@ -292,21 +292,21 @@
 
                                 </tr>
                             </thead>
-                           
+
                         </table>
 
-           
+
       </td>
     </tr>
 
 
     </table>
- 
 
 
 
- 
-  
+
+
+
   <div dir="ltr">
     <table class="border" style="border: 1px solid black;
 ">
@@ -347,7 +347,7 @@
         <td style=" border: 1px solid black;" class="wd-center" dir="rtl">{{$product->productData->Product_Code}}</td>
 
           <td style=" border: 1px solid black;" class="wd-10p">{{$i}}</td>
-         
+
         </tr>
         @endif
         @endforeach
@@ -387,7 +387,7 @@
                        return pack("H*", sprintf("%02X", $value));
                    }
                   $invoice=App\Models\invoices::find( $data['invoiceData']->id);
-                  $price=$invoice->Price;
+                  $price=$invoice->cashamount+$invoice->Bank_transfer+$invoice->bankamount+$invoice->creaditamount;
                 $avt = App\Models\Avt::find(1);
 
                   $price_befor_tax=$price*100/(100+($avt->AVT*100));
@@ -395,10 +395,13 @@
                   $invoicetotal_price = $price_befor_tax;
                   $invoicetotal_discount = $invoice->discount+$discountreturn;
 
+
+
+
                    $sellerName = sallerQrCode;
                    $varNumber = TaxQrCode;
                    $time =$invoice->created_at;
-                   $issue_time=substr($time, 11);
+$issue_time=substr($time, 11);
                    $issue_date=substr($time, 0, 10);
                    $time = (string)$issue_date . 'T' . (string)$issue_time;
 
@@ -414,7 +417,7 @@
                    $total  = $HexTotal . $total;
                    $HexVATN = ConvertToHEX(5) . ConvertToHEX(strlen($tax));
                    $VATN  = $HexVATN . $tax;
-                 $empty='';
+      $empty='';
                  $Hexempty = ConvertToHEX(6) . ConvertToHEX(strlen($empty));
                  $empty6 = $Hexempty . $empty;
                  $Hexempty = ConvertToHEX(7) . ConvertToHEX(strlen($empty));
@@ -423,23 +426,23 @@
                  $empty8 = $Hexempty . $empty;
                  $Hexempty = ConvertToHEX(9) . ConvertToHEX(strlen($empty));
                  $empty9 = $Hexempty . $empty;
-                 $tobase   = $seller . $vat . $time . $total . $VATN. $empty6. $empty7. $empty8. $empty9; 
-                                 
+                 $tobase   = $seller . $vat . $time . $total . $VATN. $empty6. $empty7. $empty8. $empty9;
+
                    $dataforQRcode =  base64_encode($tobase);
                   ?>
-         <center >  <p class="double"> يمكن ارجاع القطع المباعة او استبدالها خلال 7 ايام من تاريخ الشراء وتكون بحالتها المباعة و 
+         <center >  <p class="double"> يمكن ارجاع القطع المباعة او استبدالها خلال 7 ايام من تاريخ الشراء وتكون بحالتها المباعة و
                                                        <br>القطع الكهربائية لا ترد ولا تستبدل</P></center>
         <div class="row"  dir=rtl >
-                                                   
+
 
                            <table style="width:110%" class="table text-md-nowrap mb-0 table-striped invoice-table text-center">
 <tr>
-    
-    
+
+
 
     <td>
-        
-        
+
+
           <table style="border:2px solid rgba(0,0,0,.3);width:100%" class="table text-md-nowrap mb-0 table-striped invoice-table text-center">
 
 
@@ -462,7 +465,7 @@
                      </tr>
                      <tr>
 
-                     
+
                         <td class="tx-16">{{number_format(round($invoicetotal_addedvalue,2), 2, '.', '')}}</td>
                            <td class="tx-16">ضريبة القيمة المضافة({{$avt->AVT*100}}%)<br>VALUE ADDED TAX ({{$avt->AVT*100}}%)
                         </td>
@@ -472,7 +475,7 @@
 
                      <tr>
                         <td class="tx-16">{{number_format(round($invoicetotal_addedvalue+$invoicetotal_price,2), 2, '.', '')}}
-                       
+
                         </td>
                         <td class="tx-16">الاجمالي الكلي -NET TOTAL</td>
 
@@ -483,61 +486,36 @@
                </table>
     </td>
         <td>
-                       
+
           @if(Auth()->user()->branchs_id==1)
 
-       
-           <center >  <p  class="double">   مصرف الراجحي <br>Account Number : 215000010006086015217  <br>  IBAN Number : SA9880000215608016015217</P></center>
-
+  <center >  <p  class="double">  {{bankname}} <br>Account Number : {{bank_acount_number}}  <br>  IBAN Number : {{bank_acount_iban}}</P></center>
 
             @endif
-  
-        @if(Auth()->user()->branchs_id==11)
 
-       
-           <center >  <p  class="double">   مصرف الراجحي <br>Account Number : 215000010006086195142  <br>  IBAN Number : SA7780000215608016195142</P></center>
-
-
-
-            @endif
-            @if(Auth()->user()->branchs_id==10)
-
-          
-           <center >  <p  class="double">   مصرف الراجحي <br>Account Number : 215000010006086195159  <br>  IBAN Number : SA0680000215608016195159</P></center>
-
-            @endif
-            
-                @if(Auth()->user()->branchs_id==9)
-
-     
-           <center >  <p  class="double">   مصرف الراجحي <br>Account Number : 215000010006086015217  <br>  IBAN Number : SA9880000215608016015217</P></center>
-
-
-            @endif
- 
     </td>
-    
+
     <td>
-        
-        
+
+
 <img src="data:image/png;base64,{!! base64_encode(QrCode::size(110)->generate( $dataforQRcode) )!!}">
 
-        
+
     </td>
-    
+
 </tr>
 </table>
                                      <div>
 
 
            </div>
-           
+
         <div>
 
-            
+
         </div>
         </div>
-             
+
  </div>
   <br>
 
@@ -547,7 +525,7 @@
 
   </div>
   <br>
-<span style="color:black"> 
+<span style="color:black">
 <center>
 
 </center>
@@ -561,9 +539,9 @@
 
   </div>
   </div>
-  <div style="  position: fixed;     
-       text-align: center;    
-       bottom: 0px; 
+  <div style="  position: fixed;
+       text-align: center;
+       bottom: 0px;
        width: 100%;">
 
     @if(Auth()->user()->branchs_id==1)

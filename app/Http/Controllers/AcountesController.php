@@ -411,7 +411,7 @@ class AcountesController extends Controller
         $data = credittransactions::where('branchs_id',Auth()->user()->branchs_id)
             ->where('note', 'LIKE', '%' . 'سند قبض' . '%')
             ->where('decument_id', 0)
-            ->orderby('id', 'desc')->paginate(3);
+            ->orderby('id', 'desc')->where('save', 1)->paginate(3);
 
         return view('sant_abd_ajax', compact('data'));
     }

@@ -466,19 +466,19 @@ public function budgetsheet(Request $request)
 
     public function update_Serf_Decument(Request $request, $id)
     {
-        // 1. العثور على السجل الأساسي لجلب رقم السند المشترك
+        
+    // 1. العثور على السجل الأساسي لجلب رقم السند المشترك
         $main_entry = credittransactions::findOrFail($id);
         $serf_count = $main_entry->sent_serf_count;
 
         return \DB::transaction(function () use ($request, $serf_count) {
             $payment_name = $request->pay_method_type;
 
-            // 2. عكس الأرصدة السابقة قبل الحذف (اختياري حسب منطق نظامك)
+            // 2. عكس الأرصدة السابقة قبل الحذف
             $old_entries = credittransactions::where('sent_serf_count', $serf_count)->get();
             foreach ($old_entries as $old) {
                 $acc = financial_accounts::find($old->customer_id);
                 if ($acc) {
-                    // إذا كان القيد القديم مديناً نطرح من المدين، وإذا كان دائناً نطرح من الدائن
                     if ($old->debtor > 0) {
                         $acc->decrement('debtor_current', $old->debtor);
                         $acc->decrement('current_balance', $old->debtor);
@@ -495,31 +495,35 @@ public function budgetsheet(Request $request)
             // 4. تجهيز بيانات حساب الدفع الجديد (الخزينة المختارة من الأعلى)
             $payment_id = $request->payment_account_id;
             $main_payment_acc = financial_accounts::findOrFail($payment_id);
-            $total_amount = 0;
+            $total_amount = 0; // سيحمل إجمالي المبلغ الشامل للضريبة
 
             // 5. إنشاء القيود الجديدة لكل سطر في الجدول
             foreach ($request->items as $item) {
-                $amount = $item['amount'];
-                $total_amount += $amount;
+                $amount_inclusive = $item['amount']; // المبلغ الشامل
+                $total_amount += $amount_inclusive;
+                
                 $tax_rate = $item['tax_rate'];
-                $tax_val = ($tax_rate > 0) ? ($amount - ($amount / (1 + $tax_rate))) : 0;
+                $tax_val = ($tax_rate > 0) ? ($amount_inclusive - ($amount_inclusive / (1 + $tax_rate))) : 0;
+                
+                // حساب المبلغ الصافي للمصروف (بدون ضريبة)
+                $amount_exclusive = $amount_inclusive - $tax_val;
 
-                // أ- قيد الحساب المستلم (مدين)
+                // أ- قيد الحساب المستلم (مدين) - نسجل الصافي فقط
                 $target_acc = financial_accounts::find($item['client_account_id']);
-                $target_acc->increment('debtor_current', $amount);
-                $target_acc->increment('current_balance', $amount);
+                $target_acc->increment('debtor_current', $amount_exclusive);
+                $target_acc->increment('current_balance', $amount_exclusive);
 
                 credittransactions::create([
                     'user_id' => auth()->id(),
                     'customer_id' => $item['client_account_id'],
-                    'recive_amount' => $amount,
+                    'recive_amount' => $amount_exclusive,
                     'branchs_id' => $main_payment_acc->branchs_id,
                     'pay_method' => $main_payment_acc->name,
                     'Pay_Method_Name' => $payment_name,
-                    'note' => $item['notes'] . ' | سند صرف رقم: ' . $serf_count,
+                    'note' => $item['notes'] . ' | سند صرف رقم: '  . $serf_count,
                     'date_export' => $request->date,
                     'created_at' => $request->date . ' ' . now()->format('H:i:s'),
-                    'debtor' => $amount,
+                    'debtor' => $amount_exclusive,
                     'creditor' => 0,
                     'type_decument' => 2,
                     'sent_serf_count' => $serf_count,
@@ -528,57 +532,56 @@ public function budgetsheet(Request $request)
                     'orginal_type' => $target_acc->orginal_type ?? 0,
                     'orginal_id' => $target_acc->orginal_id ?? 0,
                 ]);
+                
+                if($target_acc->orginal_type == 3){
+                    $reason_data = Expenses_reasons::find($target_acc->orginal_id);
 
-                                           if($target_acc->orginal_type==3){
-
-    $reason_data=Expenses_reasons::find($target_acc->orginal_id);
-
-
-  $expense=  expenses::create([
-            'user_id'=>Auth()->user()->id,
-            'Pay_Method_Name'=>$request->pay_method_type,
-            'branchs_id' =>  $main_payment_acc->branchs_id,
-            'Reasonforspendingmoney'=>$reason_data->expenses_reason,
-            'reasonId_id'=>$target_acc->orginal_id,
-             'notes' => $item['notes'] . ' | تعديل سند رقم: ' . $serf_count,
-            'expensesAvt'=>$reason_data->expensesAvt ,
-                    'created_at' => $request->date . ' ' . now()->format('H:i:s'),
-            'date_export'  =>  $request->date,
-            'updated_at'  =>  \Carbon\Carbon::now()->addHours(3),
-            'Theـamountـpaid'=>$amount,
-            'type'=>2,
-
+                    $expense = expenses::create([
+                        'user_id' => Auth()->user()->id,
+                        'Pay_Method_Name' => $request->pay_method_type,
+                        'branchs_id' => $main_payment_acc->branchs_id,
+                        'Reasonforspendingmoney' => $reason_data->expenses_reason,
+                        'reasonId_id' => $target_acc->orginal_id,
+                        'notes' => $item['notes'] . ' | تعديل سند رقم: ' . $serf_count,
+                        'expensesAvt' => $reason_data->expensesAvt,
+                        'created_at' => $request->date . ' ' . now()->format('H:i:s'),
+                        'date_export' => $request->date,
+                        'updated_at' => \Carbon\Carbon::now()->addHours(3),
+                        'Theـamountـpaid' => $amount_exclusive, // المصروف يسجل بالصافي أيضاً
+                        'type' => 2,
                     ]);
                 }
 
-
                 // ب- قيد الضريبة (إن وجد)
                 if ($tax_val > 0) {
+                    $tax_account = financial_accounts::where('parent_account_number', 102)->where('branchs_id', $main_payment_acc->branchs_id)->first();
 
-                   $financial_accounts= financial_accounts::where('parent_account_number',102)->where('branchs_id', $main_payment_acc->branchs_id)->first();
+                    if ($tax_account) {
+                        // تحديث رصيد حساب الضريبة
+                        $tax_account->increment('debtor_current', $tax_val);
+                        $tax_account->increment('current_balance', $tax_val);
+                    }
 
                     credittransactions::create([
                         'user_id' => auth()->id(),
-                        'customer_id' => $financial_accounts->id,
+                        'customer_id' => $tax_account ? $tax_account->id : null,
                         'recive_amount' => $tax_val,
                         'branchs_id' => $main_payment_acc->branchs_id,
                         'date_export' => $request->date,
                         'debtor' => $tax_val,
                         'creditor' => 0,
                         'created_at' => $request->date . ' ' . now()->format('H:i:s'),
-
                         'Pay_Method_Name' => $payment_name,
                         'pay_method' => $main_payment_acc->name,
                         'vat' => 1,
-                        'note' => $item['notes'] . '|  سند صرف  | ' . ' : ' . (string) $serf_count,
+                        'note' => $item['notes'] . '| سند صرف | : ' . (string)$serf_count,
                         'sent_serf_count' => $serf_count,
-
-
+                        'orginal_id' => $tax_account->orginal_id ?? 0,
                     ]);
                 }
             }
 
-            // 6. قيد الخزينة النهائي (دائن بالإجمالي)
+            // 6. قيد الخزينة النهائي (دائن بالإجمالي الشامل)
             $main_payment_acc->increment('creditor_current', $total_amount);
             $main_payment_acc->decrement('current_balance', $total_amount);
 
@@ -589,19 +592,20 @@ public function budgetsheet(Request $request)
                 'branchs_id' => $main_payment_acc->branchs_id,
                 'pay_method' => $main_payment_acc->name,
                 'Pay_Method_Name' => $payment_name,
-                'note' => '|  سند صرف  | ' . ' : ' . $serf_count,
+                'note' => '| سند صرف | : ' . $serf_count,
                 'date_export' => $request->date,
                 'debtor' => 0,
                 'creditor' => $total_amount,
                 'type_decument' => 2,
                 'sent_serf_count' => $serf_count,
                 'created_at' => $request->date . ' ' . now()->format('H:i:s'),
-
             ]);
 
             return response()->json(['status' => 'success', 'message' => __('home.updated_successfully')]);
         });
-    }
+        
+        
+        }
     public function store_Serf_Decument(Request $request)
     {
         app()->setLocale(LaravelLocalization::getCurrentLocale());
@@ -634,106 +638,100 @@ public function budgetsheet(Request $request)
         $total_document_amount = 0; // متغيّر لتجميع إجمالي السند
 
         // 4. الدوران على أسطر السندات (الجانب المدين)
-        foreach ($request->items as $item) {
-            $clientId = $item['client_account_id'];
-            $amount_inclusive = $item['amount'];
-            $tax_rate = $item['tax_rate'];
-            $notes = $item['notes'];
+        foreach ($request->items as $item) {$clientId = $item['client_account_id'];
+        $amount_inclusive = $item['amount']; // 115000
+        $tax_rate = $item['tax_rate']; // e.g. 0.15
+        $notes = $item['notes'];
 
-            $total_document_amount += $amount_inclusive; // إضافة المبلغ للمجموع الكلي
+        $total_document_amount += $amount_inclusive; 
 
-            $tax_value = ($tax_rate > 0) ? ($amount_inclusive - ($amount_inclusive / (1 + $tax_rate))) : 0;
-            $target_acc = financial_accounts::find($clientId);
+        // 1. حساب قيمة الضريبة
+        $tax_value = ($tax_rate > 0) ? ($amount_inclusive - ($amount_inclusive / (1 + $tax_rate))) : 0;
+        
+        // 2. حساب المبلغ الصافي (بدون ضريبة) لتسجيله كمصروف حقيقي
+        $amount_exclusive = $amount_inclusive - $tax_value;
 
-            // --- أ: تحديث الحساب المستلم (مدين) ---
-            if ($target_acc->account_type == 1 || $target_acc->account_type == 4) {
-                $target_acc->increment('current_balance', $amount_inclusive);
-                $target_acc->increment('debtor_current', $amount_inclusive);
-            } else {
-                $target_acc->decrement('current_balance', $amount_inclusive);
-                $target_acc->increment('debtor_current', $amount_inclusive);
-            }
+        $target_acc = financial_accounts::find($clientId);
 
-            $transaction = credittransactions::create([
-                'attachments' => $the_file_path,
-                'user_id' => auth()->id(),
-                'customer_id' => $clientId,
-                'recive_amount' => $amount_inclusive,
-                'branchs_id' => $branch_id,
-                'pay_method' => $payment_name,
-                'note' => $notes . ' | سند صرف رقم: ' . $sent_serf_count,
-                'currentblance' => $target_acc->current_balance,
-                'Pay_Method_Name' => $payment_name,
-                'date_export' => $request->date,
-                'debtor' => $amount_inclusive,
-                'creditor' => 0,
-                'type_decument' => 2,
-                'sent_serf_count' => $sent_serf_count,
-                'type' => $pay_method_type,
-                'cost_center' => $item['cost_center'],
-                'orginal_type' => $target_acc->orginal_type ?? 0,
-                'orginal_id' => $target_acc->orginal_id ?? 0,
-                'created_at' => $request->date . ' ' . now()->format('H:i:s'),
+        // --- أ: تحديث الحساب المستلم (مدين) بالمبلغ الشامل ---
+        if ($target_acc->account_type == 1 || $target_acc->account_type == 4) {
+            $target_acc->increment('current_balance', $amount_inclusive);
+            $target_acc->increment('debtor_current', $amount_inclusive);
+        } else {
+            $target_acc->decrement('current_balance', $amount_inclusive);
+            $target_acc->increment('debtor_current', $amount_inclusive);
+        }
 
-
-            ]);
-                           if($target_acc->orginal_type==3){
-
-    $reason_data=Expenses_reasons::find($target_acc->orginal_id);
-
-
-  $expense=  expenses::create([
-            'attachments'=>$the_file_path,
-            'user_id'=>Auth()->user()->id,
-            'Pay_Method_Name'=>$pay_method_type,
-            'branchs_id' =>  $branch_id,
-            'Reasonforspendingmoney'=>$reason_data->expenses_reason,
-            'reasonId_id'=>$target_acc->orginal_id,
-            'notes' => $notes . ' | سند صرف رقم: ' . $sent_serf_count,
-            'expensesAvt'=>$reason_data->expensesAvt ,
-            'date_export'  =>  $request->date,
-            'updated_at'  =>  \Carbon\Carbon::now()->addHours(3),
-            'Theـamountـpaid'=>$amount_inclusive,
-            'type'=>2,
+        // --- تسسجيل الحركة الأساسية للمصروف (بالقيمة الصافية بدون ضريبة) ---
+        $transaction = credittransactions::create([
+            'attachments' => $the_file_path,
+            'user_id' => auth()->id(),
+            'customer_id' => $clientId,
+            'recive_amount' => $amount_exclusive, // تم تعديلها لتكون الصافي المحاسبي
+            'branchs_id' => $branch_id,
+            'pay_method' => $payment_name,
+            'note' => $notes . ' | سند صرف رقم: ' . $sent_serf_count,
+            'currentblance' => $target_acc->current_balance,
+            'Pay_Method_Name' => $payment_name,
+            'date_export' => $request->date,
+            'debtor' => $amount_exclusive, // الصافي مدين
+            'creditor' => 0,
+            'type_decument' => 2,
+            'sent_serf_count' => $sent_serf_count,
+            'type' => $pay_method_type,
+            'cost_center' => $item['cost_center'],
+            'orginal_type' => $target_acc->orginal_type ?? 0,
+            'orginal_id' => $target_acc->orginal_id ?? 0,
             'created_at' => $request->date . ' ' . now()->format('H:i:s'),
+        ]);
 
+        if($target_acc->orginal_type == 3){
+            $reason_data = Expenses_reasons::find($target_acc->orginal_id);
 
-                ]);
-            }
+            $expense = expenses::create([
+                'attachments' => $the_file_path,
+                'user_id' => Auth()->user()->id,
+                'Pay_Method_Name' => $pay_method_type,
+                'branchs_id' => $branch_id,
+                'Reasonforspendingmoney' => $reason_data->expenses_reason,
+                'reasonId_id' => $target_acc->orginal_id,
+                'notes' => $notes . ' | سند صرف رقم: ' . $sent_serf_count,
+                'expensesAvt' => $reason_data->expensesAvt,
+                'date_export' => $request->date,
+                'updated_at' => \Carbon\Carbon::now()->addHours(3),
+                'Theـamountـpaid' => $amount_exclusive, // تسجيل المصروف بالصافي
+                'type' => 2,
+                'created_at' => $request->date . ' ' . now()->format('H:i:s'),
+            ]);
+        }
 
-            // --- ب: معالجة الضريبة لكل سطر ---
-            if ($tax_value > 0) {
+        // --- ب: معالجة الضريبة لكل سطر (تُسجل كمدين أيضاً لحساب ضريبة القيمة المضافة المدخلة) ---
+        if ($tax_value > 0) {
+            $financial_accounts = financial_accounts::where('parent_account_number', 102)->where('branchs_id', $main_payment_acc->branchs_id)->first();
 
-                $financial_accounts = financial_accounts::where('parent_account_number', 102)->where('branchs_id', $main_payment_acc->branchs_id)->first();
-
-                credittransactions::create([
-                    'sent_serf_count' => $sent_serf_count,
-
-                    'user_id' => auth()->id(),
-                    'customer_id' => $financial_accounts->id,
-                    'recive_amount' => $tax_value,
-                    'branchs_id' => $main_payment_acc->branchs_id,
-                    'note' => $notes . '|  سند صرف  | ' . ' : ' . (string) $sent_serf_count,
-                    'date_export' => $request->date,
-                    'debtor' => $tax_value,
-                    'creditor' => 0,
-                    'Pay_Method_Name' => $payment_name,
-                    'pay_method' => $main_payment_acc->name,
-                    'vat' => 1,
-                    'orginal_id' => $financial_accounts->orginal_id ?? 0,
-                    'created_at' => $request->date . ' ' . now()->format('H:i:s'),
+            credittransactions::create([
                 'sent_serf_count' => $sent_serf_count,
+                'user_id' => auth()->id(),
+                'customer_id' => $financial_accounts->id,
+                'recive_amount' => $tax_value,
+                'branchs_id' => $main_payment_acc->branchs_id,
+                'note' => $notes . '| ضريبة سند صرف | : ' . (string) $sent_serf_count,
+                'date_export' => $request->date,
+                'debtor' => $tax_value, // قيمة الضريبة مدينة
+                'creditor' => 0,
+                'Pay_Method_Name' => $payment_name,
+                'pay_method' => $main_payment_acc->name,
+                'vat' => 1,
+                'orginal_id' => $financial_accounts->orginal_id ?? 0,
+                'created_at' => $request->date . ' ' . now()->format('H:i:s'),
+            ]);
+        }
 
-
-
-
-                ]);
-            }
-
-            $all_transactions_data[] = [
-                'name' => $target_acc->name,
-                'amount' => $amount_inclusive
-            ];
+        $all_transactions_data[] = [
+            'name' => $target_account_name ?? $target_acc->name,
+            'amount' => $amount_inclusive
+        ];
+        
         }
 
         // --- ج: تحديث حساب الخزينة/البنك (مرة واحدة بإجمالي المبلغ) ---

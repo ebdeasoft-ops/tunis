@@ -4273,7 +4273,7 @@ return response("<div class='alert alert-danger'>الفاتورة غير موج�
 
         $branchId = auth()->user()->branchs_id;
         $userId = auth()->user()->id;
-        $now = Carbon::now();
+        $now =$invoice->created_at;
 
         // ✔️ الإصلاح: جلب كائن الخزنة واستخراج الـ ID الرقمي مباشرة لمنع انهيار السيرفر
         $cashAccountObj = financial_accounts::where('parent_account_number', 5)
@@ -4303,6 +4303,16 @@ return response("<div class='alert alert-danger'>الفاتورة غير موج�
                 ->where('note', 'فاتورة مبيعات رقم :' . $invoiceId)
                 ->where('customer_id', $cashAccountId)
                 ->update(['save' => 0, 'recive_amount' => 0, 'debtor' => 0, 'creditor' => 0]);
+
+                   $customerFinancialAccount = financial_accounts::where('orginal_type', 1)
+                ->where('orginal_id', $invoice->customer_id)
+                ->first();
+                      // تصفير القيود القديمة للكاش
+            DB::table('credittransactions')
+                ->where('note', 'فاتورة مبيعات رقم :' . $invoiceId)
+                ->where('customer_id', $customerFinancialAccount->id)
+                ->update(['save' => 0, 'recive_amount' => 0, 'debtor' => 0, 'creditor' => 0]);
+
         }
 
         // 2. عكس أثر البنك/الشبكة القديم وتصفيره
@@ -4321,6 +4331,16 @@ return response("<div class='alert alert-danger'>الفاتورة غير موج�
                     ->where('note', 'فاتورة مبيعات رقم :' . $invoiceId)
                     ->where('customer_id', $oldTargetBankId)
                     ->update(['save' => 0, 'recive_amount' => 0, 'debtor' => 0, 'creditor' => 0]);
+
+                                  $customerFinancialAccount = financial_accounts::where('orginal_type', 1)
+                ->where('orginal_id', $invoice->customer_id)
+                ->first();
+                      // تصفير القيود القديمة للكاش
+            DB::table('credittransactions')
+                ->where('note', 'فاتورة مبيعات رقم :' . $invoiceId)
+                ->where('customer_id', $customerFinancialAccount->id)
+                ->update(['save' => 0, 'recive_amount' => 0, 'debtor' => 0, 'creditor' => 0]);
+
             }
         }
 
@@ -4348,7 +4368,7 @@ return response("<div class='alert alert-danger'>الفاتورة غير موج�
                         'branchs_id' => $branchId,
                         'pay_method' => 'update',
                         'Pay_Method_Name' => 'update',
-                        'updated_at' => Carbon::now()->addHours(3),
+                        'updated_at' =>$now,
                         'orginal_id' => 0,
                         'creditor' => 0,
                         'debtor' => 0,

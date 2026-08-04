@@ -23,9 +23,8 @@
                 @foreach ($data as $product)
                     @php
                         // حساب الإجمالي مع الضريبة
-                        $netPrice = $product->Price - $product->discount;
-                        $taxAmount = $netPrice * $saleavt;
-                        $totalWithTax = round($netPrice + $taxAmount, 2);
+                        $netPrice =  $product->cashamount+$product->Bank_transfer+$product->bankamount+$product->creaditamount;
+                        $totalWithTax = round($netPrice, 2);
                         
                         // تحديد نص طريقة الدفع
                         $payText = match($product->Pay) {

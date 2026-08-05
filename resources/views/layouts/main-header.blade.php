@@ -1,21 +1,24 @@
 <!-- main-header opened -->
-<div class="main-header sticky side-header nav nav-item">
-    <div class="container-fluid the-main">
-        <div class="main-header-left">
+<div class="main-header sticky side-header nav nav-item" style="background: #ffffff; box-shadow: 0 2px 10px rgba(0,0,0,0.06); border-bottom: 1px solid #f1f5f9;">
+    <div class="container-fluid the-main" style="display: flex; align-items: center; justify-content: space-between; padding: 0 15px; min-height: 70px;">
+        
+        <!-- القسم الأيمن (الشعار، زر القائمة، والروابط السريعة) -->
+        <div class="main-header-left" style="display: flex; align-items: center; gap: 15px;">
             <div class="responsive-logo">
-                <a href="https://ebdeasoft.com/"><img src="{{ URL::asset('assets/img/brand/logo.png') }}" class="logo-1" alt="logo"></a>
-                <a href="https://ebdeasoft.com/"><img src="{{ URL::asset('assets/img/brand/logo-white.png') }}" class="dark-logo-1" alt="logo"></a>
-                <a href="https://ebdeasoft.com/"><img src="{{ URL::asset('assets/img/brand/favicon.png') }}" class="logo-2" alt="logo"></a>
-                <a href="https://ebdeasoft.com/"><img src="{{ URL::asset('assets/img/brand/favicon.png') }}" class="dark-logo-2" alt="logo"></a>
+                <a href="https://ebdeasoft.com/"><img src="{{ URL::asset('assets/img/brand/logo.png') }}" class="logo-1" alt="logo" style="max-height: 40px;"></a>
+                <a href="https://ebdeasoft.com/"><img src="{{ URL::asset('assets/img/brand/logo-white.png') }}" class="dark-logo-1" alt="logo" style="max-height: 40px;"></a>
+                <a href="https://ebdeasoft.com/"><img src="{{ URL::asset('assets/img/brand/favicon.png') }}" class="logo-2" alt="logo" style="max-height: 30px;"></a>
+                <a href="https://ebdeasoft.com/"><img src="{{ URL::asset('assets/img/brand/favicon.png') }}" class="dark-logo-2" alt="logo" style="max-height: 30px;"></a>
             </div>
+            
             <div class="app-sidebar__toggle" data-toggle="sidebar">
-                <a class="open-toggle" href="#"><i class="header-icon fe fe-align-left"></i></a>
-                <a class="close-toggle" href="#"><i class="header-icons fe fe-x"></i></a>
+                <a class="open-toggle text-dark" href="#" style="font-size: 18px;"><i class="header-icon fe fe-align-left"></i></a>
+                <a class="close-toggle text-dark" href="#" style="font-size: 18px;"><i class="header-icons fe fe-x"></i></a>
             </div>
 
-            <!-- الروابط السريعة المباشرة في الهيدر العلوي بشكل احترافي -->
-            <div class="d-none d-lg-flex align-items-center mr-3">
-                <ul class="nav header-shortcut-nav">
+            <!-- الروابط السريعة المباشرة في الهيدر العلوي -->
+            <div class="d-none d-xl-flex align-items-center">
+                <ul class="nav header-shortcut-nav mb-0" style="display: flex; gap: 5px; list-style: none; padding: 0;">
                     @can('Sales products')
                     <li class="nav-item">
                         <a class="nav-link px-3 py-2" href="{{ url('/goToSale') }}">
@@ -48,20 +51,13 @@
                     </li>
                     @endcan
 
-                    @can('request price from supplier')
-                    <li class="nav-item">
-                        <a class="nav-link px-3 py-2" href="{{ url('/getproductsprice') }}">
-                            <i class="fas fa-tags ml-1 text-info"></i> {{ __('home.Requestـpricesـofـproducts') }}
-                        </a>
-                    </li>
-                    @endcan
                 </ul>
             </div>
         </div>
 
-        <div class="main-header-right">
+        <!-- القسم الأيسر (مجموعة أدوات التحكم متجاورة وبمسافات دقيقة) -->
+        <div class="main-header-right" style="display: flex; align-items: center;">
             @php
-            // تحديد بداية الشهر ونهاية اليوم الحالي
             $startOfMonth = \Carbon\Carbon::now()->startOfMonth();
             $endOfToday = \Carbon\Carbon::now()->endOfDay();
 
@@ -72,132 +68,154 @@
             ->count();
             @endphp
 
-            <div class="nav nav-item navbar-nav-right ml-auto align-items-center">
+            <!-- تم تغيير `ml-auto` وضبط الـ gap لجمع العناصر معاً بجانب بعضها بدون تباعد مزعج -->
+            <div class="nav nav-item navbar-nav-right align-items-center" style="display: flex; align-items: center; gap: 8px; margin-right: auto;">
 
-                <!-- زر تغيير اللغات الاحترافي -->
-                <ul class="links mb-0 list-unstyled">
-                    <li class="dropdown">
-                        <a href="#" class="trigger-drop main-a lang-a px-2">
-                            {{ LaravelLocalization::getCurrentLocaleName() == 'اللغة العربية' ? 'العربية' : LaravelLocalization::getCurrentLocaleName() }}
-                            <i class="arrow ml-1"></i>
+                <!-- زر تغيير اللغات الاحترافي والمحدث -->
+                <ul class="links mb-0 list-unstyled p-0 m-0">
+                    <li class="dropdown nav-item main-header-notification">
+                        <a href="#" class="new nav-link px-3 py-2 dropdown-toggle" data-toggle="dropdown"
+                            style="display: flex; align-items: center; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 30px; transition: all 0.3s ease; text-decoration: none;">
+                            
+                            <div class="rounded-circle d-flex align-items-center justify-content-center ml-2" style="width: 24px; height: 24px; background: rgba(0,77,68,0.1); min-width: 24px;">
+                                <i class="fas fa-globe text-success" style="font-size: 12px;"></i>
+                            </div>
+
+                            <span class="text-dark d-none d-md-inline" style="font-size: 12px; font-weight: 600;">
+                                {{ LaravelLocalization::getCurrentLocaleName() == 'اللغة العربية' ? 'العربية' : LaravelLocalization::getCurrentLocaleName() }}
+                            </span>
+                            
+                            <i class="fas fa-chevron-down text-muted mr-1" style="font-size: 9px;"></i>
                         </a>
-                        <ul class="drop shadow-sm border-0" style="margin-left: 20px; border-radius: 8px;">
+
+                        <div class="dropdown-menu shadow-lg border-0 p-2"
+                            style="width: 170px; border-radius: 12px; margin-top: 10px; left: 0 !important; right: auto !important; overflow: hidden;">
+                            <div class="px-3 py-1 mb-1 text-muted border-bottom" style="font-size: 11px; font-weight: bold;">
+                                اختر لغة العرض
+                            </div>
                             @foreach (LaravelLocalization::getSupportedLocales() as $localeCode => $properties)
-                            <li class="cont-a">
-                                <a class="lang-a choice" rel="alternate" hreflang="{{ $localeCode }}"
-                                    href="{{ LaravelLocalization::getLocalizedURL($localeCode, null, [], true) }}">
-                                    {{ $properties['native'] }}
+                                <a class="dropdown-item d-flex align-items-center justify-content-between px-3 py-2 rounded {{ LaravelLocalization::getCurrentLocale() == $localeCode ? 'active bg-light text-success font-weight-bold' : 'text-dark' }}"
+                                   rel="alternate" hreflang="{{ $localeCode }}"
+                                   href="{{ LaravelLocalization::getLocalizedURL($localeCode, null, [], true) }}"
+                                   style="font-size: 12px; transition: all 0.2s ease;">
+                                    <span>{{ $properties['native'] }}</span>
+                                    @if(LaravelLocalization::getCurrentLocale() == $localeCode)
+                                        <i class="fas fa-check text-success" style="font-size: 11px;"></i>
+                                    @endif
                                 </a>
-                            </li>
                             @endforeach
-                        </ul>
+                        </div>
                     </li>
                 </ul>
-
+&nbsp;
+&nbsp;
+&nbsp;
+&nbsp;
+&nbsp;
+&nbsp;
+&nbsp;
+&nbsp;
+&nbsp;
+&nbsp;
                 <!-- زر حالة الربط الضريبي ZATCA الاحترافي -->
-                <li class="dropdown nav-item main-header-notification list-unstyled mx-2">
+                <div class="dropdown nav-item main-header-notification list-unstyled m-0">
                     <a class="new nav-link px-3 py-2" href="#" data-toggle="dropdown"
-                        style="display: flex; align-items: center; background: linear-gradient(135deg, #004d44 0%, #00695c 100%); border-radius: 30px; transition: all 0.3s ease; box-shadow: 0 4px 10px rgba(0,77,68,0.25);">
+                        style="display: flex; align-items: center; background: linear-gradient(135deg, #004d44 0%, #00695c 100%); border-radius: 30px; transition: all 0.3s ease; box-shadow: 0 4px 15px rgba(0,77,68,0.25); text-decoration: none;">
 
                         <div style="position: relative; display: flex; align-items: center;">
-                            <i class="fas fa-shield-alt text-white" style="font-size: 15px;"></i>
+                            <i class="fas fa-shield-alt text-white" style="font-size: 14px;"></i>
                             @if($totalUnsent > 0)
-                            <span class="badge badge-pill badge-danger shadow-sm"
-                                style="position: absolute; top: -8px; right: -10px; font-size: 9px; padding: 3px 5px; border: 2px solid #fff; background-color: #ff3d00;">
+                            <span class="badge badge-pill badge-danger shadow-sm pulse-badge"
+                                style="position: absolute; top: -8px; right: -10px; font-size: 9px; padding: 2px 5px; border: 2px solid #fff; background-color: #ff3d00; font-weight: bold;">
                                 {{ $totalUnsent }}
                             </span>
                             @endif
                         </div>
 
-                        <span class="mx-2 text-white d-none d-md-inline"
-                            style="font-size: 12px; font-weight: 600; letter-spacing: 0.3px;">الربط الضريبي</span>
+                        <span class="mx-2 text-white d-none d-md-inline" style="font-size: 12px; font-weight: 600;">الربط الضريبي</span>
                         <i class="fas fa-chevron-down text-white-50 mr-1" style="font-size: 9px;"></i>
                     </a>
 
-                    <div class="dropdown-menu dropdown-menu-left shadow-lg border-0 p-0"
-                        style="width: 290px; border-radius: 12px; margin-top: 10px; overflow: hidden;">
-                        <div class="p-3 text-white"
-                            style="background: linear-gradient(135deg, #004d44 0%, #00695c 100%);">
-                            <div class="d-flex align-items-center">
-                                <i class="fas fa-university text-white-50 ml-2" style="font-size: 16px;"></i>
-                                <h6 class="mb-0 text-white" style="font-size: 13px; font-weight: 600;">منصة هيئة الزكاة
-                                    (ZATCA)</h6>
+                    <div class="dropdown-menu shadow-lg border-0 p-0"
+                        style="width: 300px; border-radius: 14px; margin-top: 10px; left: 0 !important; right: auto !important; overflow: hidden;">
+                        
+                        <div class="p-3 text-white" style="background: linear-gradient(135deg, #004d44 0%, #00695c 100%);">
+                            <div class="d-flex align-items-center justify-content-between">
+                                <div class="d-flex align-items-center">
+                                    <div class="rounded-circle d-flex align-items-center justify-content-center ml-2" style="width: 30px; height: 30px; background: rgba(255,255,255,0.15);">
+                                        <i class="fas fa-university text-white" style="font-size: 13px;"></i>
+                                    </div>
+                                    <h6 class="mb-0 text-white" style="font-size: 13px; font-weight: 700;">هيئة الزكاة (ZATCA)</h6>
+                                </div>
+                                <span class="badge badge-light text-success" style="font-size: 10px; font-weight: bold; padding: 3px 7px; border-radius: 20px;">مباشر</span>
                             </div>
                         </div>
 
-                        <div class="p-3 text-center bg-white">
+                        <div class="p-3 bg-white text-center">
                             @if($totalUnsent > 0)
-                            <div class="mb-3 text-right px-2">
-                                <p class="mb-1 text-dark" style="font-size: 13px; font-weight: 600;">
-                                    <i class="fas fa-exclamation-circle text-danger ml-1"></i> حالة الإرسال: <span
-                                        class="text-danger">يوجد معلق</span>
+                            <div class="mb-3 text-right px-2 py-2 rounded" style="background: #fff5f5; border-right: 4px solid #ff3d00;">
+                                <p class="mb-1 text-dark" style="font-size: 12px; font-weight: 700;">
+                                    <i class="fas fa-exclamation-triangle text-danger ml-1"></i> تنبيه فواتير معلقة:
                                 </p>
-                                <p class="text-muted mb-0" style="font-size: 12px;">لديك <b
-                                        class="text-dark">{{ $totalUnsent }}</b> فاتورة بانتظار الإرسال للهيئة.</p>
+                                <p class="text-muted mb-0" style="font-size: 11px;">
+                                    لديك <b class="text-danger">{{ $totalUnsent }}</b> فاتورة بانتظار الإرسال للهيئة.
+                                </p>
                             </div>
+                            
                             <a href="{{ url('previousSales_not_sended_Invoices_all_branchs') }}"
-                                class="btn btn-sm btn-block text-white shadow-sm py-2"
-                                style="background: #004d44; border-radius: 6px; font-size: 12px; font-weight: 600; transition: background 0.2s;">
-                                إرسال الفواتير الآن <i class="fas fa-paper-plane mr-1"></i>
+                                class="btn btn-sm btn-block text-white shadow-sm py-2 d-flex align-items-center justify-content-center"
+                                style="background: #004d44; border-radius: 6px; font-size: 12px; font-weight: 600; text-decoration: none;">
+                                <span>إرسال الفواتير المعلقة الآن</span>
+                                <i class="fas fa-paper-plane mr-2" style="font-size: 10px;"></i>
                             </a>
                             @else
-                            <div class="py-3">
-                                <div class="rounded-circle mx-auto mb-2 d-flex align-items-center justify-content-center"
-                                    style="width: 45px; height: 45px; background: #e8f5e9;">
-                                    <i class="fas fa-check-double text-success" style="font-size: 20px;"></i>
+                            <div class="py-2">
+                                <div class="rounded-circle mx-auto mb-2 d-flex align-items-center justify-content-center shadow-sm"
+                                    style="width: 42px; height: 42px; background: #e8f5e9;">
+                                    <i class="fas fa-check-double text-success" style="font-size: 18px;"></i>
                                 </div>
-                                <p class="mb-1 text-dark font-weight-bold" style="font-size: 13px;">موقف الربط سليم
-                                    تماماً</p>
-                                <small class="text-muted" style="font-size: 11px;">تم إرسال كافة الفواتير بنجاح</small>
+                                <p class="mb-1 text-dark font-weight-bold" style="font-size: 12px;">حالة الربط مستقرة وسليمة</p>
+                                <small class="text-muted" style="font-size: 10px;">تم إرسال كافة الفواتير بنجاح تام</small>
                             </div>
                             @endif
                         </div>
                     </div>
-                </li>
+                </div>
 
                 <!-- زر الشاشة الكاملة -->
-                <div class="nav-item full-screen fullscreen-button left-link mx-1">
-                    <a class="new nav-link full-screen-link" href="#">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="header-icon-svgs" viewBox="0 0 22 22" fill="none"
-                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                            class="feather feather-maximize">
-                            <path
-                                d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3">
-                            </path>
-                        </svg>
+                <div class="nav-item full-screen fullscreen-button d-none d-sm-block m-0">
+                    <a class="new nav-link full-screen-link text-dark p-2" href="#" style="display: flex; align-items: center;">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"></path></svg>
                     </a>
                 </div>
 
                 <!-- قائمة المستخدم (Profile) -->
-                <div class="dropdown main-profile-menu nav nav-item nav-link left-link">
-                    <a class="profile-user d-flex" href="">
+                <div class="dropdown main-profile-menu nav nav-item m-0">
+                    <a class="profile-user d-flex" href="#" data-toggle="dropdown" style="text-decoration: none;">
                         <img alt="user" src="{{ URL::asset('storage/' . Auth::user()->profile_photo_path) }}"
-                            class="rounded-circle shadow-sm">
+                            class="rounded-circle shadow-sm" style="width: 38px; height: 38px; object-fit: cover; border: 2px solid #004d44;">
                     </a>
                     <div class="dropdown-menu profile-menu shadow-lg border-0"
-                        style="border-radius: 10px; overflow: hidden;">
-                        <div class="main-header-profile bg-primary p-3">
-                            <div class="d-flex wd-100p align-items-center">
-                                <div class="main-img-user">
-                                    <img alt="user"
-                                        src="{{ URL::asset('storage/' . Auth::user()->profile_photo_path) }}" class="">
+                        style="width: 240px; border-radius: 12px; margin-top: 10px; left: 0 !important; right: auto !important; overflow: hidden;">
+                        <div class="main-header-profile p-3" style="background: linear-gradient(135deg, #004d44 0%, #00695c 100%);">
+                            <div class="d-flex align-items-center">
+                                <div class="main-img-user ml-2">
+                                    <img alt="user" src="{{ URL::asset('storage/' . Auth::user()->profile_photo_path) }}" class="rounded-circle" style="width: 35px; height: 35px; object-fit: cover;">
                                 </div>
-                                <div class="mr-3 my-auto">
-                                    <h6 class="mb-1 text-white" style="font-size: 13px; font-weight: 600;">
-                                        {{ Auth::user()->name }}</h6>
-                                    <span class="text-white-50"
-                                        style="font-size: 11px;">{{ Auth::user()->email }}</span>
+                                <div class="my-auto overflow-hidden">
+                                    <h6 class="mb-1 text-white text-truncate" style="font-size: 12px; font-weight: 600;">{{ Auth::user()->name }}</h6>
+                                    <span class="text-white-50 text-truncate d-block" style="font-size: 10px;">{{ Auth::user()->email }}</span>
                                 </div>
                             </div>
                         </div>
 
                         <div class="p-2">
-                            <a class="dropdown-item py-2 px-3 rounded" href="{{ url('user/profile') }}">
-                                <i class="bx bx-slider-alt ml-2"></i>{{ __('auth.setting') }}
+                            <a class="dropdown-item py-2 px-3 rounded text-dark" href="{{ url('user/profile') }}" style="font-size: 12px; display: flex; align-items: center;">
+                                <i class="bx bx-slider-alt ml-2 text-muted" style="font-size: 15px;"></i>{{ __('auth.setting') }}
                             </a>
                             <a class="dropdown-item py-2 px-3 rounded text-danger" href="{{ route('logout') }}"
-                                onclick="event.preventDefault();document.getElementById('logout-form').submit();">
-                                <i class="bx bx-log-out ml-2"></i>تسجيل خروج
+                                onclick="event.preventDefault();document.getElementById('logout-form').submit();" style="font-size: 12px; display: flex; align-items: center;">
+                                <i class="bx bx-log-out ml-2" style="font-size: 15px;"></i>تسجيل خروج
                             </a>
                         </div>
 
@@ -207,67 +225,8 @@
                     </div>
                 </div>
 
-                <!-- زر القائمة الجانبية اليسرى -->
-                <div class="dropdown main-header-message right-toggle left-link shortcut-window mx-1">
-                    <a class="nav-link pr-0" data-toggle="sidebar-left" data-target=".sidebar-left">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="header-icon-svgs" viewBox="0 0 24 24" fill="none"
-                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                            class="feather feather-menu">
-                            <line x1="3" y1="12" x2="21" y2="12"></line>
-                            <line x1="3" y1="6" x2="21" y2="6"></line>
-                            <line x1="3" y1="18" x2="21" y2="18"></line>
-                        </svg>
-                    </a>
-                </div>
-
             </div>
         </div>
     </div>
 </div>
 <!-- /main-header -->
-
-@section('css')
-<style>
-/* تنسيق احترافي لروابط العمليات السريعة في الهيدر */
-.header-shortcut-nav .nav-link {
-    font-size: 13px;
-    font-weight: 600;
-    color: #333 !important;
-    border-radius: 6px;
-    transition: all 0.2s ease-in-out;
-    margin: 0 3px;
-}
-.header-shortcut-nav .nav-link:hover {
-    background-color: rgba(0, 0, 0, 0.04);
-    color: #004d44 !important;
-    transform: translateY(-1px);
-}
-</style>
-@endsection
-
-@section('js')
-<script>
-function display_ct6() {
-    var x = new Date()
-    var ampm = x.getHours() >= 12 ? ' PM' : ' AM';
-    hours = x.getHours() % 12;
-    hours = hours ? hours : 12;
-    var x1 = x.getMonth() + 1 + "/" + x.getDate() + "/" + x.getFullYear();
-    x1 = x1 + " - " + hours + ":" + x.getMinutes() + ":" + x.getSeconds() + ":" + ampm;
-    var clockEl = document.getElementById('ct6');
-    if (clockEl) {
-        clockEl.innerHTML = x1;
-    }
-    display_c6();
-}
-
-function display_c6() {
-    var refresh = 1000;
-    mytime = setTimeout('display_ct6()', refresh);
-}
-
-$(document).ready(function() {
-    display_c6();
-});
-</script>
-@endsection

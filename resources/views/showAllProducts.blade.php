@@ -151,17 +151,23 @@
                                             <tr>
                                                 <th style="font-size: 15px" class="border-bottom-0">#</th>
                                                 <th style="font-size: 15px" class="border-bottom-0">
-                                                    {{__('home.productNo')}} </th>
+                                                    {{__('home.productNo')}}
+                                                </th>
                                                 <th style="font-size: 15px" class="border-bottom-0"
-                                                    style="text-align:center">{{__('home.product')}}</th>
+                                                    style="text-align:center">{{__('home.product')}}
+                                                </th>
                                                 <th style="font-size: 15px" class="border-bottom-0"
-                                                    style="text-align:center">{{__('home.branch')}}</th>
+                                                    style="text-align:center">{{__('home.branch')}}
+                                                </th>
                                                 <th style="font-size: 15px" class="border-bottom-0">
-                                                    {{__('home.productlocation')}}</th>
+                                                    {{__('home.productlocation')}}
+                                                </th>
                                                 <th style="font-size: 15px" class="border-bottom-0">
-                                                    {{__('home.quantity')}}</th>
+                                                    {{__('home.quantity')}}
+                                                </th>
                                                 <th style="font-size: 13px" class="border-bottom-0">
-                                                    {{__('home.purchaseproductwithouttax')}}</th>
+                                                    {{__('home.purchaseproductwithouttax')}}
+                                                </th>
                                                 <th style="font-size: 13px" class="border-bottom-0">
                                                     {{__('home.sellingproduct without tax')}}</th>
 
@@ -303,6 +309,7 @@ $(document).ready(function() {
     // 2. تحميل البيانات الأولي
     performAjax("{{ URL::to('searchAllproductpaginatenew_by_post') }}", 'post', {
         "searchtext": '',
+        "locale" : "{{ app()->getLocale() }}", // ✅ صح
         "branchs_id": "{{ auth()->user()->branchs_id ?? 1 }}"
     }, (data) => $("#ajax_responce_serarchDiv").html(data));
 
@@ -353,15 +360,17 @@ $(document).ready(function() {
 function filterProducts() {
     let data = {
         "searchtext": $('#searchaboutproduct').val(),
+         "locale" : "{{ app()->getLocale() }}", // ✅ صح
         "branchs_id": $('#branchs_id').val(),
         "group_id": $('select[name="product_group"]').val(),
         "_token": $("#token_search").val()
     };
-    
+
     $.ajax({
         url: "{{ URL::to('searchAllproductpaginatenew_by_post') }}",
         type: 'post',
         data: data,
+
         success: function(data) {
             console.log(data);
             $("#ajax_responce_serarchDiv").html(data);

@@ -376,6 +376,10 @@ class SupprocessesController extends Controller
             'photo' => $photo,
         ];
 
+        if ($request->filled('product_group')) {
+        $updateData['product_group'] = $request->product_group;
+        }
+
         if ($request->has('product_price'))
             $updateData['sale_price'] = $request->product_price;
         if ($request->has('purachesepice'))

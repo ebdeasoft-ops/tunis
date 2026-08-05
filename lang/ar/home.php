@@ -14,6 +14,7 @@ return [
     */
     'Statement_of_Changes_in_Equity_Report'=>'التغير في حقوق الملكية',
     'general_budget'=>"الميزانية العامة",
+    'cashFlowStatement'=>'قائمة التدفقات النقدية',
     'invoice_number'=>'رقم الفاتورة',
     'type' => 'النوع',
     'adjustment_type'   => 'نوع التعديل',

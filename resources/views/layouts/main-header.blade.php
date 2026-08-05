@@ -1,4 +1,13 @@
 <!-- main-header opened -->
+<style>
+    .custom-shortcut-link {
+        font-size: 16px !important; /* تكبير حجم الخط */
+        font-weight: 800 !important; /* جعل الخط عريضاً */
+    }
+    .custom-shortcut-icon {
+        font-size: 17px !important; /* تكبير حجم الأيقونات */
+    }
+</style>
 <div class="main-header sticky side-header nav nav-item">
     <div class="container-fluid the-main">
         <div class="main-header-left">
@@ -14,44 +23,44 @@
             </div>
 
             <!-- الروابط السريعة المباشرة في الهيدر العلوي بشكل احترافي -->
-            <div class="d-none d-lg-flex align-items-center mr-3">
+          <div class="d-none d-lg-flex align-items-center mr-3">
                 <ul class="nav header-shortcut-nav">
                     @can('Sales products')
                     <li class="nav-item">
-                        <a class="nav-link px-3 py-2" href="{{ url('/goToSale') }}">
-                            <i class="fas fa-cash-register ml-1 text-primary"></i> {{ __('home.sales') }}
+                        <a class="nav-link px-3 py-2 custom-shortcut-link" href="{{ url('/goToSale') }}">
+                            <i class="fas fa-cash-register ml-1 text-primary custom-shortcut-icon"></i> {{ __('home.sales') }}
                         </a>
                     </li>
                     @endcan
 
                     @can('sales return')
                     <li class="nav-item">
-                        <a class="nav-link px-3 py-2" href="{{ url('/return_sale') }}">
-                            <i class="fas fa-undo ml-1 text-danger"></i> {{ __('home.salesـreturned') }}
+                        <a class="nav-link px-3 py-2 custom-shortcut-link" href="{{ url('/return_sale') }}">
+                            <i class="fas fa-undo ml-1 text-danger custom-shortcut-icon"></i> {{ __('home.salesـreturned') }}
                         </a>
                     </li>
                     @endcan
 
                     @can('Purchases products')
                     <li class="nav-item">
-                        <a class="nav-link px-3 py-2" href="{{ url('/purchases') }}">
-                            <i class="fas fa-shopping-cart ml-1 text-success"></i> {{ __('home.purchases') }}
+                        <a class="nav-link px-3 py-2 custom-shortcut-link" href="{{ url('/purchases') }}">
+                            <i class="fas fa-shopping-cart ml-1 text-success custom-shortcut-icon"></i> {{ __('home.purchases') }}
                         </a>
                     </li>
                     @endcan
 
                     @can('offer price to customer')
                     <li class="nav-item">
-                        <a class="nav-link px-3 py-2" href="{{ url('/getproductspricetocustomer') }}">
-                            <i class="fas fa-file-invoice-dollar ml-1 text-warning"></i> {{ __('home.Offerـpricesـtoـcustomer') }}
+                        <a class="nav-link px-3 py-2 custom-shortcut-link" href="{{ url('/getproductspricetocustomer') }}">
+                            <i class="fas fa-file-invoice-dollar ml-1 text-warning custom-shortcut-icon"></i> {{ __('home.Offerـpricesـtoـcustomer') }}
                         </a>
                     </li>
                     @endcan
 
                     @can('request price from supplier')
                     <li class="nav-item">
-                        <a class="nav-link px-3 py-2" href="{{ url('/getproductsprice') }}">
-                            <i class="fas fa-tags ml-1 text-info"></i> {{ __('home.Requestـpricesـofـproducts') }}
+                        <a class="nav-link px-3 py-2 custom-shortcut-link" href="{{ url('/getproductsprice') }}">
+                            <i class="fas fa-tags ml-1 text-info custom-shortcut-icon"></i> {{ __('home.Requestـpricesـofـproducts') }}
                         </a>
                     </li>
                     @endcan
@@ -95,65 +104,66 @@
                 </ul>
 
                 <!-- زر حالة الربط الضريبي ZATCA الاحترافي -->
-                <li class="dropdown nav-item main-header-notification list-unstyled mx-2">
-                    <a class="new nav-link px-3 py-2" href="#" data-toggle="dropdown"
-                        style="display: flex; align-items: center; background: linear-gradient(135deg, #004d44 0%, #00695c 100%); border-radius: 30px; transition: all 0.3s ease; box-shadow: 0 4px 10px rgba(0,77,68,0.25);">
+           <li class="dropdown nav-item main-header-notification list-unstyled mx-1">
+                <a class="nav-link p-0 d-flex align-items-center justify-content-center" href="#" data-toggle="dropdown"
+                    style="width: 40px; height: 40px; background: linear-gradient(135deg, #004d44 0%, #00695c 100%); border-radius: 50%; transition: all 0.3s ease; box-shadow: 0 2px 6px rgba(0,77,68,0.25);">
 
-                        <div style="position: relative; display: flex; align-items: center;">
-                            <i class="fas fa-shield-alt text-white" style="font-size: 15px;"></i>
-                            @if($totalUnsent > 0)
-                            <span class="badge badge-pill badge-danger shadow-sm"
-                                style="position: absolute; top: -8px; right: -10px; font-size: 9px; padding: 3px 5px; border: 2px solid #fff; background-color: #ff3d00;">
-                                {{ $totalUnsent }}
-                            </span>
-                            @endif
-                        </div>
+                    <div style="position: relative; display: flex; align-items: center; justify-content: center;">
+                        <i class="fas fa-shield-alt text-white" style="font-size: 16px;"></i>
+                        @if($totalUnsent > 0)
+                        <span class="badge badge-pill badge-danger shadow-sm"
+                            style="position: absolute; top: -10px; right: -12px; font-size: 9px; padding: 3px 5px; border: 2px solid #fff; background-color: #ff3d00;">
+                            {{ $totalUnsent }}
+                        </span>
+                        @endif
+                    </div>
+                </a>
 
-                        <span class="mx-2 text-white d-none d-md-inline"
-                            style="font-size: 12px; font-weight: 600; letter-spacing: 0.3px;">الربط الضريبي</span>
-                        <i class="fas fa-chevron-down text-white-50 mr-1" style="font-size: 9px;"></i>
-                    </a>
-
-                    <div class="dropdown-menu dropdown-menu-left shadow-lg border-0 p-0"
-                        style="width: 290px; border-radius: 12px; margin-top: 10px; overflow: hidden;">
-                        <div class="p-3 text-white"
-                            style="background: linear-gradient(135deg, #004d44 0%, #00695c 100%);">
-                            <div class="d-flex align-items-center">
-                                <i class="fas fa-university text-white-50 ml-2" style="font-size: 16px;"></i>
-                                <h6 class="mb-0 text-white" style="font-size: 13px; font-weight: 600;">منصة هيئة الزكاة
-                                    (ZATCA)</h6>
-                            </div>
-                        </div>
-
-                        <div class="p-3 text-center bg-white">
-                            @if($totalUnsent > 0)
-                            <div class="mb-3 text-right px-2">
-                                <p class="mb-1 text-dark" style="font-size: 13px; font-weight: 600;">
-                                    <i class="fas fa-exclamation-circle text-danger ml-1"></i> حالة الإرسال: <span
-                                        class="text-danger">يوجد معلق</span>
-                                </p>
-                                <p class="text-muted mb-0" style="font-size: 12px;">لديك <b
-                                        class="text-dark">{{ $totalUnsent }}</b> فاتورة بانتظار الإرسال للهيئة.</p>
-                            </div>
-                            <a href="{{ url('previousSales_not_sended_Invoices_all_branchs') }}"
-                                class="btn btn-sm btn-block text-white shadow-sm py-2"
-                                style="background: #004d44; border-radius: 6px; font-size: 12px; font-weight: 600; transition: background 0.2s;">
-                                إرسال الفواتير الآن <i class="fas fa-paper-plane mr-1"></i>
-                            </a>
-                            @else
-                            <div class="py-3">
-                                <div class="rounded-circle mx-auto mb-2 d-flex align-items-center justify-content-center"
-                                    style="width: 45px; height: 45px; background: #e8f5e9;">
-                                    <i class="fas fa-check-double text-success" style="font-size: 20px;"></i>
-                                </div>
-                                <p class="mb-1 text-dark font-weight-bold" style="font-size: 13px;">موقف الربط سليم
-                                    تماماً</p>
-                                <small class="text-muted" style="font-size: 11px;">تم إرسال كافة الفواتير بنجاح</small>
-                            </div>
-                            @endif
+                <div class="dropdown-menu dropdown-menu-left shadow-lg border-0 p-0"
+                    style="width: 290px; border-radius: 12px; margin-top: 10px; overflow: hidden;">
+                    <div class="p-3 text-white"
+                        style="background: linear-gradient(135deg, #004d44 0%, #00695c 100%);">
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-university text-white-50 ml-2" style="font-size: 16px;"></i>
+                            <h6 class="mb-0 text-white" style="font-size: 13px; font-weight: 600;">
+                                {{ __('home.ZATCA_Platform') ?? 'منصة هيئة الزكاة (ZATCA)' }}
+                            </h6>
                         </div>
                     </div>
-                </li>
+
+                    <div class="p-3 text-center bg-white">
+                        @if($totalUnsent > 0)
+                        <div class="mb-3 text-right px-2">
+                            <p class="mb-1 text-dark" style="font-size: 13px; font-weight: 600;">
+                                <i class="fas fa-exclamation-circle text-danger ml-1"></i> {{ __('home.Status') ?? 'حالة الإرسال' }}:
+                                <span class="text-danger">{{ __('home.Pending_Invoices') ?? 'يوجد معلق' }}</span>
+                            </p>
+                            <p class="text-muted mb-0" style="font-size: 12px;">
+                                {{ __('home.You_Have') ?? 'لديك' }} <b class="text-dark">{{ $totalUnsent }}</b> {{ __('home.Invoices_Waiting') ?? 'فاتورة بانتظار الإرسال للهيئة.' }}
+                            </p>
+                        </div>
+                        <a href="{{ url('previousSales_not_sended_Invoices_all_branchs') }}"
+                            class="btn btn-sm btn-block text-white shadow-sm py-2"
+                            style="background: #004d44; border-radius: 6px; font-size: 12px; font-weight: 600; transition: background 0.2s;">
+                            {{ __('home.Send_Invoices_Now') ?? 'إرسال الفواتير الآن' }} <i class="fas fa-paper-plane mr-1"></i>
+                        </a>
+                        @else
+                        <div class="py-3">
+                            <div class="rounded-circle mx-auto mb-2 d-flex align-items-center justify-content-center"
+                                style="width: 45px; height: 45px; background: #e8f5e9;">
+                                <i class="fas fa-check-double text-success" style="font-size: 20px;"></i>
+                            </div>
+                            <p class="mb-1 text-dark font-weight-bold" style="font-size: 13px;">
+                                {{ __('home.Status_Good') ?? 'موقف الربط سليم تماماً' }}
+                            </p>
+                            <small class="text-muted" style="font-size: 11px;">
+                                {{ __('home.All_Invoices_Sent') ?? 'تم إرسال كافة الفواتير بنجاح' }}
+                            </small>
+                        </div>
+                        @endif
+                    </div>
+                </div>
+            </li>
 
                 <!-- زر الشاشة الكاملة -->
                 <div class="nav-item full-screen fullscreen-button left-link mx-1">
@@ -169,24 +179,28 @@
                 </div>
 
                 <!-- قائمة المستخدم (Profile) -->
-                <div class="dropdown main-profile-menu nav nav-item nav-link left-link">
-                    <a class="profile-user d-flex" href="">
-                        <img alt="user" src="{{ URL::asset('storage/' . Auth::user()->profile_photo_path) }}"
-                            class="rounded-circle shadow-sm">
+             <div class="dropdown main-profile-menu nav nav-item nav-link left-link">
+                <a class="profile-user d-flex" href="">
+                        <img alt="user"
+                            src="{{ Auth::user()->profile_photo_path ? URL::asset('storage/' . Auth::user()->profile_photo_path) : URL::asset('assets/img/9055398.png') }}"
+                            class="rounded-circle shadow-sm"
+                            style="width: 38px; height: 38px; object-fit: cover;">
                     </a>
-                    <div class="dropdown-menu profile-menu shadow-lg border-0"
-                        style="border-radius: 10px; overflow: hidden;">
+
+                    <div class="dropdown-menu profile-menu shadow-lg border-0" style="border-radius: 10px; overflow: hidden;">
                         <div class="main-header-profile bg-primary p-3">
                             <div class="d-flex wd-100p align-items-center">
                                 <div class="main-img-user">
                                     <img alt="user"
-                                        src="{{ URL::asset('storage/' . Auth::user()->profile_photo_path) }}" class="">
+                                        src="{{ Auth::user()->profile_photo_path ? URL::asset('storage/' . Auth::user()->profile_photo_path) : URL::asset('assets/img/9055398.png') }}"
+                                        class="rounded-circle"
+                                        style="width: 42px; height: 42px; object-fit: cover;">
                                 </div>
                                 <div class="mr-3 my-auto">
                                     <h6 class="mb-1 text-white" style="font-size: 13px; font-weight: 600;">
-                                        {{ Auth::user()->name }}</h6>
-                                    <span class="text-white-50"
-                                        style="font-size: 11px;">{{ Auth::user()->email }}</span>
+                                        {{ Auth::user()->name }}
+                                    </h6>
+                                    <span class="text-white-50" style="font-size: 11px;">{{ Auth::user()->email }}</span>
                                 </div>
                             </div>
                         </div>
@@ -197,7 +211,7 @@
                             </a>
                             <a class="dropdown-item py-2 px-3 rounded text-danger" href="{{ route('logout') }}"
                                 onclick="event.preventDefault();document.getElementById('logout-form').submit();">
-                                <i class="bx bx-log-out ml-2"></i>تسجيل خروج
+                                <i class="bx bx-log-out ml-2"></i>{{ __('home.logout') ?? 'تسجيل خروج' }}
                             </a>
                         </div>
 

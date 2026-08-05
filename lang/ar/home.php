@@ -277,7 +277,7 @@ return [
 
     'bank_arbic' => 'البنك_العربي_الوطني',
     'low_sell' => 'الاقل مبيعا',
-    'profit_and_lost' => 'قائمة الدخل ', 
+    'profit_and_lost' => 'قائمة الدخل ',
        'cost_center_assign' => "تعين مركز تكلفة",
     'Customer_debt_restructuring' => 'أعمار ديون العملاء',
     'Supplier_debt_restructuring' => 'أعمار ديون الموردين',
@@ -403,6 +403,16 @@ return [
     'storage_and_notes'   => 'التخزين والملاحظات',
 
 
+    'Requestـpricesـofـproducts' => 'طلب أسعار المنتجات',
+    'ZATCA_Platform' => 'منصة هيئة الزكاة (ZATCA)',
+    'Status' => 'حالة الإرسال',
+    'Pending_Invoices' => 'يوجد معلق',
+    'You_Have' => 'لديك',
+    'Invoices_Waiting' => 'فاتورة بانتظار الإرسال للهيئة.',
+    'Send_Invoices_Now' => 'إرسال الفواتير الآن',
+    'Status_Good' => 'موقف الربط سليم تماماً',
+    'All_Invoices_Sent' => 'تم إرسال كافة الفواتير بنجاح',
+    
     'email' => 'البريد الالكتروني',
 
     'otp' => 'رقم التاكيد',

@@ -7,6 +7,8 @@ return [
     | English Language Lines - Full Version 2026
     |--------------------------------------------------------------------------
     */
+    'Statement_of_Changes_in_Equity_Report'=>'Statement of Changes in Equity Report',
+
     'invoice_number' => 'NO',
     'general_budget'=>"General budget ",
 

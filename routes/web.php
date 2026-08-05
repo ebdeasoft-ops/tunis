@@ -232,6 +232,7 @@ Route::middleware([
 
     // 5. الحسابات والعمليات النقدية والبنكية (Accounts & Cash Box)
     Route::controller(AcountesController::class)->group(function () {
+        Route::get('Statement_of_Changes_in_Equity_Report', 'Statement_of_Changes_in_Equity_Report');
         Route::get('get_all_kid_yaomy_jax', 'get_all_kid_yaomy_jax');
         Route::get('search_by_decoumentNo_kid_yomy/{id}', 'search_by_decoumentNo_kid_yomy');
         Route::get('Cash_withdrawal_from_the_bank', 'Cash_withdrawal_from_the_bank');
@@ -245,6 +246,8 @@ Route::middleware([
         Route::get('cashEcprnse', 'cashEcprnse');
         Route::get('income', 'income');
         Route::get('go_to_bank', 'go_to_bank');
+        
+        Route::post('changesInEquity', 'changesInEquity')->name('reports.changes_in_equity');
         Route::post('Add_blance_from_bank', 'Add_blance_from_bank');
         Route::post('updateAdd_blance_from_bank', 'updateAdd_blance_from_bank');
         Route::post('convertcashboxToBank', 'SearchconvertcashboxToBank');

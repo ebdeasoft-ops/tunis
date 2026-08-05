@@ -18,7 +18,7 @@ use App\Models\Cost_centers;
 use App\Models\cash_from__bank;
 use App\Models\Transfer_cash_to_the_next_day;
 use Mcamara\LaravelLocalization\Facades\LaravelLocalization as LaravelLocalization;
-
+use Illuminate\Support\Facades\DB;
 class AcountesController extends Controller
 {
     function uploadImage($folder, $image)
@@ -29,6 +29,151 @@ class AcountesController extends Controller
         $image->move($folder, $filename);
         return $filename;
     }
+    public function Statement_of_Changes_in_Equity_Report()
+    {
+        app()->setLocale(LaravelLocalization::getCurrentLocale());
+
+
+
+        return view('reports.Statement_of_Changes_in_Equity_Report');
+    }
+
+
+public function changesInEquity(Request $request)
+{// 1. استقبال تاريخي البحث
+    $fromDate = $request->input('start_at', date('Y-01-01'));
+    $toDate = $request->input('end_at', date('Y-m-d'));
+
+    // 2. جلب الحسابات الخاصة بحقوق الملكية (Account Type = 5 حسب جدول acountes_types)
+    $equityAccounts = DB::table('financial_accounts')
+        ->where('account_type', 5)
+        ->get();
+
+    // 3. حساب رصيد حقوق الملكية في بداية الفترة
+    $beginningCapital = 0;
+    foreach ($equityAccounts as $account) {
+        $transQuery = DB::table('credittransactions')
+            ->where('customer_id', $account->id)
+            ->where('save', 1);
+
+        if ($fromDate) {
+            $transQuery->where('created_at', '<', $fromDate . ' 00:00:00');
+        }
+
+        $totals = $transQuery->select(
+            DB::raw('SUM(debtor) as total_debtor'),
+            DB::raw('SUM(creditor) as total_creditor')
+        )->first();
+
+        $debit = $totals->total_debtor ?? 0;
+        $credit = $totals->total_creditor ?? 0;
+
+        $openingBalance = ($account->opening_balance ?? 0) + ($credit - $debit);
+        $beginningCapital += $openingBalance;
+    }
+
+    // 4. حساب عناصر قائمة الدخل (الربح أو الخسارة) بناءً على طريقة الـ search_profit_and_lost الخاصة بك
+    $expense = DB::table('credittransactions')
+        ->where('orginal_type', 3)
+        ->whereDate('created_at', '>=', $fromDate)
+        ->whereDate('created_at', '<=', $toDate)
+        ->where('save', 1)
+        ->get();
+
+    $idsSales = DB::table('financial_accounts')->where('parent_account_number', 112)->pluck('id');
+    $sales = DB::table('credittransactions')
+        ->whereIn('customer_id', $idsSales)
+        ->where('note', 'LIKE', '%فاتورة مبيعات%')
+        ->whereDate('created_at', '>=', $fromDate)
+        ->whereDate('created_at', '<=', $toDate)
+        ->where('save', 1)
+        ->get();
+
+    $idsSalesReturn = DB::table('financial_accounts')->where('parent_account_number', 184)->pluck('id');
+    $sales_return = DB::table('credittransactions')
+        ->whereIn('customer_id', $idsSalesReturn)
+        ->where('note', 'LIKE', '%فاتورة مرتجع مبيعات%')
+        ->whereDate('created_at', '>=', $fromDate)
+        ->whereDate('created_at', '<=', $toDate)
+        ->where('save', 1)
+        ->get();
+
+    $idsPurchase = DB::table('financial_accounts')->where('parent_account_number', 183)->pluck('id');
+    $purchase = DB::table('credittransactions')
+        ->whereIn('customer_id', $idsPurchase)
+        ->where('note', 'LIKE', '%فاتورة مبيعات%')
+        ->whereDate('created_at', '>=', $fromDate)
+        ->whereDate('created_at', '<=', $toDate)
+        ->where('save', 1)
+        ->get();
+
+    $idsPurchaseReturn = DB::table('financial_accounts')->where('parent_account_number', 181)->pluck('id');
+    $purchase_return = DB::table('credittransactions')
+        ->whereIn('customer_id', $idsPurchaseReturn)
+        ->where('note', 'LIKE', '%مرتجع مشتريات فاتورة%')
+        ->whereDate('created_at', '>=', $fromDate)
+        ->whereDate('created_at', '<=', $toDate)
+        ->where('save', 1)
+        ->get();
+
+    // تجميع القيم المالية تماماً كما في نظامك
+    $expense_total_value = $expense->sum('recive_amount');
+    $sales_total_value = $sales->sum('recive_amount');
+    $sales_return_total_value = $sales_return->sum('recive_amount');
+    $purchase_total_value = $purchase->sum('recive_amount');
+    $purchase_return_total_value = $purchase_return->sum('recive_amount');
+
+    // حساب صافي الدخل (المبيعات والمرتفعات والمشتريات والمصروفات)
+    // صافي الإيرادات / المبيعات = (المبيعات - مرتجع المبيعات)
+    // صافي المشتريات = (المشتريات - مرتجع المشتريات)
+    // صافي الربح = إجمالي الدخل أو الإيرادات التشغيلية مطروحاً منه المصروفات
+    $netSales = $sales_total_value - $sales_return_total_value;
+    $netPurchases = $purchase_total_value - $purchase_return_total_value;
+    
+    // صافي الدخل للفترة (يمكنك تعديل المعادلة الرياضية لصافي الربح بما يطابق تفصيل تقرير الأرباح والخسائر لديك)
+    $netIncome = $netSales - $netPurchases - $expense_total_value;
+
+    // 5. الإضافات والمسحوبات الشخصية خلال الفترة
+    $capitalAdditions = 0;
+    $drawings = 0;
+
+    foreach ($equityAccounts as $account) {
+        $periodTotals = DB::table('credittransactions')
+            ->where('customer_id', $account->id)
+            ->where('save', 1)
+            ->whereDate('created_at', '>=', $fromDate)
+            ->whereDate('created_at', '<=', $toDate)
+            ->select(
+                DB::raw('SUM(debtor) as period_debtor'),
+                DB::raw('SUM(creditor) as period_creditor')
+            )->first();
+
+        $capitalAdditions += ($periodTotals->period_creditor ?? 0);
+        $drawings += ($periodTotals->period_debtor ?? 0);
+    }
+
+    // 6. الرصيد الختامي لحقوق الملكية في نهاية الفترة
+    $endingCapital = $beginningCapital + $capitalAdditions - $drawings + $netIncome;
+
+    // إرسال البيانات لواجهة الـ Blade
+    return view('reports.changes_in_equity', compact(
+        'beginningCapital',
+        'capitalAdditions',
+        'drawings',
+        'netIncome',
+        'endingCapital',
+        'fromDate',
+        'toDate'
+    ));}
+
+
+
+
+
+
+
+
+
 
     public function voncher()
     {

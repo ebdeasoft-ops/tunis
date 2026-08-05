@@ -924,7 +924,6 @@ private static function calculateTotalWithChildren($accountId, $allAccounts, $tr
             'stockopining' => $financial_accounts_main ? $financial_accounts_main->debtor_opening : 0,
             'stockclosing' => $financial_accounts_main ? $financial_accounts_main->debtor_end : 0,
         ];
-
         return view('reports.print_profit_and_lost', compact('data'))
             ->with('start', $request->start_at)
             ->with('end', $request->end_at)

@@ -121,6 +121,7 @@
                                     <option value="-" selected>{{ __('users.allbranchs') }}
                                     </option>
                                     @endif
+                                    
                                     @foreach (App\Models\branchs::get() as $branch)
                                     @if(Auth()->user()->branchs_id==1||Auth()->user()->branchs_id==$branch->id)
 

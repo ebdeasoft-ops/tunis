@@ -314,13 +314,11 @@ td .d-flex {
             @endcan
 
             {{-- زر تحديث عرض السعر --}}
-            @can('Update Quotation')
             <button class="modal-effect btn btn-sm text-white"
                 style="background-color: #28a745; border: 1px solid #1e7e34; border-radius: 3px; padding: 6px 14px; font-size: 11px; white-space: nowrap;"
                 data-toggle="modal" href="#updateinvoicefromsale">
                 <i class="fa fa-truck" style="margin-left: 5px;"></i> {{ __('home.update_qutation') }}
             </button>
-            @endcan
 
         </div>
     </div>

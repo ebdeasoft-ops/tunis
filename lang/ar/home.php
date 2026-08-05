@@ -12,8 +12,9 @@ return [
     | you want to customize your views to better match your application.
     |
     */
-    'Statement_of_Changes_in_Equity_Report'=>'التغير في حقوق الملكية',
-    'general_budget'=>"الميزانية العامة",
+    'Statement_of_Changes_in_Equity_Report'=>'قائمة التغير حقوق ملكية',
+    'cashFlowStatement'=>'قائمة التدفقات النقدية',
+    'general_budget'=>"قائمة المركز المالي ",
     'invoice_number'=>'رقم الفاتورة',
     'type' => 'النوع',
     'public' => 'عام',
@@ -273,8 +274,8 @@ return [
 
     'bank_arbic' => 'البنك_العربي_الوطني',
     'low_sell' => 'الاقل مبيعا',
-    'profit_and_lost' => 'الربح و الخسارة ',
-    'cost_center_assign' => "تعين مركز تكلفة",
+    'profit_and_lost' => 'قائمة الدخل ', 
+       'cost_center_assign' => "تعين مركز تكلفة",
     'Customer_debt_restructuring' => 'أعمار ديون العملاء',
     'Supplier_debt_restructuring' => 'أعمار ديون الموردين',
 
@@ -345,7 +346,7 @@ return [
     'add_new_account' => 'اضافة حساب جديد',
     'saerch_by_numberaccount_or_name' => 'بحث بواسطة رقم او اسم الحساب',
     'searchby_account_type' => 'البحث بنوع الحساب',
-    'Financial_accounts' => ' الميزان المراجعة ',
+    'Financial_accounts' => ' ميزان المراجعة ',
     'tree' => 'الشجرة المحاسبية ',
     'account_number' => 'رقم الحساب',
     'tybe' => 'النوع',

@@ -37,10 +37,118 @@ class AcountesController extends Controller
 
         return view('reports.Statement_of_Changes_in_Equity_Report');
     }
+    public function cashFlowStatement()
+    {
+        app()->setLocale(LaravelLocalization::getCurrentLocale());
 
 
+
+        return view('reports.cashFlowStatement');
+    }
+
+public function cashFlowStatementSearch(Request $request){
+// 1. استقبال تواريخ البحث
+    $fromDate = $request->input('start_at', date('Y-01-01'));
+    $toDate = $request->input('end_at', date('Y-m-d'));
+
+    // 2. النقدية في بداية الفترة (حسابات الصندوق والبنوك - بناءً على طبيعة جدولك)
+    // يمكنك تحديد رقم حساب الأب للصندوق/البنوك أو جلبها بالنوع المناسب
+    $cashAccountIds = DB::table('financial_accounts')
+        ->whereIn('parent_account_number', [4,5]) // الأصول المتداولة أو النقدية
+        ->pluck('id');
+
+    $beginningCash = 0;
+    foreach ($cashAccountIds as $accId) {
+        $totals = DB::table('credittransactions')
+            ->where('customer_id', $accId)
+            ->where('save', 1)
+            ->where('created_at', '<', $fromDate . ' 00:00:00')
+            ->select(DB::raw('SUM(debtor) as total_debtor'), DB::raw('SUM(creditor) as total_creditor'))
+            ->first();
+        
+        $beginningCash += (($totals->total_debtor ?? 0) - ($totals->total_creditor ?? 0));
+    }
+
+    // 3. الأنشطة التشغيلية (حركة النقد الداخل والخارج خلال الفترة)
+    $operatingInflows = DB::table('credittransactions')
+        ->whereIn('customer_id', $cashAccountIds)
+        ->whereDate('created_at', '>=', $fromDate)
+        ->whereDate('created_at', '<=', $toDate)
+        ->where('save', 1)
+        ->sum('debtor');
+
+    $operatingOutflows = DB::table('credittransactions')
+        ->whereIn('customer_id', $cashAccountIds)
+        ->whereDate('created_at', '>=', $fromDate)
+        ->whereDate('created_at', '<=', $toDate)
+        ->where('save', 1)
+        ->sum('creditor');
+
+    $operatingCashFlow = $operatingInflows - $operatingOutflows;
+
+    // 4. الأنشطة الاستثمارية (المرتبطة بالأصول الثابتة التي رقم الأب لها 74 أو الأصول نفسها)
+    $fixedAssetsIds = DB::table('financial_accounts')
+        ->where('parent_account_number', 74)
+        ->orWhere('id', 74)
+        ->pluck('id');
+
+    $investingInflows = DB::table('credittransactions')
+        ->whereIn('customer_id', $fixedAssetsIds)
+        ->whereDate('created_at', '>=', $fromDate)
+        ->whereDate('created_at', '<=', $toDate)
+        ->where('save', 1)
+        ->sum('creditor'); // بيع أصول (تدفق داخل)
+
+    $investingOutflows = DB::table('credittransactions')
+        ->whereIn('customer_id', $fixedAssetsIds)
+        ->whereDate('created_at', '>=', $fromDate)
+        ->whereDate('created_at', '<=', $toDate)
+        ->where('save', 1)
+        ->sum('debtor'); // شراء أصول (تدفق خارج)
+
+    $investingCashFlow = $investingInflows - $investingOutflows;
+
+    // 5. الأنشطة التمويلية (المرتبطة بحقوق الملكية - account_type = 5 كما رأينا في جدول الأنواع)
+    $equityAccountIds = DB::table('financial_accounts')
+        ->where('account_type', 5)
+        ->pluck('id');
+
+    $financingInflows = DB::table('credittransactions')
+        ->whereIn('customer_id', $equityAccountIds)
+        ->whereDate('created_at', '>=', $fromDate)
+        ->whereDate('created_at', '<=', $toDate)
+        ->where('save', 1)
+        ->sum('creditor'); // إضافات رأس المال أو قروض (داخل)
+
+    $financingOutflows = DB::table('credittransactions')
+        ->whereIn('customer_id', $equityAccountIds)
+        ->whereDate('created_at', '>=', $fromDate)
+        ->whereDate('created_at', '<=', $toDate)
+        ->where('save', 1)
+        ->sum('debtor'); // مسحوبات شخصية (خارج)
+
+    $financingCashFlow = $financingInflows - $financingOutflows;
+
+    // 6. صافي التغير والنهاية
+    $netCashChange = $operatingCashFlow + $investingCashFlow + $financingCashFlow;
+    $endingCash = $beginningCash + $netCashChange;
+
+    return view('reports.cash_flows', compact(
+        'fromDate',
+        'toDate',
+        'beginningCash',
+        'operatingCashFlow',
+        'investingCashFlow',
+        'financingCashFlow',
+        'netCashChange',
+        'endingCash'
+    ));
+
+
+}
 public function changesInEquity(Request $request)
-{// 1. استقبال تاريخي البحث
+{
+    // 1. استقبال تاريخي البحث
     $fromDate = $request->input('start_at', date('Y-01-01'));
     $toDate = $request->input('end_at', date('Y-m-d'));
 

@@ -3,18 +3,59 @@
     <div class="container-fluid the-main">
         <div class="main-header-left">
             <div class="responsive-logo">
-                <a href="https://ebdeasoft.com/"><img src="{{ URL::asset('assets/img/brand/logo.png') }}" class="logo-1"
-                        alt="logo"></a>
-                <a href="https://ebdeasoft.com/"><img src="{{ URL::asset('assets/img/brand/logo-white.png') }}"
-                        class="dark-logo-1" alt="logo"></a>
-                <a href="https://ebdeasoft.com/"><img src="{{ URL::asset('assets/img/brand/favicon.png') }}"
-                        class="logo-2" alt="logo"></a>
-                <a href="https://ebdeasoft.com/"><img src="{{ URL::asset('assets/img/brand/favicon.png') }}"
-                        class="dark-logo-2" alt="logo"></a>
+                <a href="https://ebdeasoft.com/"><img src="{{ URL::asset('assets/img/brand/logo.png') }}" class="logo-1" alt="logo"></a>
+                <a href="https://ebdeasoft.com/"><img src="{{ URL::asset('assets/img/brand/logo-white.png') }}" class="dark-logo-1" alt="logo"></a>
+                <a href="https://ebdeasoft.com/"><img src="{{ URL::asset('assets/img/brand/favicon.png') }}" class="logo-2" alt="logo"></a>
+                <a href="https://ebdeasoft.com/"><img src="{{ URL::asset('assets/img/brand/favicon.png') }}" class="dark-logo-2" alt="logo"></a>
             </div>
             <div class="app-sidebar__toggle" data-toggle="sidebar">
                 <a class="open-toggle" href="#"><i class="header-icon fe fe-align-left"></i></a>
                 <a class="close-toggle" href="#"><i class="header-icons fe fe-x"></i></a>
+            </div>
+
+            <!-- الروابط السريعة المباشرة في الهيدر العلوي بشكل احترافي -->
+            <div class="d-none d-lg-flex align-items-center mr-3">
+                <ul class="nav header-shortcut-nav">
+                    @can('Sales products')
+                    <li class="nav-item">
+                        <a class="nav-link px-3 py-2" href="{{ url('/goToSale') }}">
+                            <i class="fas fa-cash-register ml-1 text-primary"></i> {{ __('home.sales') }}
+                        </a>
+                    </li>
+                    @endcan
+
+                    @can('sales return')
+                    <li class="nav-item">
+                        <a class="nav-link px-3 py-2" href="{{ url('/return_sale') }}">
+                            <i class="fas fa-undo ml-1 text-danger"></i> {{ __('home.salesـreturned') }}
+                        </a>
+                    </li>
+                    @endcan
+
+                    @can('Purchases products')
+                    <li class="nav-item">
+                        <a class="nav-link px-3 py-2" href="{{ url('/purchases') }}">
+                            <i class="fas fa-shopping-cart ml-1 text-success"></i> {{ __('home.purchases') }}
+                        </a>
+                    </li>
+                    @endcan
+
+                    @can('offer price to customer')
+                    <li class="nav-item">
+                        <a class="nav-link px-3 py-2" href="{{ url('/getproductspricetocustomer') }}">
+                            <i class="fas fa-file-invoice-dollar ml-1 text-warning"></i> {{ __('home.Offerـpricesـtoـcustomer') }}
+                        </a>
+                    </li>
+                    @endcan
+
+                    @can('request price from supplier')
+                    <li class="nav-item">
+                        <a class="nav-link px-3 py-2" href="{{ url('/getproductsprice') }}">
+                            <i class="fas fa-tags ml-1 text-info"></i> {{ __('home.Requestـpricesـofـproducts') }}
+                        </a>
+                    </li>
+                    @endcan
+                </ul>
             </div>
         </div>
 
@@ -185,6 +226,25 @@
 </div>
 <!-- /main-header -->
 
+@section('css')
+<style>
+/* تنسيق احترافي لروابط العمليات السريعة في الهيدر */
+.header-shortcut-nav .nav-link {
+    font-size: 13px;
+    font-weight: 600;
+    color: #333 !important;
+    border-radius: 6px;
+    transition: all 0.2s ease-in-out;
+    margin: 0 3px;
+}
+.header-shortcut-nav .nav-link:hover {
+    background-color: rgba(0, 0, 0, 0.04);
+    color: #004d44 !important;
+    transform: translateY(-1px);
+}
+</style>
+@endsection
+
 @section('js')
 <script>
 function display_ct6() {
@@ -194,7 +254,6 @@ function display_ct6() {
     hours = hours ? hours : 12;
     var x1 = x.getMonth() + 1 + "/" + x.getDate() + "/" + x.getFullYear();
     x1 = x1 + " - " + hours + ":" + x.getMinutes() + ":" + x.getSeconds() + ":" + ampm;
-    // تأكد من وجود العنصر ct6 في حال استخدامه لعرض الوقت بالصفحة
     var clockEl = document.getElementById('ct6');
     if (clockEl) {
         clockEl.innerHTML = x1;

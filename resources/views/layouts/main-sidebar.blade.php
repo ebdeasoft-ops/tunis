@@ -653,30 +653,9 @@
                     </li>
                     @endcan
 
-                    @can('Financial accounts')
-                    <li>
-                        <a class="slide-item"
-                            href="{{ url('/financial_accounts') }}">{{ __('home.Financial_accounts') }}</a>
-                    </li>
-                    @endcan
-                     @can('Financial accounts')
-                    <li>
-                        <a class="slide-item"
-                            href="{{ url('/general_budget') }}">{{ __('home.general_budget') }}</a>
-                    </li>
-                    @endcan
-                   @can('Financial accounts')
-                    <li>
-                        <a class="slide-item"
-                            href="{{ url('/Statement_of_Changes_in_Equity_Report') }}">{{ __('home.Statement_of_Changes_in_Equity_Report') }}</a>
-                    </li>
-                    @endcan
-                    @can('List of customers')
-                    <li>
-                        <a class="slide-item"
-                            href="{{ url('/Customerlist') }}">{{ __('home.customer_supplier_account') }}</a>
-                    </li>
-                    @endcan
+              
+
+              
 
 
 
@@ -782,13 +761,7 @@
                             </li>
                             @endcan
 
-                            @can('Profit and lost report')
-                            <li>
-                                <a class="slide-item"
-                                    href="{{ url('profit_and_lost') }}">{{ __('home.profit_and_lost') }}</a>
-                            </li>
-                            @endcan
-
+           
                             @can('Transactions to master branch report')
                             <li>
                                 <a class="slide-item"
@@ -802,18 +775,53 @@
                             </li>
                             @endcan
 
-                            @can('Customers exceeded grace period report')
-                            <li>
-                                <a class="slide-item"
-                                    href="{{ url('Customersـexceededـgraceـperiod') }}">{{ __('report.Customers have exceeded the grace period') }}</a>
-                            </li>
-                            @endcan
+                            @can('List of customers')
+                    <li>
+                        <a class="slide-item"
+                            href="{{ url('/Customerlist') }}">{{ __('home.customer_supplier_account') }}</a>
+                    </li>
+                    @endcan
 
                             @can('VAT report')
                             <li>
                                 <a class="slide-item" href="{{ url('VAT') }}">{{ __('report.VAT') }}</a>
                             </li>
                             @endcan
+                                  @can('Financial accounts')
+                    <li>
+                        <a class="slide-item"
+                            href="{{ url('/financial_accounts') }}">{{ __('home.Financial_accounts') }}</a>
+                    </li>
+                    @endcan
+
+                    
+                                             @can('Profit and lost report')
+                            <li>
+                                <a class="slide-item"
+                                    href="{{ url('profit_and_lost') }}">{{ __('home.profit_and_lost') }}</a>
+                            </li>
+                            @endcan
+                            @can('Financial accounts')
+                            <li>
+                                <a class="slide-item"
+                                    href="{{ url('/general_budget') }}">{{ __('home.general_budget') }}</a>
+                            </li>
+                            @endcan
+                            @can('Financial accounts')
+                            <li>
+                                <a class="slide-item"
+                                    href="{{ url('/Statement_of_Changes_in_Equity_Report') }}">{{ __('home.Statement_of_Changes_in_Equity_Report') }}</a>
+                            </li>
+                            @endcan
+                            @can('Financial accounts')
+                            <li>
+                                <a class="slide-item"
+                                    href="{{ url('/cashFlowStatement') }}">{{ __('home.cashFlowStatement') }}</a>
+                            </li>
+                            @endcan
+
+
+
                         </ul>
                     </li>
                     @endcan

@@ -372,6 +372,15 @@ return [
     'basic_product_data' => 'Basic Product Data',
     'prices_and_category' => 'Prices and Categorization',
     'storage_and_notes'   => 'Storage and Notes',
+    'Requestـpricesـofـproducts' => 'Request Products Prices',
+    'ZATCA_Platform' => 'ZATCA Platform',
+    'Status' => 'Submission Status',
+    'Pending_Invoices' => 'Pending Invoices',
+    'You_Have' => 'You have',
+    'Invoices_Waiting' => 'invoices waiting for submission.',
+    'Send_Invoices_Now' => 'Send Invoices Now',
+    'Status_Good' => 'Integration Status OK',
+    'All_Invoices_Sent' => 'All invoices sent successfully',
 
     // --- الإعدادات والشركة ---
     'email' => 'Email',

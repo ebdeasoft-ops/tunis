@@ -94,7 +94,7 @@
 </div>
 
 <!-- شريط العمليات السريعة مع حركات انسيابية -->
-<div class="row mb-4 animate__animated animate__fadeInUp animate-delay-1">
+{{-- <div class="row mb-4 animate__animated animate__fadeInUp animate-delay-1">
     <div class="col-12">
         <div class="card p-3 border-0 shadow-sm" style="border-radius: 12px;">
             <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
@@ -116,7 +116,7 @@
             </div>
         </div>
     </div>
-</div>
+</div> --}}
 @endsection
 
 @section('content')

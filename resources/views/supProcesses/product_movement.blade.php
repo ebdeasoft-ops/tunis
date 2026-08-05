@@ -74,8 +74,8 @@
 <div class="card-body box-shadow-0">
     <div class="row row-sm mb-4 bg-light p-3 br-5">
         <div class="col-lg-6">
-            <p class="radio-label parent-label mb-2" style="font-size: 1.1rem; font-weight: bold;"> 
-                <i class="fas fa-store-alt"></i> {{ __('users.branch') }} 
+            <p class="radio-label parent-label mb-2" style="font-size: 1.1rem; font-weight: bold;">
+                <i class="fas fa-store-alt"></i> {{ __('users.branch') }}
             </p>
             <select class="form-control select2" style="width:100%" name="branchs_id" id="branchs_id">
                 <option value="{{ Auth()->user()->branch->id }}"> {{ Auth()->user()->branch->name }} </option>
@@ -95,7 +95,7 @@
 
     <hr>
 
-    <h6 class="main-content-label mb-3 mt-4 text-primary"><i class="fas fa-barcode"></i> بيانات المنتج الأساسية</h6>
+    <h6 class="main-content-label mb-3 mt-4 text-primary"><i class="fas fa-barcode"></i> {{ __('home.basic_product_data') }}</h6>
     <div class="row row-sm mb-3">
         <div class="col-lg-4" id="type">
             <label class="parent-label"> {{ __('home.productNo') }} </label>
@@ -113,7 +113,7 @@
     </div>
                 @can('System setting')
 
-    <h6 class="main-content-label mb-3 mt-4 text-primary"><i class="fas fa-money-bill-wave"></i> الأسعار والتصنيف</h6>
+    <h6 class="main-content-label mb-3 mt-4 text-primary"><i class="fas fa-money-bill-wave"></i> {{ __('home.prices_and_category') }}</h6>
     <div class="row row-sm mb-3">
         <div class="col-lg-4">
             <label class="parent-label"> {{ __('home.purachesepice') }} </label>
@@ -149,7 +149,7 @@
 
     <hr>
 
-    <h6 class="main-content-label mb-3 mt-4 text-primary"><i class="fas fa-map-marker-alt"></i> التخزين والملاحظات</h6>
+    <h6 class="main-content-label mb-3 mt-4 text-primary"><i class="fas fa-map-marker-alt"></i> {{ __('home.storage_and_notes') }}</h6>
     <div class="row row-sm mb-3">
         <div class="col-lg-4">
             <label class="parent-label"> {{__('supprocesses.current_location')}} </label>
@@ -305,12 +305,7 @@
 
     </div>
 
-<div class="col-lg-4 mg-t-20 mg-lg-t-0">
 
-    <a class="modal-effect btn btn-sm btn-info" data-effect="effect-scale" data-toggle="modal" href="#SearchProduct" title="تحديد"><i style=" height: 100;
-                 width: 100px;" class="las la-search"> {{ __('home.chooose product') }}</i></a>
-</div>
-<!-- main-content closed -->
 </div>
 @endsection
 @section('js')
@@ -334,17 +329,17 @@ $('#searchaboutproduct').val(searchtext);
 // document.getElementById("searchaboutproduct").focus();
 $('#SearchProduct').modal().show();
 
-        
+
 
     }})
     $('#SearchProduct').on('shown.bs.modal', function () {
     $('#searchaboutproduct').focus();
-}) 
+})
 
     function getproduct() {}
-    
-    
-    
+
+
+
     function searchaboutproductfunction() {
         searchtext = $('#searchaboutproduct').val();
         branchs_id = $('#branchs_id').val();
@@ -358,12 +353,13 @@ $('#SearchProduct').modal().show();
                 data: {
                     "_token": token_search,
                     "searchtext": searchtext,
+                    "locale" : "{{ app()->getLocale() }}", // ✅ صح
                     "branchs_id": branchs_id,
                 },
             success: function(data) {
                 $("#ajax_responce_serarchDiv").html(data);
             },
-         
+
         });
 
     }
@@ -407,6 +403,7 @@ $('#SearchProduct').modal().show();
                 data: {
                     "_token": token_search,
                     "searchtext": '',
+                    "locale" : "{{ app()->getLocale() }}", // ✅ صح
                     "branchs_id": branchs_id,
                 },
                   success: function(data) {
@@ -435,7 +432,7 @@ $('#SearchProduct').modal().show();
         console.log(maincode)
     $('#MAINproduct')
       .append($('<option selected>', { value :productcode  })
-      .text(MAINproductname)); 
+      .text(MAINproductname));
          searchtext =product_location;
          console.log(" {{URL::to('getproduct')}}/" + code)
     jQuery.ajax({
@@ -449,17 +446,17 @@ $('#SearchProduct').modal().show();
 
                     refnumber=data['refnumber']
                     numberofpice=data['numberofpice']
-             
+
            $('#refnumber').val(refnumber);
            $('#quentity').val(numberofpice);
         $('#Wholesale_price').val(data['Wholesale_price']);
         $('#product_notes').val(data['notes']);
 
-             
-          
-           
+
+
+
         }
-            
+
         }
         )
         var Product_Code = code
@@ -487,7 +484,7 @@ $('#searchaboutproduct').val(searchtext);
 // document.getElementById("searchaboutproduct").focus();
 $('#SearchProduct').modal().show();
 
-        
+
 
 
     }})
@@ -495,13 +492,13 @@ $('#SearchProduct').modal().show();
   $('#searchaboutproduct').focus();
     $('#searchaboutproduct').val($('#productcode').val());
            $('#searchaboutproduct').keyup()
-}) 
+})
     $(document).ready(function() {
     $('#productcode').focus();
          user_id=$('#user_id').val();
 if(user_id==1)
 {
-     
+
 }
         $(function() {
             var timeout = 4000; // in miliseconds (3*1000)

@@ -822,7 +822,7 @@ class ProductsController extends Controller
         $total_discount = $request->totaldiscound;
         $total = $request->totalSum;
         $date = $request->date;
-     
+
         // تجهيز الوقت الموحد بناءً على شرطك الحالي
         $nowWithOffset = \Carbon\Carbon::now()->addHours(3);
         $createdAt = $date != '0' ? $date . ' ' . substr($nowWithOffset, 12) : $nowWithOffset;
@@ -1287,27 +1287,33 @@ class ProductsController extends Controller
     }
 
     public function ChooseProductpaginatenewupdate(Request $request)
-    {
+{
+    // 1. تحديد لغة التطبيق من الـ Request القادم عبر AJAX
+    if ($request->has('locale') && !empty($request->locale)) {
+        app()->setLocale($request->locale);
+    } else {
         app()->setLocale(LaravelLocalization::getCurrentLocale());
-        $searchtext = $request->searchtext;
-        $branchs_id = $request->branchs_id;
-
-        $query = products::query();
-
-        // تنظيم الشروط البرمجية لضمان عدم تداخل الفروع عند البحث
-        if ($branchs_id !== '-') {
-            $query->where('branchs_id', $branchs_id);
-        }
-
-        $data = $query->where(function ($q) use ($searchtext) {
-            $q->where('product_name', 'LIKE', '%' . $searchtext . '%')
-                ->orWhere('Product_Code', 'LIKE', '%' . $searchtext . '%')
-                ->orWhere('refnumber', 'LIKE', '%' . $searchtext . '%')
-                ->orWhere('notes', 'LIKE', '%' . $searchtext . '%');
-        })->paginate(20);
-
-        return view('ajax_choose_product', compact('data'));
     }
+
+    $searchtext = $request->searchtext;
+    $branchs_id = $request->branchs_id;
+
+    $query = products::query();
+
+    // تنظيم الشروط البرمجية لضمان عدم تداخل الفروع عند البحث
+    if ($branchs_id !== '-') {
+        $query->where('branchs_id', $branchs_id);
+    }
+
+    $data = $query->where(function ($q) use ($searchtext) {
+        $q->where('product_name', 'LIKE', '%' . $searchtext . '%')
+            ->orWhere('Product_Code', 'LIKE', '%' . $searchtext . '%')
+            ->orWhere('refnumber', 'LIKE', '%' . $searchtext . '%')
+            ->orWhere('notes', 'LIKE', '%' . $searchtext . '%');
+    })->paginate(20);
+
+    return view('ajax_choose_product', compact('data'));
+}
 
     public function getallpurshasesfromsupplier($id)
     {
@@ -1379,7 +1385,7 @@ $data = resource_purchases::where('save', 1)
     })
     ->orderBy('id', 'desc')
     ->paginate(20);
-    
+
     return view('ajax_Recent_Invoices_purchases', compact('data'));
     }
 
@@ -1671,7 +1677,8 @@ $data = resource_purchases::where('save', 1)
         app()->setLocale(LaravelLocalization::getCurrentLocale());
 
         return view('showAllProducts');
-    }    public function showAllProducts_IN_Wherehouse(Request $request)
+    }
+     public function showAllProducts_IN_Wherehouse(Request $request)
     {
         //
         $branchId = $request->input('branch_id');
@@ -1753,7 +1760,7 @@ public function getAllinvicesapurchasesjax()
     // التحقق من المستخدمين المستثنين أو تطبيق شرط الفروع
     if (!in_array(auth()->user()->id, [17, 30, 11])) {
         $userBranchId = auth()->user()->branchs_id;
-        
+
         $query->where(function ($q) use ($userBranchId) {
             $q->where('branchs_id', $userBranchId)
               ->orWhere('branchMainId', $userBranchId);
@@ -3340,29 +3347,34 @@ $data = resource_purchases::where('save', 1)
         return view('ajax_search', compact('data'));
     }
 
-    public function searchAllproductpaginatenew_by_post(Request $request)
-    {
-        $searchTerm = '%' . $request->searchtext . '%';
+   public function searchAllproductpaginatenew_by_post(Request $request)
+{
+    // 1. ضبط لغة التطبيق بناءً على قيمة locale القادمة من الـ AJAX
+    if ($request->has('locale')) {
+        app()->setLocale($request->locale);
+    }
 
-        if ($request->branchs_id == '-') {
-            $data = products::where(function ($query) use ($searchTerm) {
+    $searchTerm = '%' . $request->searchtext . '%';
+
+    if ($request->branchs_id == '-') {
+        $data = products::where(function ($query) use ($searchTerm) {
+            $query->where('product_name', 'LIKE', $searchTerm)
+                ->orWhere('Product_Code', 'LIKE', $searchTerm)
+                ->orWhere('notes', 'LIKE', $searchTerm)
+                ->orWhere('refnumber', 'LIKE', $searchTerm);
+        })->paginate(20);
+    } else {
+        $data = products::where('branchs_id', $request->branchs_id)
+            ->where(function ($query) use ($searchTerm) {
                 $query->where('product_name', 'LIKE', $searchTerm)
                     ->orWhere('Product_Code', 'LIKE', $searchTerm)
                     ->orWhere('notes', 'LIKE', $searchTerm)
                     ->orWhere('refnumber', 'LIKE', $searchTerm);
             })->paginate(20);
-        } else {
-            $data = products::where('branchs_id', $request->branchs_id)
-                ->where(function ($query) use ($searchTerm) {
-                    $query->where('product_name', 'LIKE', $searchTerm)
-                        ->orWhere('Product_Code', 'LIKE', $searchTerm)
-                        ->orWhere('notes', 'LIKE', $searchTerm)
-                        ->orWhere('refnumber', 'LIKE', $searchTerm);
-                })->paginate(20);
-        }
-
-        return view('ajax_search', compact('data'));
     }
+
+    return view('ajax_search', compact('data'));
+}
 
     public function searchChooseProductpaginatenew($searchtext, $branchs_id)
     {

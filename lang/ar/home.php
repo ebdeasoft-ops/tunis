@@ -12,11 +12,13 @@ return [
     | you want to customize your views to better match your application.
     |
     */
-    'Statement_of_Changes_in_Equity_Report'=>'قائمة التغير حقوق ملكية',
-    'cashFlowStatement'=>'قائمة التدفقات النقدية',
-    'general_budget'=>"قائمة المركز المالي ",
+    'Statement_of_Changes_in_Equity_Report'=>'التغير في حقوق الملكية',
+    'general_budget'=>"الميزانية العامة",
     'invoice_number'=>'رقم الفاتورة',
     'type' => 'النوع',
+    'adjustment_type'   => 'نوع التعديل',
+    'adjusted_quantity' => 'الكمية المعدلة',
+    'delete'            => 'حذف',
     'public' => 'عام',
     'client_and_supplier' => 'عميل ومورد',
     'received_movements_report' => 'سندات  الاستلام ',
@@ -393,8 +395,11 @@ return [
     'quentitydamagereport' => 'مقدار الكمية المتلفة',
     'productincrease' => 'مقدار الزيادة للمخزون',
     'productdecrease' => 'مقدار الخصم للمخزون',
-    'increasequantity' => 'اجراء زيادة في كمية المخزون',
-    'decreasequentity' => 'اجراء خصم من كمية المخزون',
+    'increasequantity' => ' زيادة',
+    'decreasequentity' => 'خصم',
+    'basic_product_data' => 'بيانات المنتج الأساسية',
+    'prices_and_category' => 'الأسعار والتصنيف',
+    'storage_and_notes'   => 'التخزين والملاحظات',
 
 
     'email' => 'البريد الالكتروني',

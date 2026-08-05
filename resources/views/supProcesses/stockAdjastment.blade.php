@@ -126,7 +126,7 @@
             <div class="card shadow-sm border-0 mb-4">
     <div class="card-body">
         <div class="row align-items-end">
-            
+
             <!-- اختيار الفرع -->
             <div class="col-md-3">
                 <label class="form-label font-weight-bold">{{ __('users.branch') }}</label>
@@ -146,16 +146,16 @@
             </div>
 
             <!-- أزرار الإكسل -->
-            <div class="col-md-6 text-md-right mt-3 mt-md-0">
-                <div class="d-flex justify-content-md-end gap-2">
+            <div class="col-md-6 text-md-right mt-3 mt-md-0 gap-5">
+                <div class="d-flex justify-content-md-end">
                     <a href="{{ route('stock.download_template') }}" class="btn btn-outline-success shadow-sm">
-                        <i class="fas fa-file-excel"></i> تحميل النموذج
+                        <i class="fas fa-file-excel"></i> {{ __('home.download_template') }}
                     </a>
-                    
+
                     <div class="upload-btn-wrapper">
                         <input type="file" id="excel_file" style="display:none;" accept=".xlsx, .xls">
                         <button type="button" class="btn btn-primary shadow-sm" onclick="document.getElementById('excel_file').click();">
-                            <i class="fas fa-upload"></i> رفع ملف Excel
+                            <i class="fas fa-upload"></i> {{ __('home.upload_excel') }}
                         </button>
                     </div>
                 </div>
@@ -181,10 +181,11 @@
                                             <tr class="table-info">
                                                 <th>{{ __('home.productNo') }}</th>
                                                 <th>{{ __('home.productname') }}</th>
-                                                <th>نوع التعديل</th> <th>{{ __('supprocesses.current_quantity') }}</th>
-                                                <th>الكمية المعدلة</th>
+                                                <th>{{ __('home.adjustment_type') }}</th>
+                                                <th>{{ __('supprocesses.current_quantity') }}</th>
+                                                <th>{{ __('home.adjusted_quantity') }}</th>
                                                 <th>{{ __('home.notesClient') }}</th>
-                                                <th>حذف</th>
+                                                <th>{{ __('home.delete') }}</th>
                                             </tr>
                                         </thead>
                                         <tbody id="adjustment-table-body">
@@ -218,7 +219,7 @@
         <div class="card mg-b-20">
             <div class="card-header pb-0">
                 <div class="d-flex justify-content-between">
-                    <h4 class="card-title mg-b-0">تفاصيل الحركة</h4>
+                    <h4 class="card-title mg-b-0">{{ __('home.movement_details') }}</h4>
                 </div>
             </div>
             <div class="card-body">
@@ -229,7 +230,8 @@
                                 <th class="border-bottom-0">#</th>
                                 <th class="border-bottom-0">{{ __('home.productNo') }}</th>
                                 <th class="border-bottom-0">{{ __('home.product') }}</th>
-                                <th class="border-bottom-0">نوع التعديل</th> <th class="border-bottom-0">{{ __('home.quantity') }}</th>
+                                <th class="border-bottom-0">{{ __('home.adjustment_type') }}</th>
+                                <th class="border-bottom-0">{{ __('home.quantity') }}</th>
                             </tr>
                         </thead>
                        <tbody id="adjustment-table-body">
@@ -371,10 +373,18 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
+
 <script>
 
-
-
+// تجهيز مصفوفة الترجمات لاستخدامها داخل كود JS
+const translations = {
+    alreadyAdded: "{{ __('home.already_added') ?? 'هذا المنتج مضاف بالفعل في الجدول' }}",
+    increase: "{{ __('home.increasequantity') ?? 'زيادة' }} (+)",
+    decrease: "{{ __('home.decreasequentity') ?? 'نقصان' }} (-)",
+    quantityPlaceholder: "{{ __('home.quantity') ?? 'الكمية' }}",
+    notePlaceholder: "{{ __('home.note_placeholder') ?? 'ملاحظة' }}",
+    delete: "{{ __('home.delete') ?? 'حذف' }}"
+};
 $('#excel_file').on('change', function(e) {
     let selectedBranch = $('#branchs_id').val();
     let file = this.files[0];
@@ -445,7 +455,7 @@ function renderExcelProducts(productsList) {
         // إذا كان الجرد أكبر من المخزن = زيادة
         // إذا كان الجرد أقل من المخزن = نقصان
         let type = (inventory >= available) ? 'inc' : 'dec';
-        
+
         // حساب الفرق للكمية التي سيتم إدخالها في حقل الكمية (القيمة المطلقة للفرق)
         let diffAmount = Math.abs(inventory - available);
 
@@ -457,10 +467,10 @@ function renderExcelProducts(productsList) {
                 </td>
                 <td>${product['product_name']}</td>
                 <td>
-                    <select class="form-control row-type-selector" style="width: 110px;">
-                        <option value="inc" ${type === 'inc' ? 'selected' : ''}>زيادة (+)</option>
-                        <option value="dec" ${type === 'dec' ? 'selected' : ''}>نقصان (-)</option>
-                    </select>
+                  <select class="form-control row-type-selector" style="width: 110px;">
+                    <option value="inc" ${type === 'inc' ? 'selected' : ''}>${translations.increase}</option>
+                    <option value="dec" ${type === 'dec' ? 'selected' : ''}>${translations.decrease}</option>
+                </select>
                 </td>
                 <td>
                     <input type="text" class="form-control text-center" value="${available}" readonly>
@@ -475,7 +485,7 @@ function renderExcelProducts(productsList) {
                 </td>
                 <td>
                     <button type="button" class="btn btn-danger btn-sm" onclick="$(this).closest('tr').remove()">
-                        <i class="fa fa-trash"></i> حذف
+                        <i class="fa fa-trash"></i> ${translations.delete}
                     </button>
                 </td>
             </tr>
@@ -488,7 +498,7 @@ function renderExcelProducts(productsList) {
 function updateHiddenValues(row) {
     let type = row.find('.row-type-selector').val();
     let amount = row.find('.amount-input').val();
-    
+
     if (type === 'inc') {
         row.find('.inc-val').val(amount);
         row.find('.dec-val').val(0);
@@ -574,6 +584,7 @@ $(document).on('change', '.row-type-selector, .amount-input', function() {
                 data: {
                     "_token": token_search,
                     "searchtext": searchtext,
+                    "locale" : "{{ app()->getLocale() }}", // ✅ صح
                     "branchs_id": branchs_id,
                 },
                   success: function(data) {
@@ -624,6 +635,7 @@ $(document).on('change', '.row-type-selector, .amount-input', function() {
                 data: {
                     "_token": token_search,
                     "searchtext": searchtext,
+                     "locale" : "{{ app()->getLocale() }}", // ✅ صح
                     "branchs_id": branchs_id,
                 },
             success: function(data) {
@@ -636,12 +648,12 @@ $(document).on('change', '.row-type-selector, .amount-input', function() {
 </script>
 
 <script>
-     
+
 
 
     // لاحظ هنا زودنا عدد المتغيرات عشان تطابق الـ 11 اللي مبعوثين من الـ PHP بالظبط
        function chooseProduct(code, name, price, sale_price, productcode, availablequantity, productcode2) {
-   
+
 
 
 
@@ -665,26 +677,26 @@ $(document).on('change', '.row-type-selector, .amount-input', function() {
                 </td>
                 <td>${name}</td>
                 <td>
-                    <select class="form-control row-type-selector" style="width: 110px;">
-                        <option value="inc">زيادة (+)</option>
-                        <option value="dec">نقصان (-)</option>
-                    </select>
+                  <select class="form-control row-type-selector" style="width: 110px;">
+                    <option value="inc">${translations.increase}</option>
+                    <option value="dec">${translations.decrease}</option>
+                </select>
                 </td>
                 <td>
                     <input type="text" class="form-control text-center" value="${availablequantity}" readonly>
                 </td>
                 <td>
-                    <input type="number" class="form-control amount-input" placeholder="الكمية" required min="1">
+                    <input type="number" class="form-control amount-input" placeholder="${translations.quantityPlaceholder}" required min="1">
 
                     <input type="hidden" name="productincrease[]" class="inc-val" value="0">
                     <input type="hidden" name="productdecrease[]" class="dec-val" value="0">
                 </td>
                 <td>
-                    <input type="text" name="note[]" class="form-control" placeholder="ملاحظة">
+                    <input type="text" name="note[]" class="form-control" placeholder="${translations.notePlaceholder}">
                 </td>
                 <td>
                     <button type="button" class="btn btn-danger btn-sm" onclick="$(this).closest('tr').remove()">
-                        <i class="fa fa-trash"></i> حذف
+                        <i class="fa fa-trash"></i> ${translations.delete}
                     </button>
                 </td>
             </tr>

@@ -1535,8 +1535,9 @@ private static function calculateTotalWithChildren($accountId, $allAccounts, $tr
         if ($branch != '-') {
             $salesQuery->where('branch_id', $branch);
             $returnSalesQuery->where('branch_id', $branch);
-            $orderDetailsQuery->where('branch_id', $branch);
-            // ملاحظة: إذا كانت جداول التحويلات والتحديثات تحتوي على branch_id قم بتفعيل الفلاتر لها هنا أيضاً:
+$orderDetailsQuery->whereHas('order', function($q) use ($branch) {
+                $q->where('branchs_id', $branch); // العمود branchs_id الموجود في جدول resource_purchases
+            });            // ملاحظة: إذا كانت جداول التحويلات والتحديثات تحتوي على branch_id قم بتفعيل الفلاتر لها هنا أيضاً:
             // $movementsQuery->where('branch_id', $branch);
             // $stockUpdateQuery->where('branch_id', $branch);
         }
@@ -4366,4 +4367,23 @@ public function Customerlist()
 
         return view('reports.print_stock_update', compact('stock_update'));
     }
+
+    
+    public function print_products_Transfer($branch_from, $branch_to, $startat, $end_at)
+    {
+        app()->setLocale(LaravelLocalization::getCurrentLocale());
+        $transactions = [];
+
+        $transctions = product_movement_another_branch::where('branch_from', $branch_from)->where('branch_to', $branch_to)->whereDate('created_at', '>=', $startat)->whereDate('created_at', '<=', $end_at)->get();
+        $data = [
+            "start_at" => $startat,
+            "end_at" => $end_at,
+            "branch_to" => $branch_to,
+            "branch_from" => $branch_from,
+            "transctions" => $transctions
+        ];
+        return view('reports.print_transction_product', compact('data'));
+    }
+
+
 }

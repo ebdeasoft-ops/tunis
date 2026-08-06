@@ -11,6 +11,9 @@ use Maatwebsite\Excel\Concerns\WithStyles;
 use Maatwebsite\Excel\Concerns\WithEvents;
 use Maatwebsite\Excel\Events\AfterSheet;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
+use PhpOffice\PhpSpreadsheet\Style\Fill;
+use PhpOffice\PhpSpreadsheet\Style\Border;
+use PhpOffice\PhpSpreadsheet\Style\Alignment;
 
 class ProductsSalesAndPurchaseReport implements FromQuery, WithHeadings, WithMapping, ShouldAutoSize, WithStyles, WithEvents
 {
@@ -24,7 +27,6 @@ class ProductsSalesAndPurchaseReport implements FromQuery, WithHeadings, WithMap
     // 1. الاستعلام لاستخراج بيانات المشتريات والمبيعات
     public function query()
     {
-        // 1. استعلام فرعي للمبيعات (لحساب إجمالي المبيعات، متوسط سعر البيع، وإجمالي الخصومات لكل منتج)
         $salesSub = \DB::table('sales')
             ->select(
                 'product_id',
@@ -34,7 +36,6 @@ class ProductsSalesAndPurchaseReport implements FromQuery, WithHeadings, WithMap
             )
             ->where('save', 1);
 
-        // تطبيق شروط الفترة والفرع على المبيعات إذا رغبت في أن تكون المبيعات لنفس الفترة
         if (!empty($this->request->start_at)) {
             $salesSub->whereDate('created_at', '>=', $this->request->start_at);
         }
@@ -47,14 +48,12 @@ class ProductsSalesAndPurchaseReport implements FromQuery, WithHeadings, WithMap
 
         $salesSub->groupBy('product_id');
 
-        // 2. الاستعلام الأساسي (يبدأ من المشتريات لضمان ظهور كل المنتجات المشتراة، مع ربطها بالمبيعات)
         $query = \App\Models\orderDetails::query()
             ->join('resource_purchases', 'order_details.order_owner', '=', 'resource_purchases.orderId')
             ->leftJoinSub($salesSub, 'sales', function($join) {
                 $join->on('order_details.product_id', '=', 'sales.product_id');
             });
 
-        // فلترة تاريخ المشتريات الأساسي
         if (!empty($this->request->start_at)) {
             $query->whereDate('resource_purchases.created_at', '>=', $this->request->start_at);
         }
@@ -117,15 +116,15 @@ class ProductsSalesAndPurchaseReport implements FromQuery, WithHeadings, WithMap
     // 3. تنسيق البيانات داخل السطور
     public function map($row): array
     {
-        $total_cost      = $row->total_purchase_cost;
+        $total_cost          = $row->total_purchase_cost;
         $avg_purchase_price = $row->purchased_quantity > 0 ? $total_cost / $row->purchased_quantity : 0;
-        $gross_sales     = $row->quantity * $row->unit_price;
-        $total_discount  = $row->total_discount;
-        $net_sales       = $gross_sales - $total_discount;
-        $net_profit      = $net_sales - $total_cost;
+        $gross_sales         = $row->quantity * $row->unit_price;
+        $total_discount      = $row->total_discount;
+        $net_sales           = $gross_sales - $total_discount;
+        $net_profit          = $net_sales - $total_cost;
 
         return [
-            $row->productData->Product_Code,
+            $row->productData->Product_Code ?? '-',
             $row->product_name,
             $row->purchase_invoice_numbers,
             $avg_purchase_price,
@@ -149,134 +148,148 @@ class ProductsSalesAndPurchaseReport implements FromQuery, WithHeadings, WithMap
 
         return [
             1 => [
-                'font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF']],
+                'font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF'], 'size' => 11],
                 'fill' => [
-                    'fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID,
-                    'startColor' => ['rgb' => '1F497D']
+                    'fillType' => Fill::FILL_SOLID,
+                    'startColor' => ['rgb' => '203764'] // كحلي ملكي فخم للهيدر
                 ]
             ],
         ];
     }
 
-    // 5. فحص الصفوف، تلوين التي لم تقم بمبيعات، إضافة صف الإجمالي، وضبط حدود الجدول
+    // 5. الأحداث والتنسيقات الجمالية المتقدمة
     public function registerEvents(): array
     {
         return [
             AfterSheet::class => function(AfterSheet $event) {
                 $sheet = $event->sheet->getDelegate();
-                $highestRow = $sheet->getHighestRow();
-                $highestColumn = 'N'; // آخر عمود في التقرير (بعد إضافة عمود قيمة المرتجع)
-                $returnValueColumn = 'H'; // عمود قيمة المرتجع
+                
+                // إدراج صف تعريفي علوي للعنوان (Dashboard Title Banner)
+                $sheet->insertNewRowBefore(1, 2);
+                $sheet->mergeCells('A1:N1');
+                $sheet->setCellValue('A1', '📊 تقرير حركة ومبيعات ومشتريات المنتجات الشامل');
+                
+                $sheet->getStyle('A1')->applyFromArray([
+                    'font' => ['bold' => true, 'size' => 14, 'color' => ['rgb' => 'FFFFFF']],
+                    'fill' => [
+                        'fillType' => Fill::FILL_SOLID,
+                        'startColor' => ['rgb' => '1F497D']
+                    ],
+                    'alignment' => [
+                        'horizontal' => Alignment::HORIZONTAL_CENTER,
+                        'vertical' => Alignment::VERTICAL_CENTER
+                    ]
+                ]);
+                $sheet->getRowDimension(1)->setRowHeight(35);
+                $sheet->getRowDimension(2)->setRowHeight(15); // صف فارغ فاصل
 
-                // مجاميع الأعمدة الرقمية (F إلى N)
+                $highestRow = $sheet->getHighestRow();
+                $highestColumn = 'N'; 
+                $returnValueColumn = 'H'; 
+
+                // مجاميع الأعمدة الرقمية (F إلى N) - تبدأ الصفوف الآن من 3 للعناوين و 4 للبيانات
                 $totals = [
-                    'F' => 0, // الكمية المشتراة
-                    'G' => 0, // الكمية المرتجعة
-                    'H' => 0, // قيمة المرتجع
-                    'I' => 0, // الكمية المباعة
-                    'J' => 0, // إجمالي التكلفة
-                    'K' => 0, // إجمالي المبيعات
-                    'L' => 0, // إجمالي الخصم
-                    'M' => 0, // صافي المبيعات
-                    'N' => 0, // صافي الربح
+                    'F' => 0, 'G' => 0, 'H' => 0, 'I' => 0, 
+                    'J' => 0, 'K' => 0, 'L' => 0, 'M' => 0, 'N' => 0
                 ];
 
-                // نبدأ من الصف الثاني لأن الصف الأول هو الهيدر (العناوين)
-                for ($row = 2; $row <= $highestRow; $row++) {
-                    // عمود الكمية المرتجعة G، وقيمة المرتجع H، والكمية المباعة بقت I
+                // نبدأ من الصف 4 (بعد الهيدر الجديد) إلى نهاية البيانات
+                for ($row = 4; $row <= $highestRow; $row++) {
                     $returnedQuantity = $sheet->getCell("G{$row}")->getValue();
                     $soldQuantity = $sheet->getCell("I{$row}")->getValue();
 
-                    // تجميع القيم الرقمية لكل عمود
                     foreach ($totals as $col => $value) {
                         $totals[$col] += (float) $sheet->getCell("{$col}{$row}")->getValue();
                     }
 
+                    // تلوين وتصميم الصفوف بناءً على حالتها (تنسيق شرطي فخم وهادئ)
                     if ($returnedQuantity > 0) {
-                        // يوجد مرتجع مشتريات لهذا المنتج - تلوين أخضر
+                        // منتج به مرتجعات (أخضر زاهي مريح للأعين)
                         $sheet->getStyle("A{$row}:{$highestColumn}{$row}")->applyFromArray([
-                            'fill' => [
-                                'fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID,
-                                'startColor' => ['rgb' => 'D4EDDA'] // أخضر فاتح هادئ
-                            ],
-                            'font' => [
-                                'color' => ['rgb' => '155724'] // نص أخضر داكن وواضح
-                            ]
+                            'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => 'E2EFDA']],
+                            'font' => ['color' => ['rgb' => '375623']]
                         ]);
                     } elseif ($soldQuantity == 0 || $soldQuantity === null) {
-                        // لا توجد مبيعات لهذا المنتج - تلوين أحمر
+                        // منتج راكد بلا مبيعات (أحمر خفيف هادئ)
                         $sheet->getStyle("A{$row}:{$highestColumn}{$row}")->applyFromArray([
-                            'fill' => [
-                                'fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID,
-                                'startColor' => ['rgb' => 'F8D7DA'] // أحمر فاتح هادئ
-                            ],
-                            'font' => [
-                                'color' => ['rgb' => '721C24'] // نص أحمر داكن وواضح
-                            ]
+                            'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => 'FCE4D6']],
+                            'font' => ['color' => ['rgb' => 'C65911']]
                         ]);
+                    } else {
+                        // صفوف عادية بتخطيط تفاعلي Zebra Striping (تبادل ألوان خفيف جداً)
+                        if ($row % 2 == 0) {
+                            $sheet->getStyle("A{$row}:{$highestColumn}{$row}")->applyFromArray([
+                                'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => 'F2F2F2']]
+                            ]);
+                        }
                     }
+                    
+                    // ضبط ارتفاع الصفوف لتبدو مريحة للقراءة
+                    $sheet->getRowDimension($row)->setRowHeight(22);
                 }
 
                 // إضافة صف الإجمالي أسفل الجدول
                 $totalRow = $highestRow + 1;
-                $sheet->setCellValue("A{$totalRow}", 'الإجمالي');
+                $sheet->setCellValue("A{$totalRow}", 'إجمالي الحسابات');
                 $sheet->mergeCells("A{$totalRow}:E{$totalRow}");
 
                 foreach ($totals as $col => $value) {
                     $sheet->setCellValue("{$col}{$totalRow}", $value);
                 }
 
+                // تصميم فخم لصف الإجماليات (لون داكن مميز مع خط عريض)
                 $sheet->getStyle("A{$totalRow}:{$highestColumn}{$totalRow}")->applyFromArray([
-                    'font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF']],
+                    'font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF'], 'size' => 11],
                     'fill' => [
-                        'fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID,
-                        'startColor' => ['rgb' => '1F497D']
+                        'fillType' => Fill::FILL_SOLID,
+                        'startColor' => ['rgb' => '16365C']
                     ],
                 ]);
+                $sheet->getRowDimension($totalRow)->setRowHeight(28);
 
-                // تمييز عمود "قيمة المرتجع" بالكامل بلون برتقالي مختلف عن باقي الجدول
-                // (يُطبَّق بعد تلوين الصفوف وصف الإجمالي حتى يظل ظاهرًا فوقهم في هذا العمود فقط)
-                $sheet->getStyle("{$returnValueColumn}2:{$returnValueColumn}{$highestRow}")->applyFromArray([
-                    'fill' => [
-                        'fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID,
-                        'startColor' => ['rgb' => 'FCE4D6'] // برتقالي فاتح مميز
-                    ],
-                    'font' => [
-                        'color' => ['rgb' => '833C00'] // نص برتقالي داكن للوضوح
-                    ]
+                // تمييز عمود "قيمة المرتجع" بلون برتقالي مميز ليظهر بوضوح
+                $sheet->getStyle("{$returnValueColumn}4:{$returnValueColumn}{$highestRow}")->applyFromArray([
+                    'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => 'F8CBAD']],
+                    'font' => ['color' => ['rgb' => '833C00'], 'bold' => true]
                 ]);
+                
                 $sheet->getStyle("{$returnValueColumn}{$totalRow}")->applyFromArray([
-                    'fill' => [
-                        'fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID,
-                        'startColor' => ['rgb' => 'C65911'] // برتقالي أغمق لخلية الإجمالي
-                    ],
+                    'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => 'C65911']],
                     'font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF']]
                 ]);
 
-                // ضبط حدود الجدول بالكامل (شامل الهيدر وصف الإجمالي)
-                $sheet->getStyle("A1:{$highestColumn}{$totalRow}")->applyFromArray([
+                // ضبط الحدود (Borders) لكل جدول البيانات بلمسة احترافية
+                $sheet->getStyle("A3:{$highestColumn}{$totalRow}")->applyFromArray([
                     'borders' => [
                         'allBorders' => [
-                            'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
-                            'color' => ['rgb' => '000000'],
+                            'borderStyle' => Border::BORDER_THIN,
+                            'color' => ['rgb' => 'D9D9D9'],
                         ],
+                        'outline' => [
+                            'borderStyle' => Border::BORDER_MEDIUM,
+                            'color' => ['rgb' => '203764'],
+                        ]
                     ],
                 ]);
 
-                // توسيط رأسي وأفقي لكل الخلايا
-                $sheet->getStyle("A1:{$highestColumn}{$totalRow}")->getAlignment()
-                    ->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER)
-                    ->setVertical(\PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER);
+                // المحاذاة (توسيط كامل)
+                $sheet->getStyle("A3:{$highestColumn}{$totalRow}")->getAlignment()
+                    ->setHorizontal(Alignment::HORIZONTAL_CENTER)
+                    ->setVertical(Alignment::VERTICAL_CENTER);
 
-                // ملاحظة توضيحية أسفل الجدول: كل المبالغ الظاهرة قبل الضريبة
-                $noteRow = $totalRow + 1;
-                $sheet->setCellValue("A{$noteRow}", '* جميع المبالغ الموضحة في هذا التقرير قبل الضريبة (غير شامل الضريبة).');
+                // تنسيق الأرقام والعملات لتبدو احترافية (تجنب الأرقام العشوائية)
+                $sheet->getStyle("D4:N{$totalRow}")
+                    ->getNumberFormat()
+                    ->setFormatCode('#,##0.00');
+
+                // ملاحظة توضيحية أسفل التقرير
+                $noteRow = $totalRow + 2;
+                $sheet->setCellValue("A{$noteRow}", '💡 ملاحظة: جميع المبالغ الموضحة في هذا التقرير محسوبة قبل احتساب ضريبة القيمة المضافة.');
                 $sheet->mergeCells("A{$noteRow}:{$highestColumn}{$noteRow}");
                 $sheet->getStyle("A{$noteRow}")->applyFromArray([
-                    'font' => ['italic' => true, 'bold' => true, 'color' => ['rgb' => '842029']],
+                    'font' => ['italic' => true, 'size' => 10, 'color' => ['rgb' => '7F7F7F']],
+                    'alignment' => ['horizontal' => Alignment::HORIZONTAL_RIGHT]
                 ]);
-                $sheet->getStyle("A{$noteRow}")->getAlignment()
-                    ->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_RIGHT);
             },
         ];
     }

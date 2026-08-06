@@ -35,4 +35,8 @@ public function orderToSupplier()
 {
     return $this->belongsTo(orderTosupllier::class, 'order_owner');
 }
+public function order()
+{
+    return $this->belongsTo(resource_purchases::class, 'order_owner', 'id');
+}
 }

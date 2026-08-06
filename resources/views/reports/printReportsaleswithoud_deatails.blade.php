@@ -96,10 +96,10 @@
                 <!-- رأس الفاتورة / التقرير -->
                 <div class="invoice-header d-flex justify-content-between align-items-center w-100">
                     <div class="billed-from text-right" style="width:33%;">
-                        <span style="font-size:16px; font-weight:bold;">{{ $Namear ?? '' }}</span>
-                        <p class="mb-1 text-muted">{{ $describtionar ?? '' }}</p>
-                        <p class="mb-1 text-muted">{{ $STar ?? '' }}</p>
-                        <p class="mb-0 text-muted">{{ $Taxar ?? '' }}</p>
+                        <span style="font-size:16px; font-weight:bold;">{{ Namear ?? '' }}</span>
+                        <p class="mb-1 text-muted">{{ describtionar ?? '' }}</p>
+                        <p class="mb-1 text-muted">{{ STar ?? '' }}</p>
+                        <p class="mb-0 text-muted">{{ Taxar ?? '' }}</p>
                     </div>
 
                     <div class="text-center" style="width:33%;">
@@ -110,10 +110,10 @@
                     </div>
 
                     <div class="billed-from text-left" style="width:33%;">
-                        <span style="font-size:16px; font-weight:bold;">{{ $Nameen ?? '' }}</span>
-                        <p class="mb-1 text-muted">{{ $describtionen ?? '' }}</p>
-                        <p class="mb-1 text-muted">{{ $STen ?? '' }}</p>
-                        <p class="mb-0 text-muted">{{ $Taxen ?? '' }}</p>
+                        <span style="font-size:16px; font-weight:bold;">{{ Nameen ?? '' }}</span>
+                        <p class="mb-1 text-muted">{{ describtionen ?? '' }}</p>
+                        <p class="mb-1 text-muted">{{ STen ?? '' }}</p>
+                        <p class="mb-0 text-muted">{{ Taxen ?? '' }}</p>
                     </div>
                 </div>
 
@@ -127,9 +127,9 @@
                     <table class="table table-bordered text-center" style="background: #fdfdfd;">
                         <tr>
                             <th style="width: 25%; color: #419BB2;">{{ __('report.fromdate') }}:</th>
-                            <td style="width: 25%; font-weight: bold;">{{ $start[0] ?? '' }}</td>
+                            <td style="width: 25%; font-weight: bold;">{{ $start?? '' }}</td>
                             <th style="width: 25%; color: #419BB2;">{{ __('report.todate') }}:</th>
-                            <td style="width: 25%; font-weight: bold;">{{ $end[0] ?? '' }}</td>
+                            <td style="width: 25%; font-weight: bold;">{{ $end ?? '' }}</td>
                         </tr>
                     </table>
                 </div>

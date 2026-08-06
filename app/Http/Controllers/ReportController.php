@@ -1060,7 +1060,7 @@ private static function calculateTotalWithChildren($accountId, $allAccounts, $tr
             ];
         }
 
-        return view('reports.Customer_debt_restructuring', compact('data'));
+        return view('reports.Supplier_debt_restructuring', compact('data'));
     }
 
 
@@ -2756,7 +2756,8 @@ public function Customerlist()
         // الترتيب من الأكثر مبيعاً للأقل
         $bestselling = collect($bestselling)->sortByDesc('numberofsall')->values()->all();
 
-        return view('reports.Best_selling_products', compact('bestselling'))->with('branch_id', $request->branch);
+        return view('reports.Best_selling_products', compact('bestselling'))->with('branch_id', $request->branch)
+        ->with('end_at',  $request->end_at)->with('start_at',  $request->start_at);
     }
 
     public function search_VAT(Request $request)
@@ -2860,28 +2861,26 @@ public function Customerlist()
     public function search_purchasereports(Request $request)
     {
         app()->setLocale(LaravelLocalization::getCurrentLocale());
-        $supplierId = $request->productname;
-
+        $productNo = $request->productNo;
         // استخدام علاقة المنتج هنا إذا كنت تعرض اسم المنتج في الـ View لتجنب الـ N+1 Query
         // مثال: orderDetails::with('product')
-        $query = orderDetails::whereBetween('created_at', [$request->start_at, $request->end_at])
+        $query = orderDetails::whereBetween('created_at', [$request->start_at . ' 00:00:00', 
+                $request->end_at . ' 23:59:59'])
             ->where('save', 1);
 
         // تطبيق الشرط فقط إذا تم اختيار منتج محدد
-        if ($supplierId != '-') {
-            $query->where('product_id', $supplierId);
+        if ($productNo != '-') {
+            $query->where('product_id', $productNo);
         }
 
         $products = $query->get();
-
-        return view('reports.purchasereports', compact('products'))->with('supplierId', $supplierId);
+        return view('reports.purchasereports', compact('products'))->with('productNo', $productNo)->with('start_at', $request->start_at . ' 00:00:00')->with('end_at', $request->end_at . ' 23:59:59');
     }
 
     public function search_customerـpurchases(Request $request)
     {
         app()->setLocale(LaravelLocalization::getCurrentLocale());
-
-        $branch = $request->branch;
+       $branch = $request->branch;
         $userId = $request->UserId;
 
         // استخدام الاختصار الذكي (when) لتبسيط شروط الـ if/elseif المعقدة
@@ -2897,7 +2896,9 @@ public function Customerlist()
 
         return view('reports.customerpurchases', compact('Invoices'))
             ->with('branch', [$userId, $branch])
-            ->with('userid', [$userId, $branch]);
+            ->with('userid', [$userId, $branch])
+            ->with('start_at',$request->start_at,)
+            ->with('start_at',  $request->end_at);
     }
 
     public function searchpurchasproducttocustomer(Request $request)
@@ -2928,7 +2929,7 @@ public function Customerlist()
         $branch = $request->branch;
 
         $query = resource_purchases::where('recoveredـpieces', '!=', 0)
-            ->whereBetween('updated_at', [$request->start_at, $request->end_at]);
+            ->whereBetween('updated_at', [$request->start_at . ' 00:00:00',$request->end_at . ' 23:59:59']);
 
         if ($branch != '-') {
             $query->where('branchs_id', $branch);
@@ -3408,23 +3409,7 @@ public function Customerlist()
     /**
      * طلبات العروض المقدمة من الموردين
      */
-    public function search_Request_offers_from_suppliers(Request $request)
-    {
-        app()->setLocale(LaravelLocalization::getCurrentLocale());
-        $supplierId = $request->supplierId;
-
-        $query = orderTosupllier::where('Limit_credit', '')
-            ->whereDate('created_at', '>=', $request->start_at)
-            ->whereDate('created_at', '<=', $request->end_at);
-
-        if ($supplierId !== '-') {
-            $query->where('suplier_id', $supplierId);
-        }
-
-        $Invoices = $query->get();
-
-        return view('reports.Request_offers_from_suppliers', compact('Invoices'))->with('supplierId', $supplierId);
-    }
+ 
 
     /**
      * تقرير مبيعات منتج محدد
@@ -3451,7 +3436,7 @@ public function Customerlist()
 
         $products = $query->get();
 
-        return view('reports.product_sales', compact('products'))->with('branch_Id', $request->branch);
+        return view('reports.product_sales', compact('products'))->with('branch_Id', $request->branch)->with('start_at', $request->start_at)->with('end_at', $request->end_at);
     }
 
     /**
@@ -3482,7 +3467,7 @@ public function Customerlist()
             ->where('save', 1)
             ->get();
 
-        return view('reports.employeesales', compact('Invoices'));
+        return view('reports.employeesales', compact('Invoices'))->with('start_at',$request->start_at)->with('end_at',$request->end_at)->with('userId',$request->productname);
     }
 
     /**
@@ -3802,6 +3787,23 @@ public function Customerlist()
         $Invoices = $query->get();
 
         return view('reports.print_Request_A_quote_from_supplier', compact('Invoices'));
+    }
+    public function search_Request_offers_from_suppliers(Request $request)
+    {
+        app()->setLocale(LaravelLocalization::getCurrentLocale());
+        $supplierId = $request->supplierId;
+
+        $query = orderTosupllier::where('Limit_credit', '')
+                                ->whereDate('created_at', '>=', $request->start_at)
+                                ->whereDate('created_at', '<=', $request->end_at);
+
+        if ($supplierId !== '-') {
+            $query->where('suplier_id', $supplierId);
+        }
+
+        $Invoices = $query->get();
+
+        return view('reports.Request_offers_from_suppliers', compact('Invoices'))->with('supplierId', $supplierId);
     }
 
     /**
@@ -4161,7 +4163,9 @@ public function Customerlist()
 
         return view('reports.sales_report', compact('Invoices'))
             ->with('pay', [$request->pay, $request->branch])
-            ->with('customer_id', $request->UserId);
+            ->with('customer_id', $request->UserId)
+            ->with('startat', $request->start_at)
+            ->with('endat', $request->end_at);
     }
 
     /**

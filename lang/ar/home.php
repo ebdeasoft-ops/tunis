@@ -12,6 +12,70 @@ return [
     | you want to customize your views to better match your application.
     |
     */
+'advanced_search_filters' => 'بحث متقدم وفلترة',
+    'customer_supplier_account' => 'حساب العملاء والموردين',
+    'comprehensive_financial_statement' => 'كشف الحسابات والحركات المالية الشاملة للعملاء والموردين',
+    'customers' => 'العملاء',
+    'suppliers' => 'الموردين',
+    'period' => 'الفترة',
+    'to' => 'إلى',
+    'total_debit' => 'إجمالي المدين',
+    'total_credit' => 'إجمالي الدائن',
+    'net_balances' => 'صافي الأرصدة',
+    'debit_status' => '(مدين)',
+    'credit_status' => '(دائن)',
+    'active_customers_with_transactions' => 'العملاء ذوو الحركات',
+    'active_suppliers_with_transactions' => 'الموردون ذوو الحركات',
+    'account_unit' => 'حساب',
+    'certified_customer_statement_report' => 'تقرير كشف حسابات العملاء المعتمد',
+    'certified_supplier_statement_report' => 'تقرير كشف حسابات الموردين المعتمد',
+    'clietName' => 'اسم العميل',
+    'supplier_name' => 'اسم المورد',
+    'tax_number' => 'الرقم الضريبي',
+    'debit' => 'مدين',
+    'credit' => 'دائن',
+    'current balance' => 'الرصيد الحالي',
+    'not_available_abbr' => 'غير متوفر',
+    'not_available' => 'غير متوفر',
+    'Balanced' => 'متوازن',
+    'general_total_visible_results' => 'الإجمالي العام للنتائج الظاهرة',
+    'datatable_search_placeholder' => 'بحث سريع بالاسم أو الرقم الضريبي...',
+    'datatable_info' => 'عرض _START_ إلى _END_ من أصل _TOTAL_ سجل',
+    'datatable_info_empty' => 'لا توجد سجلات متاحة',
+    'datatable_info_filtered' => '(مصفاة من إجمالي _MAX_ سجل)',
+    'datatable_paginate_first' => 'الأول',
+    'datatable_paginate_last' => 'الأخير',
+    'datatable_paginate_next' => 'التالي',
+    'datatable_paginate_previous' => 'السابق',
+    'export_excel' => 'تصدير Excel',
+    'print_report' => 'طباعة التقرير',
+    'report_date' => 'تاريخ التقرير',
+
+
+
+    'year_sales_report' => 'تقرير المبيعات السنوي',
+    'exportTime' => 'وقت الاستخراج والتصدير',
+    'employeereciver' => 'الموظف المسؤول / المستلم',
+    'thesignature' => 'التوقيع والاعتماد',
+    'print' => 'طباعة التقرير',
+    'sales_reports' => 'تقارير المبيعات',
+    'annual_comprehensive_report' => 'التقرير السنوي الشامل',
+    'total_annual_sales' => 'إجمالي المبيعات السنوية',
+    'total_invoices_count' => 'إجمالي عدد الفواتير',
+    'average_monthly_sales' => 'متوسط المبيعات الشهري',
+    'monthly_sales_chart' => 'المنهج البياني لحركة المبيعات الشهرية',
+    'performance_distribution' => 'توزيع الأداء العام',
+    'invoices' => 'فواتير',
+    // أسماء الشهور
+    'months' => [
+        'يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو', 
+        'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر'
+    ],
+
+    // أرباع السنة
+    'quarters' => [
+        'الربع الأول (Q1)', 'الربع الثاني (Q2)', 'الربع الثالث (Q3)', 'الربع الرابع (Q4)'
+    ],
     'upload_stock'=>"رفع المخزون الافتتاحي",
     'Statement_of_Changes_in_Equity_Report'=>'التغير في حقوق الملكية',
     'general_budget'=>"الميزانية العامة",

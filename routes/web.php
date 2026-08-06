@@ -471,7 +471,7 @@ Route::middleware([
         Route::get('/salesReport', 'salesReport');
         Route::get('/Show_return_Sales_Details/{invoiceId}', 'Show_return_Sales_Details');
         Route::get('/printInvoicesReportdetails/{branch}/{paymethod}/{startat}/{endat}/{customer_id}', 'printReportsaleswithoud_deatails');
-        Route::post('/search_Requestـoffersـfromـsuppliers', 'search_Requestـoffersـfromـsuppliers');
+        Route::post('/search_Requestـoffersـfromـsuppliers', 'search_Request_offers_from_suppliers');
         Route::post('/employeeSalesSearch', 'employeeSalesSearch');
         Route::get('/printInvoicesReport/{branch}/{paymethod}/{startat}/{endat}/{customer_id}', 'printInvoicesReport');
         Route::get('/Invoices_export/{branch}/{paymethod}/{startat}/{endat}', 'printInvoicesReport_export');
@@ -508,7 +508,7 @@ Route::middleware([
         Route::get('/print_purchasereports/{productId}/{startat}/{endat}', 'print_purchasereports');
         Route::get('/customerـpurchases', 'customerـpurchases');
         Route::get('/purchasproducttocustomer', 'purchasproducttocustomer');
-        Route::post('/customerـpurchases', 'search_customerـpurchases');
+        Route::post('/customerـpurchases', 'search_customerـpurchases')->name('customerـpurchases');
         Route::post('/purchasproducttocustomer', 'searchpurchasproducttocustomer');
         Route::get('/print_customerـpurchases/{branchId}/{customerId}/{startat}/{endat}', 'print_customerـpurchases');
         Route::get('/credit_collection', 'credit_collection');

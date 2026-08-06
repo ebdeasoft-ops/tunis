@@ -67,10 +67,17 @@
                         </div>
 
                     @if (isset($Invoices) && $Invoices->count() > 0)
-    <div class="text-center mt-3 no-print">
-        <label class="invoice-title">{{ __('home.exportTime') }} : </label>
-        <strong>{{ \Carbon\Carbon::now()->addHours(3)->format("Y-m-d H:i:s") }}</strong>
-    </div>
+<!-- عرض وقت التصدير وفترة التقرير -->
+                <div class="d-flex justify-content-between align-items-center bg-light p-3 rounded mb-4">
+                    <span style="font-size: 14px; color: #419BB2; font-weight: bold;">
+                        <i class="fas fa-clock ml-1"></i> {{ __('home.exportTime') }} :
+                        {{ \Carbon\Carbon::now()->addHours(3)->format("Y-m-d H:i:s") }}
+                    </span>
+                    <span style="font-size: 14px; color: #2c3e50; font-weight: bold;">
+                        <i class="fas fa-calendar-alt ml-1"></i> {{ __('report.fromdate') ?? 'الفترة' }} : 
+                        <span class="text-danger" dir="ltr">{{ $startat ?? '' }}</span> &nbsp; إلى &nbsp; <span class="text-danger" dir="ltr">{{ $endat ?? '' }}</span>
+                    </span>
+                </div>
 
     @php
         // تعريف متغيرات الإجماليات العامة للتقرير

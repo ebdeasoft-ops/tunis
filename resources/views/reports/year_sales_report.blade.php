@@ -1,385 +1,375 @@
 @extends('layouts.master')
+
 @section('css')
-    <style>
-        @media print {
-            #print_Button {
-                display: none;
-            }
+<!-- Internal DataTables and Chart.js Custom Styles -->
+<link href="{{ URL::asset('assets/plugins/chart.js/Chart.min.css') }}" rel="stylesheet">
+<style>
+    @media print {
+        #print_Button, .sidebar, .main-header, .breadcrumb-header {
+            display: none !important;
         }
         body {
-        font: 13pt Georgia, "Times New Roman", Times, serif;
-        line-height: 1.5;
-        border-style: solid;
-
+            background-color: #fff !important;
+            font-size: 12pt;
+        }
+        .card {
+            border: none !important;
+            box-shadow: none !important;
+        }
     }
-    </style>
+
+    body {
+        background-color: #f4f6f9 !important;
+        font-family: 'Cairo', 'Times New Roman', Times, serif;
+    }
+
+    .report-card {
+        border: none;
+        border-radius: 12px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+        background: #ffffff;
+    }
+
+    .table-custom th {
+        background-color: #1e293b !important;
+        color: #ffffff !important;
+        font-weight: 600;
+        text-align: center;
+        padding: 12px !important;
+        font-size: 13px;
+        border: 1px solid #334155 !important;
+    }
+
+    .table-custom td {
+        vertical-align: middle !important;
+        text-align: center;
+        padding: 10px !important;
+        font-size: 13px;
+        color: #334155;
+        border: 1px solid #e2e8f0 !important;
+    }
+
+    .table-custom tbody tr:nth-child(even) {
+        background-color: #f8fafc;
+    }
+
+    .table-custom tbody tr:hover {
+        background-color: #f1f5f9;
+    }
+
+    .total-row {
+        background-color: #0f172a !important;
+        color: #ffffff !important;
+        font-weight: bold;
+        font-size: 14px;
+    }
+
+    .total-row td {
+        color: #ffffff !important;
+        border: 1px solid #1e293b !important;
+    }
+
+    .stat-card {
+        border-radius: 10px;
+        border: 1px solid #e2e8f0;
+        background: #ffffff;
+        transition: transform 0.2s;
+    }
+    .stat-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 6px 15px rgba(0,0,0,0.05);
+    }
+</style>
 @endsection
+
 @section('title')
-{{__('home.year_sales_report')}}
+{{ __('home.year_sales_report') }}
 @stop
+
 @section('page-header')
-    <!-- breadcrumb -->
-    <div class="breadcrumb-header justify-content-between">
+<div class="breadcrumb-header justify-content-between">
+    <div class="my-auto">
+        <div class="d-flex">
+            <h4 class="content-title mb-0 my-auto font-weight-bold" style="color: #0f172a;">{{ __('home.sales_reports') }}</h4>
+            <span class="text-muted mt-1 tx-13 mr-2 mb-0">/ {{ __('home.annual_comprehensive_report') }}</span>
+        </div>
     </div>
-    <!-- breadcrumb -->
+</div>
 @endsection
+
 @section('content')
-    <!-- row -->
-        <?php
-                            $currentdata = \Carbon\Carbon::now()->addHours(3)->format("Y-m-d H:i:s");
-                            $banktransfertotal=0;
-                            ?>
+<?php
+    $currentdata = \Carbon\Carbon::now()->addHours(3)->format("Y-m-d H:i:s");
+    $totalcount = 0;
+    $totalamount = 0;
+    
+    // جلب أسماء الشهور والأرباع المترجمة مباشرة من ملف الترجمة
+    $localizedMonths = __('home.months');
+    $localizedQuarters = __('home.quarters');
 
-    <div class="row row-sm">
-        <div class="col-md-12 col-xl-12">
-            <div class=" main-content-body-invoice" id="print">
-                <div class="card card-invoice">
-                    <div class="card-body">
-                     <div class="invoice-header" style="display: flex;justify-content:space-between;width:100%">
+    $chartDataAmounts = [];
+    $chartDataCounts = [];
 
-                        <div class="billed-from" style="width:33%;text-align: center;" >
-                            <br>
-                             <span style="font-size:25px">{{Nameen}}</span>
-                            <br>
-                            <p dir=ltr> {{describtionen}} </p>
-                            <span dir=ltr>{{STen}} </span>
-                            <p dir=ltr> {{Taxen}} </p>
+    for ($i = 0; $i < 12; $i++) {
+        $monthlyTotal = round(($data[1][$i]['total_cash'] ?? 0) + ($data[1][$i]['total_bank'] ?? 0) + ($data[1][$i]['total_credit'] ?? 0) + ($data[1][$i]['total_transfer'] ?? 0) + ($data[3][$i]['total_cash'] ?? 0) + ($data[3][$i]['total_bank'] ?? 0) + ($data[3][$i]['total_credit'] ?? 0) + ($data[3][$i]['total_transfer'] ?? 0), 2);
+        $monthlyCount = ($data[0][$i] ?? 0) + ($data[2][$i] ?? 0);
+        
+        $chartDataAmounts[] = $monthlyTotal;
+        $chartDataCounts[] = $monthlyCount;
+    }
+?>
 
-                        </div>
-                        <div class="row">
-                        <?php
-$logo=camplogo;
-    ?>
-    <a href="https://ebdeasoft.com/"><img src="{{ asset('assets\img\brand').'/'.$logo }}" class="logo-1" alt="logo" style="width: 110px; height: 70px;"></a>
+<div class="row row-sm" id="print">
+    <div class="col-md-12 col-xl-12">
+        <div class="card report-card p-4">
+            
+            <!-- رأس التقرير -->
+            <div class="invoice-header d-flex justify-content-between align-items-center border-bottom pb-4 mb-4">
+                <div class="billed-from text-right" style="width:33%;">
+                    <h3 class="font-weight-bold text-dark mb-1" style="font-size:22px;">{{Namear ?? 'اسم الشركة'}}</h3>
+                    <p class="text-muted mb-1" style="font-size: 13px;">{{describtionar ?? ''}}</p>
+                    <p class="text-muted mb-1" style="font-size: 12px;">{{STar ?? ''}}</p>
+                    <p class="text-muted mb-0" style="font-size: 12px;">{{Taxar ?? ''}}</p>
+                </div>
+                
+                <div class="text-center" style="width:33%;">
+                    <?php $logo = camplogo ?? 'default.png'; ?>
+                    <a href="https://ebdeasoft.com/"><img src="{{ asset('assets/img/brand').'/'.$logo }}" class="logo-1 mb-2" alt="logo" style="max-height: 70px;"></a>
+                    <h4 class="font-weight-bold text-success mb-0" style="font-size: 18px;">{{ __('home.year_sales_report') }}</h4>
+                    <span class="text-muted" style="font-size: 12px;">Sales Report {{ date('Y') }}</span>
+                </div>
 
-                        </div>
-
-
-                        <div class="billed-from" style="width:33%;text-align: center;">
-                            <br>
-
-                           <span style="font-size:25px">{{Namear}}</span>
-                            <br>
-                            <p> {{describtionar}}</p>
-                            <p>{{STar}}</p>
-                            <p>{{Taxar}}</p>
-
-                        </div><!-- billed-from -->
-                    </div><!-- invoice-header -->
-<br>
-<center> <h3>
-تقرير مبيعات السنة الحالية Sales report for the current year</h3> </center>
-                        <div class="table-padding table-responsive ">
-                                <table style="border: 2px solid rgba(0,0,0,0)" class="table table-striped table-bordered text-center my-2">
-                                    <col style="width:15%">
-                                    <col style="width:15%">
-                                    <col style="width:15%">
-                                    <col style="width:20%">
-                                    <col style="width:15%">
-                                    <col style="width:20%">
-                                    <thead>
-                                        <tr>
-                                       
-  <th style="background-color: rgba(236, 240, 250, 1);"> <label style="font-size: 14px;color:#419BB2 ;font-weight:bold;" for="exampleFormControlSelect1"> {{ __('report.fromdate') }}:</label>
-
-                                            </th>
-                                            <th style="background-color: rgba(236, 240, 250, 1);"> <label style="font-size: 14px;color:#419BB2 ;font-weight:bold;" for="exampleFormControlSelect1"> {{ date('Y') . '-01' . '-01'}}</label>
-                                            </th>
-
-                                            <th style="background-color: rgba(236, 240, 250, 1);"> <label style="font-size: 14px;color:#419BB2 ;font-weight:bold;" for="exampleFormControlSelect1"> {{ __('report.todate') }}</label>
-
-                                            </th>
-                                            <th style="background-color: rgba(236, 240, 250, 1);"> <label style="font-size: 14px;color:#419BB2 ;font-weight:bold;" for="exampleFormControlSelect1">{{ date('Y') . '-12' . '-31' }}</label>
-                                            </th>
-                                          
-                                            <th style="background-color: rgba(236, 240, 250, 1);"> <label style="font-size: 14px;color:#419BB2 ;font-weight:bold;" for="exampleFormControlSelect1"> {{ __('home.exportTime') }} </label>
-
-                                            </th>
-                                            <th style="background-color: rgba(236, 240, 250, 1);"> <label style="font-size: 14px;color:#419BB2 ;font-weight:bold;" for="exampleFormControlSelect1"> {{ $currentdata }}</label>
-                                            </th>
-                                        </tr>
-
-
-                                    </thead>
-                                </table>
-                            </div>
-                           <?php
-                           
-                           $totalcount=0;
-                           $totalamount=0;
-                           
-                           
-                           ?>
-                        <div class="card-body">
-                        <br><br><br><br>
-								<div class="table-responsive">
-									<table id="example" class="table key-buttons text-md-nowrap table-bordered table-striped text-center">
-										<thead>
-										    
-										    		<tr>
-                                    <th class="border-bottom-0">    NO   </th>
-                                    <th class="border-bottom-0">   الشهر MONTH  </th>
-                                    <th>عدد الفواتير  Number of invoices</th>
-                             
-                                    <th>الاجمالي TOTAL(SAR)</th>
-                                    </tr>   
-                                    
-                                    
-                                    
-                                    
-									<tr>
-                                    <th class="border-bottom-0">    1   </th>
-                                    <th class="border-bottom-0">   يناير  January</th>
-                                    <th>{{$data[0][0]+$data[2][0]}}</th>
-                                    <?php
-$total =round( $data[1][0]['total_cash'] +$data[1][0]['total_bank'] +$data[1][0]['total_credit'] +$data[1][0]['total_transfer'] +$data[3][0]['total_cash'] +$data[3][0]['total_bank'] +$data[3][0]['total_credit'] +$data[3][0]['total_transfer'] ,2);
-
-$totalamount+=$total;
-$totalcount+=$data[0][0]+$data[2][0];
-                                    ?>
-                                    <th>{{$total}}</th>
-                                    </tr>   
-                                    
-                                    							<tr>
-                                    <th class="border-bottom-0">    2   </th>
-                                    <th class="border-bottom-0">   فبراير   February  </th>
-                                    <th>{{$data[0][1]+$data[2][1]}}</th>
-                                    <?php
-$total =round( $data[1][1]['total_cash'] +$data[1][1]['total_bank'] +$data[1][1]['total_credit'] +$data[1][1]['total_transfer'] +$data[3][1]['total_cash'] +$data[3][1]['total_bank'] +$data[3][1]['total_credit'] +$data[3][1]['total_transfer'] ,2);
-
-$totalamount+=$total;
-$totalcount+=$data[0][1]+$data[2][1];
-                                    ?>
-                                    <th>{{$total}}</th>
-                                    </tr>   
-                                    
-                                    
-                                    
-                                    							<tr>
-                                    <th class="border-bottom-0">    3   </th>
-                                    <th class="border-bottom-0">     مارس   March</th>
-                                    <th>{{$data[0][2]+$data[2][2]}}</th>
-                                    <?php
-$total =round( $data[1][2]['total_cash'] +$data[1][2]['total_bank'] +$data[1][2]['total_credit'] +$data[1][2]['total_transfer'] +$data[3][2]['total_cash'] +$data[3][2]['total_bank'] +$data[3][2]['total_credit'] +$data[3][2]['total_transfer'] ,2);
-
-$totalamount+=$total;
-$totalcount+=$data[0][2]+$data[2][2];
-                                    ?>
-                                    <th>{{$total}}</th>
-                                    </tr>   
-                                    
-                                    
-                                    
-                                    
-                                    							<tr>
-                                    <th class="border-bottom-0">    4   </th>
-                                    <th class="border-bottom-0">     أبريل   April</th>
-                                    <th>{{$data[0][3]+$data[2][3]}}</th>
-                                    <?php
-$total =round( $data[1][3]['total_cash'] +$data[1][3]['total_bank'] +$data[1][3]['total_credit'] +$data[1][3]['total_transfer'] +$data[3][3]['total_cash'] +$data[3][3]['total_bank'] +$data[3][3]['total_credit'] +$data[3][3]['total_transfer'] ,2);
-
-$totalamount+=$total;
-$totalcount+=$data[0][3]+$data[2][3];
-                                    ?>
-                                    <th>{{$total}}</th>
-                                    </tr>   
-                                    
-                                    
-                                    
-                                    
-                                    
-                                    
-                  
-                                    
-                                    
-                                    
-                                    
-                                    							<tr>
-                                    <th class="border-bottom-0">    5   </th>
-                                    <th class="border-bottom-0">   مايو   May  </th>
-                                    <th>{{$data[0][4]+$data[2][4]}}</th>
-                                    <?php
-$total =round( $data[1][4]['total_cash'] +$data[1][4]['total_bank'] +$data[1][4]['total_credit'] +$data[1][4]['total_transfer'] +$data[3][4]['total_cash'] +$data[3][4]['total_bank'] +$data[3][4]['total_credit'] +$data[3][4]['total_transfer'] ,2);
-
-$totalamount+=$total;
-$totalcount+=$data[0][4]+$data[2][4];
-
-
-                                    ?>
-                                    <th>{{$total}}</th>
-                                    </tr>   
-                                    
-                                    
-                                    
-                                    
-                                    
-                                    							<tr>
-                                    <th class="border-bottom-0">    6   </th>
-                                    <th class="border-bottom-0">   يونيو   June  </th>
-                                    <th>{{$data[0][5]+$data[2][5]}}</th>
-                                    <?php
-$total =round( $data[1][5]['total_cash'] +$data[1][5]['total_bank'] +$data[1][5]['total_credit'] +$data[1][5]['total_transfer'] +$data[3][5]['total_cash'] +$data[3][5]['total_bank'] +$data[3][5]['total_credit'] +$data[3][5]['total_transfer'] ,2);
-$totalamount+=$total;
-$totalcount+=$data[0][5]+$data[2][5];
-
-                                    ?>
-                                    <th>{{$total}}</th>
-                                    </tr>   
-                                    
-                                    
-                                    
-                                    
-                                    							<tr>
-                                    <th class="border-bottom-0">    7   </th>
-                                    <th class="border-bottom-0">   يوليو July  </th>
-                                    <th>{{$data[0][6]+$data[2][6]}}</th>
-                                    <?php
-$total =round( $data[1][6]['total_cash'] +$data[1][6]['total_bank'] +$data[1][6]['total_credit'] +$data[1][6]['total_transfer'] +$data[3][6]['total_cash'] +$data[3][6]['total_bank'] +$data[3][6]['total_credit'] +$data[3][6]['total_transfer'] ,2);
-$totalamount+=$total;
-$totalcount+=$data[0][6]+$data[2][6];
-                                    ?>
-                                    <th>{{$total}}</th>
-                                    </tr>   
-                                    
-                                    
-                                    
-                                    
-                                    
-                                    							<tr>
-                                    <th class="border-bottom-0">    8   </th>
-                                    <th class="border-bottom-0">   أغسطس  August  </th>
-                                    <th>{{$data[0][7]+$data[2][7]}}</th>
-                                    <?php
-$total =round( $data[1][7]['total_cash'] +$data[1][7]['total_bank'] +$data[1][7]['total_credit'] +$data[1][7]['total_transfer'] +$data[3][7]['total_cash'] +$data[3][7]['total_bank'] +$data[3][7]['total_credit'] +$data[3][7]['total_transfer'] ,2);
-
-$totalamount+=$total;
-$totalcount+=$data[0][7]+$data[2][7];
-                                    ?>
-                                    <th>{{$total}}</th>
-                                    </tr>   
-                                    
-                                    
-                                    
-                                    							<tr>
-                                    <th class="border-bottom-0">    9   </th>
-                                    <th class="border-bottom-0">     سبتمبر   September </th>
-                                    <th>{{$data[0][8]+$data[2][8]}}</th>
-                                    <?php
-$total =round( $data[1][8]['total_cash'] +$data[1][8]['total_bank'] +$data[1][8]['total_credit'] +$data[1][8]['total_transfer'] +$data[3][8]['total_cash'] +$data[3][8]['total_bank'] +$data[3][8]['total_credit'] +$data[3][8]['total_transfer'] ,2);
-
-$totalamount+=$total;
-$totalcount+=$data[0][8]+$data[2][8];
-                                    ?>
-                                    <th>{{$total}}</th>
-                                    </tr>   
-                                    
-                                    
-                                    
-                                    
-                                    							<tr>
-                                    <th class="border-bottom-0">    10   </th>
-                                    <th class="border-bottom-0">   أكتوبر   October  </th>
-                                    <th>{{$data[0][9]+$data[2][9]}}</th>
-                                    <?php
-$total =round( $data[1][9]['total_cash'] +$data[1][9]['total_bank'] +$data[1][9]['total_credit'] +$data[1][9]['total_transfer'] +$data[3][9]['total_cash'] +$data[3][9]['total_bank'] +$data[3][9]['total_credit'] +$data[3][9]['total_transfer'] ,2);
-$totalamount+=$total;
-$totalcount+=$data[0][9]+$data[2][9];
-                                    ?>
-                                    <th>{{$total}}</th>
-                                    </tr>   
-                                    
-                                    
-                                    
-                                    							<tr>
-                                    <th class="border-bottom-0">    11   </th>
-                                    <th class="border-bottom-0">   نوفمبر  November  </th>
-                                    <th>{{$data[0][10]+$data[2][10]}}</th>
-                                    <?php
-$total =round( $data[1][10]['total_cash'] +$data[1][10]['total_bank'] +$data[1][10]['total_credit'] +$data[1][10]['total_transfer']  +$data[3][10]['total_cash'] +$data[3][10]['total_bank'] +$data[3][10]['total_credit'] +$data[3][10]['total_transfer'],2);
-$totalamount+=$total;
-$totalcount+=$data[0][10]+$data[2][10];
-                                    ?>
-                                    <th>{{$total}}</th>
-                                    </tr>   
-                                    
-                                    
-                                    
-                                    
-                                    							<tr>
-                                    <th class="border-bottom-0">    12   </th>
-                                    <th class="border-bottom-0">   ديسمبر  December  </th>
-                                    <th>{{$data[0][11]+$data[2][11]}}</th>
-                                    <?php
-$total =round( $data[1][11]['total_cash'] +$data[1][11]['total_bank'] +$data[1][11]['total_credit'] +$data[1][11]['total_transfer'] +$data[3][11]['total_cash'] +$data[3][11]['total_bank'] +$data[3][11]['total_credit'] +$data[3][11]['total_transfer'] ,2);
-$totalamount+=$total;
-$totalcount+=$data[0][11]+$data[2][11];
-                                    ?>
-                                    <th>{{$total}}</th>
-                                    </tr>   
-                                    
-                                
-                                    							<tr>
-                                    <th class="border-bottom-0">    -   </th>
-                                    <th class="border-bottom-0"> الاجمالي TOTAL  </th>
-                                    <th>{{$totalcount}}</th>
-                                    <th>{{$totalamount }} SAR</th>
-                                    </tr>   
-                                    
-										</thead>
-
-									</table>
-                                    <br>
-                                    <br>
-                        <p>{{__('home.employeereciver')}} : {{Auth()->user()->name}}</p>
-                        <br>
-                        <p>{{__('home.thesignature')}} : </p>
-                                    </div>
-
-                        <hr class="mg-b-40">
-
-
-
-                        <button class="btn btn-danger print-style float-left mt-3 mr-2" id="print_Button" onclick="printDiv()"> <i
-                                class="mdi mdi-printer ml-1"></i>{{__('home.print')}}</button>
-                                </div>
-                                </div>
+                <div class="billed-from text-left" style="width:33%; direction: ltr;">
+                    <h3 class="font-weight-bold text-dark mb-1" style="font-size:22px;">{{Nameen ?? 'Company Name'}}</h3>
+                    <p class="text-muted mb-1" style="font-size: 13px;">{{describtionen ?? ''}}</p>
+                    <p class="text-muted mb-1" style="font-size: 12px;">{{STen ?? ''}}</p>
+                    <p class="text-muted mb-0" style="font-size: 12px;">{{Taxen ?? ''}}</p>
                 </div>
             </div>
-        </div><!-- COL-END -->
+
+            <!-- بطاقات الملخص السريع -->
+            <div class="row mb-4">
+                <div class="col-xl-4 col-lg-4 col-md-4 mb-3">
+                    <div class="stat-card p-3 d-flex align-items-center justify-content-between">
+                        <div>
+                            <h6 class="text-muted mb-1 font-weight-bold" style="font-size: 12px;">{{ __('home.total_annual_sales') }}</h6>
+                            <h4 class="mb-0 text-success font-weight-bold" style="font-size: 20px;">
+                                {{ number_format(array_sum($chartDataAmounts), 2) }} <small style="font-size: 11px;">SAR</small>
+                            </h4>
+                        </div>
+                        <div class="rounded-circle d-flex align-items-center justify-content-center" style="width: 45px; height: 45px; background: rgba(4, 120, 87, 0.1);">
+                            <i class="fas fa-chart-line text-success" style="font-size: 20px;"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-xl-4 col-lg-4 col-md-4 mb-3">
+                    <div class="stat-card p-3 d-flex align-items-center justify-content-between">
+                        <div>
+                            <h6 class="text-muted mb-1 font-weight-bold" style="font-size: 12px;">{{ __('home.total_invoices_count') }}</h6>
+                            <h4 class="mb-0 text-dark font-weight-bold" style="font-size: 20px;">
+                                {{ array_sum($chartDataCounts) }} <small style="font-size: 11px;" class="text-muted">{{ __('home.invoices') }}</small>
+                            </h4>
+                        </div>
+                        <div class="rounded-circle d-flex align-items-center justify-content-center" style="width: 45px; height: 45px; background: rgba(14, 116, 144, 0.1);">
+                            <i class="fas fa-file-invoice text-info" style="font-size: 20px;"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-xl-4 col-lg-4 col-md-4 mb-3">
+                    <div class="stat-card p-3 d-flex align-items-center justify-content-between">
+                        <div>
+                            <h6 class="text-muted mb-1 font-weight-bold" style="font-size: 12px;">{{ __('home.average_monthly_sales') }}</h6>
+                            <h4 class="mb-0 text-primary font-weight-bold" style="font-size: 20px;">
+                                {{ number_format(array_sum($chartDataAmounts) / 12, 2) }} <small style="font-size: 11px;">SAR</small>
+                            </h4>
+                        </div>
+                        <div class="rounded-circle d-flex align-items-center justify-content-center" style="width: 45px; height: 45px; background: rgba(37, 99, 235, 0.1);">
+                            <i class="fas fa-wallet text-primary" style="font-size: 20px;"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- قسم الرسوم البيانية -->
+            <div class="row mb-5" id="print_Button_hide">
+                <div class="col-xl-8 col-lg-12 mb-4">
+                    <div class="card border p-3" style="border-radius: 10px; background: #fff;">
+                        <h6 class="font-weight-bold mb-3 text-dark"><i class="fas fa-chart-bar text-success ml-2"></i> {{ __('home.monthly_sales_chart') }} (SAR)</h6>
+                        <div style="height: 280px;">
+                            <canvas id="salesBarChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xl-4 col-lg-12 mb-4">
+                    <div class="card border p-3" style="border-radius: 10px; background: #fff;">
+                        <h6 class="font-weight-bold mb-3 text-dark"><i class="fas fa-chart-pie text-info ml-2"></i> {{ __('home.performance_distribution') }}</h6>
+                        <div style="height: 280px; display: flex; align-items: center; justify-content: center;">
+                            <canvas id="salesDoughnutChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- معلومات وتاريخ إصدار التقرير -->
+            <div class="table-responsive mb-4">
+                <table class="table table-bordered text-center" style="background: #f8fafc; border-radius: 8px;">
+                    <tr>
+                        <td style="background-color: #e2e8f0; font-weight: bold; color: #1e293b;">{{ __('report.fromdate') }}</td>
+                        <td>{{ date('Y') . '-01-01' }}</td>
+                        <td style="background-color: #e2e8f0; font-weight: bold; color: #1e293b;">{{ __('report.todate') }}</td>
+                        <td>{{ date('Y') . '-12-31' }}</td>
+                        <td style="background-color: #e2e8f0; font-weight: bold; color: #1e293b;">{{ __('home.exportTime') }}</td>
+                        <td>{{ $currentdata }}</td>
+                    </tr>
+                </table>
+            </div>
+
+            <!-- جدول البيانات الرئيسي -->
+            <div class="table-responsive">
+                <table class="table table-custom mb-4">
+                    <thead>
+                        <tr>
+                            <th style="width: 60px;">NO</th>
+                            <th>{{ app()->getLocale() == 'ar' ? 'الشهر / MONTH' : 'MONTH / الشهر' }}</th>
+                            <th>{{ app()->getLocale() == 'ar' ? 'عدد الفواتير / Number of invoices' : 'Number of invoices / عدد الفواتير' }}</th>
+                            <th>{{ app()->getLocale() == 'ar' ? 'الإجمالي / TOTAL (SAR)' : 'TOTAL / الإجمالي (SAR)' }}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @for ($i = 0; $i < 12; $i++)
+                            @php
+                                $cnt = ($data[0][$i] ?? 0) + ($data[2][$i] ?? 0);
+                                $amt = round(($data[1][$i]['total_cash'] ?? 0) + ($data[1][$i]['total_bank'] ?? 0) + ($data[1][$i]['total_credit'] ?? 0) + ($data[1][$i]['total_transfer'] ?? 0) + ($data[3][$i]['total_cash'] ?? 0) + ($data[3][$i]['total_bank'] ?? 0) + ($data[3][$i]['total_credit'] ?? 0) + ($data[3][$i]['total_transfer'] ?? 0), 2);
+                                
+                                $totalamount += $amt;
+                                $totalcount += $cnt;
+                            @endphp
+                            <tr>
+                                <td class="font-weight-bold text-muted">{{ $i + 1 }}</td>
+                                <td class="font-weight-bold text-dark">{{ $localizedMonths[$i] }}</td>
+                                <td><span class="badge badge-light border px-2 py-1">{{ $cnt }}</span></td>
+                                <td class="font-weight-bold text-success">{{ number_format($amt, 2) }}</td>
+                            </tr>
+                        @endfor
+                    </tbody>
+                    <tfoot>
+                        <tr class="total-row">
+                            <td colspan="2" class="text-center">الإجمالي العام / TOTAL</td>
+                            <td>{{ $totalcount }}</td>
+                            <td>{{ number_format($totalamount, 2) }} SAR</td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+
+            <!-- التوقيعات والاعتماد -->
+            <div class="row mt-4 pt-3 border-top">
+                <div class="col-md-6">
+                    <p class="font-weight-bold text-dark">{{ __('home.employeereciver') }} : <span class="text-muted font-weight-normal">{{ Auth()->user()->name }}</span></p>
+                </div>
+                <div class="col-md-6 text-md-left">
+                    <p class="font-weight-bold text-dark">{{ __('home.thesignature') }} : ______________________</p>
+                </div>
+            </div>
+
+            <!-- زر الطباعة -->
+            <div class="mt-4 text-left">
+                <button class="btn btn-danger px-4 py-2 font-weight-bold shadow-sm" id="print_Button" onclick="printDiv()">
+                    <i class="mdi mdi-printer ml-1"></i> {{ __('home.print') }}
+                </button>
+            </div>
+
+        </div>
     </div>
-    <!-- row closed -->
-    </div>
-    <!-- Container closed -->
-    </div>
-    <!-- main-content closed -->
+</div>
 @endsection
+
 @section('js')
-    <!--Internal  Chart.bundle js -->
-    <script src="{{ URL::asset('assets/plugins/chart.js/Chart.bundle.min.js') }}"></script>
+<!-- Internal Chart.js -->
+<script src="{{ URL::asset('assets/plugins/chart.js/Chart.bundle.min.js') }}"></script>
 
+<script>
+    function printDiv() {
+        var printContents = document.getElementById('print').innerHTML;
+        var originalContents = document.body.innerHTML;
+        document.body.innerHTML = printContents;
+        window.print();
+        document.body.innerHTML = originalContents;
+        location.reload();
+    }
 
-    <script type="text/javascript">
-        function printDiv() {
-            var printContents = document.getElementById('print').innerHTML;
-            var originalContents = document.body.innerHTML;
-            document.body.innerHTML = printContents;
-            window.print();
-            document.body.innerHTML = originalContents;
-            location.reload();
-        }
+    $(document).ready(function() {
+        setTimeout(function() {
+            $('.alert').fadeOut(500);
+        }, 4000);
 
-    </script>
-    <script>
-              $(document).ready(function() {
-            $(function() {
-var timeout = 4000; // in miliseconds (3*1000)
-$('.alert').delay(timeout).fadeOut(500);
-});
-           
-              });
-              $(document).ready(function() {
-       
+        // الرسم البياني للأعمدة مع الشهور المترجمة
+        var ctxBar = document.getElementById('salesBarChart').getContext('2d');
+        var salesBarChart = new Chart(ctxBar, {
+            type: 'bar',
+            data: {
+                labels: {!! json_encode($localizedMonths) !!},
+                datasets: [{
+                    label: 'إجمالي المبيعات (SAR)',
+                    data: {!! json_encode($chartDataAmounts) !!},
+                    backgroundColor: 'rgba(4, 120, 87, 0.85)',
+                    borderColor: 'rgba(4, 120, 87, 1)',
+                    borderWidth: 1,
+                    borderRadius: 5
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                }
+            }
+        });
+
+        // الرسم البياني الدائري مع الأرباع المترجمة
+        var ctxDoughnut = document.getElementById('salesDoughnutChart').getContext('2d');
+        
+        var q1 = {!! array_sum(array_slice($chartDataAmounts, 0, 3)) !!};
+        var q2 = {!! array_sum(array_slice($chartDataAmounts, 3, 3)) !!};
+        var q3 = {!! array_sum(array_slice($chartDataAmounts, 6, 3)) !!};
+        var q4 = {!! array_sum(array_slice($chartDataAmounts, 9, 3)) !!};
+
+        var salesDoughnutChart = new Chart(ctxDoughnut, {
+            type: 'doughnut',
+            data: {
+                labels: {!! json_encode($localizedQuarters) !!},
+                datasets: [{
+                    data: [q1, q2, q3, q4],
+                    backgroundColor: ['#047857', '#0ea5e9', '#f59e0b', '#64748b'],
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            boxWidth: 12,
+                            font: {
+                                size: 11
+                            }
+                        }
+                    }
+                }
+            }
+        });
     });
-    </script>
-
+</script>
 @endsection

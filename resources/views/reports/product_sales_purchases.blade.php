@@ -119,7 +119,8 @@
                             <input class="form-control select2 " name="productNo" id="productNo" value='-' hidden>
 
                         </div>
-                        
+                            <input hidden=true class="form-control" id="branchs_id" name="branchs_id"
+                                value="{{Auth()->user()->branchs_id}}">
                         <div class="row my-3">
 
                             <div class="col-lg-3 mg-t-20 mg-lg-t-0 p-0" style=" height: 80px; width: 210px;">

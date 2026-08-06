@@ -1,501 +1,306 @@
 @extends('layouts.master')
+
 @section('css')
 <style>
+    /* تنسيقات الطباعة الفاخرة */
     @media print {
-        -webkit-print-color-adjust: exact; 
-   .double {
-      border: 3px solid grey;
-      border-radius: 5px;
-      width: 200px;
-      font-size: 15px !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
 
+        @page {
+            size: auto;
+            margin: 5mm;
+        }
+
+        body {
+            font-family: 'Cairo', sans-serif !important;
+            background-color: #fff !important;
+        }
+
+        #print_Button, .print-style {
+            display: none !important;
+        }
+
+        .card {
+            border: none !important;
+            box-shadow: none !important;
+        }
     }
 
-   @page
-        {
-           
-            size: auto; /* auto is the initial value */
-            margin: 2mm 2mm 2mm 2mm; /* this affects the margin in the printer settings */
-                font-size:28px;
-
-        }
- .text{
-  width: 320px;
-  overflow: hidden;
-    white-space: pre-wrap;
-  text-overflow: ellipsis
-        }
-        .row-sm{
-             dir:"rtl"
-        }
-         .tx-18{
-                            font-size:15px!important;
-
-        }
-         .tx-16{
-                            font-size:12px!important;
-
-        }
-            .double{
-            border: 3px solid grey;
-            border-radius: 5px;
-            width:200px;
-
-        }
-    tr {
-       bgcolor="grey"
-        }
-
-        header
-        {
-            display: table-header-group;
-        }
-        tfoot
-        {
-            display: table-footer-group;
-        }
-        #print_Button {
-            display: none;
-        }
-  th {
-    /*background-color: grey;*/
-    font-size:22px;
-    }
+    /* تنسيق الإطارات والعناوين */
+    .double {
+        border: 2px solid #6c757d;
+        border-radius: 6px;
+        padding: 6px 20px;
+        font-size: 16px !important;
+        font-weight: bold;
+        background-color: #f8f9fa;
+        display: inline-block;
+        color: #333;
     }
 
-  
-     .double {
-      border: 3px solid grey;
-      border-radius: 5px;
-      width: 200px;
-      font-size: 15px !important;
-
+    .invoice-header img {
+        max-width: 100px;
+        height: auto;
     }
 
-    .textend{
-        hidden
+    .table th {
+        vertical-align: middle !important;
     }
 </style>
 @endsection
+
 @section('title')
 {{ __('home.sales_and_return') }}
 @stop
-@section('page-header')
-<!-- breadcrumb -->
 
-<!-- breadcrumb -->
-@endsection
 @section('content')
-<!-- row -->
-<div class="row row-sm"  >
-   <div class="col-md-12 col-xl-12">
-      <div class=" main-content-body-invoice" id="print"  dir=rtl>
-         <div class="card card-invoice">
-                <div class="d-flex justify-content-center">
-                            <button class="btn btn-danger print-style float-left mt-3 mr-2" id="print_Button" onclick="printDiv()">
-                                {{ __('home.print') }}
-                                <i class="mdi mdi-printer ml-1"></i>
+<div class="row row-sm">
+    <div class="col-md-12 col-xl-12">
+        <div class="main-content-body-invoice" id="print" dir="rtl">
+            <div class="card card-invoice p-3">
+                
+                <!-- زر الطباعة -->
+                <div class="d-flex justify-content-center mb-3">
+                    <button class="btn btn-danger print-style mt-3" id="print_Button" onclick="printDiv()">
+                        {{ __('home.print') }} <i class="mdi mdi-printer ml-1"></i>
+                    </button>
+                </div>
+
+                <div class="card-body">
+                    <!-- ترويسة الفاتورة (البيانات واللوجو) -->
+                    <div class="invoice-header d-flex justify-content-between align-items-center w-100 mb-4" dir="rtl">
+                        <div class="billed-from text-center" style="width:33%;">
+                            <span class="font-weight-bold" style="font-size:16px">{{ Namear ?? '' }}</span>
+                            <p class="mb-1 text-muted">{{ describtionar ?? '' }}</p>
+                            <p class="mb-1">{{ STar ?? '' }}</p>
+                            <p class="mb-0">{{ Taxar ?? '' }}</p>
                         </div>
-                        <br>
 
-            <div class="card-body">
+                        <div class="text-center" style="width:33%;">
+                            @php $logo = camplogo ?? 'default.png'; @endphp
+                            <a href="https://ebdeasoft.com/">
+                                <img src="{{ asset('assets/img/brand/' . $logo) }}" class="logo-1" alt="logo">
+                            </a>
+                        </div>
 
-               <div class="invoice-header" style="display: flex;justify-content:space-between;width:100%" dir="rtl">
-            
-                   <div class="billed-from" style="width:33%;text-align: center;" >
-                     <br>
+                        <div class="billed-from text-center" style="width:33%;">
+                            <span class="font-weight-bold" style="font-size:16px">{{ Nameen ?? '' }}</span>
+                            <p class="mb-1 text-muted">{{ describtionen ?? '' }}</p>
+                            <p class="mb-1">{{ STen ?? '' }}</p>
+                            <p class="mb-0">{{ Taxen ?? '' }}</p>
+                        </div>
+                    </div>
 
-                     <span style="font-size:16px">{{Namear}}</span>
-                     <br>
-                     <p> {{describtionar}}</p>
-                     <p>{{STar}}</p>
-                     <p>{{Taxar}}</p>
+                    <!-- عنوان التقرير -->
+                    <div class="text-center my-3">
+                        <span class="double">{{ __('home.sales_and_return') }}</span>
+                    </div>
 
-                  </div><!-- billed-from -->
-                 
-                  <div class="row">
-                     <?php
-                     $logo = camplogo;
-                     ?>
-                     <a href="https://ebdeasoft.com/"><img src="{{ asset('assets\img\brand').'/'.$logo }}" class="logo-1" alt="logo" style="width: 110px; height: 100px;"></a>
+                    <!-- جدول فترة التقرير -->
+                    <div class="table-responsive my-3">
+                        <table class="table table-bordered text-center">
+                            <tr>
+                                <th style="background-color: #ecf0fa; color: #419BB2; width:25%;">{{ __('report.fromdate') }}</th>
+                                <th style="background-color: #ecf0fa; color: #419BB2; width:25%;">{{ $start }}</th>
+                                <th style="background-color: #ecf0fa; color: #419BB2; width:25%;">{{ __('report.todate') }}</th>
+                                <th style="background-color: #ecf0fa; color: #419BB2; width:25%;">{{ $end }}</th>
+                            </tr>
+                        </table>
+                    </div>
 
-                  </div>
-      <div class="billed-from" style="width:33%;text-align: center;">
-                     <br>
-                     <span style="font-size:19px">{{Nameen}}</span>
-                     <br>
-                     <p dir=rtl> {{describtionen}} </p>
-                     <span dir=rtl>{{STen}} </span>
-                     <p dir=rtl> {{Taxen}} </p>
+                    <!-- قسم المبيعات -->
+                    <div class="text-center my-4">
+                        <span class="double">{{ __('home.sales') }}</span>
+                    </div>
 
-                  </div>
-                  
-
-               </div><!-- invoice-header -->
-               
-    <center>    <span class='double'>   {{__('home.sales_and_return')}} </span></center> 
-
-
-
-       <div class="table-padding table-responsive ">
-                                <table style="border: 2px solid rgba(0,0,0,0)" class="table table-striped table-bordered text-center my-2">
-                                    <col style="width:25%">
-                                    <col style="width:25%">
-                                    <col style="width:25%">
-                                    <col style="width:25%">
-
-                                    <thead>
-                                        <tr>
-                                            <th style="background-color: rgba(236, 240, 250, 1);"> <label style="font-size: 14px;color:#419BB2 ;font-weight:bold;" for="exampleFormControlSelect1"> {{ __('report.fromdate') }}:</label>
-
-                                            </th>
-                                            <th style="background-color: rgba(236, 240, 250, 1);"> <label style="font-size: 14px;color:#419BB2 ;font-weight:bold;" for="exampleFormControlSelect1"> {{ $start }}</label>
-                                            </th>
-
-                                            <th style="background-color: rgba(236, 240, 250, 1);"> <label style="font-size: 14px;color:#419BB2 ;font-weight:bold;" for="exampleFormControlSelect1"> {{ __('report.todate') }}</label>
-
-                                            </th>
-                                            <th style="background-color: rgba(236, 240, 250, 1);"> <label style="font-size: 14px;color:#419BB2 ;font-weight:bold;" for="exampleFormControlSelect1">{{ $end }}</label>
-                                            </th>
-
-
-
-
-                                    </thead>
-                                </table>
-                            </div>
-                            
-                            
-
-    <center>    <span class='double'>   {{__('home.sales')}} </span></center> 
-
-
-
-                    <div style="border-radius: 10px" class="card-body mt-5">
-                    <div class="table-striped">
-                     
-                        <?php
-                        $userId = 0;
-                        ?>
-                        <?php
-                        $totalprice=0;
-                        $userId = 0;
-                        $startat = '';
-                        $endat = '';
-                        $totalpriceallbefordiscount = 0;
-                        $totaladdedvalue = 0;
+                    @php
+                        $totalprice = 0;
                         $totaldiscount = 0;
+                        $totaladdedvalue = 0;
                         $totalpriceafterdiscount = 0;
-                        $discountreturn=0;
-                        ?>
+                        $avtModel = App\Models\Avt::find(1);
+                        $saleavt = $avtModel ? $avtModel->AVT : 0;
+                    @endphp
 
-
-
-                        </span>
-                            <div class="table-responsive hoverable-table">
-                        <table class="table table-hover table-bordered" id="example1" data-page-length='50' style=" text-align: center; width:95%">
-                          
-                                    <thead>
-                                        <tr>
-                                            <th style="color: #FF4F1F;font-size:12px" class="border-bottom-0">{{ __('home.Invoice_no') }}</th>
-                                            <th style="color: #FF4F1F;font-size:12px" class="border-bottom-0">{{ __('home.date') }}</th>
-                                            <th style="color: #FF4F1F;font-size:12px" class="border-bottom-0">{{ __('home.clietName') }}</th>
-                                            <th style="color: #FF4F1F;font-size:12px" class="border-bottom-0">{{ __('home.paymentmethod') }}</th>
-                                            <th style="color: #FF4F1F;font-size:12px" class="border-bottom-0">{{ __('home.total') }}</th>
-                                            <th style="color: #FF4F1F;font-size:12px" class="border-bottom-0">{{ __('home.discount') }}</th>
-                                            <th style="color: #FF4F1F;font-size:12px" class="border-bottom-0">{{ __('home.totalafterdiscount') }}</th>
-                                            <th style="color: #FF4F1F;font-size:12px" class="border-bottom-0">{{ __('home.avt') }}</th>
-                                            <th style="color: #FF4F1F;font-size:12px" class="border-bottom-0">{{ __('home.totalwithTax') }}</th>
-
-
-
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <?php $i = 0;
-                                        $total = 0;
-                                                                                $totaldiscount =0;
-?>
-
-                                        @foreach ($data['invoices'] as $product)
-                                        <?php
-
-                                        $i = 0;
-
-
-                                        $endat = $product->created_at;
-                                        $avt = App\Models\Avt::find(1);
-                                        $saleavt = $avt->AVT;
-                                        $totalPriceDay = ($product->cashamount + $product->bankamount + $product->Bank_transfer+ $product->creaditamount);
-
-                                        ?> <?php $i++; ?>
-
-                                        <tr >
-                                            <td data-target="id">{{ $product->id }}</td>
-                                            <td data-target="numberofpice">{{ $product->created_at }}</td>
-
-                                            <td dir="ltr" data-target="id">
-                                                {{ $product->customer->name }}
-                                            </td>
-                                            
-                                                     <?php
-                                            $pays = '';
-                                            if ($product->Pay == 'Cash') {
-                                                $pays = __('report.cash');
-                                            } elseif ($product->Pay == 'Shabka') {
-                                                $pays = __('report.shabka');
-                                            } elseif ($product->Pay == "Credit") {
-                                                $pays = __('report.credit');
-                                            } elseif ($product->Pay == "Bank_transfer") {
-                                                $pays = __('home.Bank_transfer');
-                                            } else {
-                                                $pays = __('home.Partition of the amount');
-                                            }
-
-                                            ?>
-                                            <td data-target="numberofpice">{{ $pays }}</td>
-                                        
-                                        
-                                            <?php
-                                        $discountreturn=0;
-                                         $discoundoninvoice=0;
-                                        if($product->Number_of_Quantity==0){
-                                              foreach (App\Models\return_sales::where('invoice_id', $product->id)->get() as $item){
-                                                
-                                                $discoundoninvoice+=$item->discountoninvoice;
-
-                                               }
-                                        }else{
-                                        $discoundoninvoice=$product->discount-$product->discountOnProduct;
-                                                    
-                                        }
-
-                                               $quentity=0;
-                                               foreach (App\Models\return_sales::where('invoice_id', $product->id)->get() as $item){
-                                                
-                                                $discountreturn+= $item->discountvalue;
-                                                $quentity+=$item->return_quantity;
-                                               }
-                                             foreach (App\Models\sales::where('invoice_id', $product->id)->get() as $item){
-                                                
-                                                $discountreturn+= ($item->Discount_Value);
-                                                $quentity+=$item->quantity;
-
-                                               }
-                                            $discountreturn+=$discoundoninvoice;
-
-                 $price=$product->cashamount+$product->Bank_transfer+$product->bankamount+$product->creaditamount;
-                 $avt = App\Models\Avt::find(1);
-                   $totalprice+=$price;
-                  $price_befor_tax=$price*100/(100+($avt->AVT*100));
-                  $invoicetotal_addedvalue = ($price_befor_tax )* $avt->AVT;
-                  $invoicetotal_price = $price_befor_tax;
-                  $invoicetotal_discount = $discountreturn;
-                  $totaldiscount+=  $invoicetotal_discount ;
-                  $totaladdedvalue+=$invoicetotal_addedvalue   ;
-                  $totalpriceafterdiscount+=$price_befor_tax   ;
-
-                                            
-                                            ?>
-<td>{{number_format((float)(round($invoicetotal_price,2)+round($invoicetotal_discount,2)), 2, '.', '')}}</td>
-<td>{{number_format(round($invoicetotal_discount,2), 2, '.', '')}}</td>
-<td>{{number_format(round($invoicetotal_price,2), 2, '.', '')}}</td>
-<td>{{number_format(round($invoicetotal_addedvalue,2), 2, '.', '')}}</td>
-<td>{{number_format($price, 2, '.', '')}}</td>
-                                   
-
-                                        </tr>
-                                     
-                                        @endforeach
-                                        
-                                        <tr>
-                                            <td>-</td>
-                                            <td>-</td>
-                                            <td>-</td>
-                                                                           
-                                            <td>-</td>
-                                            <td>{{number_format($totaldiscount+$totalpriceafterdiscount, 2, '.', '')}}</td>
-                                            <td>{{number_format($totaldiscount, 2, '.', '')}}</td>
-                                            <td>{{number_format($totalpriceafterdiscount, 2, '.', '')}}</td>
-                                            <td>{{number_format($totaladdedvalue , 2, '.', '')}}</td>
-                                            <td>{{number_format(round($totalprice ,2), 2, '.', '') }}</td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-
-                            </div>
-                        </div>
-
-                    
-                        <br>
-    <center>    <span class='double'>   {{__('home.salesـreturned')}} </span></center> 
-                        <br>
-                        <br>
-
-
-<?php
-$Invoices=$data['returnsales'];
-?>
- 
-                @if (isset($Invoices))
-                <?php
-                    $userId = 0;
-                    $count = 0;
-                    ?>
-                    <?php
-                    $userId = 0;
-                    $startat = '';
-                    $endat = '';
-                    $totalprice = 0;
-                    $totaladdedvalue = 0;
-                    $i = 0;
-                    $invoiceIds = [];
-                    $totalpricefinal = 0;
-                    ?>
-                <div >
-              
-                          <div class="table-responsive hoverable-table">
-                        <table class="table table-hover table-bordered" id="example1" data-page-length='50' style=" text-align: center; width:95%">
-                          
-                                   <thead>
-                                <tr>
-                                    <th>#</th>
-                                    <th>{{ __('report.date') }}</th>
-                                    <th>{{ __('report.invoiceNo') }}</th>
-                                    <th>-</th>
-                                    <th>{{ __('home.paymentmethod') }} </th>
-                                    <th> {{ __('home.total') }}</th>
-                                    <th> {{ __('home.quantity') }}</th>
-                                    <th>{{ __('home.operations') }}</th>
-
+                    <div class="table-responsive hoverable-table">
+                        <table class="table table-hover table-bordered text-center" style="width:100%">
+                            <thead>
+                                <tr style="color: #FF4F1F; font-size:13px;">
+                                    <th>{{ __('home.Invoice_no') }}</th>
+                                    <th>{{ __('home.date') }}</th>
+                                    <th>{{ __('home.clietName') }}</th>
+                                    <th>{{ __('home.paymentmethod') }}</th>
+                                    <th>{{ __('home.total') }}</th>
+                                    <th>{{ __('home.discount') }}</th>
+                                    <th>{{ __('home.totalafterdiscount') }}</th>
+                                    <th>{{ __('home.avt') }}</th>
+                                    <th>{{ __('home.totalwithTax') }}</th>
                                 </tr>
                             </thead>
-                            <?php
-                            $avt = App\Models\Avt::find(1);
-                            $saleavt = $avt->AVT;
-                            ?>
-                            @foreach ($Invoices as $invoice)
-                            <?php
-
-                            if ($count == 0) {
-                                $startat = $invoice->created_at;
-                            }
-                            $endat = $invoice->created_at;
-                            $count++;
-                            ?>
-
-                     
-                            @if (!in_array($invoice->invoice_id, $invoiceIds))
-                            <?php
-                            $invoiceIds[] = $invoice->invoice_id;
-                            ?>
-                            @endif
-                            @endforeach
-
-
-                            <?php
-                            $returnsales = 0;
-                            $totalprice = 0;
-
-                            ?>
-
-
                             <tbody>
-                                @foreach ($invoiceIds as $invoiceid)
+                                @foreach ($data['invoices'] as $product)
+                                    @php
+                                        $price = ($product->cashamount + $product->bankamount + $product->Bank_transfer + $product->creaditamount);
+                                        
+                                        // حساب الخصم والمرتجعات المرتبطة بالفاتورة بشكل آمن
+                                        $discoundoninvoice = 0;
+                                        $discountreturn = 0;
+                                        
+                                        if ($product->Number_of_Quantity == 0) {
+                                            foreach (App\Models\return_sales::where('invoice_id', $product->id)->get() as $item) {
+                                                $discoundoninvoice += $item->discountoninvoice;
+                                            }
+                                        } else {
+                                            $discoundoninvoice = $product->discount - $product->discountOnProduct;
+                                        }
 
-                                <?php
-                                                                        $datainvoice=App\Models\invoices::find($invoiceid);
+                                        foreach (App\Models\return_sales::where('invoice_id', $product->id)->get() as $item) {
+                                            $discountreturn += $item->discountvalue;
+                                        }
+                                        foreach (App\Models\sales::where('invoice_id', $product->id)->get() as $item) {
+                                            $discountreturn += $item->Discount_Value;
+                                        }
+                                        $discountreturn += $discoundoninvoice;
 
-                                $Invoices = App\Models\return_sales::where('invoice_id', $invoiceid)->whereDate('created_at', '>=', $start)->whereDate('created_at', '<=', $end)->get();
-                                $date = 0;
-                                $numberofPice = 0;
-                                $total_addedvalue = 0;
-                                $eachreturn = 0;
-                                foreach ($Invoices as $invoice) {
-                                    $eachreturn+= ($invoice->return_Unit_Price * $invoice->return_quantity) - $invoice->discountvalue - $invoice->discountoninvoice;
-                                    $Pay = $invoice->Invoice->Pay;
-                                    $date = $invoice->created_at;
-                                    $numberofPice += $invoice->return_quantity;
-                                    $total_addedvalue += ($invoice->return_Unit_Price * $invoice->return_quantity) - $invoice->discountvalue - $invoice->discountoninvoice;
-                                    $totalprice += ($invoice->return_Unit_Price * $invoice->return_quantity) - $invoice->discountvalue - $invoice->discountoninvoice;
-                                }
-                                $i++;
-                                $date = explode(' ', $date);
-                                $eachreturn += $total_addedvalue * $saleavt;
-                                $totalprice += $total_addedvalue * $saleavt;
-                                ?>
-                                <tr>
-                                    <td>{{ $i }}</td>
-                                    <td>{{ $date[0] }}</td>
-                                    <td>{{ $invoiceid }}</td>
-                                            <td>{{$datainvoice->customer->name}}</td>
-                                    <td>
+                                        $price_befor_tax = $saleavt > 0 ? ($price * 100) / (100 + ($saleavt * 100)) : $price;
+                                        $invoicetotal_addedvalue = $price_befor_tax * $saleavt;
+                                        
+                                        $totalprice += $price;
+                                        $totaldiscount += $discountreturn;
+                                        $totaladdedvalue += $invoicetotal_addedvalue;
+                                        $totalpriceafterdiscount += $price_befor_tax;
 
-
-                                        @if ($Pay == 'Cash')
-
-                                        <span style="color:blue !important" class="text-success">{{ __('report.cash') }}</span>
-                                        @elseif($Pay == 'Credit')
-                                        <span class="text-danger">{{ __('report.credit') }}</span>
-                                        @elseif($Pay == 'Bank_transfer')
-                                        <span class="text-danger">{{ __('home.Bank_transfer') }}</span>
-                                        @else
-                                        <span class="text-warning">{{ __('report.shabka') }}</span>
-                                        @endif
-                                    </td>
-                                    <td>{{round($eachreturn,2)}}</td>
-                                    <td>{{ $numberofPice }}</td>
-
-                                    <td> <a style="color: black" class="dropdown-item" href="Show_return_Sales_Details/{{ $invoiceid }}"><i class="text-black fas fa-print"></i>&nbsp;&nbsp;
-                                            {{ __('home.show') }}
-                                        </a></td>
-                                </tr>
+                                        // ترجمة طريقة الدفع
+                                        $pays = match($product->Pay) {
+                                            'Cash' => __('report.cash'),
+                                            'Shabka' => __('report.shabka'),
+                                            'Credit' => __('report.credit'),
+                                            'Bank_transfer' => __('home.Bank_transfer'),
+                                            default => __('home.Partition of the amount')
+                                        };
+                                    @endphp
+                                    <tr>
+                                        <td>{{ $product->id }}</td>
+                                        <td>{{ $product->created_at }}</td>
+                                        <td>{{ optional($product->customer)->name }}</td>
+                                        <td>{{ $pays }}</td>
+                                        <td>{{ number_format($price_befor_tax + $discountreturn, 2) }}</td>
+                                        <td>{{ number_format($discountreturn, 2) }}</td>
+                                        <td>{{ number_format($price_befor_tax, 2) }}</td>
+                                        <td>{{ number_format($invoicetotal_addedvalue, 2) }}</td>
+                                        <td>{{ number_format($price, 2) }}</td>
+                                    </tr>
                                 @endforeach
 
+                                <!-- صف المجاميع للمبيعات -->
+                                <tr class="font-weight-bold bg-light">
+                                    <td colspan="4">المجموع الكلي</td>
+                                    <td>{{ number_format($totaldiscount + $totalpriceafterdiscount, 2) }}</td>
+                                    <td>{{ number_format($totaldiscount, 2) }}</td>
+                                    <td>{{ number_format($totalpriceafterdiscount, 2) }}</td>
+                                    <td>{{ number_format($totaladdedvalue, 2) }}</td>
+                                    <td>{{ number_format($totalprice, 2) }}</td>
+                                </tr>
                             </tbody>
-
                         </table>
+                    </div>
 
+                    <!-- قسم المرتجعات -->
+                    @if (isset($data['returnsales']) && count($data['returnsales']) > 0)
+                        <div class="text-center my-4">
+                            <span class="double">{{ __('home.salesـreturned') }}</span>
+                        </div>
 
+                        @php
+                            $invoiceIds = collect($data['returnsales'])->pluck('invoice_id')->unique()->toArray();
+                            $totalReturnsPrice = 0;
+                        @endphp
 
-                                   <div class="table-responsive hoverable-table">
-                        <table class="table table-hover table-bordered" id="example1" data-page-length='50' style=" text-align: center; width:95%">
-                          
-
-                                <tbody>
-
+                        <div class="table-responsive hoverable-table">
+                            <table class="table table-hover table-bordered text-center" style="width:100%">
+                               <thead>
                                     <tr>
-                                        <td>{{ __('report.totalallprice') }}</td>
-
-                                        <td>{{ round($totalprice,2) }}</td>
+                                        <th>#</th>
+                                        <th>{{ __('report.date') }}</th>
+                                        <th>{{ __('report.invoiceNo') }}</th>
+                                        <th>{{ __('home.clietName') }}</th>
+                                        <th>{{ __('home.paymentmethod') }}</th>
+                                        <th>{{ __('home.total') }}</th>
+                                        <th>{{ __('home.quantity') }}</th>
+                                        <th>{{ __('home.operations') }}</th>
                                     </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach ($invoiceIds as $index => $invoiceid)
+                                        @php
+                                            $datainvoice = App\Models\invoices::find($invoiceid);
+                                            $returnItems = App\Models\return_sales::where('invoice_id', $invoiceid)
+                                                ->whereDate('created_at', '>=', $start)
+                                                ->whereDate('created_at', '<=', $end)
+                                                ->get();
+                                            
+                                            $eachreturn = 0;
+                                            $numberofPice = 0;
+                                            $date = '';
 
+                                            foreach ($returnItems as $item) {
+                                                $subTotal = ($item->return_Unit_Price * $item->return_quantity) - $item->discountvalue - $item->discountoninvoice;
+                                                $eachreturn += $subTotal;
+                                                $numberofPice += $item->return_quantity;
+                                                $date = $item->created_at;
+                                            }
+                                            $eachreturn += ($eachreturn * $saleavt);
+                                            $totalReturnsPrice += $eachreturn;
+                                            $payType = optional(optional($returnItems->first())->Invoice)->Pay;
+                                        @endphp
+                                        <tr>
+                                            <td>{{ $index + 1 }}</td>
+                                            <td>{{ $date ? explode(' ', $date)[0] : '' }}</td>
+                                            <td>{{ $invoiceid }}</td>
+                                            <td>{{ optional(optional($datainvoice)->customer)->name }}</td>
+                                            <td>
+                                                @if ($payType == 'Cash')
+                                                    <span class="text-success">{{ __('report.cash') }}</span>
+                                                @elseif($payType == 'Credit')
+                                                    <span class="text-danger">{{ __('report.credit') }}</span>
+                                                @elseif($payType == 'Bank_transfer')
+                                                    <span class="text-danger">{{ __('home.Bank_transfer') }}</span>
+                                                @else
+                                                    <span class="text-warning">{{ __('report.shabka') }}</span>
+                                                @endif
+                                            </td>
+                                            <td>{{ number_format($eachreturn, 2) }}</td>
+                                            <td>{{ $numberofPice }}</td>
+                                            <td>
+                                                <a class="btn btn-sm btn-light" href="Show_return_Sales_Details/{{ $invoiceid }}">
+                                                    <i class="fas fa-print"></i> {{ __('home.show') }}
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    @endforeach
                                 </tbody>
                             </table>
 
+                            <!-- إجمالي المرتجعات -->
+                            <table class="table table-bordered text-center mt-2" style="width: 30% float: left;">
+                                <tr>
+                                    <td class="font-weight-bold bg-light">{{ __('report.totalallprice') }}</td>
+                                    <td class="font-weight-bold text-danger">{{ number_format($totalReturnsPrice, 2) }}</td>
+                                </tr>
+                            </table>
                         </div>
-                        
-                                                @endif
+                    @endif
 
-
-                  
-
-         </div>
-      </div>
-   </div>
-</div><!-- COL-END -->
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
-<!-- row closed -->
-</div>
-<!-- Container closed -->
-</div>
-<!-- main-content closed -->
 @endsection
+
 @section('js')
-<!--Internal  Chart.bundle js -->
 <script src="{{ URL::asset('assets/plugins/chart.js/Chart.bundle.min.js') }}"></script>
-
-
 <script type="text/javascript">
    function printDiv() {
       var printContents = document.getElementById('print').innerHTML;
@@ -505,7 +310,5 @@ $Invoices=$data['returnsales'];
       document.body.innerHTML = originalContents;
       location.reload();
    }
-   
 </script>
-
 @endsection

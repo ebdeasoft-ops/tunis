@@ -1,751 +1,373 @@
 @extends('layouts.master')
+
 @section('css')
     <!-- Internal Data table css -->
     <link href="{{ URL::asset('assets/plugins/datatable/css/dataTables.bootstrap4.min.css') }}" rel="stylesheet" />
     <link href="{{ URL::asset('assets/plugins/datatable/css/buttons.bootstrap4.min.css') }}" rel="stylesheet">
     <link href="{{ URL::asset('assets/plugins/datatable/css/responsive.bootstrap4.min.css') }}" rel="stylesheet" />
-    <link href="{{ URL::asset('assets/plugins/datatable/css/jquery.dataTables.min.css') }}" rel="stylesheet">
-    <link href="{{ URL::asset('assets/plugins/datatable/css/responsive.dataTables.min.css') }}" rel="stylesheet">
     <link href="{{ URL::asset('assets/plugins/select2/css/select2.min.css') }}" rel="stylesheet">
-
-    <!-- Internal Spectrum-colorpicker css -->
     <link href="{{ URL::asset('assets/plugins/spectrum-colorpicker/spectrum.css') }}" rel="stylesheet">
-
-    <!-- Internal Select2 css -->
-    <link href="{{ URL::asset('assets/plugins/select2/css/select2.min.css') }}" rel="stylesheet">
+    
+    <style>
+        .search-card {
+            background: #ffffff;
+            border-radius: 14px;
+            border: 1px solid rgba(0, 0, 0, 0.06);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04);
+            transition: all 0.3s ease;
+        }
+        .parent-label { 
+            font-weight: 600; 
+            color: #343a40; 
+            margin-bottom: 8px; 
+            display: block; 
+            font-size: 13.5px; 
+        }
+        .native-datepicker {
+            appearance: none;
+            -webkit-appearance: none;
+            direction: ltr !important;
+            text-align: right !important;
+            background-color: #fff !important;
+            cursor: pointer;
+        }
+        table.dataTable thead th { 
+            text-align: center !important; 
+            background-color: #1e293b !important; 
+            color: #fff !important; 
+            border: none !important;
+        }
+        .form-control, .select2-container--default .select2-selection--single {
+            height: 45px !important;
+            padding: 8px 14px;
+            border-radius: 10px !important;
+            border: 1px solid #cbd5e1 !important;
+            font-size: 14px;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        .form-control:focus {
+            border-color: #3b82f6 !important;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+        }
+        .select2-container--default .select2-selection--single .select2-selection__rendered {
+            line-height: 30px !important;
+        }
+        .select2-container--default .select2-selection--single .select2-selection__arrow {
+            height: 42px !important;
+        }
+        .btn-custom-search {
+            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+            border: none;
+            border-radius: 10px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .btn-custom-search:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+        }
+        .btn-choose-product {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+            border: none;
+            border-radius: 10px;
+            color: #fff;
+            font-weight: 600;
+            height: 45px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 12px rgba(245, 158, 11, 0.2);
+            transition: all 0.2s;
+        }
+        .btn-choose-product:hover {
+            opacity: 0.95;
+            color: #fff;
+            transform: translateY(-1px);
+        }
+    </style>
+@endsection
 
 @section('title')
-    {{ __('report.purchasproducttocustomer') }}@stop
+    {{ __('report.purchasproducttocustomer') }}
 @endsection
-@section('page-header')
-    <div class="main-parent">
-        <!-- breadcrumb -->
-        <div class="breadcrumb-header justify-content-between parent-heading ">
-            <div class="my-auto">
-                <div class="d-flex">
-                    <h4 class="content-title mb-0 my-auto">{{ __('report.purchasproducttocustomer') }}
 
-                    </h4><span class="text-muted mt-1 tx-13 mr-2 mb-0">
-                    </span>
-                </div>
+@section('page-header')
+    <!--breadcrumb-->
+    <div class="breadcrumb-header justify-content-between">
+        <div class="my-auto">
+            <div class="d-flex">
+                <h4 class="content-title mb-0 my-auto">{{ __('report.purchasproducttocustomer') }}</h4>
             </div>
         </div>
-        <!-- breadcrumb -->
-    @endsection
-    @section('content')
+    </div>
+    <!--breadcrumb-->
+@endsection
 
-        @if (count($errors) > 0)
-            <div class="alert alert-danger">
-                <button aria-label="Close" class="close" data-dismiss="alert" type="button">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-                <strong>خطا</strong>
-                <ul>
-                    @foreach ($errors->all() as $error)
-                        <li>{{ $error }}</li>
-                    @endforeach
-                </ul>
-            </div>
-        @endif
-        @if (session()->has('notfountreturnproduct'))
-            <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                <br>
-                <strong>{{ session()->get('notfountreturnproduct') }}</strong>
-                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-        @endif
+@section('content')
 
-        <!-- row -->
+    @if ($errors->any())
+        <div class="alert alert-danger alert-dismissible fade show shadow-sm border-0" role="alert" style="border-radius: 10px;">
+            <button aria-label="Close" class="close" data-dismiss="alert" type="button">
+                <span aria-hidden="true">&times;</span>
+            </button>
+            <strong><i class="fas fa-exclamation-triangle ml-1"></i> {{ __('home.error') ?? 'Error' }}</strong>
+            <ul class="mb-0 mt-2">
+                @foreach ($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
 
-            <div class="card mg-b-20">
+    @if (session()->has('notfountreturnproduct'))
+        <div class="alert alert-danger alert-dismissible fade show shadow-sm border-0" role="alert" style="border-radius: 10px;">
+            <strong><i class="fas fa-info-circle ml-1"></i> {{ session()->get('notfountreturnproduct') }}</strong>
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+    @endif
 
-
-                <div class="card-header pb-0">
-
-                    <form
-                        action="{{ url(Mcamara\LaravelLocalization\Facades\LaravelLocalization::getCurrentLocale() . '/' . ($page = 'purchasproducttocustomer')) }}"
-                        method="POST" role="search" autocomplete="off">
-                        {{ csrf_field() }}
+    <div class="row">
+        <div class="col-xl-12">
+            
+            <div class="card search-card mg-b-20 p-4">
+                <div class="card-header pb-3 bg-transparent border-0 px-0 pt-0">
+                    <h5 class="text-dark font-weight-bold mb-0 d-flex align-items-center">
+                        <i class="fas fa-filter text-primary mr-2"></i> {{ __('home.advanced_search_filters') ?? 'بحث متقدم وفلترة البيانات' }}
+                    </h5>
+                    <hr class="mt-3 mb-1 border-light">
+                </div>
+                
+                <div class="card-body px-0 pb-0 pt-2">
+                    <form action="{{ url(Mcamara\LaravelLocalization\Facades\LaravelLocalization::getCurrentLocale() . '/purchasproducttocustomer') }}" method="POST" role="search" autocomplete="off">
+                        @csrf
 
                         <div class="row">
-
-
-                       
-
-                            <div class="col-lg-3" id="start_at">
-                                <label class="parent-label" for="exampleFormControlSelect1"> {{ __('report.fromdate') }}</label>
+                            <!-- From Date -->
+                            <div class="col-lg-3 mg-b-15">
+                                <label class="parent-label">{{ __('report.fromdate') }}</label>
                                 <div class="input-group">
-                                    <div class="input-group-prepend">
-                                        <div class="input-group-text">
-                                            <i class="fas fa-calendar-alt"></i>
+                                    <input class="form-control native-datepicker" value="{{ $start_at ?? '' }}" name="start_at" type="date" required>
+                                    <div class="input-group-append" onclick="$(this).siblings('input').focus();" style="cursor: pointer;">
+                                        <div class="input-group-text bg-light border-0" style="border-radius: {{ app()->getLocale() == 'ar' ? '8px 0 0 8px' : '0 8px 8px 0' }};">
+                                            <i class="fas fa-calendar-alt text-primary"></i>
                                         </div>
                                     </div>
-                                    <input class="form-control parent-input fc-datepicker" value="{{ $start_at ?? '' }}"
-                                        name="start_at" placeholder="YYYY-MM-DD" type="text" required>
-                                </div><!-- input-group -->
+                                </div>
                             </div>
 
-                            <div class="col-lg-4" id="end_at">
-                                <label class="parent-label" for="exampleFormControlSelect1"> {{ __('report.todate') }}</label>
+                            <!-- To Date -->
+                            <div class="col-lg-3 mg-b-15">
+                                <label class="parent-label">{{ __('report.todate') }}</label>
                                 <div class="input-group">
-                                    <div class="input-group-prepend">
-                                        <div class="input-group-text">
-                                            <i class="fas fa-calendar-alt"></i>
+                                    <input class="form-control native-datepicker" name="end_at" value="{{ $end_at ?? '' }}" type="date" required>
+                                    <div class="input-group-append" onclick="$(this).siblings('input').focus();" style="cursor: pointer;">
+                                        <div class="input-group-text bg-light border-0" style="border-radius: {{ app()->getLocale() == 'ar' ? '8px 0 0 8px' : '0 8px 8px 0' }};">
+                                            <i class="fas fa-calendar-alt text-primary"></i>
                                         </div>
-                                    </div><input class="form-control parent-input fc-datepicker" name="end_at"
-                                        value="{{ $end_at ?? '' }}" placeholder="YYYY-MM-DD" type="text" required>
-                                </div><!-- input-group -->
-
+                                    </div>
+                                </div>
                             </div>
-                            
-                            
-                            <div class="col-lg-5 mg-t-20 mg-lg-t-0" id="type">
-                                <p class="mg-b-10 parent-label"> {{ __('home.clientname') }} </p>
-                                <select class="form-control parent-input" name="branch" required>
-                                    </option>
-                                    @foreach (App\Models\customers::get() as $branch)
-                                        <option value="{{ $branch->id }}"> {{ $branch->name }}</option>
+
+                            <!-- Client Name -->
+                            <div class="col-lg-6 mg-b-15">
+                                <label class="parent-label">{{ __('home.clientname') }}</label>
+                                <select class="form-control select2" id="branch" name="branch" required>
+                                    <option value="">{{ __('home.clientname') }}</option>
+                                    @foreach (App\Models\customers::all() as $customer)
+                                        <option value="{{ $customer->id }}" {{ (isset($selected_branch) && $selected_branch == $customer->id) ? 'selected' : '' }}>{{ $customer->name }}</option>
                                     @endforeach
                                 </select>
-
                             </div>
 
-                           
-                            
-
-                            <input class="form-control select2 " name="productNo" id="productNo" value='-' hidden>
-
+                            <input type="hidden" name="productNo" id="productNo" value="{{ $productNo ?? '-' }}">
                         </div>
                         
-                        <div class="row my-3">
-
-                            <div class="col-lg-3 mg-t-20 mg-lg-t-0 p-0" style=" height: 80px; width: 210px;">
-                                <p class="mg-b-10 parent-label"> . </p>
-                                <div class="col-lg-1 mg-t-10 mg-lg-t-0">
-                                    <a style="background-color: #FBA10F;width:170px" class="modal-effect btn btn-md btn-info p-0 py-1 button-eng" data-effect="effect-scale"
-                                        data-toggle="modal" href="#SearchProduct" title="تحديد">{{ __('home.chooose product') }}<i
-                                            style=" height: 100;
-                                                 width: 80px;"
-                                            class="las la-search"> </i>
-                                        </a>
-                                </div>
-                                
+                        <!-- اختيار المنتج وبياناته -->
+                        <div class="row my-2 align-items-end">
+                            <div class="col-lg-3 mg-b-15">
+                                <label for="product_code" class="control-label parent-label">{{ __('home.productNo') }}</label>
+                                <input dir="ltr" type="text" class="form-control text-center font-weight-bold" id="product_code" name="product_code" value="{{ $product_code ?? '' }}" required readonly>
                             </div>
-                            <div class="col-lg-3">
-                                <label for="inputName" class="control-label parent-label"> {{ __('home.productNo') }} </label>
-                                <input dir=ltr type="text" class="form-control parent-input" id="product_code" name="product_code"
-                                    required>
-
+                            <div class="col-lg-5 mg-b-15">
+                                <label for="productnameshow" class="control-label parent-label">{{ __('home.productname') }}</label>
+                                <input type="text" class="form-control" id="productnameshow" name="productnameshow" value="{{ $productnameshow ?? '' }}" required readonly>
                             </div>
-                            <div class="col-lg-6">
-                                <label for="inputName" class="control-label parent-label"> {{ __('home.productname') }} </label>
-                                <input type="text" class="form-control parent-input" id="productnameshow" name="productnameshow"
-                                    required>
-
+                            <div class="col-lg-4 mg-b-15">
+                                <label class="parent-label d-block">&nbsp;</label>
+                                <a class="modal-effect btn btn-choose-product w-100" data-effect="effect-scale" data-toggle="modal" href="#SearchProduct" title="تحديد">
+                                    {{ __('home.chooose product') }} <i class="las la-search ml-2 fs-18"></i>
+                                </a>
                             </div>
                         </div>
                         
-                        <div class="d-flex justify-content-center mb-3 mt-3">
-                            <button class="btn btn-success mb-3 print-style my-3 p-1">
-                                {{ __('home.search') }}
-                                <i
-                                        style=" height: 100;
-                                                 
-                                                 font-size:15px"
-                                        class="las la-search"></i>
+                        <!-- زر البحث الرئيسي -->
+                        <div class="d-flex justify-content-center mt-4 pt-2">
+                            <button type="submit" class="btn btn-custom-search text-white px-5 py-2.5 shadow-sm font-weight-bold" style="font-size: 15px;">
+                                <i class="las la-search fs-18 ml-1"></i> {{ __('home.search') }}
                             </button>
                         </div>
-
-
                     </form>
 
+                    <!-- عرض النتائج -->
                     @if (isset($Saleing))
-
-                            <div style="border-radius: 10px" class="card p-3">
-                                <div class="table-responsive  ">
-                        <table style="border:2px solid rgba(0,0,0,.3);" class="table text-md-nowrap mb-0 table-striped invoice-table text-center">
-
-                                        <thead>
-                                            <tr>
+                        <div class="card m-0 mt-5 p-3 shadow-none border bg-light" style="border-radius: 12px;">
+                            <div class="table-responsive">
+                                <table class="table table-hover table-striped table-bordered text-center align-middle mb-0 bg-white" style="width:100%">
+                                    <thead>
+                                        <tr>
                                             <th>#</th>
-                                            <th style="font-size: 15px" class="border-bottom-0" style="text-align:center">
-                                        {{ __('home.date') }}
-                                    </th>
-                                            <th dir='ltr' style="font-size: 15px" class="border-bottom-0">{{ __('home.productNo') }}
-                                    </th>
-                                    <th style="font-size: 15px" class="border-bottom-0" style="text-align:center">
-                                        {{ __('home.product') }}
-                                    </th>
-                                    <th style="font-size: 13px" class="border-bottom-0">
-                                        {{ __('home.sellingproduct without tax') }}
-                                    </th>
-                                    <th style="font-size: 15px" class="border-bottom-0">{{ __('home.quantity') }}
-                                    </th>
-                                  
-                                   
-    
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            <?php $i = 0;
-                                          ?>
-                                            @foreach ($Saleing as $invoice)
-                                                <?php $i++;
-                                          
-
-                                                ?>
-                                                <tr>
-                                                <td>{{ $i }}</td>
+                                            <th>{{ __('home.date') }}</th>
+                                            <th dir="ltr">{{ __('home.productNo') }}</th>
+                                            <th>{{ __('home.product') }}</th>
+                                            <th>{{ __('home.sellingproduct without tax') }}</th>
+                                            <th>{{ __('home.quantity') }}</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @forelse ($Saleing as $index => $invoice)
+                                            <tr>
+                                                <td class="font-weight-bold text-primary">{{ $index + 1 }}</td>
                                                 <td>{{ $invoice->created_at }}</td>
-                                                    <td>{{ $invoice->productData->Product_Code }} </td>
-                                                    <td dir='ltr'>{{ $invoice->productData->product_name }} </td>
-                                                    <td>{{ $invoice->Unit_Price }}</td>
-                                                    <td>{{ $invoice->quantity }}</td>
-                                               ] </td>
-    
-                                                </tr>
-                                            @endforeach
-    
-                                        </tbody>
-                                    </table>
-                                </div>
+                                                <td dir="ltr" class="font-weight-bold text-muted">{{ $invoice->productData->Product_Code ?? '' }}</td>
+                                                <td class="font-weight-bold">{{ $invoice->productData->product_name ?? '' }}</td>
+                                                <td class="text-success font-weight-bold">{{ number_format($invoice->Unit_Price, 2) }}</td>
+                                                <td><span class="badge badge-primary px-3 py-2" style="font-size: 13px;">{{ $invoice->quantity }}</span></td>
+                                            </tr>
+                                        @empty
+                                            <tr>
+                                                <td colspan="6" class="py-4 text-muted">{{ __('home.no_data_available') ?? 'لا توجد بيانات متاحة' }}</td>
+                                            </tr>
+                                        @endforelse
+                                    </tbody>
+                                </table>
                             </div>
-
-
-                          
-                          
+                        </div>
                     @endif
 
                 </div>
             </div>
-        
-    </div>
-    </div>
-    <!-- row closed -->
-    </div>
-    <!-- Container closed -->
-    </div>
-
-
-
-    {{-- Update ( 24/4/2023 ) --}}
-
-<div class="modal fade" id="SearchProduct" name="SearchProduct" tabindex="-1" role="dialog"
-aria-labelledby="exampleModalLabel" dir='rtl' aria-hidden="true">
-<div style="margin: 0 9% !important;" class="modal-dialog modal-xl modal-special" role="document">
-    <div class="modal-content">
-        <div class="modal-header">
-            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                <span aria-hidden="true">&times;</span>
-            </button>
-        </div>
-        <div class="modal-body">
-
-
-            <div class="card-body">
-
-                <div class="col-lg-4 mg-t-20 mg-lg-t-0">
-                    <label for="inputName" style="font-weight: bold" class="control-label parent-label">
-                        {{ __('home.searchaboutproduct') }} </label>
-                    <input type="text" class="form-control parent-input"
-                        placeholder="{{ __('home.Search By Name or Product Number') }}" id="searchaboutproduct"
-                        name="searchaboutproduct" onkeyup="searchaboutproductfunction()">
-                </div>
-                <br>
-                <div class="table-responsive">
-                    <table class="table text-md-nowrap text-center our-table" id="SearchProductTable"
-                        width="100%" style="border: 2px solid rgba(0,0,0,.3);">
-                        <col style="width:5%">
-                        <col style="width:14%">
-                        <col style="width:28%">
-                        <col style="width:10%">
-                        <col style="width:18%">
-                        <col style="width:15%">
-                        <col style="width:10%">
-
-                        <thead>
-                            <tr>
-                                <th style="font-size: 15px" class="border-bottom-0">#</th>
-                                <th style="font-size: 15px" class="border-bottom-0">{{ __('home.productNo') }}
-                                </th>
-                                <th style="font-size: 15px" class="border-bottom-0" style="text-align:center">
-                                    {{ __('home.product') }}</th>
-                                <th style="font-size: 15px" class="border-bottom-0">{{ __('home.quantity') }}
-                                </th>
-                                <th style="font-size: 13px" class="border-bottom-0">
-                                    {{ __('home.purchaseproductwithouttax') }}</th>
-                                <th style="font-size: 13px" class="border-bottom-0">
-                                    {{ __('home.sellingproduct without tax') }}</th>
-                                <th style="font-size: 15px" class="border-bottom-0">{{ __('home.Add') }}</th>
-
-
-
-                            </tr>
-                        </thead>
-                        <tbody class="">
-                            <?php $i = 0;
-                            $products2=[];
-                            $data = 'm';    
-                                 $products2 =App\Models\products::where('branchs_id',Auth()->User()->branchs_id)->paginate(20) ;
-                                 ?>
-?>
-                            @foreach ($products2 as $product)
-                                <?php $i++; ?>
-
-                                <tr id="<?php echo $product['id']; ?>">
-                                    <td id="tableData"  dir=ltr>{{ $product->id }}</td>
-                                    <td id="tableData"  dir=ltr>{{ $product->Product_Code }}</td>
-                                    <td id="tableData"  data-target="product_name">
-                                        {{ $product->product_name }}</td>
-                                    <td id="tableData"  data-target="numberofpice">
-                                        {{ $product->numberofpice }}</td>
-                                    <td id="tableData"  data-target="numberofpice">
-                                        {{ $product->purchasingـprice }}</td>
-                                    <td id="tableData" data-target="numberofpice">
-                                        {{ $product->sale_price }}</td>
-                                    <td id="tableData" >
-                                    
-                                            <button style="padding: 6px 12px" type="button" id="btn"
-                                                name="btn" class="btn btn-success" data-dismiss="modal"
-                                                onclick="chooseProduct('{{ $product->id }}','{{ $product->product_name }}','{{ $product->purchasingـprice }}','{{ $product->sale_price }}','{{ $product->Product_Code }}','{{ $product->numberofpice }}')">{{ __('home.Add') }}</button>
-                                        
-
-                                    </td>
-                                </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
-                    <div>
-
-                    </div>
-
-                    <div class="row d-flex justify-content-between pagination-row">
-
-                        <div class="rows-number">
-                            <label
-                                style="font-size: 12px;color:#419BB2;font-weight:bold">&nbsp;&nbsp;&nbsp;&nbsp;{{ __('pagination.numberofpages') }}
-                                &nbsp;&nbsp; {{ $products2->perPage() }} &nbsp;&nbsp;</label>
-                            <label
-                                style="font-size: 12px;color:#419BB2;font-weight:bold">{{ __('pagination.numberofproducts') }}
-                                &nbsp;&nbsp;{{ $products2->total() }} </label>
-                        </div>
-
-                        <div class="buttonss-table row d-flex justify-content-center mb-2">
-                            <button id="previousPage" name="previousPage" class="btn btn-primary print-style"><span> << &nbsp;</span>{{__('pagination.previous')}}</button>
-                            <div class="col-lg-2 col-md-2 col-sm-2 mg-lg-t-0 prodNumbers"> <input class="form-control " name="currentpage" id="currentpage" readonly value="{{$products2->currentPage()}}" readonly>
-                            </div>
-                            <input class="form-control " name="previousPagevalue" id="previousPagevalue" readonly value="{{$products2->previousPageUrl()}}" hidden>
-                            <input class="form-control " name="nextPageValue" id="nextPageValue" readonly value="{{$products2->nextPageUrl()}}" hidden>
-                            <button id="nextPage" name="nextPage" class="btn btn-primary print-style">{{__('pagination.next')}} >></button>
-                        </div>
-                    </div>
-
-                </div>
-
-            </div>
-
-            <div class="modal-footer">
-                {{-- <button id="added_product" name="added_product" id="added_product" class="btn btn-primary">{{__('home.confirm')}}</button> --}}
-                <button type="button" class="btn btn-secondary"
-                    data-dismiss="modal">{{ __('home.cancel') }}</button>
-            </div>
 
         </div>
-
-
     </div>
-</div>
 
-</div>
+   <!-- Modal Search Product -->
+   <div class="modal fade" id="SearchProduct" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" dir="rtl" aria-hidden="true">
+        <div class="modal-dialog modal-xl product-selection" role="document">
+            <div class="modal-content border-0 shadow-lg" style="border-radius: 14px;">
+                <div class="modal-header bg-light" style="border-radius: 14px 14px 0 0;">
+                    <h5 class="modal-title font-weight-bold text-primary">
+                        <i class="fas fa-boxes ml-1"></i> {{ __('home.chooose product') }}
+                    </h5>
+                    <button type="button" class="close m-0" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body p-4">
+                    <div class="row mb-3">
+                        <div class="col-lg-5">
+                            <label for="searchaboutproduct" class="control-label parent-label">{{ __('home.searchaboutproduct') }}</label>
+                            <input dir="ltr" type="text" class="form-control" placeholder="{{ __('home.Search By Name or Product Number') }}" id="searchaboutproduct" name="searchaboutproduct" onkeyup="searchaboutproductfunction()">
+                        </div>
+                    </div>
+                    
+                    <div class="table-responsive" id="ajax_responce_serarchDiv">
+                        <!-- Ajax Dynamic Content Goes Here -->
+                    </div>
 
+                    <input type="hidden" id="token_search" value="{{ csrf_token() }}">
 
-{{-- End Update ( 24/4/2023 ) --}}
-
-
+                    <div class="modal-footer px-0 pb-0 pt-3 border-top">
+                        <button type="button" class="btn btn-secondary px-4" data-dismiss="modal" style="border-radius: 8px;">{{ __('home.cancel') }}</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
 @endsection
+
 @section('js')
-    <!-- Internal Data tables -->
-    <script src="{{ URL::asset('assets/plugins/datatable/js/jquery.dataTables.min.js') }}"></script>
-    <script src="{{ URL::asset('assets/plugins/datatable/js/dataTables.dataTables.min.js') }}"></script>
-    <script src="{{ URL::asset('assets/plugins/datatable/js/dataTables.responsive.min.js') }}"></script>
-    <script src="{{ URL::asset('assets/plugins/datatable/js/responsive.dataTables.min.js') }}"></script>
-    <script src="{{ URL::asset('assets/plugins/datatable/js/jquery.dataTables.js') }}"></script>
-    <script src="{{ URL::asset('assets/plugins/datatable/js/dataTables.bootstrap4.js') }}"></script>
-    <script src="{{ URL::asset('assets/plugins/datatable/js/dataTables.buttons.min.js') }}"></script>
-    <script src="{{ URL::asset('assets/plugins/datatable/js/buttons.bootstrap4.min.js') }}"></script>
-    <script src="{{ URL::asset('assets/plugins/datatable/js/jszip.min.js') }}"></script>
-    <script src="{{ URL::asset('assets/plugins/datatable/js/pdfmake.min.js') }}"></script>
-    <script src="{{ URL::asset('assets/plugins/datatable/js/vfs_fonts.js') }}"></script>
-    <script src="{{ URL::asset('assets/plugins/datatable/js/buttons.html5.min.js') }}"></script>
-    <script src="{{ URL::asset('assets/plugins/datatable/js/buttons.print.min.js') }}"></script>
-    <script src="{{ URL::asset('assets/plugins/datatable/js/buttons.colVis.min.js') }}"></script>
-    <script src="{{ URL::asset('assets/plugins/datatable/js/dataTables.responsive.min.js') }}"></script>
-    <script src="{{ URL::asset('assets/plugins/datatable/js/responsive.bootstrap4.min.js') }}"></script>
-    <!--Internal  Datatable js -->
-    <script src="{{ URL::asset('assets/js/table-data.js') }}"></script>
-
-    <!--Internal  Datepicker js -->
-    <script src="{{ URL::asset('assets/plugins/jquery-ui/ui/widgets/datepicker.js') }}"></script>
-    <!--Internal  jquery.maskedinput js -->
-    <script src="{{ URL::asset('assets/plugins/jquery.maskedinput/jquery.maskedinput.js') }}"></script>
-    <!--Internal  spectrum-colorpicker js -->
-    <script src="{{ URL::asset('assets/plugins/spectrum-colorpicker/spectrum.js') }}"></script>
-    <!-- Internal Select2.min js -->
+    <!-- Internal Select2 js-->
     <script src="{{ URL::asset('assets/plugins/select2/js/select2.min.js') }}"></script>
-    <!--Internal Ion.rangeSlider.min js -->
-    <script src="{{ URL::asset('assets/plugins/ion-rangeslider/js/ion.rangeSlider.min.js') }}"></script>
-    <!--Internal  jquery-simple-datetimepicker js -->
-    <script src="{{ URL::asset('assets/plugins/amazeui-datetimepicker/js/amazeui.datetimepicker.min.js') }}"></script>
-    <!-- Ionicons js -->
-    <script src="{{ URL::asset('assets/plugins/jquery-simple-datetimepicker/jquery.simple-dtpicker.js') }}"></script>
-    <!--Internal  pickerjs js -->
-    <script src="{{ URL::asset('assets/plugins/pickerjs/picker.min.js') }}"></script>
-    <!-- Internal form-elements js -->
-    <script src="{{ URL::asset('assets/js/form-elements.js') }}"></script>
-    <script>
-        var date = $('.fc-datepicker').datepicker({
-            dateFormat: 'yy-mm-dd'
-        }).val();
-    </script>
-
-
-    {{-- Update ( 24/4/2023 ) --}}
-
-<script>
-    function searchaboutproductfunction() {
-        searchtext = $('#searchaboutproduct').val();
-        $.ajax({
-            url: " {{ URL::to('searchaboutproduct') }}" + "/" + searchtext,
-            type: "GET",
-            dataType: "json",
-            success: function(data) {
-
-
-                $('#previousPagevalue').val(data['prev_page_url'])
-                $('#nextPageValue').val(data['next_page_url'])
-                $('#currentpage').val(data['current_page'])
-                let table = document.getElementById("SearchProductTable");
-                var tableHeaderRowCount = 1;
-
-                var rowCount = table.rows.length;
-
-                for (var i = tableHeaderRowCount; i < rowCount; i++) {
-                    table.deleteRow(tableHeaderRowCount);
-                }
-                data['data'].forEach(async (product) => {
-
-
-                    Product_id = product['id'],
-                        Product_Code = product['Product_Code'],
-                        id = product['id'],
-                        product_name = product['product_name'],
-                        purchasingـprice = product['purchasingـprice']
-                    sale_price = product['sale_price']
-                    numberofpice = product['numberofpice']
-                    Product_Location = product['Product_Location']
-                    button = '';
-
-
-
-
-             
-                        text =
-                            '<button style="padding: 6px 12px" type="button" id="btn" name="btn" class="btn btn-success" data-dismiss="modal" onclick=';
-
-                        name = product_name.replaceAll(" ", "<");
-                        Product_Code_1= Product_Code.replaceAll(" ", "<");
-
-                        button = text.concat("chooseProduct(", id, ",", "'", name, "'", ",",
-                            purchasingـprice, ",", sale_price, ",", "'", Product_Code_1,
-                            "'", ",", numberofpice, ")", ">{{ __('home.Add') }}</button>");
-
-
-                    
-
-
-                    let row = table.insertRow(-1); // We are adding at the end
-
-                    let c1 = row.insertCell(0);
-                    let c2 = row.insertCell(1);
-                    let c3 = row.insertCell(2);
-                    let c4 = row.insertCell(3);
-                    let c5 = row.insertCell(4);
-                    let c6 = row.insertCell(5);
-                    let c7 = row.insertCell(6);
-
-                    c1.innerText = Product_id
-
-                    c2.innerHTML = '<span dir=ltr>' + Product_Code + '</span>'
-                    c3.innerHTML = product_name
-                    c4.innerText = numberofpice
-                    c5.innerText = purchasingـprice
-                    c6.innerText = sale_price
-
-                    c7.innerHTML = button
-
-                });
-
-            },
-        });
-    }
-</script>
-
-{{-- End Update ( 24/4/2023 ) --}}
-
-
-
-{{-- Update ( 24/4/2023 ) --}}
-
-<script>
-    function chooseProduct(code, name, price, sale_price, location, availablequantity) {
-        $('#SearchProduct').modal().hide();
-        $('#searchaboutproduct').val('');
-        var Product_Code = code
-        name = name.replaceAll("<", " ");
-        location= location.replaceAll("<", " ");
-
-
-
-            console.log('------')
-            console.log(code)
-            console.log(name)
-            console.log(price)
-
-            var Product_Code = code
-            var product_name = name
-            var product_sale_pice = price
-
-            $('#productNo').val(code);
-            $('#productnameshow').val(product_name);
-            $('#product_code').val(location);
-
-    }
-</script>
-
-{{--  End Update ( 24/4/2023 ) --}}
-
-
-
-
-
-
-    {{-- <script>
-        function chooseProduct(code, name, price) {
-            $('#SearchProduct').modal().hide();
-
-
-            console.log('------')
-            console.log(code)
-            console.log(name)
-            console.log(price)
-
-            var Product_Code = code
-            var product_name = name
-            var product_sale_pice = price
-
-            $('#productNo').val(code);
-            $('#productnameshow').val(product_name);
-
-
-        }
-    </script> --}}
     <script>
         $(document).ready(function() {
-
-
-         
-
-            $(function() {
-var timeout = 4000; // in miliseconds (3*1000)
-$('.alert').delay(timeout).fadeOut(500);
-});
-    
-      
-
-
-
-
-    $("#nextPage").click(function(e) {
-        url = $('#nextPageValue').val().split('page=')[1];
-        $.ajax({
-            url: " {{ URL::to('goToSaleBypage') }}" + "?page=" + url,
-            type: "GET",
-            dataType: "json",
-            success: function(data) {
-
-
-                $('#previousPagevalue').val(data['prev_page_url'])
-                $('#nextPageValue').val(data['next_page_url'])
-                $('#currentpage').val(data['current_page'])
-                let table = document.getElementById("SearchProductTable");
-                var tableHeaderRowCount = 1;
-
-                // table.classList.add('table-bordered');
-                // table.classList.add('table-striped');
-
-           
-
-                var rowCount = table.rows.length;
-
-                for (var i = tableHeaderRowCount; i < rowCount; i++) {
-                    table.deleteRow(tableHeaderRowCount);
-                }
-                data['data'].forEach(async (product) => {
-                    Product_id = product['id'],
-                        Product_Code = product['Product_Code'],
-                        id = product['id'],
-                        product_name = product['product_name'],
-                        purchasingـprice = product['purchasingـprice']
-                    sale_price = product['sale_price']
-                    numberofpice = product['numberofpice']
-                    Product_Location = product['Product_Location']
-                    button = '';
-
-
-
-
-               
-                        text =
-                            '<button style="padding: 6px 12px" type="button" id="btn" name="btn" class="btn btn-success" data-dismiss="modal" onclick=';
-                        name = product_name.replaceAll(" ", "<");
-                        Product_Code_1= Product_Code.replaceAll(" ", "<");
-                        button = text.concat("chooseProduct(", id, ",", "'", name, "'",
-                            ",", purchasingـprice, ",", sale_price, ",", "'",
-                            Product_Code_1, "'", ",", numberofpice, ")",
-                            ">{{ __('home.Add') }}</button>");
-
-                    
-
-
-                    let row = table.insertRow(-1); // We are adding at the end
-
-                    let c1 = row.insertCell(0);
-                    let c2 = row.insertCell(1);
-                    let c3 = row.insertCell(2);
-                    let c4 = row.insertCell(3);
-                    let c5 = row.insertCell(4);
-                    let c6 = row.insertCell(5);
-                    let c7 = row.insertCell(6);
-
-                    c1.innerText = Product_id
-
-                    c2.innerHTML = '<span dir=ltr>' + Product_Code + '</span>'
-                    c3.innerHTML = product_name
-                    c4.innerText = numberofpice
-                    c5.innerText = purchasingـprice
-                    c6.innerText = sale_price
-
-                    c7.innerHTML = button
-
-
-
-
-
-
-
-                });
-
-            },
-        });
-    });
-
-    $("#previousPage").click(function(e) {
-
-        url = $('#previousPagevalue').val().split('page=')[1];
-
-        if (url != '') {
-            $.ajax({
-                url: " {{ URL::to('goToSaleBypage') }}" + "?page=" + url,
-                type: "GET",
-                dataType: "json",
-                success: function(data) {
-
-                    $('#previousPagevalue').val(data['prev_page_url'])
-                    $('#nextPageValue').val(data['next_page_url'])
-                    $('#currentpage').val(data['current_page'])
-                    let table = document.getElementById("SearchProductTable");
-                    var tableHeaderRowCount = 1;
-
-                    var rowCount = table.rows.length;
-
-                    for (var i = tableHeaderRowCount; i < rowCount; i++) {
-                        table.deleteRow(tableHeaderRowCount);
-                    }
-                    data['data'].forEach(async (product) => {
-
-
-                        Product_id = product['id'],
-                            Product_Code = product['Product_Code'],
-                            id = product['id'],
-                            product_name = product['product_name'],
-                            purchasingـprice = product['purchasingـprice']
-                        sale_price = product['sale_price']
-                        numberofpice = product['numberofpice']
-                        Product_Location = product['Product_Location']
-                        button = '';
-
-
-
-
-                  
-                            text =
-                                '<button style="padding: 6px 12px" type="button" id="btn" name="btn" class="btn btn-success" data-dismiss="modal" onclick=';
-
-                            name = product_name.replaceAll(" ", "<");
-                            Product_Code_1= Product_Code.replaceAll(" ", "<");
-
-                            button = text.concat("chooseProduct(", id, ",", "'", name,
-                                "'", ",", purchasingـprice, ",", sale_price, ",",
-                                "'", Product_Code_1, "'", ",", numberofpice, ")",
-                                ">{{ __('home.Add') }}</button>");
-
-                        
-
-
-                        let row = table.insertRow(-1); // We are adding at the end
-
-                        let c1 = row.insertCell(0);
-                        let c2 = row.insertCell(1);
-                        let c3 = row.insertCell(2);
-                        let c4 = row.insertCell(3);
-                        let c5 = row.insertCell(4);
-                        let c6 = row.insertCell(5);
-                        let c7 = row.insertCell(6);
-
-                        c1.innerText = Product_id
-
-                        c2.innerHTML = '<span dir=ltr>' + Product_Code + '</span>'
-                        c3.innerHTML = product_name
-                        c4.innerText = numberofpice
-                        c5.innerText = purchasingـprice
-                        c6.innerText = sale_price
-
-                        c7.innerHTML = button
-
-
-
-
-
-
-
-
-                    });
-
-                },
+            $('.select2').select2({
+                width: '100%'
             });
-        } else {
-            alert('url null not fount pervoius')
-        }
-    });
-
-
-    // End Update ( 24/4/2023 )
-
         });
+
+        function searchaboutproductfunction() {
+            var searchtext = $('#searchaboutproduct').val();
+            var branchs_id = $('#branch').val();
+            var token_search = $("#token_search").val();
+
+            jQuery.ajax({
+                url: "{{ URL::to('ChooseProductpaginatenewupdate') }}",
+                type: 'post',
+                cache: false,
+                dataType: 'html',
+                data: {
+                    "_token": token_search,
+                    "searchtext": searchtext,
+                    "locale": "{{ app()->getLocale() }}",
+                    "branchs_id": branchs_id,
+                },
+                success: function(data) {
+                    $("#ajax_responce_serarchDiv").html(data);
+                }
+            });
+        }
+
+        $(document).on('click', '#ajax_pagination_in_search a', function(e) {
+            e.preventDefault();
+            var searchtext = $('#searchaboutproduct').val();
+            var branchs_id = $('#branch').val();
+            var token_search = $("#token_search").val();
+            var url = $(this).attr("href");
+
+            jQuery.ajax({
+                url: url,
+                type: 'post',
+                cache: false,
+                dataType: 'html',
+                data: {
+                    "_token": token_search,
+                    "searchtext": searchtext,
+                    "branchs_id": branchs_id,
+                },
+                success: function(data) {
+                    $("#ajax_responce_serarchDiv").html(data);
+                }
+            });
+        });
+
+        $('#SearchProduct').on('show.bs.modal', function(event) {
+            var branchs_id = $('#branch').val();
+            var token_search = $("#token_search").val();
+
+            jQuery.ajax({
+                url: "{{ URL::to('ChooseProductpaginatenewupdate') }}",
+                type: 'post',
+                cache: false,
+                dataType: 'html',
+                data: {
+                    "_token": token_search,
+                    "searchtext": '',
+                    "locale": "{{ app()->getLocale() }}",
+                    "branchs_id": branchs_id,
+                },
+                success: function(data) {
+                    $("#ajax_responce_serarchDiv").html(data);
+                }
+            });
+        });
+
+        function chooseProduct(code, name, price, sale_price, product_location, availablequantity, productcode, MAINproductname, maincode) {
+            $('#productNo').val(code);
+            $('#productnameshow').val(name);
+            $('#product_code').val(product_location);
+            $('#SearchProduct').modal('hide');
+        }
     </script>
-
-
 @endsection

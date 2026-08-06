@@ -44,10 +44,125 @@ use App\Models\product_movement_another_branch;
 use App\Models\product_movement_another_branch_items;
 use App\Models\delivery_to_customer_withoud_tax_invoices;
 use App\Models\branchs;
-
+use App\Exports\StockTemplateExport;
 class ProductsController extends Controller
 {
+    public function upload_stock()
+    {
+        app()->setLocale(LaravelLocalization::getCurrentLocale());
+        return view('products.upload_stock');
+    }
+public function downloadStockTemplate()
+{
+    // استخدام مكتبة Laravel Excel لتحميل الملف
+    return Excel::download(new \App\Exports\StockTemplateExport, 'stock_template.xlsx');
+}
 
+public function importStockExcel(Request $request)
+{
+    $request->validate([
+        'branch' => 'required',
+        'excel_file' => 'required|mimes:xlsx,xls'
+    ]);
+
+    $selectedBranchId = $request->input('branch');
+
+    try {
+        // قراءة الملف كمصفوفة عادية لمنع مشاكل مفاتيح العناوين
+        $data = Excel::toArray([], $request->file('excel_file'));
+        
+        if (empty($data) || empty($data[0])) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'ملف الإكسيل فارغ / Excel file is empty'
+            ], 422);
+        }
+
+        $rows = $data[0];
+        
+        // استبعاد صف العناوين الأول
+        $header = array_shift($rows);
+
+        $productsCount = 0;
+        $totalCost = 0;
+
+        foreach ($rows as $row) {
+            // تخطي الصفوف الفارغة تماماً
+            if (empty(array_filter($row))) {
+                continue;
+            }
+
+            $productName  = $row[0] ?? 'منتج بدون اسم';
+            $productCode  = $row[1] ?? null;
+            $quantity     = $row[2] ?? 0;
+            $costPrice    = $row[3] ?? 0;
+            $salePrice    = $row[4] ?? 0;
+
+            if (!$productCode) {
+                continue; // تخطي السطر إذا لم يوجد كود منتج
+            }
+
+            // حساب إجمالي التكلفة للمخزون
+            $totalCost += $costPrice * $quantity;
+
+            // التحقق إذا كان المنتج موجوداً مسبقاً في نفس الفرع (تحديث أو إنشاء)
+            $product = products::updateOrCreate(
+                [
+                    'Product_Code' => $productCode,
+                    'branchs_id'   => $selectedBranchId 
+                ],
+                [
+                    'product_name'     => $productName,
+                    'user_id'          => Auth()->id(),
+                    'unit'             => 'pices',
+                    'Status'           => 1,
+                    'Product_Location' => '-',
+                    'type'             => '1',
+                    'brand'            => '1',
+                    'product_group'    => 1,
+                    'opening_balance'  => $quantity, 
+                    'quantity'         => $quantity,          
+                    'purchasing_price' => $costPrice,         
+                    'saleperpice'      => $salePrice,
+                ]
+            );
+
+            $productsCount++;
+        }
+
+        // جلب حساب المخزون للفرع المحدد
+        $inventoryAccount = financial_accounts::where('parent_account_number', 181)->where('branchs_id', $selectedBranchId)->first();
+
+        // تسجيل المعاملة المالية للمخزون الافتتاحي إذا وجد الحساب
+        if ($inventoryAccount) {
+            CreditTransactions::create([
+                'user_id'         => Auth::id(),
+                'customer_id'     => $inventoryAccount->id,
+                'recive_amount'   => $totalCost,
+                'branchs_id'      => $selectedBranchId, // استخدام فرع الاختيار بدلاً من فرع المستخدم
+                'pay_method'      => "Cash",
+                'note'            => 'مخزون افتتاحي',
+                'currentblance'   => $totalCost,
+                'Pay_Method_Name' => "Cash",
+                'created_at'      => Carbon::now('Asia/Riyadh'),
+                'updated_at'      => Carbon::now('Asia/Riyadh'),
+                'creditor'        => $totalCost,
+            ]);
+        }
+
+        return response()->json([
+            'status'         => 'success',
+            'products_count' => $productsCount,
+            'message'        => 'تم رفع وتحديث البيانات بنجاح'
+        ]);
+
+    } catch (\Exception $e) {
+        return response()->json([
+            'status'  => 'error',
+            'message' => 'حدث خطأ أثناء المعالجة: ' . $e->getMessage()
+        ], 500);
+    }
+}
     public function save_purchase_order(Request $request)
     {
         // 1. جلب معرف المورد من الريكويست القادم من السيرش
@@ -1286,7 +1401,7 @@ class ProductsController extends Controller
         return round($accountdata->debtor_current - $accountdata->creditor_current, 2);
     }
 
-    public function ChooseProductpaginatenewupdate(Request $request)
+public function ChooseProductpaginatenewupdate(Request $request)
 {
     // 1. تحديد لغة التطبيق من الـ Request القادم عبر AJAX
     if ($request->has('locale') && !empty($request->locale)) {
@@ -1301,19 +1416,26 @@ class ProductsController extends Controller
     $query = products::query();
 
     // تنظيم الشروط البرمجية لضمان عدم تداخل الفروع عند البحث
-    if ($branchs_id !== '-') {
+    if ($branchs_id && $branchs_id !== '-') {
         $query->where('branchs_id', $branchs_id);
     }
 
-    $data = $query->where(function ($q) use ($searchtext) {
-        $q->where('product_name', 'LIKE', '%' . $searchtext . '%')
-            ->orWhere('Product_Code', 'LIKE', '%' . $searchtext . '%')
-            ->orWhere('refnumber', 'LIKE', '%' . $searchtext . '%')
-            ->orWhere('notes', 'LIKE', '%' . $searchtext . '%');
-    })->paginate(20);
+    // تطبيق البحث فقط إذا كان المتغير يحتوي على نص
+    if (!empty($searchtext)) {
+        $query->where(function ($q) use ($searchtext) {
+            $q->where('product_name', 'LIKE', '%' . $searchtext . '%')
+              ->orWhere('Product_Code', 'LIKE', '%' . $searchtext . '%')
+              ->orWhere('refnumber', 'LIKE', '%' . $searchtext . '%')
+              ->orWhere('notes', 'LIKE', '%' . $searchtext . '%');
+        });
+    }
+
+    $data = $query->paginate(20);
 
     return view('ajax_choose_product', compact('data'));
 }
+
+
 
     public function getallpurshasesfromsupplier($id)
     {

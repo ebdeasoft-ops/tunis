@@ -12,6 +12,7 @@ return [
     | you want to customize your views to better match your application.
     |
     */
+    'upload_stock'=>"رفع المخزون الافتتاحي",
     'Statement_of_Changes_in_Equity_Report'=>'التغير في حقوق الملكية',
     'general_budget'=>"الميزانية العامة",
     'cashFlowStatement'=>'قائمة التدفقات النقدية',
@@ -67,7 +68,7 @@ return [
     'amount_sar' => 'المبلغ (ر.س)',
     'currency_sar' => 'ر.س',
 
-    'customer_supplier_account' => "حسابات العملاءو الموردين",
+    'customer_supplier_account' => "أرصدة عملاءو موردين",
     'Roken_Section' => "شركة ركن المعدات",
     "confirm_purchase" => "تاكيد مشتريات",
 

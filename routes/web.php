@@ -63,7 +63,12 @@ Route::post('searchaboutproduct_location_function', [ProductsController::class, 
 Route::get('/confirm_purchase', [ProductsController::class, 'purchases_roken']);
 Route::get('/getquotebybranch/{branch}', [InvoicesController::class, 'getquotebybranch']);
 Route::post('/posttestajax', [BranchsController::class, 'posttestajax']);
+Route::get('/upload_stock', [ProductsController::class, 'upload_stock']);
+Route::post('/products/store', [ProductsController::class, 'store'])->name('products.store');
 
+Route::get('/stock/upload', [ProductsController::class, 'showStockUpload'])->name('stock.upload.page');
+Route::get('/stock/download-template', [ProductsController::class, 'downloadStockTemplate'])->name('stock.download_template');
+Route::post('/stock/import-excel', [ProductsController::class, 'importStockExcel'])->name('stock.import_excel');
 // --------------------------------------------------------------------------
 // مسارات محمية بالـ Authentication (Sanctum & Verified)
 // --------------------------------------------------------------------------

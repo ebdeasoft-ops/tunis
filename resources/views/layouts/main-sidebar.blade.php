@@ -276,7 +276,7 @@
                             href="{{ url('/stockAdjastment') }}">{{ __('supprocesses.stockadjustment') }}</a>
                     </li>
                     @endcan
-
+              
                     @can('Product data change')
                     <li>
                         <a class="slide-item"
@@ -289,7 +289,12 @@
                         <a class="slide-item" href="{{ url('/product_damage') }}">{{ __('home.product damage') }}</a>
                     </li>
                     @endcan
-
+      @can('Stock adjustment')
+                    <li>
+                        <a class="slide-item"
+                            href="{{ url('/upload_stock') }}">{{ __('home.upload_stock') }}</a>
+                    </li>
+                    @endcan
 
                 </ul>
             </li>

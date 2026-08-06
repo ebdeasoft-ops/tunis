@@ -7,6 +7,7 @@ return [
     | English Language Lines - Full Version 2026
     |--------------------------------------------------------------------------
     */
+    'upload_stock'=>"Upload opening stock",
     'Statement_of_Changes_in_Equity_Report'=>'Statement of Changes in Equity',
     'cashFlowStatement'=>'Statement of Cash Flows',
 

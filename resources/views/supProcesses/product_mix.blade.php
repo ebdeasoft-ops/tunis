@@ -14,7 +14,7 @@
 
 <style>
     /* إجبار كل النصوص والأرقام والعناصر داخل جداول العرض على الظهور باللون الأبيض الناصع */
-    #example, #example *, 
+    #example, #example *,
     #tableTotalPrice, #tableTotalPrice * {
         color: #ffffff !important;
     }
@@ -85,7 +85,7 @@
         <div class="col-xl-12">
             <div class="card shadow-sm mb-4 border-0">
                 <div class="card-body">
-                    
+
                     <form action="{{ url(Mcamara\LaravelLocalization\Facades\LaravelLocalization::getCurrentLocale().'/'. ($page = 'AddproducttoSupllier')) }}" method="POST" role="search" autocomplete="off">
                         {{ csrf_field() }}
 
@@ -271,7 +271,7 @@
                             <label for="searchaboutproduct" class="control-label font-weight-bold text-muted">{{ __('home.searchaboutproduct') }}</label>
                             <input autocomplete="off" dir="ltr" type="text" class="form-control" placeholder="{{ __('home.Search By Name or Product Number') }}" id="searchaboutproduct" name="searchaboutproduct" onkeyup="searchaboutproductfunction()">
                         </div>
-                        
+
                         <div class="table-responsive" id="ajax_responce_serarchDiv">
                             <table class="table table-bordered table-striped text-md-nowrap text-center" id="SearchProductTable" width="100%">
                                 <thead class="thead-light">
@@ -358,7 +358,7 @@ $('#searchaboutproduct').val($('#productcode').val());
 
 
 
-}) 
+})
 $(document).on('click', '#ajax_pagination_in_search a', function(e) {
         e.preventDefault();
         console.log(url)
@@ -377,6 +377,7 @@ $(document).on('click', '#ajax_pagination_in_search a', function(e) {
                     "_token": token_search,
                     "searchtext": searchtext,
                     "branchs_id": branchs_id,
+                    "locale" : "{{ app()->getLocale() }}"
                 },
             success: function(data) {
                 console.log(data)
@@ -387,7 +388,7 @@ $(document).on('click', '#ajax_pagination_in_search a', function(e) {
             }
         });
     });
-  
+
 function searchaboutproductfunction() {
         searchtext = $('#searchaboutproduct').val();
         branchs_id = $('#branchs_id').val();
@@ -402,11 +403,12 @@ function searchaboutproductfunction() {
                     "_token": token_search,
                     "searchtext": searchtext,
                     "branchs_id": branchs_id,
+                    "locale" : "{{ app()->getLocale() }}"
                 },
             success: function(data) {
                 $("#ajax_responce_serarchDiv").html(data);
             },
-         
+
         });
 
     }
@@ -417,7 +419,7 @@ if (e.ctrlKey && e.keyCode == '38') {
     // call your function to do the thing
 
     $('#SearchProduct').modal().show();
-    
+
 }
 }
 
@@ -603,7 +605,7 @@ if ($('#mixproductname').val() == '') {
 
 
 })
-// register the handler 
+// register the handler
 document.addEventListener('keyup', doc_keyUp, false);
 
     $('#exampleModal2').on('show.bs.modal', function(event) {
@@ -675,7 +677,7 @@ document.addEventListener('keyup', doc_keyUp, false);
             type: 'get'+'/'+ branchs_id,
             dataType: 'html',
             cache: false,
-            
+
             success: function(data) {
                 console.log(data)
                 $("#ajax_responce_serarchDiv").html(data);
@@ -717,7 +719,7 @@ document.addEventListener('keyup', doc_keyUp, false);
         $('#SearchProduct').modal().hide();
 
         $('#searchaboutproduct').val('');
-    
+
         document.getElementById("quentity").focus();
         console.log('------')
         console.log(code)
@@ -728,7 +730,7 @@ document.addEventListener('keyup', doc_keyUp, false);
         console.log(availablequantity)
         console.log('---*---')
 
-      
+
         $('#productnameshow').val(name);
         $('#cost_item').val(price);
         $('#productNo').val(code);
@@ -1008,7 +1010,7 @@ $("#updateinvoicebyidforsaleupdate").click(function(e) {
 
 
                     }
-                
+
 
                 })
                 let tableTotalPrice = document.getElementById("tableTotalPrice");
@@ -1053,9 +1055,9 @@ $("#updateinvoicebyidforsaleupdate").click(function(e) {
 
             }
 
-            })  
+            })
         })
-       
+
 
     function decreaseProdect(id_decrease, ordernumber, decreasequentity) {
         event.preventDefault();
@@ -1479,7 +1481,7 @@ $("#updateinvoicebyidforsaleupdate").click(function(e) {
                 alert("{{ __('home.pleaseCompleteEmpty') }}")
 
             } else {
-        
+
                 $.ajax({
                     url: url,
                     type: 'post',

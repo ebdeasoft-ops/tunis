@@ -2186,6 +2186,9 @@ public function searchAllInvoicespaginatenew($date)
 
     public function searchChooseProductpaginatenewpurchaseBypost(Request $request)
     {
+        if ($request->has('locale') && !empty($request->locale)) {
+        app()->setLocale($request->locale);
+    }
         $searchtext = $request->searchtext;
         $branchId = $request->branchs_id;
 

@@ -302,6 +302,7 @@ $(document).ready(function() {
     // 2. تحميل البيانات الأولي
     performAjax("{{ URL::to('searchAllproductpaginatenew_by_post') }}", 'post', {
         "searchtext": '',
+        "locale" : "{{ app()->getLocale() }}",
         "branchs_id": $("#branchs_id").val()
     }, (data) => $("#ajax_responce_serarchDiv").html(data));
 
@@ -354,9 +355,10 @@ function filterProducts() {
         "searchtext": $('#searchaboutproduct').val(),
         "branchs_id": $('#branchs_id').val(),
         "group_id": $('select[name="product_group"]').val(),
-        "_token": $("#token_search").val()
+        "_token": $("#token_search").val(),
+        "locale": "{{ app()->getLocale() }}"
     };
-    
+
     $.ajax({
         url: "{{ URL::to('searchAllproductpaginatenew_by_post') }}",
         type: 'post',

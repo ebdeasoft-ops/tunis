@@ -44,7 +44,7 @@
                     </td>
                     <td>
                         <span class="badge badge-info px-2 py-1">
-                            {{ $movement->items->count() }} منتج
+                            {{ $movement->items->count() }} {{ __('home.Product') }}
                         </span>
                     </td>
                     <td>
@@ -56,7 +56,7 @@
                     </td>
                     <td>
                         <button type="button" class="btn btn-sm btn-outline-success px-3 rounded-pill" data-toggle="modal" data-target="#itemsModal{{ $movement->id }}">
-                            <i class="fas fa-eye ml-1"></i> عرض المنتجات
+                            <i class="fas fa-eye ml-1"></i>  {{ __('home.view_products') }}
                         </button>
                     </td>
                 </tr>
@@ -65,7 +65,7 @@
                     <td colspan="9" class="text-center py-5">
                         <div class="text-muted">
                             <i class="fas fa-folder-open fa-3x mb-3 text-black-50"></i>
-                            <p class="mb-0 font-weight-bold">لا توجد حركات استلام واردة لهذا الفرع بحسب الفلترة المحددة</p>
+                            <p class="mb-0 font-weight-bold">{{ __('home.no_received_movements_found') }}</p>
                         </div>
                     </td>
                 </tr>

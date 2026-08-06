@@ -6,13 +6,13 @@
       display: none !important;
     }
     .double { border-style: double; }
-    
+
     @page {
       size: auto;
       /* تم تصحيح الخطأ الإملائي هنا من 15m إلى 15mm */
-      margin: 2mm 15mm 10mm 15mm; 
+      margin: 2mm 15mm 10mm 15mm;
     }
-    
+
     /* تصغير حجم الخط العام للطباعة ليتناسب مع الجدول */
     body {
       font-size: 14px;
@@ -22,7 +22,7 @@
   table.totals-table {
     table-layout: auto !important;
     width: 40% !important; /* إجبار الجدول على مساحة 40% فقط من الورقة */
-   
+
     float: left; /* ضمان التموضع الأيسر الصحيح */
   }
 
@@ -47,7 +47,7 @@
     }
     tfoot.report-footer {
       display: table-footer-group;
-    } 
+    }
     .report-content {
       height: 50%;
     }
@@ -72,7 +72,7 @@
       font-size: 14px !important;
       font-weight: bold;
     }
-    
+
     .thick {
       font-weight: bold;
     }
@@ -90,7 +90,7 @@
       font-size: 15px !important;
     }
     tr { color: "grey"; }
-    
+
     #reciptprinter { display: none; }
     #print_Button { display: none !important; }
 
@@ -522,7 +522,7 @@ $issue_time=substr($time, 11);
                             <p style="color:red; font-size:11px; margin: 5px 0 0 0; font-weight: bold;">
                                <span>{{$data['totatextlriyales'] }}</span>
                                <span>{{$data['totatextlrihalala']}} </span>
-                            </p> 
+                            </p>
                          </th>
                       </tr>
                    </thead>
@@ -573,9 +573,8 @@ $issue_time=substr($time, 11);
               </span>
             </center>
 
-            @endif
 
-      
+
           </div>
  </td>
       </tr>

@@ -100,7 +100,7 @@
                             <label>{{ __('home.choosebranch_reciver') }}</label>
                             <select name="branch" id="branchs_id" onchange="getEmployeesByBranch()"
                                 class="form-control">
-                                <option value="">اختر الفرع المستلم</option>
+                                <option value="">{{ __('home.Select_Receiving_Branch') }}</option>
                                 @foreach (App\Models\branchs::get() as $section)
                                 @if($section->id != $branchId)
                                 <option value="{{ $section->id }}"
@@ -183,7 +183,7 @@
                         {{-- زر الحفظ كمسودة --}}
                         <button type="button" id="draftBtn" class="btn btn-secondary px-4"
                             onclick="submitMovementForm('draft')">
-                            <i class="las la-file-alt"></i> حفظ كمسودة
+                            <i class="las la-file-alt"></i> {{ __('home.Save_As_Draft') }}
                         </button>
 
                         {{-- زر الحفظ النهائي --}}
@@ -192,7 +192,7 @@
                             <i class="las la-save"></i> {{ __('home.save_data') }}
                         </button>
 
-                 
+
                     </div>
 
             </div>
@@ -202,7 +202,7 @@
 
         </div>
                <br>
-            
+
 <center>
 
           {{-- زر الطباعة (يظهر فقط إذا كان هناك رقم فاتورة $data) --}}
@@ -250,8 +250,14 @@ function getEmployeesByBranch() {
     let employeeSelect = $('#employeereciver');
     let currentSavedUser = "{{ isset($draftMovement) ? $draftMovement->user_to : '' }}";
 
+    // نصوص الترجمة الخاصة بالـ AJAX
+    let txtLoading = "{{ __('home.Loading_Employees') }}";
+    let txtSelect = "{{ __('home.Select_Receiving_Employee') }}";
+    let txtError = "{{ __('home.Error_Loading_Data') }}";
+    let txtSelectBranchFirst = "{{ __('home.Select_Branch_First') }}";
+
     employeeSelect.empty();
-    employeeSelect.append('<option value="">جاري تحميل الموظفين...</option>');
+    employeeSelect.append('<option value="">' + txtLoading + '</option>');
 
     if (branchId) {
         $.ajax({
@@ -260,7 +266,7 @@ function getEmployeesByBranch() {
             dataType: "json",
             success: function(data) {
                 employeeSelect.empty();
-                employeeSelect.append('<option value="">اختر الموظف المستلم</option>');
+                employeeSelect.append('<option value="">' + txtSelect + '</option>');
 
                 $.each(data, function(key, value) {
                     let isSelected = (currentSavedUser == value.id) ? 'selected' : '';
@@ -270,12 +276,12 @@ function getEmployeesByBranch() {
             },
             error: function() {
                 employeeSelect.empty();
-                employeeSelect.append('<option value="">خطأ في تحميل البيانات</option>');
+                employeeSelect.append('<option value="">' + txtError + '</option>');
             }
         });
     } else {
         employeeSelect.empty();
-        employeeSelect.append('<option value="">اختر الفرع أولاً</option>');
+        employeeSelect.append('<option value="">' + txtSelectBranchFirst + '</option>');
     }
 }
 
@@ -310,8 +316,13 @@ $(document).ready(function() {
 });
 
 function submitMovementForm(status) {
+    // نصوص الترجمة
+    let txtSelectProduct = "{{ __('home.Please_Select_At_Least_One_Product') }}";
+    let txtSavingDraft = "{{ __('home.Saving_Draft') }}";
+    let txtSavingFinal = "{{ __('home.Saving_Final') }}";
+
     if ($('#products_body tr').length === 0) {
-        alert('برجاء اختيار منتج واحد على الأقل قبل الحفظ');
+        alert(txtSelectProduct);
         return;
     }
 
@@ -321,9 +332,9 @@ function submitMovementForm(status) {
     $('#draftBtn').prop('disabled', true);
 
     if (status === 'draft') {
-        $('#draftBtn').html('<i class="fa fa-spinner fa-spin"></i> جاري حفظ المسودة...');
+        $('#draftBtn').html('<i class="fa fa-spinner fa-spin"></i> ' + txtSavingDraft);
     } else {
-        $('#submitBtn').html('<i class="fa fa-spinner fa-spin"></i> جاري الحفظ النهائي...');
+        $('#submitBtn').html('<i class="fa fa-spinner fa-spin"></i> ' + txtSavingFinal);
     }
 
     $('#movementForm').submit();

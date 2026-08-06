@@ -44,7 +44,7 @@
                     </td>
                     <td>
                         <span class="badge badge-info px-2 py-1">
-                            {{ $movement->items->count() }} منتج
+                            {{ $movement->items->count() }} {{ __('home.Product') }}
                         </span>
                     </td>
                     <td>
@@ -56,7 +56,7 @@
                     </td>
                     <td>
                         <button type="button" class="btn btn-sm btn-outline-info px-3 rounded-pill" data-toggle="modal" data-target="#itemsModal{{ $movement->id }}">
-                            <i class="fas fa-eye ml-1"></i> عرض المنتجات
+                            <i class="fas fa-eye ml-1"></i>  {{ __('home.view_products') }}
                         </button>
                     </td>
                 </tr>

@@ -82,7 +82,7 @@ public function exportReceivedExcel(Request $request)
     $movements = $query->latest()->get();
 
     $fileName = 'received_movements_' . date('Y-m-d') . '.xlsx';
-    
+
     return Excel::download(new ReceivedMovementsExport($movements), $fileName);
 }
 
@@ -156,10 +156,10 @@ public function exportPdf(Request $request)
 
     // يمكنك تصدير البيانات مباشرة عبر CSV أو استخدام حزمة Excel
     $fileName = 'sent_movements_' . date('Y-m-d') . '.xlsx';
-    
+
     // مثال بسيط للتصدير (إذا كنت تستخدم Maatwebsite\Excel):
     return Excel::download(new SentMovementsExport($movements), $fileName);
-    
+
     // أو يمكنك توجيه الطلب بالطريقة المناسبة لديك.
 }
     public function __construct()
@@ -297,8 +297,9 @@ public function showMyDrafts(Request $request)
                 'cost_withod_tax' => $totalCostWithoutTax
             ]);
 
-            $message = $request->status === 'draft' ? 'تم تحديث وحفظ الحركة كمسودة بنجاح' : 'تم اعتماد وتحويل المنتجات بنجاح والخصم الدقيق من المخزن';
-
+            $message = $request->status === 'draft'
+                ? __('home.Movement_Draft_Updated_Successfully')
+                : __('home.Movement_Approved_Successfully');
             return redirect()->back()->with('productupdatedlocation', $message)->with('saved_movement_id', $orderId);
         });
     }
@@ -390,7 +391,9 @@ public function showMyDrafts(Request $request)
             ]);
 
             // تحديد الرسالة المناسبة بناءً على الزر المضغوط
-            $message = $request->status === 'draft' ? 'تم حفظ الحركة كمسودة بنجاح' : 'تم تحويل المنتجات بنجاح والخصم من المخزن';
+            $message = $request->status === 'draft'
+            ? __('home.Movement_Saved_As_Draft_Successfully')
+            : __('home.Movement_Transferred_Successfully');
 
             return redirect()->back()->with('productupdatedlocation', $message);
         });
@@ -528,8 +531,8 @@ public function showMyDrafts(Request $request)
 
         // 5. إعداد رسالة النجاح
         $message = ($notregisterproductCount > 0)
-            ? "تم استلام المنتجات بنجاح، وتم إنشاء $notregisterproductCount منتجات جديدة لم تكن مسجلة."
-            : "تم استلام المنتجات وتحديث المخزون بنجاح.";
+            ? __('home.Products_Received_With_New_Items', ['count' => $notregisterproductCount])
+            : __('home.Products_Received_Successfully');
 
         return response()->json([
             'invoice_number' => $request->invoiceId,
@@ -626,7 +629,7 @@ public function sentReport(Request $request)
         $query->whereDate('created_at', '<=', $request->to_date);
     }
 
-    $sentMovements = $query->latest()->paginate(5); 
+    $sentMovements = $query->latest()->paginate(5);
 
     if ($request->ajax()) {
         return view('reports.movements.partials.sent_movements_table', compact('sentMovements'))->render();
@@ -666,7 +669,7 @@ public function sentReport(Request $request)
         $query->whereDate('created_at', '<=', $request->to_date);
     }
 
-    $receivedMovements = $query->latest()->paginate(5); 
+    $receivedMovements = $query->latest()->paginate(5);
 
     if ($request->ajax()) {
         return view('reports.movements.partials.received_movements_table', compact('receivedMovements'))->render();

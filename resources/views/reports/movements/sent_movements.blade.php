@@ -42,14 +42,14 @@
     <div class="col-xl-12">
         <div class="card mg-b-20">
             <div class="card-header pb-0">
-                <h5 class="card-title mb-0">فلترة تقرير الإرسال</h5>
+                <h5 class="card-title mb-0">{{ __('home.filter_send_report') }}</h5>
             </div>
             <div class="row">
                 <div class="col-xl-12">
                     <div class="card border-0 shadow-sm mg-b-20 rounded-lg">
                         <div class="card-header bg-transparent pb-0 pt-3 border-bottom-0">
                             <h5 class="card-title text-primary font-weight-bold mb-0">
-                                <i class="fas fa-filter ml-2"></i> فلترة تقرير الإرسال
+                                <i class="fas fa-filter ml-2"></i>   {{ __('home.filter_send_report') }}
                             </h5>
                         </div>
                         <div class="card-body">
@@ -59,50 +59,50 @@
 
                                 <div class="row align-items-end">
                                     <!-- حقل البحث برقم الحركة -->
-                                    <div class="col-md-3 mb-3 mb-md-0">
-                                        <label for="movement_id" class="font-weight-bold text-dark mb-1">رقم الحركة
-                                            (Movement No.)</label>
+                                    <div class="col-md-2 mb-3 mb-md-0">
+                                        <label for="movement_id" class="font-weight-bold text-dark mb-1"> {{ __('home.movement_number') }}
+                                           </label>
                                         <input type="number" name="movement_id" value="{{ request('movement_id') }}"
-                                            class="form-control rounded-pill px-3" placeholder="مثال: 15">
+                                            class="form-control rounded-pill px-3" placeholder="{{ __('home.movement_number_placeholder') }}">
                                     </div>
 
                                     <!-- من تاريخ -->
                                     <div class="col-md-3 mb-3 mb-md-0">
-                                        <label for="from_date" class="font-weight-bold text-dark mb-1">من تاريخ</label>
+                                        <label for="from_date" class="font-weight-bold text-dark mb-1"> {{ __('home.from_date') }}</label>
                                         <input type="date" name="from_date" value="{{ request('from_date') }}"
                                             class="form-control rounded-pill px-3">
                                     </div>
 
                                     <!-- إلى تاريخ -->
                                     <div class="col-md-3 mb-3 mb-md-0">
-                                        <label for="to_date" class="font-weight-bold text-dark mb-1">إلى تاريخ</label>
+                                        <label for="to_date" class="font-weight-bold text-dark mb-1"> {{ __('home.to_date') }}</label>
                                         <input type="date" name="to_date" value="{{ request('to_date') }}"
                                             class="form-control rounded-pill px-3">
                                     </div>
 
                                     <!-- الأزرار (بحث، إكسيل، إعادة ضبط) -->
-                                    <div class="col-md-3">
+                                    <div class="col-md-4">
                                         <div class="d-flex flex-wrap gap-2">
                                             <button type="submit"
                                                 class="btn btn-primary flex-fill rounded-pill shadow-sm mb-2 mb-xl-0 ml-1">
-                                                <i class="fas fa-search ml-1"></i> بحث
+                                                <i class="fas fa-search ml-1"></i> {{ __('home.search') }}
                                             </button>
 
                                             <!-- زر إكسيل -->
                                             <a href="{{ route('reports.sent.excel', request()->all()) }}"
                                                 class="btn btn-success flex-fill rounded-pill shadow-sm mb-2 mb-xl-0 ml-1 text-white">
-                                                <i class="fas fa-file-excel ml-1"></i> إكسيل
+                                                <i class="fas fa-file-excel ml-1"></i> {{ __('home.excel') }}
                                             </a>
 
                                             <!-- 🌟 زر PDF الجديد -->
                                             <a href="{{ route('reports.sent.pdf', request()->all()) }}"
                                                 class="btn btn-danger flex-fill rounded-pill shadow-sm mb-2 mb-xl-0 ml-1 text-white">
-                                                <i class="fas fa-file-pdf ml-1"></i> PDF
+                                                <i class="fas fa-file-pdf ml-1"></i> {{ __('home.pdf') }}
                                             </a>
 
                                             <a href="{{ route('reports.sent', ['branch_id' => request('branch_id', auth()->user()->branchs_id)]) }}"
                                                 class="btn btn-secondary flex-fill rounded-pill shadow-sm mb-2 mb-xl-0">
-                                                <i class="fas fa-undo ml-1"></i> ضبط
+                                                <i class="fas fa-undo ml-1"></i> {{ __('home.reset') }}
                                             </a>
                                         </div>
                                     </div>
@@ -147,7 +147,7 @@
     <div class="modal-dialog modal-lg" role="document">
         <div class="modal-content">
             <div class="modal-header bg-primary text-white">
-                <h5 class="modal-title">تفاصيل حركة الإرسال رقم #{{ $movement->id }}</h5>
+                <h5 class="modal-title">{{ __('home.movement_details_title', ['id' => $movement->id]) }}</h5>
                 <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>
@@ -159,19 +159,19 @@
                         <thead class="bg-light text-dark border-bottom">
                             <tr>
                                 <th class="py-3 font-weight-bold text-dark">
-                                    {{ __('Product Name') }} <br><small class="text-muted font-weight-normal">اسم
-                                        المنتج</small>
+                                    {{ __('Product Name') }} <br><small class="text-muted font-weight-normal">{{ __('home.product_name') }}
+                                        </small>
                                 </th>
                                 <th class="py-3 font-weight-bold text-dark">
-                                    {{ __('Quantity Sent') }} <br><small class="text-muted font-weight-normal">الكمية
-                                        المرسلة</small>
+                                    {{ __('Quantity Sent') }} <br><small class="text-muted font-weight-normal">
+                                        {{ __('home.quantity_sent') }}</small>
                                 </th>
                                 <th class="py-3 font-weight-bold text-dark">
-                                    {{ __('Unit Price') }} <br><small class="text-muted font-weight-normal">سعر
-                                        القطعة</small>
+                                    {{ __('Unit Price') }} <br><small class="text-muted font-weight-normal">
+                                        {{ __('home.unit_price') }}</small>
                                 </th>
                                 <th class="py-3 font-weight-bold text-dark">
-                                    {{ __('Total') }} <br><small class="text-muted font-weight-normal">الإجمالي</small>
+                                    {{ __('Total') }} <br><small class="text-muted font-weight-normal">{{ __('home.total') }}</small>
                                 </th>
                             </tr>
                         </thead>
@@ -214,7 +214,7 @@
                 </div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">إغلاق</button>
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">{{ __('home.close') }}</button>
             </div>
         </div>
     </div>

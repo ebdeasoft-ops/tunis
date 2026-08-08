@@ -166,7 +166,20 @@
                             <p class="mb-0 text-muted" style="font-size: 12px;">{{ Taxar ?? '' }}</p>
                         </div>
                     </div><!-- invoice-header -->
-
+<!-- عرض تاريخ الإصدار وبداية ونهاية الفترة -->
+<!-- عرض تاريخ الإصدار وبداية ونهاية الفترة -->
+<div class="row mb-4 text-center" style="background-color: #f8f9fa; padding: 12px; border-radius: 8px; border: 1px solid #e9ecef; font-size: 15px;">
+    <div class="col-md-4">
+        <strong>تاريخ الإصدار:</strong> {{ date('Y-m-d H:i') }}
+    </div>
+    <div class="col-md-4">
+        {{-- هنا نستخدم المتغير القادم من الـ Controller، وإذا كان فارغاً نعرض بداية السنة الحالية --}}
+        <strong>بداية الفترة:</strong> {{ $start_at ?? date('Y-01-01') }}
+    </div>
+    <div class="col-md-4">
+        <strong>نهاية الفترة:</strong> {{ $endAt  }}
+    </div>
+</div>
                     @if(isset($products))
                     <div class="card-body px-0">
                         <!-- عنوان التقرير -->
@@ -213,70 +226,88 @@
                                 </thead>
                                 
                                 <tbody>
-                                    @foreach ($products as $product)
-                                        @php
-                                            $totalprice += $product->purchasingـprice * $product->numberofpice;
-                                            $totalstock += $product->numberofpice;
-                                            $opingstock += $product->opening_blance;
-                                            
-                                            $i++;
-                                            $salescount = 0;
-                                            $returnsalescount = 0;
-                                            $purchasecount = 0;
-                                            $purchasereturncount = 0;
-                                            $stockincrease = 0;
-                                            $stockdecrease = 0;
-                                            $damageproduct = 0;
-                                        
-                                            $sales = App\Models\sales::where('product_id', $product->id)->where('save', 1)->get();
-                                            $stock_update = App\Models\stock_update::where('product_id', $product->id)->whereDate('created_at', '>=', date("Y") . "-1" . "-1")->get();
-                                            $ProductsDamage = App\Models\ProductsDamage::where('product_id', $product->id)->whereDate('created_at', '>=', date("Y") . "-1" . "-1")->get();
-                                            $returnsales = App\Models\return_sales::where('product_id', $product->id)->get();
-                                            $purchase = App\Models\orderDetails::where('product_id', $product->id)->where('save', 1)->get();
-                                        
-                                            foreach($stock_update as $productchange){
-                                                $stockincrease += $productchange->productincrease;
-                                                $totalincreasestock += $productchange->productincrease;
-                                                $stockdecrease += $productchange->productdecrease;
-                                                $totaldecreasestock += $productchange->productdecrease;
-                                            }
-                                            foreach($ProductsDamage as $productdamge){
-                                                $damageproduct += $productdamge->damage_quantity;
-                                                $totaldamagestock += $productdamge->damage_quantity;
-                                            }
-                                            foreach($sales as $sale){
-                                                $salescount += $sale->quantity;
-                                                $Totalsalescount += $sale->quantity;
-                                            }
-                                            foreach($returnsales as $sale){
-                                                $returnsalescount += $sale->return_quantity;
-                                                $Totalreturnsalescount += $sale->return_quantity;
-                                            }
-                                            foreach($purchase as $sale){
-                                                $purchasecount += $sale->numberofpice;
-                                                $purchasereturncount += $sale->returns_purchase;
-                                                $Totalpurchasecount += $sale->numberofpice;
-                                                $Totalpurchasereturncount += $sale->returns_purchase;
-                                            }
-                                        @endphp
+                                   @foreach ($products as $product)
+    @php
+        $i++;
+        $salescount = 0;
+        $returnsalescount = 0;
+        $purchasecount = 0;
+        $purchasereturncount = 0;
+        $stockincrease = 0;
+        $stockdecrease = 0;
+        $damageproduct = 0;
+$startAt =  date('Y-01-01'); // افتراضياً بداية السنة الحالية
+        // بناء استعلامات العلاقات مع تطبيق شرط التاريخ ($endAt) إذا تم تحديده
+        $salesQuery = App\Models\sales::where('product_id', $product->id)->where('save', 1)->whereDate('created_at', '>=', $startAt);
+        $stockUpdateQuery = App\Models\stock_update::where('product_id', $product->id)->whereDate('created_at', '>=', $startAt);
+        $productsDamageQuery = App\Models\ProductsDamage::where('product_id', $product->id)->whereDate('created_at', '>=', $startAt);
+        $returnSalesQuery = App\Models\return_sales::where('product_id', $product->id)->whereDate('created_at', '>=', $startAt);
+        $purchaseQuery = App\Models\orderDetails::where('product_id', $product->id)->where('save', 1)->whereDate('created_at', '>=', $startAt);
 
-                                        <tr class="text-center">
-                                            <td class="font-weight-bold text-muted">{{ $i }}</td>
-                                            <td dir="ltr" class="font-weight-bold text-primary">{{ $product->Product_Code }}</td>
-                                            <td class="text-right font-weight-bold text-dark px-2">{{ $product->product_name }}</td>
-                                            <td>{{ $product->opening_blance }}</td>
-                                            <td class="text-info font-weight-bold">{{ $purchasecount }}</td>
-                                            <td>{{ $purchasereturncount }}</td>
-                                            <td class="text-success font-weight-bold">{{ $salescount }}</td>
-                                            <td>{{ $returnsalescount }}</td>
-                                            <td class="text-danger">{{ $stockdecrease }}</td>
-                                            <td class="text-success">{{ $stockincrease }}</td>
-                                            <td class="text-danger font-weight-bold">{{ $damageproduct }}</td>
-                                            <td class="font-weight-bold">{{ $product->numberofpice }}</td>
-                                            <td>{{ number_format($product->purchasingـprice, 2) }}</td>
-                                            <td class="font-weight-bold text-dark">{{ number_format($product->numberofpice * $product->purchasingـprice, 2) }}</td>
-                                        </tr>
-                                    @endforeach
+        // إذا أدخل المستخدم تاريخ نهاية، نقوم بالفلترة حتى ذلك التاريخ
+        if (!empty($endAt)) {
+            $salesQuery->whereDate('created_at', '<=', $endAt);
+            $stockUpdateQuery->whereDate('created_at', '<=', $endAt);
+            $productsDamageQuery->whereDate('created_at', '<=', $endAt);
+            $returnSalesQuery->whereDate('created_at', '<=', $endAt);
+            $purchaseQuery->whereDate('created_at', '<=', $endAt);
+        }
+
+        $sales = $salesQuery->get();
+        $stock_update = $stockUpdateQuery->get();
+        $ProductsDamage = $productsDamageQuery->get();
+        $returnsales = $returnSalesQuery->get();
+        $purchase = $purchaseQuery->get();
+
+        // تجميع الحركات
+        foreach($stock_update as $productchange){
+            $stockincrease += $productchange->productincrease;
+            $totalincreasestock += $productchange->productincrease;
+            $stockdecrease += $productchange->productdecrease;
+            $totaldecreasestock += $productchange->productdecrease;
+        }
+        foreach($ProductsDamage as $productdamge){
+            $damageproduct += $productdamge->damage_quantity;
+            $totaldamagestock += $productdamge->damage_quantity;
+        }
+        foreach($sales as $sale){
+            $salescount += $sale->quantity;
+            $Totalsalescount += $sale->quantity;
+        }
+        foreach($returnsales as $sale){
+            $returnsalescount += $sale->return_quantity;
+            $Totalreturnsalescount += $sale->return_quantity;
+        }
+        foreach($purchase as $sale){
+            $purchasecount += $sale->numberofpice;
+            $purchasereturncount += $sale->returns_purchase;
+            $Totalpurchasecount += $sale->numberofpice;
+            $Totalpurchasereturncount += $sale->returns_purchase;
+        }
+
+        $totalprice += $product->purchasingـprice * $product->numberofpice;
+        $totalstock += $product->numberofpice;
+        $opingstock += $product->opening_blance;
+    @endphp
+
+    <!-- صف العرض في الجدول -->
+    <tr class="text-center">
+        <td class="font-weight-bold text-muted">{{ $i }}</td>
+        <td dir="ltr" class="font-weight-bold text-primary">{{ $product->Product_Code }}</td>
+        <td class="text-right font-weight-bold text-dark px-2">{{ $product->product_name }}</td>
+        <td>{{ $product->opening_blance }}</td>
+        <td class="text-info font-weight-bold">{{ $purchasecount }}</td>
+        <td>{{ $purchasereturncount }}</td>
+        <td class="text-success font-weight-bold">{{ $salescount }}</td>
+        <td>{{ $returnsalescount }}</td>
+        <td class="text-danger">{{ $stockdecrease }}</td>
+        <td class="text-success">{{ $stockincrease }}</td>
+        <td class="text-danger font-weight-bold">{{ $damageproduct }}</td>
+        <td class="font-weight-bold">{{ $product->numberofpice }}</td>
+        <td>{{ number_format($product->purchasingـprice, 2) }}</td>
+        <td class="font-weight-bold text-dark">{{ number_format($product->numberofpice * $product->purchasingـprice, 2) }}</td>
+    </tr>
+@endforeach
                                 </tbody>
 
                                 <!-- صف الإجماليات النهائية -->

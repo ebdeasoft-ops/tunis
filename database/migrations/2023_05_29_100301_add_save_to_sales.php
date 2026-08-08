@@ -15,7 +15,7 @@ return new class extends Migration
     {
         Schema::table('sales', function (Blueprint $table) {
             //
-            $table->integer('save')->default(0);
+            $table->integer('save1')->default(0);
 
         });
     }

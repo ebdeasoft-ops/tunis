@@ -8,13 +8,36 @@ use App\Exports\CostCenterExport;
 use Mcamara\LaravelLocalization\Facades\LaravelLocalization;
 // استيراد الـ Controllers بالكامل
 use App\Http\Controllers\{
-    AdminController, SupllierController, CustomersController, FinancialAccountsController,
-    AcountsTypeController, ProductsDamageController, ProductsController, InvoicesController,
-    AcountesController, CredittransactionsController, ExpensesController, ReportController,
-    BranchsController, RoleController, UserController, SupprocessesController, AvtController,
-    EmployeeController, ProductMovementAnotherBranchController, TransferMoneyToMainbranchController,
-    DeliveryProductToTheCustomerController, CashWithdrawalFromTheBankController, DeliveryNoteController,
-    SystemSettingController, LoansController, DliveryController, ProductsMixController
+    AdminController,
+    SupllierController,
+    CustomersController,
+    FinancialAccountsController,
+    AcountsTypeController,
+    ProductsDamageController,
+    ProductsController,
+    InvoicesController,
+    AcountesController,
+    CredittransactionsController,
+    ExpensesController,
+    ReportController,
+    BranchsController,
+    RoleController,
+    UserController,
+    SupprocessesController,
+    AvtController,
+    EmployeeController,
+    ProductMovementAnotherBranchController,
+    TransferMoneyToMainbranchController,
+    DeliveryProductToTheCustomerController,
+    CashWithdrawalFromTheBankController,
+    DeliveryNoteController,
+    LeaveController,
+    AttendanceController,
+    SystemSettingController,
+    LoansController,
+    DliveryController,
+    ProductsMixController,
+    HrSettingController
 };
 
 /*
@@ -22,6 +45,20 @@ use App\Http\Controllers\{
 | Web Routes
 |--------------------------------------------------------------------------
 */
+
+// ضع هذا السطر قبل Route::resource
+Route::get('leaves/balance-report', [LeaveController::class, 'leaveBalanceReport'])->name('leaves.balance_report');
+
+// مسار الـ Resource يأتي بعده
+Route::resource('leaves', LeaveController::class);
+Route::resource('hr-settings', HrSettingController::class)->only(['index', 'update']);
+Route::prefix('attendances')->name('attendances.')->group(function () {
+    // مسار استيراد الإكسيل (يُوضع قبل الـ resource لتجنب التعارض مع الـ show)
+    Route::post('/import', [AttendanceController::class, 'import'])->name('import');
+    Route::get('/template', [AttendanceController::class, 'downloadTemplate'])->name('template');
+    // مسارات الـ Resource القياسية (index, create, store, show, edit, update, destroy)
+    Route::resource('/', AttendanceController::class)->parameters(['' => 'attendance']);
+});
 
 // الصفحة الرئيسية (تسجيل الدخول)
 Route::get('/', function () {
@@ -49,11 +86,11 @@ Route::group(['prefix' => 'stock', 'as' => 'stock.'], function () {
 
     // مسار تحميل نموذج الإكسيل (Template)
     Route::get('/download-template', [SupprocessesController::class, 'downloadTemplate'])
-         ->name('download_template');
+        ->name('download_template');
 
     // مسار رفع ومعالجة ملف الإكسيل عبر AJAX
     Route::post('/import-ajax', [SupprocessesController::class, 'importStockAjax'])
-         ->name('import_ajax');
+        ->name('import_ajax');
 
 });
 
@@ -101,11 +138,11 @@ Route::middleware([
             Route::get('/download-template', 'downloadTemplate')->name('download_template');
             Route::post('/import-ajax', 'importPurchasesAjax')->name('import_ajax');
         });
-// --- مسارات المبيعات (التي أضفتها أنت الآن) ---
-    Route::group(['prefix' => 'sales', 'as' => 'sales.'], function () {
-        Route::get('/download-template', 'downloadSalesTemplate')->name('download_template');
-        Route::post('/import-ajax', 'importSalesAjax')->name('import_ajax');
-    });
+        // --- مسارات المبيعات (التي أضفتها أنت الآن) ---
+        Route::group(['prefix' => 'sales', 'as' => 'sales.'], function () {
+            Route::get('/download-template', 'downloadSalesTemplate')->name('download_template');
+            Route::post('/import-ajax', 'importSalesAjax')->name('import_ajax');
+        });
         // مسارات المشتريات والأسعار المضافة حديثاً
         Route::get('getproductspricetocustomer', 'showProductsPrice');
         Route::get('getproductsprice', 'getProductsPriceFromSupplier');
@@ -252,7 +289,7 @@ Route::middleware([
         Route::get('cashEcprnse', 'cashEcprnse');
         Route::get('income', 'income');
         Route::get('go_to_bank', 'go_to_bank');
-        
+
         Route::post('cashFlowStatement', 'cashFlowStatementSearch')->name('reports.cashFlowStatement');
         Route::post('changesInEquity', 'changesInEquity')->name('reports.changes_in_equity');
         Route::post('Add_blance_from_bank', 'Add_blance_from_bank');
@@ -304,7 +341,7 @@ Route::middleware([
         Route::delete('/voucher/delete-full/{sent_abd_count}', 'destroy_full_voucher');
         Route::get('voucher/edit/{sent_abd_count}', 'edit_full_voucher');
         Route::get('general_budget', 'general_budget');
-        Route::post('/general_budget_search',  'budgetsheet')->name('budgetsheet');
+        Route::post('/general_budget_search', 'budgetsheet')->name('budgetsheet');
         Route::get('getDetailsJS_Kabd/{serf_count}', 'getDetailsJS_Kabd');
         Route::post('/voucher-update-all', 'updateAllVoucher')->name('voucher.update.all');
         Route::get('get-receipt-details/{serf_count}', 'getReceiptDetails');
@@ -730,7 +767,7 @@ Route::middleware([
     // 26. حركة المنتجات بين الفروع (Product Movement)
     Route::controller(ProductMovementAnotherBranchController::class)->group(function () {
         Route::get('sendProduct', 'index');
-        Route::get('my-drafts-movements',  'showMyDrafts');
+        Route::get('my-drafts-movements', 'showMyDrafts');
         Route::get('reciveProduct', 'show');
         Route::get('deleteproduct/{id}', 'destroy');
         Route::get('findinvoiceMovmevt/{id}', 'findinvoiceMovmevt');
@@ -743,14 +780,14 @@ Route::middleware([
         Route::get('reports/sent-movements', 'sentReport')->name('reports.sent');
         Route::get('reports/received-movements', 'receivedReport')->name('reports.received');
         Route::get('reports/product-movements-summary', 'productSummaryReport')->name('reports.summary');
-        Route::get('reports/sent/excel',  'exportExcel')->name('reports.sent.excel');
-        Route::get('reports/sent/pdf',  'exportPdf')->name('reports.sent.pdf');
-        Route::get('reports/recive/excel',  'exportReceivedExcel')->name('reports.recive.excel');
-        Route::get('reports/recive/pdf',  'exportReceivedPdf')->name('reports.recive.pdf');
+        Route::get('reports/sent/excel', 'exportExcel')->name('reports.sent.excel');
+        Route::get('reports/sent/pdf', 'exportPdf')->name('reports.sent.pdf');
+        Route::get('reports/recive/excel', 'exportReceivedExcel')->name('reports.recive.excel');
+        Route::get('reports/recive/pdf', 'exportReceivedPdf')->name('reports.recive.pdf');
     });
 
-        Route::controller(UserController::class)->group(function () {
-               Route::get('get-branch-employees/{branch_id}', 'getEmployeesByBranch');
+    Route::controller(UserController::class)->group(function () {
+        Route::get('get-branch-employees/{branch_id}', 'getEmployeesByBranch');
 
     });
 

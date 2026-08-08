@@ -397,7 +397,6 @@
                      </tr>
                      @endif
                      @endforeach
-                     <span>{{count(App\Models\return_sales::where('invoice_id', $data['invoiceData']->id)->get())}}</span>
                         @foreach (App\Models\return_sales::where('invoice_id', $data['invoiceData']->id)->get() as $product)
                      <?php $i++;
                     //  $totalreturnprice+=$product->return_Unit_Price*$product->return_quantity;

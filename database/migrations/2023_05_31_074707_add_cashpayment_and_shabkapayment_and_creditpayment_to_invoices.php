@@ -15,10 +15,7 @@ return new class extends Migration
     {
         Schema::table('invoices', function (Blueprint $table) {
             //
-            $table->float('cashamount')->default(0);
-            $table->float('bankamount')->default(0);
-            $table->float('creaditamount')->default(0);
-            $table->integer('morepayment_way')->default(0);
+ 
 
         });
     }

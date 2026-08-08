@@ -15,7 +15,7 @@ return new class extends Migration
     {
         Schema::table('invoices', function (Blueprint $table) {
             //
-            $table->integer('status')->default(0);
+            $table->integer('status1')->default(0);
 
         });
     }

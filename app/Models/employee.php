@@ -21,6 +21,7 @@ class employee extends Model
         'personal_identification',
         'created_at',
          'updated_at',
+         'total_leave_days'
     ];
 
 
@@ -28,4 +29,11 @@ class employee extends Model
     {
         return $this->belongsTo(departments::class,'department');
     }
+    public function attendances() {
+    return $this->hasMany(Attendance::class);
+}
+
+public function leaves() {
+    return $this->hasMany(Leave::class);
+}
 }

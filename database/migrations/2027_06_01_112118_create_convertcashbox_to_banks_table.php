@@ -15,11 +15,7 @@ return new class extends Migration
     {
         Schema::create('convertcashbox_to_banks', function (Blueprint $table) {
             $table->id();
-            $table->bigInteger( 'from_user_id' )->default(1);   
-            $table->unsignedDouble( 'amount' )->default(0);
-            $table->bigInteger( 'branchs_id' )->default(1);
-            $table->string( 'note' )->default('-');  
-
+      
             $table->timestamps();
         });
     }

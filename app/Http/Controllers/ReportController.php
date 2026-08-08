@@ -49,6 +49,7 @@ use Illuminate\Support\Facades\Http;
 use App\Exports\Export_Account_staatment;
 use App\Exports\ExpensesExport;
 use App\Exports\ProductsSalesAndPurchaseReport;
+use App\Exports\StockQuantityExport;
 
 use Illuminate\Support\Facades\View;
 
@@ -2263,59 +2264,84 @@ public function Customerlist()
             ->with('start_at', $request->start_at)
             ->with('end_at', $request->end_at);
     }
- public function search_stockquantity(Request $request)
-    {
-        app()->setLocale(LaravelLocalization::getCurrentLocale());
-        //  return  $request;
-        $display = $request->choosequantitytodisplay;
 
-        if ($request->branch == '-') {
-            if ($display == '==') {
-                if($request->Location== '-'){
-                    $products = products::where('numberofpice', $request->quantity)->get();
-                }
-                else{
-                 $products = products::where('Product_Location', 'LIKE', '%' . $request->Location . '%')->where('numberofpice', $request->quantity)->get();
-  
-                }
-            } else {
-                if($request->Location== '-'){
+public function search_stockquantity(Request $request)
+{
+    app()->setLocale(LaravelLocalization::getCurrentLocale());
+    
+    $branch = $request->branch;
+    $location = $request->Location;
+    $display = $request->choosequantitytodisplay;
+    $quantity = $request->quantity;
+    $endAt = $request->end_at;
 
-                $products = products::where('numberofpice', $display, $request->quantity)->get();
-                }else{
-                    $products = products::where('Product_Location', 'LIKE', '%' . $request->Location . '%')->where('numberofpice', $display, $request->quantity)->get();
- 
-                }
-            }
+    $query = \App\Models\products::query();
 
-        return view('reports.printstockquantity', compact('products'))->with('data', $request->end_at);
-
-
-            // return view('reports.stockquantity', compact('products'))->with('branchdata', '-' . "/" . $display . "/" . $request->quantity."/".$request->Location);
-        } else {
-            if ($display == '==') {
-                if($request->Location== '-'){
-                    $products = products::where('numberofpice', $request->quantity)->where('branchs_id', $request->branch)->get();
-                }
-                else{
-                 $products = products::where('Product_Location', 'LIKE', '%' . $request->Location . '%')->where('numberofpice', $request->quantity)->get();
-  
-                }
-            } else {
-                if($request->Location== '-'){
-                    $products = products::where('numberofpice', $display, $request->quantity)->where('branchs_id', $request->branch)->get();
-                }
-                else{
-                 $products = products::where('Product_Location', 'LIKE', '%' . $request->Location . '%')->where('numberofpice', $display, $request->quantity)->where('branchs_id', $request->branch)->get();
-  
-                }
-            }
-            //   return $products;
-        return view('reports.printstockquantity', compact('products'))->with('data', $request->end_at);
-
-            // return view('reports.stockquantity', compact('products'))->with('branchdata',  $request->branch . "/" . $display . "/" . $request->quantity."/".$request->Location);
-        }
+    if ($branch != '-') {
+        $query->where('branchs_id', $branch);
     }
+    if ($location != '-') {
+        $query->where('Product_Location', 'LIKE', '%' . $location . '%');
+    }
+    if ($display == '==') {
+        $query->where('numberofpice', $quantity);
+    } else {
+        $query->where('numberofpice', $display, $quantity);
+    }
+    // جلب المنتجات وتجهيز الحسابات (لتجنب الكود داخل الـ Blade)
+    $products = $query->get()->map(function ($product) use ($endAt) {
+        $startAt = date('Y-01-01'); // افتراضياً بداية السنة الحالية
+
+        $salesQuery = \App\Models\sales::where('product_id', $product->id)->where('save', 1)->whereDate('created_at', '>=', $startAt);
+        $stockUpdateQuery = \App\Models\stock_update::where('product_id', $product->id)->whereDate('created_at', '>=', $startAt);
+        $productsDamageQuery = \App\Models\ProductsDamage::where('product_id', $product->id)->whereDate('created_at', '>=', $startAt);
+        $returnSalesQuery = \App\Models\return_sales::where('product_id', $product->id)->whereDate('created_at', '>=', $startAt);
+        $purchaseQuery = \App\Models\orderDetails::where('product_id', $product->id)->where('save', 1)->whereDate('created_at', '>=', $startAt);
+
+        if (!empty($endAt)) {
+            $salesQuery->whereDate('created_at', '<=', $endAt);
+            $stockUpdateQuery->whereDate('created_at', '<=', $endAt);
+            $productsDamageQuery->whereDate('created_at', '<=', $endAt);
+            $returnSalesQuery->whereDate('created_at', '<=', $endAt);
+            $purchaseQuery->whereDate('created_at', '<=', $endAt);
+        }
+
+        $product->salescount = $salesQuery->sum('quantity');
+        $product->returnsalescount = $returnSalesQuery->sum('return_quantity');
+        $product->purchasecount = $purchaseQuery->sum('numberofpice');
+        $product->purchasereturncount = $purchaseQuery->sum('returns_purchase');
+        
+        $stock_update = $stockUpdateQuery->get();
+        $product->stockincrease = $stock_update->sum('productincrease');
+        $product->stockdecrease = $stock_update->sum('productdecrease');
+        
+        $product->damageproduct = $productsDamageQuery->sum('damage_quantity');
+
+        return $product;
+    });
+
+    // حساب الإجماليات الكلية
+    $totals = [
+        'opingstock' => $products->sum('opening_blance'),
+        'purchasecount' => $products->sum('purchasecount'),
+        'purchasereturncount' => $products->sum('purchasereturncount'),
+        'salescount' => $products->sum('salescount'),
+        'returnsalescount' => $products->sum('returnsalescount'),
+        'stockdecrease' => $products->sum('stockdecrease'),
+        'stockincrease' => $products->sum('stockincrease'),
+        'damageproduct' => $products->sum('damageproduct'),
+        'totalstock' => $products->sum('numberofpice'),
+        'totalprice' => $products->sum(fn($p) => $p->numberofpice * $p->purchasingـprice),
+    ];
+
+    // إذا طلب المستخدم تصدير إكسيل
+    if ($request->has('export_excel')) {
+        return Excel::download(new StockQuantityExport($products, $totals), 'stock_quantity_report.xlsx');
+    }
+
+    return view('reports.printstockquantity', compact('products', 'totals', 'endAt'));
+}
+
 
     public function search_shift_detailes(Request $request)
     {
@@ -2938,7 +2964,7 @@ public function Customerlist()
 
         $Invoices = $query->get();
 
-        return view('reports.print_Refund_of_resource_purchases', compact('Invoices'))->with('branch_id', $branch);
+        return view('reports.print_Refund_of_resource_purchases', compact('Invoices'))->with('branch_id', $branch)->with('start_at', $request->start_at)->with('end_at', $request->end_at);
     }
 
 

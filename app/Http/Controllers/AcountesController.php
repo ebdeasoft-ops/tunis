@@ -789,7 +789,7 @@ public function changesInEquity(Request $request)
         return view('acountes.print_cashexpenswe', compact('data'));
     }
 
-    public function print_reciept_ducoument(Request $request)
+public function print_reciept_ducoument(Request $request)
     {
         $credittransactions = credittransactions::where('sent_abd_count', $request->id)->get();
         $transaction = [];
@@ -815,15 +815,32 @@ public function changesInEquity(Request $request)
         $formattedTotal = number_format($total, 2, '.', '');
         list($whole, $decimal) = explode('.', $formattedTotal);
 
+        // التفقيط بالعربي
+        $arabic_riyales = NumToArabic::number2Word((int)$whole) . ' ريال';
+        $arabic_halala = ($decimal > 0) ? NumToArabic::number2Word((int)$decimal) . ' هللة' : 'لا غير';
+
+    // التفقيط بالإنجليزي بدون الاعتماد على intl
+        $english_riyales = ucfirst(self::convertNumberToWordsEnglish((int)$whole)) . ' Riyals';
+        if ((int)$decimal > 0) {
+            $english_halala = ucfirst(self::convertNumberToWordsEnglish((int)$decimal)) . ' Halalas';
+        } else {
+            $english_halala = 'Only';
+        }
+
+        
         $data = [
             "transaction"       => $transaction,
             "total_val"         => $total, 
-            'totatextlriyales'  => NumToArabic::number2Word((int)$whole) . ' ريال',
-            'totatextlrihalala' => ($decimal > 0) ? NumToArabic::number2Word((int)$decimal) . ' هللة' : 'لا غير',
+            'totatextlriyales'  => $arabic_riyales,
+            'totatextlrihalala' => $arabic_halala,
+            'totatext_en_riyales' => $english_riyales,
+            'totatext_en_halala'  => $english_halala,
         ];
 
         return view('acountes.print_reciept_decoment_to_customer', compact('data'));
     }
+
+
     
     public function generate_pdf(Request $request)
     {

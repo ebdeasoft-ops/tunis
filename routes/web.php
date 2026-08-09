@@ -12,9 +12,13 @@ use App\Http\Controllers\{
     AcountsTypeController, ProductsDamageController, ProductsController, InvoicesController,
     AcountesController, CredittransactionsController, ExpensesController, ReportController,
     BranchsController, RoleController, UserController, SupprocessesController, AvtController,
+    BomController,
     EmployeeController, ProductMovementAnotherBranchController, TransferMoneyToMainbranchController,
     DeliveryProductToTheCustomerController, CashWithdrawalFromTheBankController, DeliveryNoteController,
-    SystemSettingController, LoansController, DliveryController, ProductsMixController,LeaveController,AttendanceController,HrSettingController
+    SystemSettingController, LoansController, DliveryController, ProductsMixController,LeaveController,AttendanceController,HrSettingController,
+  FinishedGoodsReceiptController, ManufacturingExpenseController, ManufacturingOrderController, ManufacturingReportController, MaterialIssueController,
+    UnitController,
+    WarehouseController,
 };
 
 /*
@@ -446,8 +450,12 @@ Route::middleware([
 
 
     Route::resource('boms', BomController::class);
+    Route::get('/get-product-details/{id}', [BomController::class, 'getProductDetails'])->name('boms.product_details');
+
+
     Route::resource('manufacturing_orders', ManufacturingOrderController::class);
     Route::get('/get-bom-details/{id}', [ManufacturingOrderController::class, 'getBomDetails'])->name('manufacturing_orders.bom_details');
+
     Route::resource('warehouses', WarehouseController::class)->only(['index', 'store', 'update', 'destroy']);
     Route::resource('units', UnitController::class)->only(['index', 'store', 'update', 'destroy']);
 
@@ -473,7 +481,6 @@ Route::middleware([
 
 
 
-    Route::get('/get-product-details/{id}', [BomController::class, 'getProductDetails'])->name('boms.product_details');
 
 
     // 12. إدارة العملاء الأساسية (Customers Management)

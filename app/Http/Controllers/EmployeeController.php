@@ -38,118 +38,132 @@ class EmployeeController extends Controller
      }
      
 public function print_decument_salary(Request $request)
-    {
-        app()->setLocale(LaravelLocalization::getCurrentLocale());
+{
+    app()->setLocale(LaravelLocalization::getCurrentLocale());
 
-        $request->validate([
-            'end_at' => 'required',
-        ]);
+    $request->validate([
+        'end_at' => 'required',
+    ]);
 
-        $start = $request->end_at . '-01';
-        $end = date('Y-m-t', strtotime($start)); // لتحديد نهاية الشهر تلقائياً
+    $start = $request->end_at . '-01';
+    $end = date('Y-m-t', strtotime($start)); // لتحديد نهاية الشهر تلقائياً
 
-        // جلب قيمة الساعة الإضافية وإعدادات النظام
-        $settings = HrSetting::first();
-        $overtimeRate = $settings ? $settings->overtime_hour_rate : 0;
+    // 1. جلب إعدادات النظام
+    $settings = HrSetting::first();
+    
+    // معامل ضرب الساعات الإضافية (من جدول الإعدادات مثل 2 أو 3)
+    $overtimeMultiplier = $settings ? $settings->overtime_hour_rate : 1; 
 
-        $list_salary_data = [];
-        $employees = employee::get();
-
-        foreach ($employees as $employee) {
-            $bounes = 0;
-            $discount = 0;
-            $Loans = 0;
-
-            // حساب المكافآت والخصومات خلال الشهر
-            foreach (Increaseـor_deduction_employee::where('employee_id', $employee->id)->whereDate('created_at', '>=', $start)->whereDate('created_at', '<=', $end)->get() as $item) {
-                $bounes += $item->increase;
-                $discount += $item->deduction; 
-            }
-
-            // حساب السلف والقروض خلال الشهر
-            foreach (Loans::where('employee_id', $employee->id)->whereDate('created_at', '>=', $start)->whereDate('created_at', '<=', $end)->get() as $item) {
-                $Loans += $item->Loans_amount;
-            }
-
-            // جلب سجلات الحضور والانصراف خلال الشهر المختار
-            $attendances = Attendance::where('employee_id', $employee->id)
-                ->whereDate('date', '>=', $start)
-                ->whereDate('date', '<=', $end)
-                ->get();
-
-            // حساب أيام الحضور (حضور طبيعي + متأخر)
-            $presentDays = $attendances->where('status', 'present')->count();
-            $lateDays = $attendances->where('status', 'late')->count();
-            $totalPresent = $presentDays + $lateDays;
-
-            // أيام الغياب المسجلة
-            $absentDays = $attendances->where('status', 'absent')->count();
-
-            // جلب إجازات الموظف خلال الشهر
-            $employeeLeaves = collect();
-            $permissionLeaveDays = 0;       // إجازة بإذن
-            $withoutPermissionLeaveDays = 0; // إجازة بدون إذن
-
-            if (class_exists('App\Models\Leave')) {
-                $employeeLeaves = \App\Models\Leave::where('employee_id', $employee->id)
-                    ->whereDate('start_date', '>=', $start)
-                    ->whereDate('start_date', '<=', $end)
-                    ->get();
-
-                // تصنيف الإجازات بناءً على النوع (يمكنك تعديل أسماء الأنواع حسب قاعدة بياناتك مثل casual / regular أو approved / unapproved)
-                $permissionLeaveDays = $employeeLeaves->where('type', 'casual')->count(); 
-                $withoutPermissionLeaveDays = $employeeLeaves->where('type', 'regular')->count();
-            }
-
-            // غياب بدون إذن (الذي يتم خصم يومين عليه):
-            // نأخذ حالات الـ 'absent' أو 'unauthorized_absent' التي ليس للموظف فيها إجازة مسجلة في نفس اليوم
-            $unauthorizedRecords = $attendances->filter(function ($att) use ($employeeLeaves) {
-                if ($att->status !== 'absent' && $att->status !== 'unauthorized_absent') {
-                    return false;
-                }
-
-                // التحقق مما إذا كانت هناك إجازة مقبولة/مسجلة في نفس اليوم لتغطية الغياب
-                $hasLeave = $employeeLeaves->contains(function ($leave) use ($att) {
-                    return $att->date >= $leave->start_date && $att->date <= $leave->end_date;
-                });
-
-                // إذا لم يكن لديه إجازة تغطي هذا اليوم، فهو غياب بدون إذن ويستحق العقوبة
-                return !$hasLeave;
-            });
-
-            $unauthorizedAbsentDays = $unauthorizedRecords->count();
-
-            // حساب ساعات الإضافي وقيمتها المالية
-            $totalOvertimeHours = 0;
-            foreach ($attendances->where('type', 'overtime') as $att) {
-                if ($att->check_in && $att->check_out) {
-                    $in = \Carbon\Carbon::parse($att->check_in);
-                    $out = \Carbon\Carbon::parse($att->check_out);
-                    $totalOvertimeHours += round($in->floatDiffInHours($out), 2);
-                }
-            }
-            $overtimeAmount = $totalOvertimeHours * $overtimeRate;
-
-            // تجميع بيانات الموظف كاملة للمطابقة مع العرض في ملف الـ Blade
-            $list_salary_data[] = [
-                'employeeData' => $employee,
-                'bounes' => $bounes,
-                'discount' => $discount,
-                'Loans' => $Loans,
-                'present_days' => $totalPresent,
-                'absent_days' => $absentDays,
-                'permission_leave_days' => $permissionLeaveDays,
-                'without_permission_leave_days' => $withoutPermissionLeaveDays,
-                'unauthorized_absent_days' => $unauthorizedAbsentDays, // المتغير المسؤول عن خصم اليومين في العرض
-                'overtime_hours' => $totalOvertimeHours,
-                'overtime_amount' => $overtimeAmount,
-            ];
-        }
-
-        return view('hr.employee_salary_list_print', compact('list_salary_data'))->with('month', $request->end_at);
+    // حساب ساعات العمل اليومية بناءً على الدوام الرسمي في الإعدادات
+    $dailyWorkingHours = 8; // قيمة افتراضية احتياطية
+    if ($settings && $settings->official_check_in && $settings->official_check_out) {
+        $checkIn = \Carbon\Carbon::parse($settings->official_check_in);
+        $checkOut = \Carbon\Carbon::parse($settings->official_check_out);
+        $dailyWorkingHours = max(1, round($checkIn->floatDiffInHours($checkOut), 2)); 
     }
 
+    // إجمالي ساعات العمل الشهرية (افتراض 30 يوماً شهرياً)
+    $monthlyWorkingHours = $dailyWorkingHours * 30;
 
+    $list_salary_data = [];
+    $employees = employee::get();
+
+    foreach ($employees as $employee) {
+        $bounes = 0;
+        $discount = 0;
+        $Loans = 0;
+
+        // حساب المكافآت والخصومات خلال الشهر
+        foreach (Increaseـor_deduction_employee::where('employee_id', $employee->id)->whereDate('created_at', '>=', $start)->whereDate('created_at', '<=', $end)->get() as $item) {
+            $bounes += $item->increase;
+            $discount += $item->deduction; 
+        }
+
+        // حساب السلف والقروض خلال الشهر
+        foreach (Loans::where('employee_id', $employee->id)->whereDate('created_at', '>=', $start)->whereDate('created_at', '<=', $end)->get() as $item) {
+            $Loans += $item->Loans_amount;
+        }
+
+        // جلب سجلات الحضور والانصراف خلال الشهر المختار
+        $attendances = Attendance::where('employee_id', $employee->id)
+            ->whereDate('date', '>=', $start)
+            ->whereDate('date', '<=', $end)
+            ->get();
+
+        // حساب أيام الحضور (حضور طبيعي + متأخر)
+        $presentDays = $attendances->where('status', 'present')->count();
+        $lateDays = $attendances->where('status', 'late')->count();
+        $totalPresent = $presentDays + $lateDays;
+
+        // أيام الغياب المسجلة
+        $absentDays = $attendances->where('status', 'absent')->count();
+
+        // جلب إجازات الموظف خلال الشهر
+        $employeeLeaves = collect();
+        $permissionLeaveDays = 0;         // إجازة بإذن
+        $withoutPermissionLeaveDays = 0; // إجازة بدون إذن
+
+        if (class_exists('App\Models\Leave')) {
+            $employeeLeaves = \App\Models\Leave::where('employee_id', $employee->id)
+                ->whereDate('start_date', '>=', $start)
+                ->whereDate('start_date', '<=', $end)
+                ->get();
+
+            // تصنيف الإجازات بناءً على النوع
+            $permissionLeaveDays = $employeeLeaves->where('type', 'casual')->count(); 
+            $withoutPermissionLeaveDays = $employeeLeaves->where('type', 'regular')->count();
+        }
+
+        // غياب بدون إذن
+        $unauthorizedRecords = $attendances->filter(function ($att) use ($employeeLeaves) {
+            if ($att->status !== 'absent' && $att->status !== 'unauthorized_absent') {
+                return false;
+            }
+
+            $hasLeave = $employeeLeaves->contains(function ($leave) use ($att) {
+                return $att->date >= $leave->start_date && $att->date <= $leave->end_date;
+            });
+
+            return !$hasLeave;
+        });
+
+        $unauthorizedAbsentDays = $unauthorizedRecords->count();
+
+        // حساب ساعات الإضافي
+        $totalOvertimeHours = 0;
+        foreach ($attendances->where('type', 'overtime') as $att) {
+            if ($att->check_in && $att->check_out) {
+                $in = \Carbon\Carbon::parse($att->check_in);
+                $out = \Carbon\Carbon::parse($att->check_out);
+                $totalOvertimeHours += round($in->floatDiffInHours($out), 2);
+            }
+        }
+
+        // حساب أجر الساعة العادية للموظف بناءً على الراتب الأساسي
+        $basicSalary = $employee->salary ?? 0;
+        $normalHourlyRate = $basicSalary > 0 ? ($basicSalary / $monthlyWorkingHours) : 0;
+
+        // حساب القيمة المالية النهائية للإضافي = (عدد الساعات × أجر الساعة العادية × المعامل)
+        $overtimeAmount = round($totalOvertimeHours * $normalHourlyRate * $overtimeMultiplier, 2);
+
+        // تجميع بيانات الموظف كاملة للمطابقة مع العرض في ملف الـ Blade
+        $list_salary_data[] = [
+            'employeeData' => $employee,
+            'bounes' => $bounes,
+            'discount' => $discount,
+            'Loans' => $Loans,
+            'present_days' => $totalPresent,
+            'absent_days' => $absentDays,
+            'permission_leave_days' => $permissionLeaveDays,
+            'without_permission_leave_days' => $withoutPermissionLeaveDays,
+            'unauthorized_absent_days' => $unauthorizedAbsentDays,
+            'overtime_hours' => $totalOvertimeHours,
+            'overtime_amount' => $overtimeAmount,
+        ];
+    }
+
+    return view('hr.employee_salary_list_print', compact('list_salary_data'))->with('month', $request->end_at);
+}
      public function Increaseـor_deduction()
      {
          //

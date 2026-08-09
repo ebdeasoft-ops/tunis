@@ -26,4 +26,7 @@ return [
     'attendance_type' => 'Attendance Type',
     'normal' => 'Normal',
     'overtime' => 'Overtime',
+    'update' => 'update',
+    'cancel' => 'cancel'
+
 ];

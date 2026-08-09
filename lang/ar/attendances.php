@@ -24,4 +24,6 @@ return [
     'attendance_type' => 'نوع الحضور',
     'normal' => 'دوام عادي',
     'overtime' => 'إضافي',
+    'update' => 'تعديل',
+    'cancel' => 'إلغاء'
 ];

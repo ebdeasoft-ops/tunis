@@ -4,6 +4,7 @@ namespace App\Imports;
 
 use App\Models\Attendance;
 use App\Models\HrSetting;
+use App\Models\employee;
 use Maatwebsite\Excel\Concerns\ToModel;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
 use PhpOffice\PhpSpreadsheet\Shared\Date; 
@@ -11,35 +12,34 @@ use Carbon\Carbon;
 
 class AttendancesImport implements ToModel, WithHeadingRow
 {
-    /**
-    * @param array $row
-    *
-    * @return \Illuminate\Database\Eloquent\Model|null
-    */
+    public $importedDates = [];
+
     public function model(array $row)
     {
-        // 1. معالجة التاريخ: دعم الأرقام التسلسلية للإكسيل أو النصوص
         $dateValue = $row['date'] ?? $row['التاريخ'];
+        if (!$dateValue) {
+            return null;
+        }
         
         $dateString = is_numeric($dateValue) 
             ? Date::excelToDateTimeObject($dateValue)->format('Y-m-d') 
             : Carbon::parse($dateValue)->format('Y-m-d');
 
+        // جمع التواريخ الفريدة الموجودة في الملف
+        if (!in_array($dateString, $this->importedDates)) {
+            $this->importedDates[] = $dateString;
+        }
+
         $attendanceDate = Carbon::parse($dateString);
 
-        // 2. استخراج أوقات الحضور والانصراف من ملف الإكسيل
         $checkInString = $row['check_in'] ?? $row['وقت_الحضور'];
         $checkOutString = $row['check_out'] ?? $row['وقت_الانصراف'];
 
-        // 3. جلب إعدادات الموارد البشرية (أيام الإجازة ووقت الدوام الرسمي)
         $setting = HrSetting::first();
-        
         $weekendDaysSetting = $setting ? strtolower($setting->weekend_days) : 'friday';
         $officialCheckoutTime = $setting && $setting->official_check_out ? $setting->official_check_out : '16:00:00';
 
-        // 4. التحقق مما إذا كان اليوم الحالي يعتبر إجازة أسبوعية بناءً على إعدادات النظام
-        $dayName = strtolower($attendanceDate->format('l')); // saturday, friday, monday...
-        
+        $dayName = strtolower($attendanceDate->format('l')); 
         $isWeekend = false;
         if ($weekendDaysSetting === 'friday' && $dayName === 'friday') {
             $isWeekend = true;
@@ -47,31 +47,72 @@ class AttendancesImport implements ToModel, WithHeadingRow
             $isWeekend = true;
         }
 
-        $type = 'normal'; // الافتراضي دوام عادي
-
+        $type = 'normal'; 
         if ($isWeekend) {
-            // إذا حضر الموظف في يوم الإجازة الأسبوعية (مثل الجمعة أو السبت)، يعتبر إضافي بالكامل
             $type = 'overtime';
         } else {
-            // في الأيام العادية: مقارنة وقت الانصراف بوقت الانصراف الرسمي من الإعدادات
             if ($checkOutString) {
                 $checkOutTime = Carbon::parse($checkOutString);
                 $officialEndWork = Carbon::parse($attendanceDate->toDateString() . ' ' . $officialCheckoutTime);
-
-                // إذا انصرف بعد موعد نهاية الدوام الرسمي المحدد، يعتبر إضافي
                 if ($checkOutTime->greaterThan($officialEndWork)) {
                     $type = 'overtime';
                 }
             }
         }
 
-        return new Attendance([
-            'employee_id' => $row['employee_id'] ?? $row['employee'], 
-            'date'        => $dateString,
-            'check_in'    => $checkInString,
-            'check_out'   => $checkOutString,
-            'status'      => $row['status'] ?? 'present',
-            'type'        => $type, // حفظ النوع تلقائياً (normal أو overtime)
-        ]);
+        $employeeId = $row['employee_id'] ?? $row['employee'];
+
+        // التأكد من تسجيل حضور الموظف الحالي الوارد في ملف الإكسيل
+        if ($employeeId) {
+            // نتحقق أولاً إذا كان له سجل مسبق في نفس اليوم لتجنب التكرار
+            $exists = Attendance::where('employee_id', $employeeId)
+                ->whereDate('date', $dateString)
+                ->exists();
+
+            if (!$exists) {
+                Attendance::create([
+                    'employee_id' => $employeeId,
+                    'date'        => $dateString,
+                    'check_in'    => $checkInString,
+                    'check_out'   => $checkOutString,
+                    'status'      => $row['status'] ?? 'present',
+                    'type'        => $type,
+                ]);
+            }
+        }
+
+        // بعد معالجة السطر الحالي، نقوم بعمل الفحص الشامل لكل الموظفين في هذا التاريخ
+        // للتأكد من أن أي موظف لم يرد في ملف الإكسيل لهذا اليوم يتم تسجيله "غياب"
+        $this->checkMissingEmployeesForDate($dateString);
+
+        return null; // لأننا قمنا بالحفظ يدوياً داخل الـ model لتفادي تكرار السطور أو تعارض الفحص
+    }
+
+    /**
+     * دالة للتحقق من الموظفين غير المتواجدين في ملف الإكسيل لتاريخ معين وتسجيلهم غياب
+     */
+    protected function checkMissingEmployeesForDate($dateString)
+    {
+        // جلب جميع الموظفين من جدول employees
+        $allEmployees = employee::get();
+
+        foreach ($allEmployees as $employee) {
+            // هل للموظف أي سجل حضور أو غياب في هذا التاريخ؟
+            $hasAttendance = Attendance::where('employee_id', $employee->id)
+                ->whereDate('date', $dateString)
+                ->exists();
+
+            // إذا لم يكن له أي سجل في هذا اليوم، يتم تسجيله غياب تلقائياً
+            if (!$hasAttendance) {
+                Attendance::create([
+                    'employee_id' => $employee->id,
+                    'date'        => $dateString,
+                    'check_in'    => null,
+                    'check_out'   => null,
+                    'status'      => 'absent',
+                    'type'        => 'normal',
+                ]);
+            }
+        }
     }
 }

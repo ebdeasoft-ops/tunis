@@ -4,6 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Models\employee;
 use App\Models\Loans;
+use App\Models\HrSetting;
+use App\Models\Leave;
+use App\Models\Attendance;
 use Illuminate\Http\Request;
 use Mcamara\LaravelLocalization\Facades\LaravelLocalization as LaravelLocalization;
 use  App\Models\departments;
@@ -34,8 +37,119 @@ class EmployeeController extends Controller
          return view('hr.salarydecoument');
      }
      
+public function print_decument_salary(Request $request)
+    {
+        app()->setLocale(LaravelLocalization::getCurrentLocale());
 
+        $request->validate([
+            'end_at' => 'required',
+        ]);
 
+        $start = $request->end_at . '-01';
+        $end = date('Y-m-t', strtotime($start)); // لتحديد نهاية الشهر تلقائياً
+
+        // جلب قيمة الساعة الإضافية من جدول إعدادات الموارد البشرية
+        $settings = HrSetting::first();
+        $overtimeRate = $settings ? $settings->overtime_hour_rate : 0;
+
+        $list_salary_data = [];
+        $employees = employee::get();
+
+        foreach ($employees as $employee) {
+            $bounes = 0;
+            $discount = 0;
+            $Loans = 0;
+
+            // حساب المكافآت والخصومات خلال الشهر
+            foreach (Increaseـor_deduction_employee::where('employee_id', $employee->id)->whereDate('created_at', '>=', $start)->whereDate('created_at', '<=', $end)->get() as $Increaseـor_deduction_employee) {
+                $bounes += $Increaseـor_deduction_employee->increase;
+                $discount += $Increaseـor_deduction_employee->deduction; 
+            }
+
+            // حساب السلف والقروض خلال الشهر
+            foreach (Loans::where('employee_id', $employee->id)->whereDate('created_at', '>=', $start)->whereDate('created_at', '<=', $end)->get() as $item) {
+                $Loans += $item->Loans_amount;
+            }
+
+            // جلب سجلات الحضور والانصراف خلال الشهر المختار
+            $attendances = Attendance::where('employee_id', $employee->id)
+                ->whereDate('date', '>=', $start)
+                ->whereDate('date', '<=', $end)
+                ->get();
+
+            // حساب أيام الحضور والتأخير
+            $presentDays = $attendances->where('status', 'present')->count();
+            $lateDays = $attendances->where('status', 'late')->count();
+            $totalPresent = $presentDays + $lateDays;
+
+            // حساب أيام الغياب العادي
+            $absentDays = $attendances->where('status', 'absent')->count();
+
+            // جلب إجازات الموظف خلال الشهر لتصاطعها مع أيام الغياب
+            $casualLeaves = 0;
+            $regularLeaves = 0;
+            $employeeLeaves = collect();
+
+            if (class_exists('App\Models\Leave')) {
+                $employeeLeaves = \App\Models\Leave::where('employee_id', $employee->id)
+                    ->whereDate('start_date', '>=', $start)
+                    ->whereDate('start_date', '<=', $end)
+                    ->get();
+
+                $casualLeaves = $employeeLeaves->where('type', 'casual')->count();
+                $regularLeaves = $employeeLeaves->where('type', 'regular')->count();
+            }
+
+            // حساب غياب بدون إذن (مع التأكد أنه لم يكن في إجازة بنفس اليوم)
+            $unauthorizedAbsentRecords = $attendances->where('status', 'unauthorized_absent');
+            $unauthorizedAbsent = 0;
+
+            foreach ($unauthorizedAbsentRecords as $attRecord) {
+                // هل توجد إجازة مسجلة لنفس الموظف في نفس تاريخ الغياب؟
+                $hasLeaveOnThatDay = $employeeLeaves->contains(function ($leave) use ($attRecord) {
+                    return $attRecord->date >= $leave->start_date && $attRecord->date <= $leave->end_date;
+                });
+
+                // إذا لم تكن هناك إجازة مسجلة في هذا اليوم، يُحسب غياب بدون إذن
+                if (!$hasLeaveOnThatDay) {
+                    $unauthorizedAbsent++;
+                }
+            }
+
+            // خصم يومين لكل غياب بدون إذن حقيقي
+            $deductedDays = $unauthorizedAbsent * 2;
+
+            // حساب ساعات الإضافي وقيمتها المالية
+            $totalOvertimeHours = 0;
+            foreach ($attendances->where('type', 'overtime') as $att) {
+                if ($att->check_in && $att->check_out) {
+                    $in = \Carbon\Carbon::parse($att->check_in);
+                    $out = \Carbon\Carbon::parse($att->check_out);
+                    $totalOvertimeHours += round($in->floatDiffInHours($out), 2);
+                }
+            }
+            $overtimeAmount = $totalOvertimeHours * $overtimeRate;
+
+            // تجميع بيانات الموظف كاملة
+            $list_salary_data[] = [
+                'employeeData' => $employee,
+                'bounes' => $bounes,
+                'discount' => $discount,
+                'Loans' => $Loans,
+                'present_days' => $totalPresent,
+                'absent_days' => $absentDays,
+                'casual_leaves' => $casualLeaves,
+                'regular_leaves' => $regularLeaves,
+                'unauthorized_absent' => $unauthorizedAbsent,
+                'deducted_days' => $deductedDays,
+                'overtime_hours' => $totalOvertimeHours,
+                'overtime_amount' => $overtimeAmount,
+            ];
+        }
+
+        return view('hr.employee_salary_list_print', compact('list_salary_data'))->with('month', $request->end_at);
+        
+        }
      public function Increaseـor_deduction()
      {
          //
@@ -129,45 +243,7 @@ if( $employee!=null){
 
     
 
-    public function print_decument_salary(Request $request)
-    {
-        
-    //  return $request;
-    app()->setLocale(LaravelLocalization::getCurrentLocale());
-
-    $start=$request->end_at.'-01';
-    $end=$request->end_at.'-30';
-    // return $end;
-    $list_salary_data=[];
-        app()->setLocale(LaravelLocalization::getCurrentLocale());
-        $employees=employee::get();
-    foreach($employees as $employee)
-    {
-$bounes=0;
-$discount=0;
-$Loans=0;
-foreach(Increaseـor_deduction_employee::where('employee_id',$employee->id)->whereDate('created_at','>=', $start) ->whereDate('created_at', '<=', $end) ->get()  as $Increaseـor_deduction_employee)
-{
-    $bounes+=$Increaseـor_deduction_employee->increase;
-    $discount+=$Increaseـor_deduction_employee->deduction; 
-}
-foreach(Loans::where('employee_id',$employee->id)->whereDate('created_at','>=', $start) ->whereDate('created_at', '<=', $end) ->get()  as $item)
-{
-    $Loans+=$item->Loans_amount;
-}
-$list_salary_data[]=[
-    'employeeData'=> $employee,
-    'bounes'=>$bounes,
-    'discount'=>$discount,
-    'Loans'=>$Loans
-    
-        ];
-    }
-
-   
-
-        return view('hr.employee_salary_list_print',compact('list_salary_data'))->with('month',$request->end_at);
-    }
+ 
 
 
 

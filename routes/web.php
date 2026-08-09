@@ -14,7 +14,7 @@ use App\Http\Controllers\{
     BranchsController, RoleController, UserController, SupprocessesController, AvtController,
     EmployeeController, ProductMovementAnotherBranchController, TransferMoneyToMainbranchController,
     DeliveryProductToTheCustomerController, CashWithdrawalFromTheBankController, DeliveryNoteController,
-    SystemSettingController, LoansController, DliveryController, ProductsMixController
+    SystemSettingController, LoansController, DliveryController, ProductsMixController,LeaveController,AttendanceController,HrSettingController
 };
 
 /*

@@ -70,7 +70,7 @@ public function importStockExcel(Request $request)
     try {
         // قراءة الملف كمصفوفة عادية لمنع مشاكل مفاتيح العناوين
         $data = Excel::toArray([], $request->file('excel_file'));
-        
+
         if (empty($data) || empty($data[0])) {
             return response()->json([
                 'status' => 'error',
@@ -79,7 +79,7 @@ public function importStockExcel(Request $request)
         }
 
         $rows = $data[0];
-        
+
         // استبعاد صف العناوين الأول
         $header = array_shift($rows);
 
@@ -109,7 +109,7 @@ public function importStockExcel(Request $request)
             $product = products::updateOrCreate(
                 [
                     'Product_Code' => $productCode,
-                    'branchs_id'   => $selectedBranchId 
+                    'branchs_id'   => $selectedBranchId
                 ],
                 [
                     'product_name'     => $productName,
@@ -120,9 +120,9 @@ public function importStockExcel(Request $request)
                     'type'             => '1',
                     'brand'            => '1',
                     'product_group'    => 1,
-                    'opening_balance'  => $quantity, 
-                    'quantity'         => $quantity,          
-                    'purchasing_price' => $costPrice,         
+                    'opening_balance'  => $quantity,
+                    'quantity'         => $quantity,
+                    'purchasing_price' => $costPrice,
                     'saleperpice'      => $salePrice,
                 ]
             );
@@ -3472,34 +3472,35 @@ $data = resource_purchases::where('save', 1)
         return view('ajax_search', compact('data'));
     }
 
-   public function searchAllproductpaginatenew_by_post(Request $request)
-{
-    // 1. ضبط لغة التطبيق بناءً على قيمة locale القادمة من الـ AJAX
-    if ($request->has('locale')) {
-        app()->setLocale($request->locale);
-    }
+  public function searchAllproductpaginatenew_by_post(Request $request)
+    {
+        $searchTerm = '%' . $request->searchtext . '%';
 
-    $searchTerm = '%' . $request->searchtext . '%';
-
-    if ($request->branchs_id == '-') {
-        $data = products::where(function ($query) use ($searchTerm) {
-            $query->where('product_name', 'LIKE', $searchTerm)
-                ->orWhere('Product_Code', 'LIKE', $searchTerm)
-                ->orWhere('notes', 'LIKE', $searchTerm)
-                ->orWhere('refnumber', 'LIKE', $searchTerm);
-        })->paginate(20);
-    } else {
-        $data = products::where('branchs_id', $request->branchs_id)
-            ->where(function ($query) use ($searchTerm) {
-                $query->where('product_name', 'LIKE', $searchTerm)
+        $data = products::query()
+            // 1. فلترة بالفرع
+            ->when($request->filled('branchs_id') && $request->branchs_id != '-', function ($query) use ($request) {
+                $query->where('branchs_id', $request->branchs_id);
+            })
+            // 2. فلترة بالفئة/المجموعة
+            ->when($request->filled('group_id'), function ($query) use ($request) {
+                $query->where('product_group', $request->group_id);
+            })
+            // 3. البحث بالنص
+            ->when($request->filled('searchtext'), function ($query) use ($searchTerm) {
+                $query->where(function ($q) use ($searchTerm) {
+                    $q->where('product_name', 'LIKE', $searchTerm)
                     ->orWhere('Product_Code', 'LIKE', $searchTerm)
                     ->orWhere('notes', 'LIKE', $searchTerm)
                     ->orWhere('refnumber', 'LIKE', $searchTerm);
-            })->paginate(20);
-    }
+                });
+            })
+            // تدميج كل مدخلات Request داخل روابط الصفحات لضمان عدم ضياع أي فلتر عند الضغط على أرقام الصفحات
+            ->paginate(20)
+            ->appends($request->all())
+            ;
 
-    return view('ajax_search', compact('data'));
-}
+        return view('ajax_search', compact('data'));
+    }
 
     public function searchChooseProductpaginatenew($searchtext, $branchs_id)
     {

@@ -306,6 +306,8 @@ $(document).ready(function() {
         });
     }
 
+
+
     // 2. تحميل البيانات الأولي
     performAjax("{{ URL::to('searchAllproductpaginatenew_by_post') }}", 'post', {
         "searchtext": '',
@@ -356,6 +358,30 @@ $(document).ready(function() {
     });
 });
 
+
+    function replaceproduct(id) {
+    branchs_id = $('#branchs_id').val();
+    console.log(branchs_id)
+    console.log(" {{URL::to('operationproducts')}}/" + branchs_id + "/" + id)
+    jQuery.ajax({
+        url: " {{URL::to('operationproducts')}}/" + branchs_id + "/" + id,
+        type: 'get',
+        dataType: 'html',
+        cache: false,
+
+        success: function(data) {
+            console.log('done')
+            $('#operation_product').modal().show();
+
+            $("#ajax_responce_operation_product_Div").html(data);
+        },
+        error: function() {
+
+        }
+    });
+
+
+}
 // دالة الفلترة في النطاق العام لتعمل مع onkeyup مباشرة
 function filterProducts() {
     let data = {

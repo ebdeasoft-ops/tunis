@@ -43,9 +43,13 @@ class products extends Model
     {
         return $this->belongsTo(branchs::class,'branchs_id');
     }
-    
+
       public function product_group_data()
     {
         return $this->belongsTo(products_group::class,'product_group');
+    }
+    public function unit()
+    {
+        return $this->belongsTo(Unit::class, 'unit_id');
     }
 }

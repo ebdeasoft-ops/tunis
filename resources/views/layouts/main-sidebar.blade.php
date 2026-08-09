@@ -276,7 +276,7 @@
                             href="{{ url('/stockAdjastment') }}">{{ __('supprocesses.stockadjustment') }}</a>
                     </li>
                     @endcan
-              
+
                     @can('Product data change')
                     <li>
                         <a class="slide-item"
@@ -470,8 +470,58 @@
             @endcan
 
 
+            <!-- قسم التصنيع -->
+            <li class="slide">
+                <a class="side-menu__item" data-toggle="slide" href="#">
+                    <!-- أيقونة المصنع/التصنيع -->
+                    <svg xmlns="http://www.w3.org/2000/svg" class="side-menu__icon" viewBox="0 0 512 512">
+                        <path d="M496 448H16c-8.8 0-16 7.2-16 16v32c0 8.8 7.2 16 16 16h480c8.8 0 16-7.2 16-16v-32c0-8.8-7.2-16-16-16zm-368-64V248.5c0-9 4.2-17.5 11.4-23l128-96c14.6-11 35.6.4 35.6 18.7V248.5c0-9 4.2-17.5 11.4-23l128-96c14.6-11 35.6.4 35.6 18.7V384H128z"/>
+                    </svg>
 
-            @can('Product manufacturing')
+                    <span class="side-menu__label">{{ __('home.manufacturing') }}</span>
+                    <i class="angle fe fe-chevron-down"></i>
+                </a>
+
+                <ul class="slide-menu">
+
+                    <li>
+                        <a class="slide-item" href="{{ route('warehouses.index') }}">{{ __('home.warehouses') }}</a>
+                    </li>
+
+                    <li>
+                        <a class="slide-item" href="{{ route('units.index') }}">{{ __('home.units') }}</a>
+                    </li>
+
+                    <li>
+                        <a class="slide-item" href="{{ route('boms.index') }}">{{ __('home.boms') }}</a>
+                    </li>
+
+                    <li>
+                        <a class="slide-item" href="{{ url('/manufacturing_orders') }}">{{ __('home.manufacturing_orders') }}</a>
+                    </li>
+
+                    <li>
+                        <a class="slide-item" href="{{ url('/material_issues') }}">{{ __('home.material_issues') }}</a>
+                    </li>
+
+                    <li>
+                        <a class="slide-item" href="{{ url('/finished_goods_receipts') }}">{{ __('home.finished_goods_receipts') }}</a>
+                    </li>
+
+                    <li>
+                        <a class="slide-item" href="{{ url('/manufacturing_expenses') }}">{{ __('home.manufacturing_expenses') }}</a>
+                    </li>
+                    <li>
+                        <a class="slide-item" href="{{ route('manufacturing_reports.index') }}">
+                            <i class="fa fa-chart-bar mr-2"></i> {{ __('home.manufacturing_reports') }}
+                        </a>
+                    </li>
+                </ul>
+            </li>
+
+
+
+            {{-- @can('Product manufacturing')
             <li class="slide">
                 <a class="side-menu__item" data-toggle="slide" href="#">
                     <svg xmlns="http://www.w3.org/2000/svg" class="side-menu__icon" viewBox="0 0 576 512">
@@ -491,7 +541,7 @@
                     @endcan
                 </ul>
             </li>
-            @endcan
+            @endcan --}}
 
 
 
@@ -658,9 +708,9 @@
                     </li>
                     @endcan
 
-              
 
-              
+
+
 
 
 
@@ -766,7 +816,7 @@
                             </li>
                             @endcan
 
-           
+
                             @can('Transactions to master branch report')
                             <li>
                                 <a class="slide-item"
@@ -799,7 +849,7 @@
                     </li>
                     @endcan
 
-                    
+
                                              @can('Profit and lost report')
                             <li>
                                 <a class="slide-item"

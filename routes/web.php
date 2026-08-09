@@ -8,36 +8,13 @@ use App\Exports\CostCenterExport;
 use Mcamara\LaravelLocalization\Facades\LaravelLocalization;
 // استيراد الـ Controllers بالكامل
 use App\Http\Controllers\{
-    AdminController,
-    SupllierController,
-    CustomersController,
-    FinancialAccountsController,
-    AcountsTypeController,
-    ProductsDamageController,
-    ProductsController,
-    InvoicesController,
-    AcountesController,
-    CredittransactionsController,
-    ExpensesController,
-    ReportController,
-    BranchsController,
-    RoleController,
-    UserController,
-    SupprocessesController,
-    AvtController,
-    EmployeeController,
-    ProductMovementAnotherBranchController,
-    TransferMoneyToMainbranchController,
-    DeliveryProductToTheCustomerController,
-    CashWithdrawalFromTheBankController,
-    DeliveryNoteController,
-    LeaveController,
-    AttendanceController,
-    SystemSettingController,
-    LoansController,
-    DliveryController,
-    ProductsMixController,
-    HrSettingController
+    AdminController, SupllierController, CustomersController, FinancialAccountsController,
+    AcountsTypeController, ProductsDamageController, ProductsController, InvoicesController,
+    AcountesController, CredittransactionsController, ExpensesController, ReportController,
+    BranchsController, RoleController, UserController, SupprocessesController, AvtController,
+    EmployeeController, ProductMovementAnotherBranchController, TransferMoneyToMainbranchController,
+    DeliveryProductToTheCustomerController, CashWithdrawalFromTheBankController, DeliveryNoteController,
+    SystemSettingController, LoansController, DliveryController, ProductsMixController
 };
 
 /*
@@ -466,6 +443,38 @@ Route::middleware([
         Route::get('updateuser/{id}', 'edit');
         Route::get('deleteuser/{id}', 'destroy');
     });
+
+
+    Route::resource('boms', BomController::class);
+    Route::resource('manufacturing_orders', ManufacturingOrderController::class);
+    Route::get('/get-bom-details/{id}', [ManufacturingOrderController::class, 'getBomDetails'])->name('manufacturing_orders.bom_details');
+    Route::resource('warehouses', WarehouseController::class)->only(['index', 'store', 'update', 'destroy']);
+    Route::resource('units', UnitController::class)->only(['index', 'store', 'update', 'destroy']);
+
+    // صفحة تقارير التصنيع الرئيسي
+    Route::get('/manufacturing-reports', [ManufacturingReportController::class, 'index'])->name('manufacturing_reports.index');
+    // تقرير تكلفة أمر إنتاج محدد
+    Route::get('/manufacturing-reports/order-cost/{id}', [ManufacturingReportController::class, 'orderCostReport'])->name('manufacturing_reports.order_cost');
+
+    Route::resource('manufacturing_expenses', ManufacturingExpenseController::class);
+
+    Route::resource('material_issues', MaterialIssueController::class);
+
+    // مسار AJAX لجلب خامات أمر الإنتاج المنسوبة له فور اختياره
+    Route::get('/get-mo-materials/{id}', [MaterialIssueController::class, 'getMoMaterials'])->name('material_issues.mo_materials');
+
+    Route::resource('finished_goods_receipts', FinishedGoodsReceiptController::class);
+
+    // مسار AJAX لجلب تفاصيل المنتج التام والكميات التابعة لأمر الإنتاج
+    Route::get('/get-mo-receipt-details/{id}', [FinishedGoodsReceiptController::class, 'getMoReceiptDetails'])->name('finished_goods_receipts.mo_details');
+
+
+
+
+
+
+    Route::get('/get-product-details/{id}', [BomController::class, 'getProductDetails'])->name('boms.product_details');
+
 
     // 12. إدارة العملاء الأساسية (Customers Management)
     Route::get('/getcustomer/{id}', [CustomersController::class, 'show']);

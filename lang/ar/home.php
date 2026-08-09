@@ -12,6 +12,9 @@ return [
     | you want to customize your views to better match your application.
     |
     */
+    'housing_allowance' => 'بدل السكن',
+'transportation_allowance' => 'بدل الانتقال',
+'other_allowances' => 'بدلات أخرى',
 'advanced_search_filters' => 'بحث متقدم وفلترة',
     'customer_supplier_account' => 'حساب العملاء والموردين',
     'comprehensive_financial_statement' => 'كشف الحسابات والحركات المالية الشاملة للعملاء والموردين',

@@ -143,7 +143,7 @@ class AttendanceController extends Controller
     }
 
 
-    public function store(Request $request)
+public function store(Request $request)
     {
         $dateString = $request->date;
         $attendanceDate = Carbon::parse($dateString);
@@ -182,14 +182,34 @@ class AttendanceController extends Controller
             }
         }
 
-        // 3. دمج نوع الحضور المحسوب مع بيانات الطلب قبل الحفظ
         $data = $request->all();
         $data['type'] = $type;
+
+        // 3. حساب خصم الغياب (يومين) إذا كانت الحالة غياب
+        $status = $request->status ?? 'present';
+        $discountAmount = 0;
+
+        if ($status === 'absent') {
+            // جلب بيانات الموظف لمعرفة راتبه الأساسي
+            $employee = employee::find($request->employee_id);
+            
+            if ($employee && $employee->salary > 0) {
+                // قيمة اليوم الواحد (افتراض الشهر 30 يوم)
+                $dailyRate = $employee->salary / 30;
+                // خصم يومين عن كل يوم غياب
+                $discountAmount = $dailyRate * 2;
+            }
+        }
+
+        // إضافة مبلغ الخصم إلى المصفوفة ليتم حفظه في قاعدة البيانات
+        $data['discount_amount'] = $discountAmount; // تأكد من مطابقة اسم العمود لديك (مثل discount أو discount_amount)
 
         Attendance::create($data);
 
         return redirect()->route('attendances.index')->with('success', 'تم تسجيل الحضور بنجاح');
     }
+
+    
     // إضافة وظيفة الحذف (تأكد من وجودها)
     public function destroy($id)
     {

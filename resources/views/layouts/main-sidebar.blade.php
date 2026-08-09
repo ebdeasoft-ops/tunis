@@ -52,7 +52,7 @@
             <div class="dropdown user-pro-body">
                 <div class="">
                     <img alt="user-img" class="avatar avatar-xl brround"
-                        src="{{ URL::asset('storage/'.Auth::user()->profile_photo_path) }}"><span
+                        src="{{ URL::asset('storage/' . Auth::user()->profile_photo_path) }}"><span
                         class="avatar-status profile-status bg-green"></span>
                 </div>
                 <div class="user-info">
@@ -289,10 +289,9 @@
                         <a class="slide-item" href="{{ url('/product_damage') }}">{{ __('home.product damage') }}</a>
                     </li>
                     @endcan
-      @can('Stock adjustment')
+                    @can('Stock adjustment')
                     <li>
-                        <a class="slide-item"
-                            href="{{ url('/upload_stock') }}">{{ __('home.upload_stock') }}</a>
+                        <a class="slide-item" href="{{ url('/upload_stock') }}">{{ __('home.upload_stock') }}</a>
                     </li>
                     @endcan
 
@@ -325,28 +324,28 @@
                             @can('Transferring a product to another branch')
                             <li>
                                 <a class="slide-item"
-                                    href="{{ url('/sendProduct?branch_id=' .auth()->user()->branchs_id) }}">{{ __('home.send_product_from_brance') }}</a>
+                                    href="{{ url('/sendProduct?branch_id=' . auth()->user()->branchs_id) }}">{{ __('home.send_product_from_brance') }}</a>
                             </li>
                             <li>
                                 <a class="slide-item"
-                                    href="{{ url('/reports/sent-movements?branch_id=' .auth()->user()->branchs_id) }}">{{ __('home.sent_movements_report') }}</a>
+                                    href="{{ url('/reports/sent-movements?branch_id=' . auth()->user()->branchs_id) }}">{{ __('home.sent_movements_report') }}</a>
                             </li>
 
                             @endcan
                             @can('Transferring a product to another branch')
                             <li>
                                 <a class="slide-item"
-                                    href="{{ url('/my-drafts-movements?branch_id=' .auth()->user()->branchs_id) }}">{{ __('home.pending_invoice_previes') }}</a>
+                                    href="{{ url('/my-drafts-movements?branch_id=' . auth()->user()->branchs_id) }}">{{ __('home.pending_invoice_previes') }}</a>
                             </li>
                             @endcan
                             @can('Receiving a product from another branch')
                             <li>
                                 <a class="slide-item"
-                                    href="{{ url('/reciveProduct?branch_id=' .auth()->user()->branchs_id) }}">{{ __('home.recive_product_from_brance') }}</a>
+                                    href="{{ url('/reciveProduct?branch_id=' . auth()->user()->branchs_id) }}">{{ __('home.recive_product_from_brance') }}</a>
                             </li>
                             <li>
                                 <a class="slide-item"
-                                    href="{{ url('/reports/received-movements?branch_id=' .auth()->user()->branchs_id) }}">{{ __('home.received_movements_report') }}</a>
+                                    href="{{ url('/reports/received-movements?branch_id=' . auth()->user()->branchs_id) }}">{{ __('home.received_movements_report') }}</a>
                             </li>
                             @endcan
 
@@ -354,7 +353,7 @@
                             @can('Produects')
                             <li>
                                 <a class="slide-item"
-                                    href="{{ url('/showAllProducts_IN_Wherehouse?branch_id=' .auth()->user()->branchs_id) }}">{{ __('home.stock') }}</a>
+                                    href="{{ url('/showAllProducts_IN_Wherehouse?branch_id=' . auth()->user()->branchs_id) }}">{{ __('home.stock') }}</a>
                             </li>
                             @endcan
 
@@ -368,9 +367,11 @@
                     <!-- 2. قسم المستودعات الفرعية (Type 1) -->
                     @php
                     $subBranches = collect();
-                    if(auth()->user()->branch && auth()->user()->branch->type == 2) {
-                    $subBranches = \App\Models\branchs::where('branch_id', auth()->user()->branch->id)->where('type',
-                    1)->get();
+                    if (auth()->user()->branch && auth()->user()->branch->type == 2) {
+                    $subBranches = \App\Models\branchs::where('branch_id', auth()->user()->branch->id)->where(
+                    'type',
+                    1
+                    )->get();
                     }
                     @endphp
 
@@ -413,7 +414,7 @@
                                     </li>
                                     <li>
                                         <a class="slide-item"
-                                            href="{{ url('/reports/received-movements?branch_id=' .$subBranch->id) }}">{{ __('home.received_movements_report') }}</a>
+                                            href="{{ url('/reports/received-movements?branch_id=' . $subBranch->id) }}">{{ __('home.received_movements_report') }}</a>
                                     </li>
                                     @endcan
 
@@ -475,7 +476,8 @@
                 <a class="side-menu__item" data-toggle="slide" href="#">
                     <!-- أيقونة المصنع/التصنيع -->
                     <svg xmlns="http://www.w3.org/2000/svg" class="side-menu__icon" viewBox="0 0 512 512">
-                        <path d="M496 448H16c-8.8 0-16 7.2-16 16v32c0 8.8 7.2 16 16 16h480c8.8 0 16-7.2 16-16v-32c0-8.8-7.2-16-16-16zm-368-64V248.5c0-9 4.2-17.5 11.4-23l128-96c14.6-11 35.6.4 35.6 18.7V248.5c0-9 4.2-17.5 11.4-23l128-96c14.6-11 35.6.4 35.6 18.7V384H128z"/>
+                        <path
+                            d="M496 448H16c-8.8 0-16 7.2-16 16v32c0 8.8 7.2 16 16 16h480c8.8 0 16-7.2 16-16v-32c0-8.8-7.2-16-16-16zm-368-64V248.5c0-9 4.2-17.5 11.4-23l128-96c14.6-11 35.6.4 35.6 18.7V248.5c0-9 4.2-17.5 11.4-23l128-96c14.6-11 35.6.4 35.6 18.7V384H128z" />
                     </svg>
 
                     <span class="side-menu__label">{{ __('home.manufacturing') }}</span>
@@ -497,7 +499,8 @@
                     </li>
 
                     <li>
-                        <a class="slide-item" href="{{ url('/manufacturing_orders') }}">{{ __('home.manufacturing_orders') }}</a>
+                        <a class="slide-item"
+                            href="{{ url('/manufacturing_orders') }}">{{ __('home.manufacturing_orders') }}</a>
                     </li>
 
                     <li>
@@ -505,11 +508,13 @@
                     </li>
 
                     <li>
-                        <a class="slide-item" href="{{ url('/finished_goods_receipts') }}">{{ __('home.finished_goods_receipts') }}</a>
+                        <a class="slide-item"
+                            href="{{ url('/finished_goods_receipts') }}">{{ __('home.finished_goods_receipts') }}</a>
                     </li>
 
                     <li>
-                        <a class="slide-item" href="{{ url('/manufacturing_expenses') }}">{{ __('home.manufacturing_expenses') }}</a>
+                        <a class="slide-item"
+                            href="{{ url('/manufacturing_expenses') }}">{{ __('home.manufacturing_expenses') }}</a>
                     </li>
                     <li>
                         <a class="slide-item" href="{{ route('manufacturing_reports.index') }}">
@@ -530,16 +535,16 @@
                     </svg>
 
                     <span class="side-menu__label">{{ __('home.product_mix') }}</span>
-                    <i class="angle fe fe-chevron-down"></i>
-                </a>
+            <i class="angle fe fe-chevron-down"></i>
+            </a>
 
-                <ul class="slide-menu">
-                    @can('Product_manufacturing')
-                    <li>
-                        <a class="slide-item" href="{{ url('/product_mix') }}">{{ __('home.product_mix') }}</a>
-                    </li>
-                    @endcan
-                </ul>
+            <ul class="slide-menu">
+                @can('Product_manufacturing')
+                <li>
+                    <a class="slide-item" href="{{ url('/product_mix') }}">{{ __('home.product_mix') }}</a>
+                </li>
+                @endcan
+            </ul>
             </li>
             @endcan --}}
 
@@ -831,26 +836,26 @@
                             @endcan
 
                             @can('List of customers')
-                    <li>
-                        <a class="slide-item"
-                            href="{{ url('/Customerlist') }}">{{ __('home.customer_supplier_account') }}</a>
-                    </li>
-                    @endcan
+                            <li>
+                                <a class="slide-item"
+                                    href="{{ url('/Customerlist') }}">{{ __('home.customer_supplier_account') }}</a>
+                            </li>
+                            @endcan
 
                             @can('VAT report')
                             <li>
                                 <a class="slide-item" href="{{ url('VAT') }}">{{ __('report.VAT') }}</a>
                             </li>
                             @endcan
-                                  @can('Financial accounts')
-                    <li>
-                        <a class="slide-item"
-                            href="{{ url('/financial_accounts') }}">{{ __('home.Financial_accounts') }}</a>
-                    </li>
-                    @endcan
+                            @can('Financial accounts')
+                            <li>
+                                <a class="slide-item"
+                                    href="{{ url('/financial_accounts') }}">{{ __('home.Financial_accounts') }}</a>
+                            </li>
+                            @endcan
 
 
-                                             @can('Profit and lost report')
+                            @can('Profit and lost report')
                             <li>
                                 <a class="slide-item"
                                     href="{{ url('profit_and_lost') }}">{{ __('home.profit_and_lost') }}</a>
@@ -1176,8 +1181,8 @@
 
 
 
-  {{-- ================= الموارد البشرية (HR) ================= --}}
-        @can('Human Resource')
+            {{-- ================= الموارد البشرية (HR) ================= --}}
+            @can('Human Resource')
             <li class="slide">
                 <a class="side-menu__item" data-toggle="slide" href="#">
                     <svg xmlns="http://www.w3.org/2000/svg" class="side-menu__icon" viewBox="0 0 640 512"
@@ -1190,6 +1195,15 @@
                 </a>
 
                 <ul class="slide-menu">
+                    @can('Contracts')
+                    <li>
+                        <a class="slide-item" href="{{ route('contracts.index') }}">
+                            {{ __('hr.contracts_management') }}
+                        </a>
+                    </li>
+                    @endcan
+
+
                     {{-- صفحة إعدادات الموارد البشرية الجديدة --}}
                     @can('Human Resource')
                     <li>
@@ -1246,12 +1260,27 @@
                     </li>
                     {{-- تقرير رصيد الإجازات المتبقي --}}
                     <li>
-                        <a class="slide-item" href="{{ route('leaves.balance_report') }}">{{ __('leaves.balance_report_title') }}</a>
+                        <a class="slide-item"
+                            href="{{ route('leaves.balance_report') }}">{{ __('leaves.balance_report_title') }}</a>
+                    </li>
+                    @endcan
+                    {{-- رابط حساب نهاية الخدمة --}}
+                    @can('End of Service')
+                    <li>
+                        <a class="slide-item" href="{{ route('eos.index') }}">{{ __('hr.eos_title') }}</a>
+                    </li>
+                    @endcan
+
+                    {{-- رابط العهد والأصول (مستقبلي) --}}
+                    @can('Custody and Assets')
+                    <li>
+                        <a class="slide-item"
+                            href="{{ route('custodies.index') }}">{{ __('hr.custody_and_assets') }}</a>
                     </li>
                     @endcan
                 </ul>
             </li>
-        @endcan
+            @endcan
 
 
             {{-- ================= الإعدادات العامة ================= --}}

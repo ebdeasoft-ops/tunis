@@ -46,14 +46,37 @@ use App\Http\Controllers\{
     MaterialIssueController,
     UnitController,
     WarehouseController,
+    ContractController,
+    EndOfServiceController,
+    CustodyController
 };
-
 /*
 |--------------------------------------------------------------------------
 | Web Routes
 |--------------------------------------------------------------------------
 */
 
+
+Route::middleware(['auth'])->prefix('admin')->group(function () {
+    Route::get('/custodies', [CustodyController::class, 'index'])->name('custodies.index');
+    Route::get('/custodies/create', [CustodyController::class, 'create'])->name('custodies.create');
+    Route::post('/custodies', [CustodyController::class, 'store'])->name('custodies.store');
+    Route::post('/custodies/{id}/return', [CustodyController::class, 'returnItem'])->name('custodies.return');
+});
+
+
+// مسارات حساب نهاية الخدمة
+Route::middleware(['auth'])->prefix('admin')->group(function () {
+    Route::get('/eos', [EndOfServiceController::class, 'index'])->name('eos.index');
+    Route::get('/eos/create', [EndOfServiceController::class, 'create'])->name('eos.create');
+    Route::post('/eos', [EndOfServiceController::class, 'store'])->name('eos.store');
+});
+
+
+Route::group(['prefix' => 'admin', 'middleware' => ['auth']], function () {
+    Route::resource('contracts', ContractController::class);
+    Route::get('documents/alerts', [ContractController::class, 'documentAlerts'])->name('documents.alerts');
+});
 // ضع هذا السطر قبل Route::resource
 Route::get('leaves/balance-report', [LeaveController::class, 'leaveBalanceReport'])->name('leaves.balance_report');
 

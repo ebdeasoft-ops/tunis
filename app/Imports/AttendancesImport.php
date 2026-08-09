@@ -91,6 +91,9 @@ class AttendancesImport implements ToModel, WithHeadingRow
     /**
      * دالة للتحقق من الموظفين غير المتواجدين في ملف الإكسيل لتاريخ معين وتسجيلهم غياب
      */
+/**
+     * دالة للتحقق من الموظفين غير المتواجدين في ملف الإكسيل لتاريخ معين وتسجيلهم غياب مع الخصم
+     */
     protected function checkMissingEmployeesForDate($dateString)
     {
         // جلب جميع الموظفين من جدول employees
@@ -102,15 +105,22 @@ class AttendancesImport implements ToModel, WithHeadingRow
                 ->whereDate('date', $dateString)
                 ->exists();
 
-            // إذا لم يكن له أي سجل في هذا اليوم، يتم تسجيله غياب تلقائياً
+            // إذا لم يكن له أي سجل في هذا اليوم، يتم تسجيله غياب تلقائياً مع حساب خصم يومين
             if (!$hasAttendance) {
+                // حساب قيمة اليوم الواحد (على فرض أن الشهر 30 يوم)
+                $dailyRate = ($employee->salary > 0) ? ($employee->salary / 30) : 0;
+                
+                // حساب خصم يومين غياب بدون إذن
+                $twoDaysPenalty = $dailyRate * 2;
+
                 Attendance::create([
-                    'employee_id' => $employee->id,
-                    'date'        => $dateString,
-                    'check_in'    => null,
-                    'check_out'   => null,
-                    'status'      => 'absent',
-                    'type'        => 'normal',
+                    'employee_id'     => $employee->id,
+                    'date'            => $dateString,
+                    'check_in'        => null,
+                    'check_out'       => null,
+                    'status'          => 'absent',
+                    'type'            => 'normal',
+                    'discount_amount' => $twoDaysPenalty, // تأكد من مطابقة اسم العمود في جدول الـ attendances لديك (أو discount)
                 ]);
             }
         }

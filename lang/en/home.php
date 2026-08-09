@@ -7,6 +7,9 @@ return [
     | English Language Lines - Full Version 2026
     |--------------------------------------------------------------------------
     */
+    'housing_allowance' => 'Housing Allowance',
+'transportation_allowance' => 'Transportation Allowance',
+'other_allowances' => 'Other Allowances',
     'advanced_search_filters' => 'Advanced Search & Filters',
     'customer_supplier_account' => 'Customers & Suppliers Account',
     'comprehensive_financial_statement' => 'Comprehensive financial statement and movements for customers and suppliers',

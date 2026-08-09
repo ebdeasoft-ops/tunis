@@ -48,7 +48,7 @@ public function print_decument_salary(Request $request)
         $start = $request->end_at . '-01';
         $end = date('Y-m-t', strtotime($start)); // لتحديد نهاية الشهر تلقائياً
 
-        // جلب قيمة الساعة الإضافية من جدول إعدادات الموارد البشرية
+        // جلب قيمة الساعة الإضافية وإعدادات النظام
         $settings = HrSetting::first();
         $overtimeRate = $settings ? $settings->overtime_hour_rate : 0;
 
@@ -61,9 +61,9 @@ public function print_decument_salary(Request $request)
             $Loans = 0;
 
             // حساب المكافآت والخصومات خلال الشهر
-            foreach (Increaseـor_deduction_employee::where('employee_id', $employee->id)->whereDate('created_at', '>=', $start)->whereDate('created_at', '<=', $end)->get() as $Increaseـor_deduction_employee) {
-                $bounes += $Increaseـor_deduction_employee->increase;
-                $discount += $Increaseـor_deduction_employee->deduction; 
+            foreach (Increaseـor_deduction_employee::where('employee_id', $employee->id)->whereDate('created_at', '>=', $start)->whereDate('created_at', '<=', $end)->get() as $item) {
+                $bounes += $item->increase;
+                $discount += $item->deduction; 
             }
 
             // حساب السلف والقروض خلال الشهر
@@ -77,18 +77,18 @@ public function print_decument_salary(Request $request)
                 ->whereDate('date', '<=', $end)
                 ->get();
 
-            // حساب أيام الحضور والتأخير
+            // حساب أيام الحضور (حضور طبيعي + متأخر)
             $presentDays = $attendances->where('status', 'present')->count();
             $lateDays = $attendances->where('status', 'late')->count();
             $totalPresent = $presentDays + $lateDays;
 
-            // حساب أيام الغياب العادي
+            // أيام الغياب المسجلة
             $absentDays = $attendances->where('status', 'absent')->count();
 
-            // جلب إجازات الموظف خلال الشهر لتصاطعها مع أيام الغياب
-            $casualLeaves = 0;
-            $regularLeaves = 0;
+            // جلب إجازات الموظف خلال الشهر
             $employeeLeaves = collect();
+            $permissionLeaveDays = 0;       // إجازة بإذن
+            $withoutPermissionLeaveDays = 0; // إجازة بدون إذن
 
             if (class_exists('App\Models\Leave')) {
                 $employeeLeaves = \App\Models\Leave::where('employee_id', $employee->id)
@@ -96,28 +96,28 @@ public function print_decument_salary(Request $request)
                     ->whereDate('start_date', '<=', $end)
                     ->get();
 
-                $casualLeaves = $employeeLeaves->where('type', 'casual')->count();
-                $regularLeaves = $employeeLeaves->where('type', 'regular')->count();
+                // تصنيف الإجازات بناءً على النوع (يمكنك تعديل أسماء الأنواع حسب قاعدة بياناتك مثل casual / regular أو approved / unapproved)
+                $permissionLeaveDays = $employeeLeaves->where('type', 'casual')->count(); 
+                $withoutPermissionLeaveDays = $employeeLeaves->where('type', 'regular')->count();
             }
 
-            // حساب غياب بدون إذن (مع التأكد أنه لم يكن في إجازة بنفس اليوم)
-            $unauthorizedAbsentRecords = $attendances->where('status', 'unauthorized_absent');
-            $unauthorizedAbsent = 0;
+            // غياب بدون إذن (الذي يتم خصم يومين عليه):
+            // نأخذ حالات الـ 'absent' أو 'unauthorized_absent' التي ليس للموظف فيها إجازة مسجلة في نفس اليوم
+            $unauthorizedRecords = $attendances->filter(function ($att) use ($employeeLeaves) {
+                if ($att->status !== 'absent' && $att->status !== 'unauthorized_absent') {
+                    return false;
+                }
 
-            foreach ($unauthorizedAbsentRecords as $attRecord) {
-                // هل توجد إجازة مسجلة لنفس الموظف في نفس تاريخ الغياب؟
-                $hasLeaveOnThatDay = $employeeLeaves->contains(function ($leave) use ($attRecord) {
-                    return $attRecord->date >= $leave->start_date && $attRecord->date <= $leave->end_date;
+                // التحقق مما إذا كانت هناك إجازة مقبولة/مسجلة في نفس اليوم لتغطية الغياب
+                $hasLeave = $employeeLeaves->contains(function ($leave) use ($att) {
+                    return $att->date >= $leave->start_date && $att->date <= $leave->end_date;
                 });
 
-                // إذا لم تكن هناك إجازة مسجلة في هذا اليوم، يُحسب غياب بدون إذن
-                if (!$hasLeaveOnThatDay) {
-                    $unauthorizedAbsent++;
-                }
-            }
+                // إذا لم يكن لديه إجازة تغطي هذا اليوم، فهو غياب بدون إذن ويستحق العقوبة
+                return !$hasLeave;
+            });
 
-            // خصم يومين لكل غياب بدون إذن حقيقي
-            $deductedDays = $unauthorizedAbsent * 2;
+            $unauthorizedAbsentDays = $unauthorizedRecords->count();
 
             // حساب ساعات الإضافي وقيمتها المالية
             $totalOvertimeHours = 0;
@@ -130,7 +130,7 @@ public function print_decument_salary(Request $request)
             }
             $overtimeAmount = $totalOvertimeHours * $overtimeRate;
 
-            // تجميع بيانات الموظف كاملة
+            // تجميع بيانات الموظف كاملة للمطابقة مع العرض في ملف الـ Blade
             $list_salary_data[] = [
                 'employeeData' => $employee,
                 'bounes' => $bounes,
@@ -138,18 +138,18 @@ public function print_decument_salary(Request $request)
                 'Loans' => $Loans,
                 'present_days' => $totalPresent,
                 'absent_days' => $absentDays,
-                'casual_leaves' => $casualLeaves,
-                'regular_leaves' => $regularLeaves,
-                'unauthorized_absent' => $unauthorizedAbsent,
-                'deducted_days' => $deductedDays,
+                'permission_leave_days' => $permissionLeaveDays,
+                'without_permission_leave_days' => $withoutPermissionLeaveDays,
+                'unauthorized_absent_days' => $unauthorizedAbsentDays, // المتغير المسؤول عن خصم اليومين في العرض
                 'overtime_hours' => $totalOvertimeHours,
                 'overtime_amount' => $overtimeAmount,
             ];
         }
 
         return view('hr.employee_salary_list_print', compact('list_salary_data'))->with('month', $request->end_at);
-        
-        }
+    }
+
+
      public function Increaseـor_deduction()
      {
          //
@@ -183,38 +183,39 @@ public function print_decument_salary(Request $request)
      * @return \Illuminate\Http\Response
      */
     public function create(Request $request)
-    {
-        //
-        app()->setLocale(LaravelLocalization::getCurrentLocale());
+{
+    //
+    app()->setLocale(LaravelLocalization::getCurrentLocale());
 
-      //  return $request;
-   
-        $employee=employee::create([
-            'name_ar'=>$request->employee_name_ar,
-            'name_en'=>$request->employee_name_en??"Name En",
-            'email'=>$request->email??"Example@gmail.com",
-            'phone'=>$request->phone,
-            'department'=>$request->department,
-            'salary'=>$request->salary,
-            'nationality'=>$request->nationality,
-            'personal_identification'=>$request->personal_identification,
-            'old'=>$request->age,
-            'sex'=>$request->sex,
-            'created_at'=> \Carbon\Carbon::now()->addHours(3),        ]
-        );
+    $employee = employee::create([
+        'name_ar' => $request->employee_name_ar,
+        'name_en' => $request->employee_name_en ?? "Name En",
+        'email' => $request->email ?? "Example@gmail.com",
+        'phone' => $request->phone,
+        'department' => $request->department,
+        'salary' => $request->salary,
+        
+        // أضف حقول البدلات هنا مع وضع قيمة افتراضية 0 إذا لم يتم إدخالها
+        'housing_allowance' => $request->housing_allowance ?? 0,
+        'transportation_allowance' => $request->transportation_allowance ?? 0,
+        'other_allowances' => $request->other_allowances ?? 0,
+
+        'nationality' => $request->nationality,
+        'personal_identification' => $request->personal_identification,
+        'old' => $request->age,
+        'sex' => $request->sex,
+        'created_at' => \Carbon\Carbon::now()->addHours(3),
+    ]);
+
+    if ($employee != null) {
+        $message = LaravelLocalization::getCurrentLocale() == 'ar' ? 'تم إضافة الموظف بنجاح' : ' Employee created successfully';
+        session()->flash('create_employee', $message);
+    }
     
-if( $employee!=null){
-    $message=LaravelLocalization::getCurrentLocale()=='ar'?'تم إضافة الموظف بنجاح':'  Employee created successfully';
-        session()->flash('create_employee',$message);
+    return view('hr.Add_employee');
 }
-return view('hr.Add_employee');
 
- } /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
+ 
     public function store(Request $request)
     {
         //
@@ -326,36 +327,42 @@ if( $employee!=null){
      * @param  \App\Models\employee  $employee
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request)
-    {
-        //
-        app()->setLocale(LaravelLocalization::getCurrentLocale());
+   public function update(Request $request)
+{
+    //
+    app()->setLocale(LaravelLocalization::getCurrentLocale());
 
-       //  return $request;
-  
-          $employee=employee::where('personal_identification',$request->personal_identification)->update([
-              'name_ar'=>$request->employee_name_ar,
-              'name_en'=>$request->employee_name_en,
-              'email'=>$request->email,
-              'phone'=>$request->phone,
-              'department'=>$request->department,
-              'salary'=>$request->salary,
-              'nationality'=>$request->nationality,
-              'personal_identification'=>$request->personal_identification,
-              'old'=>$request->age,
-              'sex'=>$request->sex,
-              'created_at'=> \Carbon\Carbon::now()->addHours(3),        ]
-          );
-      
-  if( $employee!=null){
-      $message=LaravelLocalization::getCurrentLocale()=='ar'?'تم تعديل بيانات الموظف بنجاح':'  Employee updated successfully';
-          session()->flash('updated_employee',$message);
-  }
-  $employee= employee::where('personal_identification',$request->personal_identification)->first();
-  //return $employee;
-        return view('hr.update_employee',compact('employee'));
+    //   return $request;
+ 
+    $employee = employee::where('personal_identification', $request->personal_identification)->update([
+        'name_ar' => $request->employee_name_ar,
+        'name_en' => $request->employee_name_en,
+        'email' => $request->email,
+        'phone' => $request->phone,
+        'department' => $request->department,
+        'salary' => $request->salary,
+        
+        // أضف حقول البدلات هنا مع قيم افتراضية 0 لتجنب أي أخطاء في حال كانت فارغة
+        'housing_allowance' => $request->housing_allowance ?? 0,
+        'transportation_allowance' => $request->transportation_allowance ?? 0,
+        'other_allowances' => $request->other_allowances ?? 0,
+
+        'nationality' => $request->nationality,
+        'personal_identification' => $request->personal_identification,
+        'old' => $request->age,
+        'sex' => $request->sex,
+        'updated_at' => \Carbon\Carbon::now()->addHours(3), // يفضل استخدام updated_at بدلاً من created_at عند التعديل
+    ]);
+     
+    if ($employee) {
+        $message = LaravelLocalization::getCurrentLocale() == 'ar' ? 'تم تعديل بيانات الموظف بنجاح' : ' Employee updated successfully';
+        session()->flash('updated_employee', $message);
     }
-
+    
+    $employee = employee::where('personal_identification', $request->personal_identification)->first();
+    
+    return view('hr.update_employee', compact('employee'));
+}
     /**
      * Remove the specified resource from storage.
      *

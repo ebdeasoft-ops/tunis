@@ -2,12 +2,11 @@
 @section('css')
     <!-- Internal Nice-select css  -->
     <link href="{{ URL::asset('assets/plugins/jquery-nice-select/css/nice-select.css') }}" rel="stylesheet" />
+@stop
 @section('title')
     {{ __('hr.add_new_employee') }}
-@stop
-
-
 @endsection
+
 @section('page-header')
 <div class="main-parent">
     <!-- breadcrumb -->
@@ -20,11 +19,10 @@
     </div>
     <!-- breadcrumb -->
 @endsection
+
 @section('content')
     <!-- row -->
     <div class="row">
-
-
         <div class="col-lg-12 col-md-12">
 
             @if (count($errors) > 0)
@@ -44,7 +42,6 @@
             @if (session()->has('create_employee'))
                 <div class="alert alert-success alert-dismissible fade show" role="alert">
                     <br>
-
                     <strong>{{ session()->get('create_employee') }}</strong>
                     <button type="button" class="close" data-dismiss="alert" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
@@ -55,7 +52,6 @@
             <div class="card">
                 <div class="card-body">
                     <div class="col-lg-12 margin-tb">
-
                     </div><br>
 
                     <form class="parsley-style-1" id="selectForm2" autocomplete="off" name="selectForm2"
@@ -63,33 +59,28 @@
                         method="post">
                         {{ csrf_field() }}
 
-
-
                         <div>
                             <div class="row pt-3">
-
                                 <div class="col-lg-4" id="fnWrapper">
                                     <label class="parent-label">{{ __('hr.employee_name_ar') }} </label>
                                     <input class="form-control parent-input form-control-sm mg-b-20" name="employee_name_ar"
-                                        value=" " type="text">
+                                        value="" type="text">
                                 </div>
                                 <div class="col-lg-4" id="lnWrapper">
                                     <label class="parent-label">{{ __('hr.employee_name_en') }} </label>
                                     <input class="form-control parent-input form-control-sm mg-b-20"
-                                        data-parsley-class-handler="#lnWrapper" name="employee_name_en" value=" ">
+                                        data-parsley-class-handler="#lnWrapper" name="employee_name_en" value="">
                                 </div>
                                 <div class="col-lg-4" id="lnWrapper">
                                     <label class="parent-label">{{ __('hr.email') }} </label>
                                     <input class="form-control parent-input form-control-sm mg-b-20"
-                                        data-parsley-class-handler="#lnWrapper" name="email" value=" "
+                                        data-parsley-class-handler="#lnWrapper" name="email" value=""
                                         type="email">
                                 </div>
                             </div>
-
                         </div>
 
                         <div class="row">
-
                             <div class="col-lg-3" id="lnWrapper">
                                 <label class="parent-label"> {{ __('hr.Id') }} <span class="tx-danger">*</span></label>
                                 <input class="form-control parent-input form-control-sm mg-b-20"
@@ -114,7 +105,7 @@
                                 <label class="form-label parent-label">{{ __('hr.department') }}<span class="tx-danger">*</span>
                                 </label>
                                 <select name="department" id="department"
-                                    class="form-control parent-input  parent-input">
+                                    class="form-control parent-input">
                                     @foreach (App\Models\departments::get() as $section)
                                         <option style="font-size: 15px" value="{{ $section->id }}"> {{ $section->name_ar }}</option>
                                     @endforeach
@@ -122,29 +113,42 @@
                             </div>
                         </div>
 
-                        <div class="row ">
+                        <!-- خانات البدلات الثابتة الجديدة مع دعم الترجمة -->
+                        <div class="row">
+                            <div class="col-lg-4">
+                                <label class="parent-label">{{ __('hr.housing_allowance') ?? 'بدل السكن' }}</label>
+                                <input class="form-control parent-input form-control-sm mg-b-20" name="housing_allowance" id="housing_allowance" type="text" value="0" onkeyup="housingconvert()">
+                            </div>
+                            <div class="col-lg-4">
+                                <label class="parent-label">{{ __('hr.transportation_allowance') ?? 'بدل الانتقال' }}</label>
+                                <input class="form-control parent-input form-control-sm mg-b-20" name="transportation_allowance" id="transportation_allowance" type="text" value="0" onkeyup="transportationconvert()">
+                            </div>
+                            <div class="col-lg-4">
+                                <label class="parent-label">{{ __('hr.other_allowances') ?? 'بدلات أخرى' }}</label>
+                                <input class="form-control parent-input form-control-sm mg-b-20" name="other_allowances" id="other_allowances" type="text" value="0" onkeyup="otherallowancesconvert()">
+                            </div>
+                        </div>
+
+                        <div class="row">
                             <div class="col-lg-4">
                                 <label class="form-label parent-label"> {{ __('hr.age') }} <span class="tx-danger">*</span></label>
-                                <input name="age" id="age" class="form-control parent-input  nice-select  custom-select"
+                                <input name="age" id="age" class="form-control parent-input"
                                     required onkeyup="ageconvert()">
                             </div>
                             <div class="col-lg-4">
-                                <label class="form-label parent-label"> {{ __('hr.nationality') }} <span
-                                        class="tx-danger">*</span></label>
+                                <label class="form-label parent-label"> {{ __('hr.nationality') }} <span class="tx-danger">*</span></label>
                                 <input name="nationality" id="nationality"
-                                    class="form-control parent-input  nice-select  custom-select" required>
+                                    class="form-control parent-input" required>
                             </div>
 
                             <div class="col-lg-4">
-                                <label class="form-label parent-label">{{ __('hr.sex') }} <span
-                                        class="tx-danger">*</span></label>
+                                <label class="form-label parent-label">{{ __('hr.sex') }} <span class="tx-danger">*</span></label>
                                 <select name="sex" id="sex"
                                     class="form-control parent-input">
                                     <option style="font-size: 15px" value="male"> {{ __('hr.male') }}</option>
                                     <option style="font-size: 15px" value="female"> {{ __('hr.female') }}</option>
                                 </select>
                             </div>
-
                         </div>
 
                         <br>
@@ -168,86 +172,60 @@
 <!-- main-content closed -->
 </div>
 @endsection
+
 @section('js')
-
-
 <!-- Internal Nice-select js-->
 <script src="{{ URL::asset('assets/plugins/jquery-nice-select/js/jquery.nice-select.js') }}"></script>
 <script src="{{ URL::asset('assets/plugins/jquery-nice-select/js/nice-select.js') }}"></script>
 
-<!--Internal  Parsley.min js -->
+<!--Internal Parsley.min js -->
 <script src="{{ URL::asset('assets/plugins/parsleyjs/parsley.min.js') }}"></script>
 <!-- Internal Form-validation js -->
 <script src="{{ URL::asset('assets/js/form-validation.js') }}"></script>
 
 <script>
+    function toEnglishNumber(strNum) {
+        if (!strNum) return '';
+        var ar = '٠١٢٣٤٥٦٧٨٩'.split('');
+        var en = '0123456789'.split('');
+        strNum = String(strNum).replace(/[٠١٢٣٤٥٦٧٨٩]/g, x => en[ar.indexOf(x)]);
+        return strNum;
+    }
+
     function personal_identificationconvert() {
         var input = document.getElementById("personal_identification");
-        var val = toEnglishNumber(input.value)
-        input.value = val;
+        input.value = toEnglishNumber(input.value);
     }
-
-    function toEnglishNumber(strNum) {
-        var ar = '٠١٢٣٤٥٦٧٨٩'.split('');
-        var en = '0123456789'.split('');
-        strNum = strNum.replace(/[٠١٢٣٤٥٦٧٨٩]/g, x => en[ar.indexOf(x)]);
-        //  strNum = strNum.replace(/[^\d]/g, '');
-        return strNum;
+    function ageconvert() {
+        var input = document.getElementById("age");
+        input.value = toEnglishNumber(input.value);
     }
-</script>
-<script>
-            function ageconvert() {
-                var input = document.getElementById("age");
-                var val = toEnglishNumber(input.value)
-                input.value = val;
-            }
-
-            function toEnglishNumber(strNum) {
-                var ar = '٠١٢٣٤٥٦٧٨٩'.split('');
-                var en = '0123456789'.split('');
-                strNum = strNum.replace(/[٠١٢٣٤٥٦٧٨٩]/g, x => en[ar.indexOf(x)]);
-                //  strNum = strNum.replace(/[^\d]/g, '');
-                return strNum;
-            }
-        </script>
-
-<script>
     function phoneconvert() {
         var input = document.getElementById("phone");
-        var val = toEnglishNumber(input.value)
-                input.value = val;
-            }
-
-            function toEnglishNumber(strNum) {
-                var ar = '٠١٢٣٤٥٦٧٨٩'.split('');
-                var en = '0123456789'.split('');
-                strNum = strNum.replace(/[٠١٢٣٤٥٦٧٨٩]/g, x => en[ar.indexOf(x)]);
-                //  strNum = strNum.replace(/[^\d]/g, '');
-                return strNum;
-            }
-        </script>
-<script>
+        input.value = toEnglishNumber(input.value);
+    }
     function salaryconvert() {
         var input = document.getElementById("salary");
-        var val = toEnglishNumber(input.value)
-        input.value = val;
+        input.value = toEnglishNumber(input.value);
     }
-
-    function toEnglishNumber(strNum) {
-        var ar = '٠١٢٣٤٥٦٧٨٩'.split('');
-        var en = '0123456789'.split('');
-        strNum = strNum.replace(/[٠١٢٣٤٥٦٧٨٩]/g, x => en[ar.indexOf(x)]);
-        //  strNum = strNum.replace(/[^\d]/g, '');
-        return strNum;
+    function housingconvert() {
+        var input = document.getElementById("housing_allowance");
+        input.value = toEnglishNumber(input.value);
+    }
+    function transportationconvert() {
+        var input = document.getElementById("transportation_allowance");
+        input.value = toEnglishNumber(input.value);
+    }
+    function otherallowancesconvert() {
+        var input = document.getElementById("other_allowances");
+        input.value = toEnglishNumber(input.value);
     }
 </script>
+
 <script>
     $(document).ready(function() {
-        $(function() {
-var timeout = 4000; // in miliseconds (3*1000)
-$('.alert').delay(timeout).fadeOut(500);
-});
-       
+        var timeout = 4000;
+        $('.alert').delay(timeout).fadeOut(500);
     });
 </script>
 @endsection

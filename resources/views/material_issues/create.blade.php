@@ -117,11 +117,12 @@
                                     <th>{{ __('home.planned_qty') }}</th>
                                     <th>{{ __('home.already_issued') }}</th>
                                     <th>{{ __('home.current_issued_qty') }}</th>
+                                    <th>{{ __('تكلفة الوحدة') }}</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 <tr id="empty_row">
-                                    <td colspan="5" class="text-center text-muted">{{ __('home.mo_selection_notice') }}</td>
+                                    <td colspan="6" class="text-center text-muted">{{ __('home.mo_selection_notice') }}</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -180,6 +181,9 @@
                                 <td><span class="badge badge-info">${item.already_issued}</span></td>
                                 <td>
                                     <input type="number" step="0.0001" name="items[${index}][issued_quantity]" class="form-control" value="${item.remaining_qty}" max="${item.remaining_qty}" required>
+                                </td>
+                               <td>
+                                    <input type="number" step="0.01" name="items[${index}][unit_cost]" class="form-control bg-light" value="${item.unit_cost}" readonly>
                                 </td>
                             </tr>
                         `;

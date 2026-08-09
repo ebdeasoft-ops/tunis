@@ -23,18 +23,18 @@ class MaterialIssueController extends Controller
     }
 
     public function create()
-    {
-        // جلب أوامر الإنتاج القابلة لصرف الخامات (مخططة أو قيد التشغيل)
-        $orders = ManufacturingOrder::whereIn('status', ['draft', 'planned', 'in_progress'])
-            ->with(['finishedProduct'])
-            ->get();
+{
+    // جلب أوامر الإنتاج القابلة لصرف الخامات مع بنودها ومنتجات الخامات
+    $orders = ManufacturingOrder::whereIn('status', ['draft', 'planned', 'in_progress'])
+        ->with(['finishedProduct', 'materialIssues.rawMaterial'])
+        ->get();
 
-        $warehouses = Warehouse::where('is_active', 1)->get();
+    $warehouses = Warehouse::where('is_active', 1)->get();
 
-        return view('material_issues.create', compact('orders', 'warehouses'));
-    }
+    return view('material_issues.create', compact('orders', 'warehouses'));
+}
 
-   public function store(Request $request)
+    public function store(Request $request)
 {
     $request->validate([
         'issue_number'           => 'required|string|unique:material_issue_headers,issue_number',
@@ -60,15 +60,18 @@ class MaterialIssueController extends Controller
             'created_by'             => Auth::id() ?? 1,
         ]);
 
-        $totalIssuedBatchCost = 0; // لحساب إجمالي تكلفة هذه الشحنة المصروفة
+        $totalIssuedBatchCost = 0; // إجمالي تكلفة إذن الصرف الحالي
 
-        // 2. إدراج بنود الصرف وتحديث المخزون وكميات أمر الإنتاج
+        // 2. حفظ البنود وحساب التكلفة وتحديث المخزون
         foreach ($request->items as $item) {
+            // جلب سعر الشراء المباشر من الموديل أو من حقل الـ request
             $product = \App\Models\products::find($item['raw_material_id']);
-            $unitCost = $product->purchasing_price ?? $product->cost ?? 0;
+            $unitCost = $item['unit_cost'] ?? ($product->purchasingـprice ?? $product->cost ?? 0);
             $totalCost = $item['issued_quantity'] * $unitCost;
+
             $totalIssuedBatchCost += $totalCost;
 
+            // أ) حفظ البند بتكلفته في جدول material_issue_items
             MaterialIssueItem::create([
                 'issue_header_id' => $issueHeader->id,
                 'raw_material_id' => $item['raw_material_id'],
@@ -78,12 +81,12 @@ class MaterialIssueController extends Controller
                 'notes'           => $item['notes'] ?? null,
             ]);
 
-            // خصم الكمية المصروفة من رصيد المادة الخام في المخزن
+            // ب) خصم الكمية المصروفة من المخزن الرئيسي للخامات
             if ($product) {
                 $product->decrement('numberofpice', $item['issued_quantity']);
             }
 
-            // تحديث الكميات المصروفة التراكمية في أمر الإنتاج (mo_material_issues)
+            // جـ) تحديث الكميات المصروفة التراكمية لكل خامة في mo_material_issues
             $moIssue = MoMaterialIssue::where('manufacturing_order_id', $request->manufacturing_order_id)
                 ->where('raw_material_id', $item['raw_material_id'])
                 ->first();
@@ -93,7 +96,7 @@ class MaterialIssueController extends Controller
             }
         }
 
-        // 3. تحديث حالة أمر الإنتاج وإجمالي تكلفة الخامات والتكلفة الكلية
+        // 3. تحديث التكلفة التراكمية للخامات المباشرة والتكلفة الإجمالية في أمر الإنتاج
         $order = ManufacturingOrder::findOrFail($request->manufacturing_order_id);
 
         $newMaterialsCost = ($order->actual_materials_cost ?? 0) + $totalIssuedBatchCost;
@@ -214,7 +217,12 @@ class MaterialIssueController extends Controller
     // AJAX: جلب الخامات والكميات المخططة الخاصة بأمر الإنتاج المحدد
     public function getMoMaterials($id)
     {
-        $order = ManufacturingOrder::with(['bom.items.unit', 'materialIssues.rawMaterial', 'rawMaterialWarehouse', 'wipWarehouse'])->find($id);
+        $order = ManufacturingOrder::with([
+            'bom.items.unit',
+            'materialIssues.rawMaterial',
+            'rawMaterialWarehouse',
+            'wipWarehouse'
+        ])->find($id);
 
         if (!$order) {
             return response()->json(['error' => 'Order not found'], 404);
@@ -227,6 +235,9 @@ class MaterialIssueController extends Controller
                 ? (app()->getLocale() == 'ar' ? $bomItem->unit->name_ar : $bomItem->unit->name_en)
                 : '---';
 
+            // جلب سعر التكلفة من كولوم purchasing_price المخصص في جدول المنتجات
+            $unitCost = $issueItem->rawMaterial->purchasingـprice ?? $issueItem->rawMaterial->cost ?? 0;
+
             return [
                 'raw_material_id'   => $issueItem->raw_material_id,
                 'raw_material_name' => $issueItem->rawMaterial->product_name ?? $issueItem->rawMaterial->name ?? '',
@@ -234,6 +245,7 @@ class MaterialIssueController extends Controller
                 'planned_quantity'  => $issueItem->planned_quantity,
                 'already_issued'    => $issueItem->issued_quantity ?? 0,
                 'remaining_qty'     => max(0, $issueItem->planned_quantity - ($issueItem->issued_quantity ?? 0)),
+                'unit_cost'         => $unitCost, // إرسال تكلفة الوحدة للفرونت إند
             ];
         });
 

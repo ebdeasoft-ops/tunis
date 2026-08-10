@@ -702,7 +702,8 @@ public function changesInEquity(Request $request)
         $data = credittransactions::where('type_decument', 2)
             ->whereDate('created_at', '<=',date('Y-m-d'))
             ->whereDate('created_at', '>=',date('Y'). '-1-1' )
-            ->where('decument_id', 0)
+            ->where('decument_id', 0)->where('cost_center','!=', 0)
+
             ->orderby('id', 'desc')->paginate(3);
    
         return view('sant_serf_ajax', compact('data'));

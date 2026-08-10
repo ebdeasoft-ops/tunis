@@ -1985,7 +1985,8 @@ public function budgetsheet(Request $request)
     {
         $data = credittransactions::where('type_decument', 2)
             ->where('decument_id', 0)
-            ->where('sent_serf_count', $count)
+            ->where('sent_serf_count', $count)->where('cost_center','!=', 0)
+
             ->paginate(3);
 
         return view('sant_serf_ajax', compact('data'));

@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Models\Employee;
+use App\Models\employee;
 use App\Models\EndOfService;
 use Carbon\Carbon;
 
@@ -17,7 +17,7 @@ class EndOfServiceController extends Controller
 
     public function create()
     {
-        $employees = Employee::all();
+        $employees = employee::all();
         return view('hr.eos.create', compact('employees'));
     }
 

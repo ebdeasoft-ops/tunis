@@ -507,6 +507,8 @@ public function showMyDrafts(Request $request)
                     'Product_Code' => $pCode,
                     'purchasingـprice' => $cost,
                     'Status' => 1,
+                    'Product_Location' => "TRANSFER",
+                    'branchs_id'=>$branchId
                 ]);
                 $productId = $newProduct->id;
             }

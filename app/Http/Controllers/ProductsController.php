@@ -141,7 +141,27 @@ public function importStockExcel(Request $request)
                 'recive_amount'   => $totalCost,
                 'branchs_id'      => $selectedBranchId, // استخدام فرع الاختيار بدلاً من فرع المستخدم
                 'pay_method'      => "Cash",
-                'note'            => 'مخزون افتتاحي',
+                'note'            => 'قيد المخزون الافتتاحي',
+                'currentblance'   => $totalCost,
+                'Pay_Method_Name' => "Cash",
+                'created_at'      => Carbon::now('Asia/Riyadh'),
+                'updated_at'      => Carbon::now('Asia/Riyadh'),
+                'debtor'        => $totalCost,
+            ]);
+        }
+
+
+                $inventoryAccount = financial_accounts::find( 162);
+
+        // تسجيل المعاملة المالية للمخزون الافتتاحي إذا وجد الحساب
+        if ($inventoryAccount) {
+            CreditTransactions::create([
+                'user_id'         => Auth::id(),
+                'customer_id'     => $inventoryAccount->id,
+                'recive_amount'   => $totalCost,
+                'branchs_id'      => $selectedBranchId, // استخدام فرع الاختيار بدلاً من فرع المستخدم
+                'pay_method'      => "Cash",
+                'note'            => 'قيد المخزون الافتتاحي',
                 'currentblance'   => $totalCost,
                 'Pay_Method_Name' => "Cash",
                 'created_at'      => Carbon::now('Asia/Riyadh'),
@@ -149,6 +169,8 @@ public function importStockExcel(Request $request)
                 'creditor'        => $totalCost,
             ]);
         }
+
+
 
         return response()->json([
             'status'         => 'success',

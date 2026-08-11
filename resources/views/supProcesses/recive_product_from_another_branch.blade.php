@@ -267,8 +267,8 @@ $('select[name="reciveInvoiceNumber"]').on('change', function() {
         url: "{{ URL::to('/findinvoiceMovmevt') }}/" + id,
         type: "GET",
         success: function(data) {
-            if(data.branch_name) $('#branch_show').val(data.branch_name);
-            if(data.user_name) $('#userfrom_show').val(data.user_name);
+            if(data.senderdata.barnch_name) $('#branch_show').val(data.senderdata.barnch_name);
+            if(data.senderdata.user_name) $('#userfrom_show').val(data.senderdata.user_name);
 
             let tbody = $('#table-body');
             tbody.empty();

@@ -107,9 +107,7 @@
                                     class="text-danger">*</span></label>
                             <select class="form-control parent-input" name="branch" id="branch-select" required>
                                 <option value="" disabled selected>اختر الفرع...</option>
-                                @if(Auth()->user()->branchs_id == 1 || Auth()->user()->branchs_id == 9)
-                                <option value="-">{{ __('users.allbranchs') }}</option>
-                                @endif
+                            
                                 @foreach (App\Models\branchs::get() as $branch)
                                 @if(Auth()->user()->branchs_id == 1 || Auth()->user()->branchs_id == $branch->id)
                                 <option value="{{ $branch->id }}">{{ $branch->name }}</option>

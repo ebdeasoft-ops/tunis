@@ -12,6 +12,8 @@ return [
     | you want to customize your views to better match your application.
     |
     */
+    'tax_integration'=>'الربط مع  زكاة',
+    'arabic'=>'اللغة العربية',
     'housing_allowance' => 'بدل السكن',
 'transportation_allowance' => 'بدل الانتقال',
 'other_allowances' => 'بدلات أخرى',

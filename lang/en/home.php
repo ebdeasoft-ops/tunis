@@ -7,6 +7,8 @@ return [
     | English Language Lines - Full Version 2026
     |--------------------------------------------------------------------------
     */
+    'tax_integration'=>'Zakat Integration',
+    'arabic'=>'Arabic Language',
     'housing_allowance' => 'Housing Allowance',
 'transportation_allowance' => 'Transportation Allowance',
 'other_allowances' => 'Other Allowances',

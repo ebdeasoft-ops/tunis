@@ -487,7 +487,8 @@ td .d-flex {
                                     Auth()->user()->branchs_id)->orwhere('parent_account_number',
                                     5)->where('parent_account_number', '!=', NULL)->where('branchs_id',
                                     Auth()->user()->branchs_id)->get() as $section)
-                                    <option value="{{ $section->id }}"> {{ app()->getLocale() == 'en' ? $section->name_en : $section->name }}
+                                    <option value="{{ $section->id }}">
+                                        {{ app()->getLocale() == 'en' ? $section->name_en : $section->name }}
                                         ({{ $section->account_number }})</option>
                                     @endforeach
                                     <option value="Credit"> {{ __('report.credit') }} </option>
@@ -2877,7 +2878,7 @@ function calculateTotals() {
         let price = parseFloat(r.querySelector('.product-price').value) || 0;
         let cost = parseFloat(r.querySelector('.product_cost').value) || 0;
         let qty = parseFloat(r.querySelector('.product-quentity').value) || 0;
-     let profit = price - cost;
+        let profit = price - cost;
         $('#profit').val(profit.toFixed(2));
         // --- فحص الكمية المتاحة (Available Quantity Check) ---
         let availablequantity = parseFloat(r.querySelector('.product-available_quentity').value) || 0;
@@ -3142,7 +3143,7 @@ function searchaboutproductfunction() {
         data: {
             "_token": token_search,
             "searchtext": searchtext,
-            "locale" : "{{ app()->getLocale() }}", // ✅ صح
+            "locale": "{{ app()->getLocale() }}", // ✅ صح
             "branchs_id": branchs_id,
             "currentrow": window.currentRow,
         },
@@ -3171,7 +3172,7 @@ $('#SearchProduct').on('show.bs.modal', function(event) {
             "_token": token_search,
             "searchtext": searchtext,
             "branchs_id": branchs_id,
-            "locale" : "{{ app()->getLocale() }}", // ✅ صح
+            "locale": "{{ app()->getLocale() }}", // ✅ صح
             "currentrow": window.currentRow,
         },
         success: function(data) {
@@ -3220,7 +3221,7 @@ function checkDuplicateProduct(productId, currentIndex) {
 function chooseProduct(code, productcode, name, cost, sale_price, location, availablequantity, currentrow) {
     if (checkDuplicateProduct(code, currentrow)) {
         return; // منتج مكرر — توقف!
-    } 
+    }
     // else if (availablequantity <= 0) {
     else if (0) {
         // رسالة SweetAlert احترافية لتنبيه نقص المخزون

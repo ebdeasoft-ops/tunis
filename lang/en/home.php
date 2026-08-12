@@ -694,7 +694,7 @@ return [
     'vatreports' => 'VAT Reports',
     'stock' => 'Stock',
     'searchAboutProduct' => 'Search Product',
-    'users' => 'Users and Branches',
+    'users' => 'Users Managment',
     'setting' => 'Settings',
     'accounting' => 'Accounting',
     'searchbyclientname' => 'Search by Customer Name',

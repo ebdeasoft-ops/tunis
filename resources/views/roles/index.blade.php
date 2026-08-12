@@ -114,10 +114,10 @@ window.onload = function() {
                                     </a>
 
                                     @if ($role->name !== 'owner')
-                                    {!! Form::open(['method' => 'DELETE', 'route' => ['roles.destroy', $role->id],
-                                    'style' => 'display:inline']) !!}
-                                    {!! Form::submit(__('roles.delete'), ['class' => 'btn btn-danger btn-sm', 'style' =>
-                                    'font-size:15px']) !!}
+                                    {!! Form::open(['method' => 'DELETE', 'route' => ['roles.destroy', $role->id], 'style' => 'display:inline', 'id' => 'delete-form-'.$role->id]) !!}
+                                    <button type="button" class="btn btn-danger btn-sm" style="font-size:15px" onclick="confirmDelete({{ $role->id }})">
+                                        {{ __('roles.delete') }}
+                                    </button>
                                     {!! Form::close() !!}
                                     @endif
                                 </td>
@@ -134,4 +134,22 @@ window.onload = function() {
 
 @section('js')
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+function confirmDelete(roleId) {
+    Swal.fire({
+        title: "هل أنت متأكد؟ | Are you sure?",
+        text: "لن يمكنك التراجع عن حذف هذه الصلاحية!",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#FF4F1F",
+        cancelButtonColor: "#6c757d",
+        confirmButtonText: "نعم، احذفها | Yes, delete it!",
+        cancelButtonText: "إلغاء | Cancel"
+    }).then((result) => {
+        if (result.isConfirmed) {
+            document.getElementById('delete-form-' + roleId).submit();
+        }
+    });
+}
+</script>
 @endsection

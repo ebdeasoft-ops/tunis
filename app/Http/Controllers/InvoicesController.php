@@ -5227,6 +5227,8 @@ public function returnAll(Request $request)
                     'return_Unit_Price' => $sale->Unit_Price,
                     'return_quantity' => $sale->quantity,
                     'created_at' => Carbon::now()->addHours(3),
+                    'tax_rate'=>$sale->tax_rate,
+
                 ]);
             }
 
@@ -5784,6 +5786,8 @@ public function updateproductallDataInvoices(Request $request)
         'returnshabkavalue' => $returnshabkavalue,
         'return_quantity' => $returnQuantity,
         'created_at' => \Carbon\Carbon::now()->addHours(3),
+        'tax_rate'=>$saleData->tax_rate,
+
     ]);
 
     // 4. تحديث جدول المبيعات (sales) للسطر الحالي
@@ -6035,6 +6039,7 @@ public function updateproductallDataInvoices(Request $request)
             'return_Unit_Price' => $saleData->Unit_Price,
             'return_quantity' => $request->return_quentity,
             'created_at' => \Carbon\Carbon::now()->addHours(3),
+            'tax_rate'=>$saleData->tax_rate,
 
         ]);
         //  return  $return_sales;

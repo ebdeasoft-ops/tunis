@@ -662,375 +662,323 @@
             @endcan
 
 
+{{-- ================= التقارير (الأب) ================= --}}
+@can('Reports')
+<li class="slide">
+    <a class="side-menu__item" data-toggle="slide" href="javascript:void(0);">
+        <i class="fe fe-bar-chart-2 side-menu__icon"></i>
+        <span class="side-menu__label">{{ __('home.reports') }}</span>
+        <i class="angle fe fe-chevron-down"></i>
+    </a>
+
+    <ul class="slide-menu">
+        {{-- ================= الحسابات ================= --}}
+        @can('Accounts Reports Section')
+        <li class="slide">
+            <a class="sub-side-menu__item" data-toggle="slide" href="javascript:void(0);">
+                <span class="sub-side-menu__label">{{ __('home.accounting') }}</span>
+                <i class="angle fe fe-chevron-down"></i>
+            </a>
+
+            <ul class="slide-menu">
+                @can('Daily transactions sheet')
+                <li>
+                    <a class="slide-item" href="{{ url('budgetsheet') }}">{{ __('home.transction_day') }}</a>
+                </li>
+                @endcan
+
+                @can('Transfer cash next day')
+                <li>
+                    <a class="slide-item" href="{{ url('TransFerCashTothenNextDay') }}">{{ __('home.Transfer cash to the next day') }}</a>
+                </li>
+                @endcan
+
+                @can('Credit collection report')
+                <li>
+                    <a class="slide-item" href="{{ url('credit_collection') }}">{{ __('report.creditcollection') }}</a>
+                </li>
+                @endcan
+
+                @can('Supplier credit payment report')
+                <li>
+                    <a class="slide-item" href="{{ url('Supplier_credit_payment') }}">{{ __('report.Supplier credit payment') }}</a>
+                </li>
+                @endcan
+
+                @can('Supplier debt restructuring')
+                <li>
+                    <a class="slide-item" href="{{ url('Supplier_debt_restructuring') }}">{{ __('home.Supplier_debt_restructuring') }}</a>
+                </li>
+                @endcan
+
+                @can('Customer debt restructuring')
+                <li>
+                    <a class="slide-item" href="{{ url('Customer_debt_restructuring') }}">{{ __('home.Customer_debt_restructuring') }}</a>
+                </li>
+                @endcan
+
+                @can('Cost center report')
+                <li>
+                    <a class="slide-item" href="{{ url('cost_center') }}">{{ __('home.cost_center') }}</a>
+                </li>
+                @endcan
+
+                @can('Account statement report')
+                <li>
+                    <a class="slide-item" href="{{ url('account_statement') }}">{{ __('home.account_statement') }}</a>
+                </li>
+                @endcan
+
+                @can('Daily record report')
+                <li>
+                    <a class="slide-item" href="{{ url('Daily_record_report') }}">{{ __('home.Daily_record') }}</a>
+                </li>
+                @endcan
+
+                @can('Transactions to master branch report')
+                <li>
+                    <a class="slide-item" href="{{ url('transactionsToMasterBranch') }}">{{ __('home.transactionsToMasterBranch') }}</a>
+                </li>
+                @endcan
+
+                @can('Expenses report')
+                <li>
+                    <a class="slide-item" href="{{ url('Expensesreport') }}">{{ __('report.Expenses') }}</a>
+                </li>
+                @endcan
+
+                @can('List of customers')
+                <li>
+                    <a class="slide-item" href="{{ url('/Customerlist') }}">{{ __('home.customer_supplier_account') }}</a>
+                </li>
+                @endcan
+
+                @can('VAT report')
+                <li>
+                    <a class="slide-item" href="{{ url('VAT') }}">{{ __('report.VAT') }}</a>
+                </li>
+                @endcan
+
+                @can('Financial accounts')
+                <li>
+                    <a class="slide-item" href="{{ url('/financial_accounts') }}">{{ __('home.Financial_accounts') }}</a>
+                </li>
+                @endcan
+
+                @can('Profit and lost report')
+                <li>
+                    <a class="slide-item" href="{{ url('profit_and_lost') }}">{{ __('home.profit_and_lost') }}</a>
+                </li>
+                @endcan
+
+                @can('Financial accounts')
+                <li>
+                    <a class="slide-item" href="{{ url('/general_budget') }}">{{ __('home.general_budget') }}</a>
+                </li>
+                @endcan
+
+                @can('Financial accounts')
+                <li>
+                    <a class="slide-item" href="{{ url('/Statement_of_Changes_in_Equity_Report') }}">{{ __('home.Statement_of_Changes_in_Equity_Report') }}</a>
+                </li>
+                @endcan
+
+                @can('Financial accounts')
+                <li>
+                    <a class="slide-item" href="{{ url('/cashFlowStatement') }}">{{ __('home.cashFlowStatement') }}</a>
+                </li>
+                @endcan
+            </ul>
+        </li>
+        @endcan
 
 
-            {{-- ================= التقارير (الأب) ================= --}}
-            @can('Reports')
-            <li class="slide">
-                <a class="side-menu__item" data-toggle="slide" href="#">
-                    <i class="fe fe-bar-chart-2 side-menu__icon"></i>
-                    <span class="side-menu__label">{{ __('home.reports') }}</span>
-                    <i class="angle fe fe-chevron-down"></i>
-                </a>
+        {{-- ================= المبيعات ================= --}}
+        @can('Sales report')
+        <li class="slide">
+            <a class="sub-side-menu__item" data-toggle="slide" href="javascript:void(0);">
+                <span class="sub-side-menu__label">{{ __('home.sales') }}</span>
+                <i class="angle fe fe-chevron-down"></i>
+            </a>
 
-                <ul class="slide-menu">
-                    {{-- ================= الحسابات ================= --}}
-                    @can('Accounts Reports Section')
-                    <li class="slide">
-                        <a href="#" class="slide-item" data-toggle="slide">
-                            {{ __('home.accounting') }}
-                            <i class="angle fe fe-chevron-down"></i>
-                        </a>
+            <ul class="slide-menu">
+                @can('Sales product by date report')
+                <li>
+                    <a class="slide-item" href="{{ url('sales_product_by_date') }}">{{ __('home.sales_product_by_date') }}</a>
+                </li>
+                @endcan
 
-                        <ul class="slide-menu">
+                @can('Year sales report')
+                <li>
+                    <a class="slide-item" href="{{ url('year_sales_report') }}">{{ __('home.year_sales_report') }}</a>
+                </li>
+                @endcan
 
-                            @can('Daily transactions sheet')
-                            <li>
-                                <a class="slide-item"
-                                    href="{{ url('budgetsheet') }}">{{ __('home.transction_day') }}</a>
-                            </li>
-                            @endcan
+                @can('Sales and return report')
+                <li>
+                    <a class="slide-item" href="{{ url('sales_and_return') }}">{{ __('home.sales_and_return') }}</a>
+                </li>
+                @endcan
 
-                            @can('Transfer cash next day')
-                            <li>
-                                <a class="slide-item"
-                                    href="{{ url('TransFerCashTothenNextDay') }}">{{ __('home.Transfer cash to the next day') }}</a>
-                            </li>
-                            @endcan
+                @can('History of product sales report')
+                <li>
+                    <a class="slide-item" href="{{ url('salesReport') }}">{{ __('home.Historyـofـproductـsales') }}</a>
+                </li>
+                @endcan
 
-                            @can('Credit collection report')
-                            <li>
-                                <a class="slide-item"
-                                    href="{{ url('credit_collection') }}">{{ __('report.creditcollection') }}</a>
-                            </li>
-                            @endcan
+                @can('Sales return report')
+                <li>
+                    <a class="slide-item" href="{{ url('report_returns_sale') }}">{{ __('report.report_returns_sale') }}</a>
+                </li>
+                @endcan
 
-                            @can('Supplier credit payment report')
-                            <li>
-                                <a class="slide-item"
-                                    href="{{ url('Supplier_credit_payment') }}">{{ __('report.Supplier credit payment') }}</a>
-                            </li>
-                            @endcan
+                @can('Customer purchases report')
+                <li>
+                    <a class="slide-item" href="{{ url('customerـpurchases') }}">{{ __('report.customerـpurchases') }}</a>
+                </li>
+                @endcan
 
-                            @can('Supplier debt restructuring')
-                            <li>
-                                <a class="slide-item"
-                                    href="{{ url('Supplier_debt_restructuring') }}">{{ __('home.Supplier_debt_restructuring') }}</a>
-                            </li>
-                            @endcan
+                @can('Purchase product to customer report')
+                <li>
+                    <a class="slide-item" href="{{ url('purchasproducttocustomer') }}">{{ __('report.purchasproducttocustomer') }}</a>
+                </li>
+                @endcan
 
-                            @can('Customer debt restructuring')
-                            <li>
-                                <a class="slide-item"
-                                    href="{{ url('Customer_debt_restructuring') }}">{{ __('home.Customer_debt_restructuring') }}</a>
-                            </li>
-                            @endcan
+                @can('Product sales report')
+                <li>
+                    <a class="slide-item" href="{{ url('product_sales') }}">{{ __('report.product_sales') }}</a>
+                </li>
+                @endcan
 
-                            @can('Cost center report')
-                            <li>
-                                <a class="slide-item" href="{{ url('cost_center') }}">{{ __('home.cost_center') }}</a>
-                            </li>
-                            @endcan
+                @can('Best selling product report')
+                <li>
+                    <a class="slide-item" href="{{ url('Best_selling_products') }}">{{ __('report.Best selling products') }}</a>
+                </li>
+                @endcan
 
-                            @can('Account statement report')
-                            <li>
-                                <a class="slide-item"
-                                    href="{{ url('account_statement') }}">{{ __('home.account_statement') }}</a>
-                            </li>
-                            @endcan
+                @can('Employee sales report')
+                <li>
+                    <a class="slide-item" href="{{ url('employeeـsales') }}">{{ __('report.employeeـsales') }}</a>
+                </li>
+                @endcan
 
-                            @can('Daily record report')
-                            <li>
-                                <a class="slide-item"
-                                    href="{{ url('Daily_record_report') }}">{{ __('home.Daily_record') }}</a>
-                            </li>
-                            @endcan
+                @can('Sales profits report')
+                <li>
+                    <a class="slide-item" href="{{ url('salesـprofits') }}">{{ __('report.salesـprofits') }}</a>
+                </li>
+                @endcan
+            </ul>
+        </li>
+        @endcan
 
 
-                            @can('Transactions to master branch report')
-                            <li>
-                                <a class="slide-item"
-                                    href="{{ url('transactionsToMasterBranch') }}">{{ __('home.transactionsToMasterBranch') }}</a>
-                            </li>
-                            @endcan
+        {{-- ================= المشتريات ================= --}}
+        @can('Purchases report section')
+        <li class="slide">
+            <a class="sub-side-menu__item" data-toggle="slide" href="javascript:void(0);">
+                <span class="sub-side-menu__label">{{ __('home.purchases') }}</span>
+                <i class="angle fe fe-chevron-down"></i>
+            </a>
 
-                            @can('Expenses report')
-                            <li>
-                                <a class="slide-item" href="{{ url('Expensesreport') }}">{{ __('report.Expenses') }}</a>
-                            </li>
-                            @endcan
-
-                            @can('List of customers')
-                            <li>
-                                <a class="slide-item"
-                                    href="{{ url('/Customerlist') }}">{{ __('home.customer_supplier_account') }}</a>
-                            </li>
-                            @endcan
-
-                            @can('VAT report')
-                            <li>
-                                <a class="slide-item" href="{{ url('VAT') }}">{{ __('report.VAT') }}</a>
-                            </li>
-                            @endcan
-                            @can('Financial accounts')
-                            <li>
-                                <a class="slide-item"
-                                    href="{{ url('/financial_accounts') }}">{{ __('home.Financial_accounts') }}</a>
-                            </li>
-                            @endcan
-
-
-                            @can('Profit and lost report')
-                            <li>
-                                <a class="slide-item"
-                                    href="{{ url('profit_and_lost') }}">{{ __('home.profit_and_lost') }}</a>
-                            </li>
-                            @endcan
-                            @can('Financial accounts')
-                            <li>
-                                <a class="slide-item"
-                                    href="{{ url('/general_budget') }}">{{ __('home.general_budget') }}</a>
-                            </li>
-                            @endcan
-                            @can('Financial accounts')
-                            <li>
-                                <a class="slide-item"
-                                    href="{{ url('/Statement_of_Changes_in_Equity_Report') }}">{{ __('home.Statement_of_Changes_in_Equity_Report') }}</a>
-                            </li>
-                            @endcan
-                            @can('Financial accounts')
-                            <li>
-                                <a class="slide-item"
-                                    href="{{ url('/cashFlowStatement') }}">{{ __('home.cashFlowStatement') }}</a>
-                            </li>
-                            @endcan
+            <ul class="slide-menu">
+                @can('Purchase product by date report')
+                <li>
+                    <a class="slide-item" href="{{ url('purchase_product_by_date') }}">{{ __('home.purchase_product_by_date') }}</a>
+                </li>
+                @endcan
+                @can('Purchase product by date report')
+                <li>
+                    <a class="slide-item" href="{{ url('SalesPurchaseInPeriode') }}">{{ __('home.SalesPurchaseInPeriode') }}</a>
+                </li>
+                @endcan
+                @can('Purchases from suppliers report')
+                <li>
+                    <a class="slide-item" href="{{ url('Purchasesـfromـsuppliers') }}">{{ __('home.purchases') }}</a>
+                </li>
+                @endcan
+                @can('Purchases report detail')
+                <li>
+                    <a class="slide-item" href="{{ url('purchasereports') }}">{{ __('home.purchasereports') }}</a>
+                </li>
+                @endcan
+                @can('Refund of resource purchases report')
+                <li>
+                    <a class="slide-item" href="{{ url('Refundـofـresourceـpurchases') }}">{{ __('report.Refundـofـresourceـpurchases') }}</a>
+                </li>
+                @endcan
+                @can('Delivery notes report')
+                <li>
+                    <a class="slide-item" href="{{ url('Delivery_notes') }}">{{ __('report.Delivery_notes') }}</a>
+                </li>
+                @endcan
+                @can('Purchase orders from suppliers report')
+                <li>
+                    <a class="slide-item" href="{{ url('Requestـoffersـfromـsuppliers') }}">{{ __('report.Requestـoffersـfromـsuppliers') }}</a>
+                </li>
+                @endcan
+            </ul>
+        </li>
+        @endcan
 
 
+        {{-- ================= المخزون والمنتجات ================= --}}
+        @can('Inventory Main Section')
+        <li class="slide">
+            <a class="sub-side-menu__item" data-toggle="slide" href="javascript:void(0);">
+                <span class="sub-side-menu__label">{{ __('home.showallproduct') }}</span>
+                <i class="angle fe fe-chevron-down"></i>
+            </a>
 
-                        </ul>
-                    </li>
-                    @endcan
+            <ul class="slide-menu">
+                @can('Product sales purchases report')
+                <li>
+                    <a class="slide-item" href="{{ url('product_sales_purchases') }}">{{ __('home.product_sales_purchases') }}</a>
+                </li>
+                @endcan
+                @can('Low sell products report')
+                <li>
+                    <a class="slide-item" href="{{ url('low_sell') }}">{{ __('home.low_sell') }}</a>
+                </li>
+                @endcan
+                @can('Update stock quantity report')
+                <li>
+                    <a class="slide-item" href="{{ url('updatestockquentity') }}">{{ __('home.updatestockquentity') }}</a>
+                </li>
+                @endcan
+                @can('Current stock quantity report')
+                <li>
+                    <a class="slide-item" href="{{ url('stockquantity') }}">{{ __('report.stockquantity') }}</a>
+                </li>
+                @endcan
+                @can('Stocktaking report')
+                <li>
+                    <a class="slide-item" href="{{ url('Stocktaking') }}">{{ __('home.Stocktaking') }}</a>
+                </li>
+                @endcan
+                @can('Database backup privilege')
+                <li>
+                    <a class="slide-item" href="{{ url('our_backup_database') }}" target="_blank">{{ __('home.backup') }}</a>
+                </li>
+                @endcan
+                @can('Product damage reports')
+                <li>
+                    <a class="slide-item" href="{{ url('ProductsDamageReport') }}">{{ __('home.product damage') }}</a>
+                </li>
+                @endcan
+                @can('Transfer of goods report')
+                <li>
+                    <a class="slide-item" href="{{ url('Transfer_products') }}">{{ __('home.Transfer of goods') }}</a>
+                </li>
+                @endcan
+            </ul>
+        </li>
+        @endcan
 
-
-                    {{-- ================= المبيعات ================= --}}
-                    @can('Sales report')
-                    <li class="slide">
-                        <a href="#" class="slide-item" data-toggle="slide">
-                            {{ __('home.sales') }}
-                            <i class="angle fe fe-chevron-down"></i>
-                        </a>
-
-                        <ul class="slide-menu">
-                            @can('Sales product by date report')
-                            <li>
-                                <a class="slide-item"
-                                    href="{{ url('sales_product_by_date') }}">{{ __('home.sales_product_by_date') }}</a>
-                            </li>
-                            @endcan
-
-                            @can('Year sales report')
-                            <li>
-                                <a class="slide-item"
-                                    href="{{ url('year_sales_report') }}">{{ __('home.year_sales_report') }}</a>
-                            </li>
-                            @endcan
-
-                            @can('Sales and return report')
-                            <li>
-                                <a class="slide-item"
-                                    href="{{ url('sales_and_return') }}">{{ __('home.sales_and_return') }}</a>
-                            </li>
-                            @endcan
-
-                            @can('History of product sales report')
-                            <li>
-                                <a class="slide-item"
-                                    href="{{ url('salesReport') }}">{{ __('home.Historyـofـproductـsales') }}</a>
-                            </li>
-                            @endcan
-
-                            @can('Sales return report')
-                            <li>
-                                <a class="slide-item"
-                                    href="{{ url('report_returns_sale') }}">{{ __('report.report_returns_sale') }}</a>
-                            </li>
-                            @endcan
-
-                            @can('Customer purchases report')
-                            <li>
-                                <a class="slide-item"
-                                    href="{{ url('customerـpurchases') }}">{{ __('report.customerـpurchases') }}</a>
-                            </li>
-                            @endcan
-
-                            @can('Purchase product to customer report')
-                            <li>
-                                <a class="slide-item"
-                                    href="{{ url('purchasproducttocustomer') }}">{{ __('report.purchasproducttocustomer') }}</a>
-                            </li>
-                            @endcan
-
-                            @can('Product sales report')
-                            <li>
-                                <a class="slide-item"
-                                    href="{{ url('product_sales') }}">{{ __('report.product_sales') }}</a>
-                            </li>
-                            @endcan
-
-                            @can('Best selling product report')
-                            <li>
-                                <a class="slide-item"
-                                    href="{{ url('Best_selling_products') }}">{{ __('report.Best selling products') }}</a>
-                            </li>
-                            @endcan
-
-                            @can('Employee sales report')
-                            <li>
-                                <a class="slide-item"
-                                    href="{{ url('employeeـsales') }}">{{ __('report.employeeـsales') }}</a>
-                            </li>
-                            @endcan
-
-                            @can('Sales profits report')
-                            <li>
-                                <a class="slide-item"
-                                    href="{{ url('salesـprofits') }}">{{ __('report.salesـprofits') }}</a>
-                            </li>
-                            @endcan
-                        </ul>
-                    </li>
-                    @endcan
+    </ul>
+</li>
+@endcan
 
 
-                    {{-- ================= المشتريات ================= --}}
-                    @can('Purchases report section')
-                    <li class="slide">
-                        <a href="#" class="slide-item" data-toggle="slide">
-                            {{ __('home.purchases') }}
-                            <i class="angle fe fe-chevron-down"></i>
-                        </a>
-
-                        <ul class="slide-menu">
-                            @can('Purchase product by date report')
-                            <li>
-                                <a class="slide-item"
-                                    href="{{ url('purchase_product_by_date') }}">{{ __('home.purchase_product_by_date') }}</a>
-                            </li>
-                            @endcan
-                            @can('Purchase product by date report')
-                            <li>
-                                <a class="slide-item"
-                                    href="{{ url('SalesPurchaseInPeriode') }}">{{ __('home.SalesPurchaseInPeriode') }}</a>
-                            </li>
-                            @endcan
-                            @can('Purchases from suppliers report')
-                            <li>
-                                <a class="slide-item"
-                                    href="{{ url('Purchasesـfromـsuppliers') }}">{{ __('home.purchases') }}</a>
-                            </li>
-                            @endcan
-
-                            @can('Purchases report detail')
-                            <li>
-                                <a class="slide-item"
-                                    href="{{ url('purchasereports') }}">{{ __('home.purchasereports') }}</a>
-                            </li>
-                            @endcan
-
-                            @can('Refund of resource purchases report')
-                            <li>
-                                <a class="slide-item"
-                                    href="{{ url('Refundـofـresourceـpurchases') }}">{{ __('report.Refundـofـresourceـpurchases') }}</a>
-                            </li>
-                            @endcan
-
-                            @can('Delivery notes report')
-                            <li>
-                                <a class="slide-item"
-                                    href="{{ url('Delivery_notes') }}">{{ __('report.Delivery_notes') }}</a>
-                            </li>
-                            @endcan
-
-                            @can('Purchase orders from suppliers report')
-                            <li>
-                                <a class="slide-item"
-                                    href="{{ url('Requestـoffersـfromـsuppliers') }}">{{ __('report.Requestـoffersـfromـsuppliers') }}</a>
-                            </li>
-                            @endcan
-                        </ul>
-                    </li>
-                    @endcan
-
-
-                    {{-- ================= المخزون والمنتجات ================= --}}
-                    @can('Inventory Main Section')
-                    <li class="slide">
-                        <a href="#" class="slide-item" data-toggle="slide">
-                            {{ __('home.showallproduct') }}
-                            <i class="angle fe fe-chevron-down"></i>
-                        </a>
-
-                        <ul class="slide-menu">
-                            @can('Product sales purchases report')
-                            <li>
-                                <a class="slide-item"
-                                    href="{{ url('product_sales_purchases') }}">{{ __('home.product_sales_purchases') }}</a>
-                            </li>
-                            @endcan
-
-                            @can('Low sell products report')
-                            <li>
-                                <a class="slide-item" href="{{ url('low_sell') }}">{{ __('home.low_sell') }}</a>
-                            </li>
-                            @endcan
-
-                            @can('Update stock quantity report')
-                            <li>
-                                <a class="slide-item"
-                                    href="{{ url('updatestockquentity') }}">{{ __('home.updatestockquentity') }}</a>
-                            </li>
-                            @endcan
-
-                            @can('Current stock quantity report')
-                            <li>
-                                <a class="slide-item"
-                                    href="{{ url('stockquantity') }}">{{ __('report.stockquantity') }}</a>
-                            </li>
-                            @endcan
-
-                            @can('Stocktaking report')
-                            <li>
-                                <a class="slide-item" href="{{ url('Stocktaking') }}">{{ __('home.Stocktaking') }}</a>
-                            </li>
-                            @endcan
-
-                            @can('Database backup privilege')
-                            <li>
-                                <a class="slide-item" href="{{ url('our_backup_database') }}"
-                                    target="_blank">{{ __('home.backup') }}</a>
-                            </li>
-                            @endcan
-
-                            @can('Product damage reports')
-                            <li>
-                                <a class="slide-item"
-                                    href="{{ url('ProductsDamageReport') }}">{{ __('home.product damage') }}</a>
-                            </li>
-                            @endcan
-
-                            @can('Transfer of goods report')
-                            <li>
-                                <a class="slide-item"
-                                    href="{{ url('Transfer_products') }}">{{ __('home.Transfer of goods') }}</a>
-                            </li>
-                            @endcan
-                        </ul>
-                    </li>
-                    @endcan
-
-                </ul>
-            </li>
-            @endcan
 
 
 

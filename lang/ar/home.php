@@ -732,7 +732,7 @@ return [
     'vatreports' => 'تقارير القيمة المضافة',
     'stock' => 'المخزون ',
     'searchAboutProduct' => 'ابحث عن المنتج ',
-    'users' => 'الصلاحيات',
+    'users' => 'ادارة المستخدمين',
     'setting' => '  الاعدادات',
     'accounting' => 'الحسابات',
     'searchbyclientname' => 'البحث بواسطة اسم العميل',

@@ -291,8 +291,9 @@
                             @if($offer_price_to_customer && $offer_price_to_customer->numbershowstatus)
                               <td dir="ltr" style="font-family: monospace;">{{ $product->productData->Product_Code ?? '' }}</td>
                             @endif
-                            <td style="text-align: right; padding-right: 15px;" class="text-truncate-custom">{{ $product->productData->product_name ?? '' }}</td>
-                            <td>{{ number_format($product->PriceWithoudTax, 2) }}</td>
+<td style="text-align: right; padding-right: 15px; white-space: normal; word-break: break-word;">
+    {{ $product->productData->product_name ?? '' }}
+</td>                            <td>{{ number_format($product->PriceWithoudTax, 2) }}</td>
                             <td>{{ $product->quantity }}</td>
                             <td>{{ number_format($lineTotal, 2) }}</td>
                             <td>{{ number_format($product->discount, 2) }}</td>

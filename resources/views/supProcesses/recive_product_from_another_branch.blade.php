@@ -196,6 +196,7 @@
 <script>
 var currentRowIndex = 0;
 var currentLocale = "{{ App::getLocale() }}";
+var isSubmitting = false; // متغير لمنع تكرار الضغط
 
 function chooseProduct(code, productcode, name, cost, sale_price, location, availablequantity) {
     let rows = document.querySelectorAll('#table-body tr');
@@ -318,6 +319,13 @@ $("#button_1").click(function() {
 });
 
 $("#deleteproduct").click(function() {
+    if (isSubmitting) return; // منع الضغط المتكرر
+    isSubmitting = true;
+
+    let $btn = $(this);
+    $btn.prop('disabled', true);
+
+    let reciveInvoiceNumber = $("#reciveInvoiceNumber").val(); 
     let product_codes = $("input[name='product_code[]']").map(function() { return $(this).val(); }).get();
     let product_names = $("input[name='product_name[]']").map(function() { return $(this).val(); }).get();
     let quantities = $("input[name='quantity[]']").map(function() { return $(this).val(); }).get();
@@ -328,6 +336,7 @@ $("#deleteproduct").click(function() {
         type: 'post',
         data: {
             _token: $("#token_search").val(),
+            reciveInvoiceNumber: reciveInvoiceNumber, 
             product_code: product_codes,
             product_name: product_names,
             quantity: quantities,
@@ -343,6 +352,12 @@ $("#deleteproduct").click(function() {
             $('#modaldemo9').modal('hide');
             let successMsg = currentLocale === 'ar' ? 'تمت العملية بنجاح' : 'Operation completed successfully';
             Swal.fire(successMsg, '', 'success');
+        },
+        error: function(xhr) {
+            isSubmitting = false;
+            $btn.prop('disabled', false);
+            let errorMsg = currentLocale === 'ar' ? 'حدث خطأ ما، يرجى المحاولة لاحقاً' : 'An error occurred, please try again later';
+            Swal.fire('Error', errorMsg, 'error');
         }
     });
 });

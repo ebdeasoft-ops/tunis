@@ -469,6 +469,7 @@ public function showMyDrafts(Request $request)
     }
     public function store(Request $request)
     {
+
         app()->setLocale(LaravelLocalization::getCurrentLocale());
         // 1. التحقق من وجود بيانات
         if (!$request->has('product_code')) {
@@ -517,7 +518,7 @@ public function showMyDrafts(Request $request)
             product_movement_another_branch_items::create([
                 'reciver_branch' => $branchId,
                 'order_id' => 0,
-                'order_id_sender' => $request->invoiceId, // رقم الفاتورة المرسل
+                'order_id_sender' => $request->reciveInvoiceNumber, // رقم الفاتورة المرسل
                 'product_id' => $productId,
                 'quantity' => $qty,
                 'cost_per_each_withoud_tax' => $cost,
@@ -526,7 +527,7 @@ public function showMyDrafts(Request $request)
         }
 
         // 4. تحديث حالة الفاتورة الرئيسية
-        product_movement_another_branch::where('id', $request->invoiceId)->update([
+        product_movement_another_branch::where('id', $request->reciveInvoiceNumber)->update([
             'reciveInvoiceNumber' => 10,
             'updated_at' => \Carbon\Carbon::now()->addHours(3),
         ]);

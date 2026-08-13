@@ -30,11 +30,13 @@
                     @endif
                 </td>
                 <td>
-                    <div class="btn-icon-list d-flex justify-content-center" style="gap: 5px;">
+                    <div class="d-flex align-items-center justify-content-center" style="gap: 6px; flex-wrap: wrap;">
 
-                        {{-- زر التعديل (تم ربط data attributes بالموديل بدقة) --}}
-                        <button type="button" class="btn btn-info btn-sm edit-btn" data-id="{{ $invoice->id }}"
-                            data-sent_abd_count="{{ $invoice->sent_abd_count }}" {{-- السطر الأهم لجلب كل الصفوف --}}
+                        {{-- زر التعديل --}}
+                        <button type="button"
+                            class="btn btn-info btn-sm d-flex align-items-center justify-content-center"
+                            style="height: 30px; width: 30px;" data-id="{{ $invoice->id }}"
+                            data-sent_abd_count="{{ $invoice->sent_abd_count }}"
                             data-payment_acc="{{ $invoice->branchs_id }}" data-method="{{ $invoice->type }}"
                             data-date="{{ $invoice->date_export }}" data-client_acc="{{ $invoice->customer_id }}"
                             data-amount="{{ $invoice->recive_amount }}" data-cost_center="{{ $invoice->cost_center }}"
@@ -43,30 +45,50 @@
                             <i class="fas fa-edit"></i>
                         </button>
 
+                        {{-- زر تحميل PDF (أيقونة فقط) --}}
+                        {{-- زر تحميل PDF (باستخدام الكلاس المتوافق مع FontAwesome القديم) --}}
+                        <a href="{{ url('generate_pdf_reciept_ducoument/' . $invoice->id) }}"
+                            class="btn btn-success btn-sm d-flex align-items-center justify-content-center text-white"
+                            style="background-color: #419BB2; border-color: #419BB2; height: 30px; width: 30px;"
+                            target="_blank" title="{{ __('home.dwonloadpdf') }}">
+                            <i class="fas fa-download"></i>
+                        </a>
                         {{-- زر الحذف --}}
-                        <button type="button" class="btn btn-danger btn-sm delete-btn"
+                        <button type="button"
+                            class="btn btn-danger btn-sm d-flex align-items-center justify-content-center"
+                            style="height: 30px; width: 30px;"
                             onclick="deleteFullVoucher('{{ $invoice->sent_abd_count }}')"
                             title="{{ __('home.Delete') }}">
                             <i class="fas fa-trash"></i>
                         </button>
-                        <form action="{{ url('/print_reciept_ducoument') }}" method="POST" class="d-inline">
+
+                        {{-- زر الطباعة --}}
+                        <form action="{{ url('/print_reciept_ducoument') }}" method="POST" class="d-inline m-0">
                             @csrf
                             <input type="hidden" name="id" value="{{ $invoice->sent_abd_count }}">
-                            <button type="submit" class="btn btn-sm btn-success">
-                                {{ __('home.print') }}
+                            <button type="submit"
+                                class="btn btn-success btn-sm d-flex align-items-center justify-content-center"
+                                style="height: 30px; width: 30px;" title="{{ __('home.print') }}">
+                                <i class="fas fa-print"></i>
                             </button>
                         </form>
 
+                        {{-- المرفقات --}}
                         @if($invoice->attachments)
                         <a href="{{ url('openfile/' . $invoice->attachments) }}" target="_blank"
-                            class="btn btn-secondary btn-sm" title="{{ __('home.show') }}">
+                            class="btn btn-secondary btn-sm d-flex align-items-center justify-content-center"
+                            style="height: 30px; width: 30px;" title="{{ __('home.show') }}">
                             <i class="fas fa-paperclip"></i>
                         </a>
                         @else
-                        <span class="badge badge-light text-muted border px-2 py-1" style="font-size: 12px;">
+                        <span
+                            class="badge badge-light text-muted border d-flex align-items-center justify-content-center px-2"
+                            style="height: 30px; font-size: 11px;">
                             <i class="fas fa-ban mr-1"></i> {{ __('home.no_attachments') ?? 'لا يوجد' }}
                         </span>
                         @endif
+
+                    </div>
                 </td>
             </tr>
             @endforeach

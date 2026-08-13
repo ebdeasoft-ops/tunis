@@ -2,203 +2,204 @@
 <html dir="rtl">
 
 <head>
-  <title> Invoice </title>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Invoice Voucher</title>
+    <meta charset="utf-8">
 
-  <style>
-    * {
-      font-family: DejaVu Sans !important;
-    }
+    <style>
+        body {
+            font-size: 13px;
+            font-family: 'DejaVu Sans', sans-serif;
+            color: #000;
+            background-color: #fff;
+            margin: 0;
+            padding: 10px;
+            text-align: right;
+            line-height: 1.6;
+        }
 
-    body {
-      font-size: 12px;
-      font-family: 'DejaVu Sans', 'Roboto', 'Montserrat', 'Open Sans', sans-serif;
-      padding: 2px;
-      margin: 10px;
+        .voucher-box {
+            border: 2px solid #333;
+            padding: 15px;
+            width: 100%;
+        }
 
-      color: black;
-    }
+        .header-table {
+            width: 100%;
+            border-bottom: 2px solid #000;
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+        }
 
-.tx-center{
-    text-align: center;
-}
-    body {
-      color: black;
-      text-align: right;
-    }
+        .header-table td {
+            vertical-align: middle;
+            padding: 0;
+        }
 
-    table {
-      border-collapse: collapse;
-      width: 100%;
-    }
+        .thick {
+            font-weight: bold;
+        }
 
-    .justify_content {
-      /* justify-content:space-between; */
-    }
+        .voucher-title {
+            text-align: center;
+            margin: 10px 0 20px 0;
+        }
 
-    th,
-    td {
-      /* text-align: left; */
-      padding: 1px;
-    }
+        .voucher-title span {
+            background-color: #f2f2f2;
+            padding: 6px 25px;
+            font-size: 15px;
+            font-weight: bold;
+            border: 1px solid #333;
+        }
 
-    tr:nth-child(even) {
-      background-color: #D6EEEE;
-    }
+        .content-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 30px;
+        }
 
-    @page {
-      size: a4;
-      margin: 4px;
-      padding: 0;
-    }
+        .content-table th {
+            background-color: #419BB2;
+            color: #fff;
+            font-weight: bold;
+            padding: 8px;
+            text-align: center;
+            font-size: 12px;
+            border: 1px solid #333;
+        }
 
+        .content-table td {
+            padding: 10px 8px;
+            text-align: center;
+            border: 1px solid #333;
+            font-size: 12px;
+        }
 
+        .signatures-table {
+            width: 100%;
+            border: none;
+            margin-top: 20px;
+        }
 
+        .signatures-table td {
+            border: none;
+            width: 100%;
+            font-weight: bold;
+            font-size: 12px;
+            padding: 6px 0;
+            text-align: right;
+        }
 
-    .row {
-      display: block;
-      padding-left: 24;
-      padding-right: 24;
-      page-break-before: avoid;
-      page-break-after: avoid;
-    }
+        .signature-line {
+            border-bottom: 1px dashed #333;
+            display: inline-block;
+            width: 250px;
+            margin-right: 10px;
+            vertical-align: bottom;
+        }
 
-    .column {
-      display: block;
-      page-break-before: avoid;
-      page-break-after: avoid;
-    }
-  </style>
+        .footer-section {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            text-align: center;
+            font-size: 10px;
+            border-top: 1px solid #ccc;
+            padding-top: 5px;
+            width: 100%;
+        }
+
+        @page {
+            size: A4;
+            margin: 10mm;
+        }
+    </style>
 </head>
 
 <body>
-  <div class="justify_content" style="display: flex;width:100%" dir=rtl>
 
+    <div class="voucher-box">
+        <?php $logo = camplogo; ?>
 
-
-
-    
-      <?php
-      $logo = camplogo;
-      ?>
-
-
-
+        <!-- ترويسة الفاتورة -->
+        <table class="header-table">
+            <tr>
+     
+             <!-- بيانات الشركة بالإنجليزية (يسار) -->
+                <td style="text-align: left; width: 35%;">
+                    <div style="font-size: 14px; font-weight: bold;">{{Nameen}}</div>
+                    <div class="thick" style="font-size: 10px;">{{describtionen}}</div>
+                    <div style="font-size: 10px;">{{STen}}</div>
+                    <div style="font-size: 10px;">{{Taxen}}</div>
+                </td>
+                <!-- اللوجو (منتصف) -->
+                <td style="text-align: center; width: 30%;">
+                    <img src="{{ public_path('assets/img/brand').'/'.$logo }}" style="width: 100px; height: 60px;">
+                </td>
+           <!-- بيانات الشركة بالعربي (يمين) -->
+                <td style="text-align: right; width: 35%;">
+                    <div style="font-size: 15px; font-weight: bold;">{{Namear}}</div>
+                    <div class="thick" style="font-size: 10px;">{{describtionar}}</div>
+                    <div style="font-size: 10px;">{{STar}}</div>
+                    <div style="font-size: 10px;">{{Taxar}}</div>
+                </td>
    
-    <table>
-
-
-      <tr class="heading">
-      <td  style="width:35%">
-          <center><span class="thick" style="font-size:16px">{{Nameen}}</span> </center>
-          <center><span class="tx-16 thick"> {{describtionen}} </span> </center>
-          <center><span class="tx-16 thick">{{STen}} </span> </center>
-          <center><span class="tx-16 thick"> {{Taxen}} </span> </center>
-
-        </td>
-      <td style="width:35%"><center>          
-        <img src="{{ public_path('assets/img/brand').'/'.$logo }}"
-      style="width: 150px; height: 100px;">
-</center></td>  
-
-        <td style="width:30%">
-        <center><span style="font-size:18px">{{Namear}}</span> </center>
-        <center><span class="tx-16 thick"> {{describtionar}}</span> </center>
-        <center><span class="tx-16 thick">{{STar}}</span> </center>
-        <center><span class="tx-16 thick">{{Taxar}}</span> </center>
-
-        </td>
-
-     
-      </tr>
-
-    
-    </table>
-  </div><!-- invoice-header -->
-
-<center><p>  {{__('home.voucher')}}</p></center>
-
-  <br>
-  <br>
-
-<table style="width:100%">
-
-    <tr class="heading">
-      <td>
-        <table style="border:2px solid rgba(0,0,0,.3)" dir="rtl">
-          	<thead>
-											<tr>
-
-                                    <th class="border-bottom-0">{{__('accountes.Theamountpaid')}}</th>
-                                    <th class="border-bottom-0">{{__('accountes.Remainingamount')}}</th>
-                                    <th class="border-bottom-0">{{__('home.paymentmethod')}}</th>
-                                    <th class="border-bottom-0">{{__('home.date')}}</th>
-                                    <th class="border-bottom-0"> {{__('home.name')}}</th>
-                                    <th class="border-bottom-0">{{ __('home.decoumentNo') }}</th>
-
-											</tr>
-										</thead>
-                                        <tbody>
-                                        <td><center>{{$data['transaction']['paid_amount']}}</center></td>
-                                        <td><center>{{$data['transaction']['Balance']}}</center></td>
-                                        <?php
-                                        $paymethod='';
-                                        if($data['transaction']['method_pay']== "Cash"){
-                                            $paymethod= __('report.cash');
-                                        }elseif ($data['transaction']['method_pay'] == 'Bank_transfer') {
-                                            $paymethod = __('home.Bank_transfer');
-                                        }
-                                        else{
-                                            $paymethod=__('report.shabka');
-                                        }
-                                        ?>
-                                        <td><center>{{$paymethod}}</center></td>
-                                        <td><center>{{$data['transaction']['date']}}</center></td>
-                                                                                <td><center>{{$data['transaction']['name']}}</center></td>
-
-                                                                                    <td><center>{{$data['transaction']['id']}}</center></td>
-
-                                        </tbody>
-
+            </tr>
         </table>
-      </td>
 
-     
-    </tr>
+        <!-- عنوان السند -->
+        <div class="voucher-title">
+            <span>{{__('home.voucher')}}</span>
+        </div>
+
+        <!-- جدول بيانات السند -->
+        <table class="content-table">
+            <thead>
+                <tr>
+                    <th>{{ __('home.decoumentNo') }}</th>
+                    <th>{{ __('home.name') }}</th>
+                    <th>{{ __('home.date') }}</th>
+                    <th>{{ __('home.paymentmethod') }}</th>
+                    <th>{{ __('accountes.Remainingamount') }}</th>
+                    <th>{{ __('accountes.Theamountpaid') }}</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td class="thick">{{$data['transaction']['id']}}</td>
+                    <td>{{$data['transaction']['name']}}</td>
+                    <td>{{$data['transaction']['date']}}</td>
+                    <td>
+                        <?php
+                        $paymethod = '';
+                        if($data['transaction']['method_pay'] == "Cash"){
+                            $paymethod = __('report.cash');
+                        }elseif ($data['transaction']['method_pay'] == 'Bank_transfer') {
+                            $paymethod = __('home.Bank_transfer');
+                        } else {
+                            $paymethod = __('report.shabka');
+                        }
+                        ?>
+                        {{$paymethod}}
+                    </td>
+                    <td>{{$data['transaction']['Balance']}}</td>
+                    <td class="thick" style="color: #0d9488;">{{$data['transaction']['paid_amount']}}</td>
+                </tr>
+            </tbody>
+        </table>
 
 
-    </table>
- 
 
+    </div>
 
+    <!-- تذييل الصفحة -->
+    <div class="footer-section">
+        @if(Auth()->user()->branchs_id == 1)
+            <span>{{addressar}}</span> &nbsp;|&nbsp; <span>{{addressen}}</span>
+        @endif
+    </div>
 
- 
-  <br>
- 
-                                    <br>
-                        <p>{{__('home.employeereciver')}} : </p>
-                        <br>
-                        <p>{{__('home.thesignature')}} : </p>
-  <div style="  position: fixed;     
-       text-align: center;    
-       bottom: 0px; 
-       width: 100%;">
-
-    @if(Auth()->user()->branchs_id==1)
-
-    <center> <span dir=rtl>
-        {{addressar}}
-      </span>
-    </center>
-
-
-    <center> <span> {{addressen}}
-      </span>
-    </center>
-
-    @endif
-  </div>
 </body>
 
 </html>

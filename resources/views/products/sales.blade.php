@@ -564,10 +564,14 @@ td .d-flex {
                                 value="{{$rate_system}}">
                             <input hidden=true class="form-control" id="shownumberproduct" name="shownumberproduct"
                                 value="1">
+                                
                         </div>
-                        <br>
-                        <br>
+                        </div>
+
                         <div class="d-flex justify-content-center">
+
+                                                    <br>
+
                             <button type="button" id="saveInvoice" style="background-color: #419BB2"
                                 class="btn btn-success p-1">
                                 {{ __('home.invoice_save') }}
@@ -583,6 +587,8 @@ td .d-flex {
                                 <i class="fas fa-file-alt"></i>
                             </button>
                         </div>
+                                                                    <br>
+
                 </form>
 
             </div>

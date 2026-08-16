@@ -9,7 +9,7 @@ class financial_accounts extends Model
 {
     use HasFactory;
     protected $fillable=[
-        'name','account_type','parent_account_number','account_number',
+'id','name','account_type','parent_account_number','account_number',
         'start_balance','current_balance','other_table_FK','notes'
         ,'created_at','updated_at','added_by','updated_by','com_code','date','active','is_parent','start_balance_status','orginal_id',
         'orginal_type',

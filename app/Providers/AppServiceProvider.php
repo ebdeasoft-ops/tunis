@@ -5,7 +5,7 @@ use App\Models\settings;       // تأكد من استدعاء الموديل ا
 use App\Models\system_setting; // تأكد من استدعاء الموديل الصحيح
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Pagination\Paginator;
-
+use Illuminate\Support\Facades\Schema; // لا تنس إضافة هذه المكتبة في الأعلى
 class AppServiceProvider extends ServiceProvider
 {
     /**
@@ -25,10 +25,12 @@ class AppServiceProvider extends ServiceProvider
      */
 
     //
-    public function boot(): void
-    {
-        Paginator::USeBootstrap();
+   public function boot(): void
+{
+    Paginator::useBootstrap();
 
+    // التحقق من وجود الجدول في قاعدة البيانات قبل الاستعلام عنه لمنع الأخطاء أثناء الـ Migration
+    if (Schema::hasTable('settings') && Schema::hasTable('system_settings')) {
         $setting = settings::find(1);
         $system_setting = system_setting::find(1);
 
@@ -40,10 +42,8 @@ class AppServiceProvider extends ServiceProvider
             define('region', $setting->region);
             define('city', $setting->city);
 
-
             define('PAGINATION_COUNT', 20);
             define('serviceCost', $system_setting->serviceCost);
-
 
             define('bank_acount_iban', $system_setting->bank_acount_iban);
             define('bank_acount_number', $system_setting->bank_acount_number);
@@ -55,7 +55,6 @@ class AppServiceProvider extends ServiceProvider
             define('TaxQrCode', $system_setting->Tax);
             define('sallerQrCode', $system_setting->name_ar);
 
-
             define('Nameen', $system_setting->name_en);
             define('describtionen', $system_setting->descriptionenglish);
             define('STen', '  C.R : ' . $system_setting->SR);
@@ -63,8 +62,8 @@ class AppServiceProvider extends ServiceProvider
             define('addressar', $system_setting->address_ar);
             define('addressen', $system_setting->address_en);
             define('camplogo', $system_setting->logo);
-
         }
     }
+}
 
 }

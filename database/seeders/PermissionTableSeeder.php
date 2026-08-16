@@ -274,8 +274,15 @@ class PermissionTableSeeder extends Seeder
     $i=0;
     foreach ($permissions as $permission) {
     
-    Permission::create(['name' => $permission,'name_ar'=>$permissions_ar[$i]]);
-    $i++;
+Permission::firstOrCreate(
+            [
+                'name' => $permission,
+                'guard_name' => 'web' // تحديد الـ guard هنا
+            ], 
+            [
+                'name_ar' => $permissions_ar[$i]
+            ]
+        );    $i++;
     }
     
     

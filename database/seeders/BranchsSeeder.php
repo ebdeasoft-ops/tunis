@@ -17,10 +17,10 @@ class BranchsSeeder extends Seeder
     {
         //
         branchs::create([
-            'name'=>'الرياض',
-            'place'=> 'الرياض',
-            'created_at'=>\Carbon\Carbon::now()->addHours(3),
-                  ]);
+            'name' => 'الرياض',
+            'place' => 'الرياض',
+            'created_at' => \Carbon\Carbon::now()->addHours(3),
+        ]);
 
     }
 }

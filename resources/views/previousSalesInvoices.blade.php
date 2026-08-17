@@ -85,7 +85,7 @@
     <div class="col-xl-12">
         <div class="card">
             <div class="card-body">
-                
+
                 <div class="search-box-container">
                     <div class="row">
                         <div class="col-md-4">
@@ -418,7 +418,7 @@
             });
 
             function searchaboutproductfunction() {
-                var dateVal = $('#date').val();
+                var dateVal = $('#date_search').val();
                 $.ajax({
                     url: "{{URL::to('searchAllInvoicespaginatenew')}}/" + dateVal,
                     type: "GET",
@@ -430,7 +430,7 @@
             }
 
             function searchaboutinvoiceByIdfunction() {
-                var idVal = $('#invoiceid_payment').val();
+                var idVal = $('#invoiceid_search').val();
                 var url = idVal != '' ? "{{URL::to('searchaboutinvoiceByIdfunction')}}/" + idVal : "{{URL::to('getAllinvicesajax')}}";
                 $.ajax({
                     url: url,

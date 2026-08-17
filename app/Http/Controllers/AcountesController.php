@@ -65,7 +65,7 @@ public function cashFlowStatementSearch(Request $request){
             ->where('created_at', '<', $fromDate . ' 00:00:00')
             ->select(DB::raw('SUM(debtor) as total_debtor'), DB::raw('SUM(creditor) as total_creditor'))
             ->first();
-        
+
         $beginningCash += (($totals->total_debtor ?? 0) - ($totals->total_creditor ?? 0));
     }
 
@@ -237,7 +237,7 @@ public function changesInEquity(Request $request)
     // صافي الربح = إجمالي الدخل أو الإيرادات التشغيلية مطروحاً منه المصروفات
     $netSales = $sales_total_value - $sales_return_total_value;
     $netPurchases = $purchase_total_value - $purchase_return_total_value;
-    
+
     // صافي الدخل للفترة (يمكنك تعديل المعادلة الرياضية لصافي الربح بما يطابق تفصيل تقرير الأرباح والخسائر لديك)
     $netIncome = $netSales - $netPurchases - $expense_total_value;
 
@@ -277,6 +277,64 @@ public function changesInEquity(Request $request)
 
 
 
+    public static function convertNumberToWordsEnglish($number)
+{
+    $number = (int)$number;
+
+    if ($number < 0) {
+        return 'negative ' . self::convertNumberToWordsEnglish(abs($number));
+    }
+
+    if ($number == 0) {
+        return 'zero';
+    }
+
+    $words = [];
+
+    $units = [
+        0 => '', 1 => 'one', 2 => 'two', 3 => 'three', 4 => 'four', 5 => 'five',
+        6 => 'six', 7 => 'seven', 8 => 'eight', 9 => 'nine', 10 => 'ten',
+        11 => 'eleven', 12 => 'twelve', 13 => 'thirteen', 14 => 'fourteen',
+        15 => 'fifteen', 16 => 'sixteen', 17 => 'seventeen', 18 => 'eighteen', 19 => 'nineteen'
+    ];
+
+    $tens = [
+        2 => 'twenty', 3 => 'thirty', 4 => 'forty', 5 => 'fifty',
+        6 => 'sixty', 7 => 'seventy', 8 => 'eighty', 9 => 'ninety'
+    ];
+
+    if ($number >= 1000000000) {
+        $words[] = self::convertNumberToWordsEnglish((int)($number / 1000000000)) . ' billion';
+        $number %= 1000000000;
+    }
+
+    if ($number >= 1000000) {
+        $words[] = self::convertNumberToWordsEnglish((int)($number / 1000000)) . ' million';
+        $number %= 1000000;
+    }
+
+    if ($number >= 1000) {
+        $words[] = self::convertNumberToWordsEnglish((int)($number / 1000)) . ' thousand';
+        $number %= 1000;
+    }
+
+    if ($number >= 100) {
+        $words[] = self::convertNumberToWordsEnglish((int)($number / 100)) . ' hundred';
+        $number %= 100;
+    }
+
+    if ($number > 0) {
+        if ($number < 20) {
+            $words[] = $units[$number];
+        } else {
+            $ten = (int)($number / 10);
+            $unit = $number % 10;
+            $words[] = $tens[$ten] . ($unit ? '-' . $units[$unit] : '');
+        }
+    }
+
+    return implode(' ', array_filter($words));
+}
 
 
 
@@ -289,12 +347,12 @@ public function changesInEquity(Request $request)
 
         // الحسابات التي سنقبض منها (العملاء/الموردين/الخ..)
         $accounts = financial_accounts::where('active', 1)->where('is_parent', 0)->where('orginal_type','!=',2)->where('id','!=',1)->get();
-        
+
         // الحسابات التي سيتم الإيداع فيها (الصناديق والبنوك فقط)
-        $main_accounts = financial_accounts::whereIn('orginal_type', [1, 2])->get(); 
+        $main_accounts = financial_accounts::whereIn('orginal_type', [1, 2])->get();
 
         // جلب مراكز التكلفة
-        $cost_centers = Cost_centers::all(); 
+        $cost_centers = Cost_centers::all();
 
         return view('acountes.voncher', compact('accounts', 'main_accounts', 'cost_centers'));
     }
@@ -452,7 +510,7 @@ public function changesInEquity(Request $request)
     public function SearchconvertcashboxToBank(Request $request)
     {
         app()->setLocale(LaravelLocalization::getCurrentLocale());
-        
+
         // 1. إنشاء حركة التحويل أولاً وحفظها بمتغير فريد لتجنب التداخل والتسمية الخاطئة للـ Object
         $convertLog = convertcashboxToBank::create([
             'from_user_id' => Auth()->user()->id,
@@ -467,9 +525,9 @@ public function changesInEquity(Request $request)
         if($account5) {
             $account5->update([
                 'current_balance' => $account5->current_balance - $request->cashreceived
-            ]); 
+            ]);
         }
-        
+
         // 3. قيد الحساب رقم 5
         credittransactions::create([
             'attachments'=>'-',
@@ -483,18 +541,18 @@ public function changesInEquity(Request $request)
             'currentblance'=>0,
             'Pay_Method_Name' => 'Cash',
             'date_export' => date("Y-m-d"),
-            'created_at' => \Carbon\Carbon::now()->addHours(3), 
+            'created_at' => \Carbon\Carbon::now()->addHours(3),
             'updated_at' => \Carbon\Carbon::now()->addHours(3),
             'orginal_id'=>$account5->orginal_id ?? 0,
-            'debtor'=> 0, 
+            'debtor'=> 0,
             'creditor'=>$request->cashreceived,
-            'name'=> '-', 
-            'tax'=> 0, 
-            'vat'=> 0, 
+            'name'=> '-',
+            'tax'=> 0,
+            'vat'=> 0,
             'type_decument'=>0,
             'sent_serf_count'=>0,
         ]);
-     
+
         // 4. تحديث الحساب الفرعي المرتبط بالأب رقم 5 وحسب الفرع الحالي
         $subAccount5 = financial_accounts::where('parent_account_number', 5)->where('branchs_id', Auth()->user()->branchs_id)->first();
         if($subAccount5) {
@@ -515,19 +573,19 @@ public function changesInEquity(Request $request)
                 'currentblance'=>0,
                 'Pay_Method_Name' => 'Cash',
                 'date_export' => date("Y-m-d"),
-                'created_at' => \Carbon\Carbon::now()->addHours(3), 
+                'created_at' => \Carbon\Carbon::now()->addHours(3),
                 'updated_at' => \Carbon\Carbon::now()->addHours(3),
                 'orginal_id'=>$subAccount5->orginal_id ?? 0,
-                'debtor'=> 0, 
+                'debtor'=> 0,
                 'creditor'=>$request->cashreceived,
-                'name'=> '-', 
-                'tax'=> 0, 
-                'vat'=> 0, 
+                'name'=> '-',
+                'tax'=> 0,
+                'vat'=> 0,
                 'type_decument'=>0,
                 'sent_serf_count'=>0,
             ]);
         }
-        
+
         // 5. تحديث الحساب الرئيسي رقم 4
         $account4 = financial_accounts::find(4);
         if($account4) {
@@ -547,26 +605,26 @@ public function changesInEquity(Request $request)
                 'currentblance'=>0,
                 'Pay_Method_Name' => 'Cash',
                 'date_export' => date("Y-m-d"),
-                'created_at' => \Carbon\Carbon::now()->addHours(3),  
+                'created_at' => \Carbon\Carbon::now()->addHours(3),
                 'updated_at' => \Carbon\Carbon::now()->addHours(3),
                 'orginal_id'=>$account4->orginal_id ?? 0,
-                'debtor'=> $request->cashreceived, 
+                'debtor'=> $request->cashreceived,
                 'creditor'=>0,
-                'name'=> '-', 
-                'tax'=> 0, 
-                'vat'=> 0, 
+                'name'=> '-',
+                'tax'=> 0,
+                'vat'=> 0,
                 'type_decument'=>0,
                 'sent_serf_count'=>0,
             ]);
         }
-        
+
         // 6. تحديث الحساب الفرعي المرتبط بالأب رقم 4 وحسب الفرع الحالي
         $subAccount4 = financial_accounts::where('parent_account_number', 4)->where('branchs_id', Auth()->user()->branchs_id)->first();
         if($subAccount4) {
             $subAccount4->update([
                 'current_balance'=>$subAccount4->current_balance - $request->cashreceived,
                 'debtor_current'=>$subAccount4->debtor_current + $request->cashreceived,
-            ]); 
+            ]);
 
             credittransactions::create([
                 'attachments'=>'-',
@@ -580,19 +638,19 @@ public function changesInEquity(Request $request)
                 'currentblance'=>0,
                 'Pay_Method_Name' => 'Cash',
                 'date_export' => date("Y-m-d"),
-                'created_at' => \Carbon\Carbon::now()->addHours(3), 
+                'created_at' => \Carbon\Carbon::now()->addHours(3),
                 'updated_at' => \Carbon\Carbon::now()->addHours(3),
                 'orginal_id'=>$subAccount4->orginal_id ?? 0,
-                'debtor'=> $request->cashreceived, 
+                'debtor'=> $request->cashreceived,
                 'creditor'=>0,
-                'name'=> '-', 
-                'tax'=> 0, 
-                'vat'=> 0, 
+                'name'=> '-',
+                'tax'=> 0,
+                'vat'=> 0,
                 'type_decument'=>0,
                 'sent_serf_count'=>0,
             ]);
         }
-        
+
         // تجهيز بيانات الـ Return المرجعة للاجاكس بشكل سليم بدون الاعتماد على كروت ممسوحة
         $returnData = [
             'user' => Auth()->user()->name,
@@ -640,7 +698,7 @@ public function changesInEquity(Request $request)
 
     public function reciept_decoument()
     {
-        app()->setLocale(LaravelLocalization::getCurrentLocale());   
+        app()->setLocale(LaravelLocalization::getCurrentLocale());
         return view('acountes.reciept_decoment');
     }
 
@@ -668,7 +726,7 @@ public function changesInEquity(Request $request)
 
         return view('sant_abd_ajax', compact('data'));
     }
-        
+
     public function get_all_kid_yaomy_jax()
     {
         app()->setLocale(LaravelLocalization::getCurrentLocale());
@@ -680,10 +738,10 @@ public function changesInEquity(Request $request)
             ->where('decument_id', 0 )
             ->where('save',1)
             ->orderby('id', 'desc')->paginate(4);
-       
+
         return view('ajax_dely_record', compact('data'));
     }
-    
+
     public function search_by_decoumentNo_kid_yomy($id)
     {
         app()->setLocale(LaravelLocalization::getCurrentLocale());
@@ -692,7 +750,7 @@ public function changesInEquity(Request $request)
             ->where('note', 'LIKE', '%' . 'قيد يومي رقم' . '%' )
             ->where('save',1)
             ->orderby('id', 'desc')->paginate(4);
-       
+
         return view('ajax_dely_record', compact('data'));
     }
 
@@ -705,7 +763,7 @@ public function changesInEquity(Request $request)
             ->where('decument_id', 0)->where('cost_center','!=', 0)
 
             ->orderby('id', 'desc')->paginate(3);
-   
+
         return view('sant_serf_ajax', compact('data'));
     }
 
@@ -737,23 +795,23 @@ public function changesInEquity(Request $request)
     {
         $transactiontocustomer = credittransactions::find($request->id);
         $credittransactions = credittransactions::where('sent_serf_count', $transactiontocustomer->sent_serf_count)
-            ->where('type_decument', 2) 
+            ->where('type_decument', 2)
             ->get();
 
         $transaction = [];
-        $total_spent = 0; 
+        $total_spent = 0;
 
         foreach ($credittransactions as $item) {
-            if ($item->debtor > 0) { 
+            if ($item->debtor > 0) {
                 $total_spent += $item->debtor;
                 $transaction[] = [
                     "sent_serf_count" => $transactiontocustomer->sent_serf_count,
                     'name'            => optional($item->financial_accounts_data)->name ?? 'حساب غير معروف',
                     'created_at'      => $item->created_at,
                     'date'            => $item->created_at,
-                    'date_export'     => $item->date_export, 
+                    'date_export'     => $item->date_export,
                     'method_pay'      => $item->Pay_Method_Name,
-                    'paid_amount'     => $item->debtor, 
+                    'paid_amount'     => $item->debtor,
                     'note'            => $item->note
                 ];
             }
@@ -761,7 +819,7 @@ public function changesInEquity(Request $request)
 
         $data = [
             "transaction"  => $transaction,
-            "total_amount" => $total_spent, 
+            "total_amount" => $total_spent,
         ];
         return view('acountes.print_voucher_to_supplier', compact('data'));
     }
@@ -797,8 +855,8 @@ public function print_reciept_ducoument(Request $request)
         $total = 0;
 
         foreach ($credittransactions as $item) {
-            if ($item->creditor > 0) { 
-                $total += $item->creditor; 
+            if ($item->creditor > 0) {
+                $total += $item->creditor;
                 $transaction[] = [
                     "sent_abd_count" => $request->id,
                     'name'           => optional($item->financial_accounts_data)->name ?? 'حساب غير معروف',
@@ -806,7 +864,7 @@ public function print_reciept_ducoument(Request $request)
                     'date'           => $item->created_at,
                     'date_export'    => $item->date_export,
                     'method_pay'     => $item->Pay_Method_Name,
-                    'paid_amount'    => $item->creditor, 
+                    'paid_amount'    => $item->creditor,
                     'note'           => $item->note,
                     'id'             => $item->sent_abd_count
                 ];
@@ -828,10 +886,10 @@ public function print_reciept_ducoument(Request $request)
             $english_halala = 'Only';
         }
 
-        
+
         $data = [
             "transaction"       => $transaction,
-            "total_val"         => $total, 
+            "total_val"         => $total,
             'totatextlriyales'  => $arabic_riyales,
             'totatextlrihalala' => $arabic_halala,
             'totatext_en_riyales' => $english_riyales,
@@ -842,7 +900,7 @@ public function print_reciept_ducoument(Request $request)
     }
 
 
-    
+
     public function generate_pdf(Request $request)
     {
         app()->setLocale(LaravelLocalization::getCurrentLocale());
@@ -855,25 +913,25 @@ public function print_reciept_ducoument(Request $request)
                 'Balance' => 0,
                 'created_at' => $transactiontocustomer->created_at,
                 'date' => $transactiontocustomer->created_at,
-                'date_export' => $transactiontocustomer->date_export, 
+                'date_export' => $transactiontocustomer->date_export,
                 'method_pay' => $transactiontocustomer->Pay_Method_Name,
                 'paid_amount' => $transactiontocustomer->recive_amount,
                 'id' => $transactiontocustomer->sent_abd_count
             ],
         ];
-        
+
         $tran = ['data' => $data];
         $dateTime = now();
         $fileName = $dateTime->format('Y-m-d H:i:s');
         $html = view('pdf.pdf_reciept_ducoument', $tran)->toArabicHTML();
-        
+
         $pdf = PDF::loadHTML($html)->output();
-        
+
         $headers = array(
             "Content-type" => "application/pdf",
         );
         return response()->streamDownload(
-            fn () => print($pdf), 
+            fn () => print($pdf),
             "Invoice_No_".$transactiontocustomer->id."_". $fileName.".pdf",
             $headers
         );

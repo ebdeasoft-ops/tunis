@@ -471,7 +471,7 @@
             @endcan
 
 
-        
+
 
 
 
@@ -1172,7 +1172,7 @@
                 <ul class="slide-menu">
                     {{-- الملف الشخصي متاح دائماً لكل مستخدم مسجل دخول --}}
                     <li>
-                        <a class="slide-item" href="{{ url('/profile') }}">
+                        <a class="slide-item" href="{{ url('/user/profile') }}">
                             <i class="bx bx-slider-alt" style="margin-left: 5px; margin-right: 5px;"></i>
                             {{ __('auth.setting') }}
                         </a>

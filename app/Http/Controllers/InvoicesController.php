@@ -4303,6 +4303,11 @@ return response("<div class='alert alert-danger'>الفاتورة غير موج�
                 ->where('note', 'فاتورة مبيعات رقم :' . $invoiceId)
                 ->where('customer_id', $cashAccountId)
                 ->update(['save' => 0, 'recive_amount' => 0, 'debtor' => 0, 'creditor' => 0]);
+   // تصفير قيود البنك القديمة المرتبطة بالفاتورة
+                DB::table('credittransactions')
+                    ->where('note', 'فاتورة مبيعات رقم :' . $invoiceId)
+                    ->where('customer_id', $bankAccountId)
+                    ->update(['save' => 0, 'recive_amount' => 0, 'debtor' => 0, 'creditor' => 0]);
 
                    $customerFinancialAccount = financial_accounts::where('orginal_type', 1)
                 ->where('orginal_id', $invoice->customer_id)
@@ -4331,7 +4336,14 @@ return response("<div class='alert alert-danger'>الفاتورة غير موج�
                     ->where('note', 'فاتورة مبيعات رقم :' . $invoiceId)
                     ->where('customer_id', $oldTargetBankId)
                     ->update(['save' => 0, 'recive_amount' => 0, 'debtor' => 0, 'creditor' => 0]);
+         // تصفير القيود القديمة للكاش
+            DB::table('credittransactions')
+                ->where('note', 'فاتورة مبيعات رقم :' . $invoiceId)
+                ->where('customer_id', $cashAccountId)
+                ->update(['save' => 0, 'recive_amount' => 0, 'debtor' => 0, 'creditor' => 0]);
 
+
+                
                                   $customerFinancialAccount = financial_accounts::where('orginal_type', 1)
                 ->where('orginal_id', $invoice->customer_id)
                 ->first();

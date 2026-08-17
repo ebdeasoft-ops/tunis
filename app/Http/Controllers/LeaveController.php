@@ -32,7 +32,7 @@ public function index(Request $request)
     // عرض صفحة إضافة إجازة جديدة مع قائمة الموظفين
     public function create()
     {
-        $employees = Employee::all();
+        $employees = employee::all();
         return view('leaves.create', compact('employees'));
     }
 
@@ -49,7 +49,7 @@ public function index(Request $request)
             'reason' => 'nullable|string',
         ]);
 
-        $employee = Employee::findOrFail($request->employee_id);
+        $employee = employee::findOrFail($request->employee_id);
         $daysCount = $request->days_count;
         $deductionAmount = 0;
 
@@ -80,7 +80,7 @@ public function index(Request $request)
             'days_count' => $daysCount,
             'deduction_amount' => $deductionAmount,
             'reason' => $request->reason,
-            'status' => 'pending', 
+            'status' => 'pending',
         ]);
 
         return redirect()->route('leaves.index')->with('success', 'تم إضافة طلب الإجازة وحساب الخصومات بنجاح');
@@ -88,14 +88,14 @@ public function index(Request $request)
     public function edit($id)
 {
     $leave = \App\Models\Leave::findOrFail($id);
-    $employees = \App\Models\Employee::all(); // لتعبئة قائمة الموظفين في التعديل
+    $employees = \App\Models\employee::all(); // لتعبئة قائمة الموظفين في التعديل
     return view('leaves.edit', compact('leave', 'employees'));
 }
 
 public function update(Request $request, $id)
 {
     $leave = \App\Models\Leave::findOrFail($id);
-    
+
     $leave->update([
         'employee_id' => $request->employee_id,
         'leave_type' => $request->leave_type,
@@ -111,7 +111,7 @@ public function update(Request $request, $id)
 public function leaveBalanceReport()
 {
     // نفترض أن الموظف لديه حقل total_leave_days في جدول الموظفين
-    $employees = Employee::with(['leaves' => function($query) {
+    $employees = employee::with(['leaves' => function($query) {
         $query->where('status', 'approved'); // نحسب فقط الإجازات المقبولة
     }])->get();
 

@@ -665,7 +665,6 @@ class SupprocessesController extends Controller
             'name' => 'required',
             'email' => 'required|email',
             'phone' => 'required',
-            'loction' => 'required',
             'TaxـNumber' => 'required|numeric',
         ]);
 

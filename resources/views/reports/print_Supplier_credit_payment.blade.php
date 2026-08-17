@@ -176,8 +176,10 @@
 @endsection
 
 @section('title')
-    {{ __('home.voucher') }}
-@stop
+  سندات الصرف /Payment Voucher
+                
+                
+                @stop
 
 @section('page-header')
 <!-- breadcrumb -->
@@ -225,8 +227,10 @@
                             </a>
                             <div class="mt-2">
                                 <div class="voucher-title-badge">
-                                    <h4>{{ __('home.voucher') }}</h4>
-                                </div>
+                                    <span class="voucher-title-badge">
+                    سندات الصرف <span class="mx-1">/</span> Payment Voucher
+                </span>
+                                 </div>
                             </div>
                         </div>
 

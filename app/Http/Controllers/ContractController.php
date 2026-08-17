@@ -3,7 +3,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use App\Models\Contract;
-use App\Models\Employee;
+use App\Models\employee;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
 
@@ -12,14 +12,14 @@ class ContractController extends Controller
     public function edit($id)
 {
     $contract = Contract::findOrFail($id);
-    $employees = Employee::all();
+    $employees = employee::all();
     return view('contracts.edit', compact('contract', 'employees'));
 }
 
 public function update(Request $request, $id)
 {
     $contract = Contract::findOrFail($id);
-    
+
     $request->validate([
         'employee_id' => 'required|exists:employees,id',
         'contract_type' => 'required|string',
@@ -41,7 +41,7 @@ public function update(Request $request, $id)
 
     public function create()
     {
-        $employees = Employee::all();
+        $employees = employee::all();
         return view('contracts.create', compact('employees'));
     }
 
@@ -101,6 +101,6 @@ public function update(Request $request, $id)
         'expiringIqamas', 'expiringWorkPermits', 'expiringContracts',
         'expiredIqamas', 'expiredWorkPermits', 'expiredContracts'
     ));
-    
+
     }
 }

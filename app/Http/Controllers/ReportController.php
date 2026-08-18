@@ -3293,7 +3293,7 @@ public function search_stockquantity(Request $request)
     {
         $data = [
             "invoice" => product_movement_another_branch::find($invoiceId),
-            "itemsdetails" => product_movement_another_branch_items::where('order_id', $invoiceId)->get()
+            "items" => product_movement_another_branch_items::where('order_id', $invoiceId)->get()
         ];
 
         return view('supProcesses.print_send_product', compact('data'));

@@ -978,4 +978,31 @@ return [
     'warehouses' => 'Warehouses',
     'main_warehouse' => 'Main Warehouse',
     'secandry_warehouses' => 'Secondary Warehouses',
+     'select_branch'        => 'Select Branch',
+    'all_branches'         => 'All Branches',
+    'branch_filter_hint'   => 'Select a branch to view its operations only',
+ 
+    'receipt_vouchers'     => 'Receipt Vouchers (Today)',
+    'payment_vouchers'     => 'Payment Vouchers (Today)',
+    'voucher'               => 'voucher',
+    'branch_transfers'     => 'Branch Transfers (Today)',
+    'transfer'              => 'transfer',
+    'returns_total'        => 'Total Returns (Today)',
+    'sales_return'          => 'Sales Return',
+    'purchase_return'      => 'Purchase Return',
+ 
+    'branch_transfers_today' => 'Product Transfers Between Branches (Today)',
+    'from_branch'            => 'From Branch',
+    'to_branch'               => 'To Branch',
+    'transfer_completed'    => 'Completed',
+    'transfer_pending'      => 'Pending',
+    'no_transfers_today'    => 'No branch transfers today',
+    "select_language"=> "Select Language",
+  "live"=> "Live",
+  "pending_invoices_warning"=> "There are pending invoices",
+  "you_have"=> "You have",
+  "invoices_waiting_to_send"=> "invoices waiting to send",
+  "send_pending_invoices_now"=> "Send pending invoices now",
+  "zatca_authority"=>"zatca authority"
+
 ];

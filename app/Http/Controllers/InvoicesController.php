@@ -42,7 +42,9 @@ use App\Services\Zatca\Invoice\InvoiceGenerator;
 
 // Models
 use App\Models\Avt;
+use App\Models\branchs;
 use App\Models\invoices;
+use App\Models\product_movement_another_branch;
 use App\Models\products;
 use App\Models\sales;
 use App\Models\settings;
@@ -851,122 +853,234 @@ public function save_delivery_sale(Request $request)
 
 
 
-public function dashboard()
+public function dashboard(Request $request)
 {
-    $today = Carbon::today()->toDateString();
-    $monthStart = Carbon::now()->startOfMonth()->toDateString();
 
-    // جلب نسبة الضريبة
-    $avtSetting = Avt::find(1);
-    $vat = $avtSetting ? $avtSetting->AVT : 0;
-
-    /* ================= TODAY SALES ================= */
-
-    $todayInvoicesCount = invoices::whereDate('created_at', $today)
-        ->where('save', 1)
-        ->count();
-
-    $todaySales = invoices::whereDate('created_at', $today)
-        ->where('save', 1)
-        ->sum(DB::raw('cashamount + bankamount + creaditamount + Bank_transfer'));
-
-    $todayReturns = return_sales::whereDate('created_at', $today)
-        ->sum(DB::raw('(return_Unit_Price * return_quantity) - discountvalue - discountoninvoice'));
-
-    $todayEarnings = round($todaySales - ($todayReturns + ($todayReturns * $vat)), 2);
-
-
-    /* ================= MONTH SALES (تعديل التواريخ) ================= */
-
-    $monthInvoicesCount = invoices::whereDate('created_at', '>=', $monthStart)
-        ->where('save', 1)
-        ->count();
-
-    // جلب جميع مبيعات الشهر شاملة ساعات اليوم الحالي
-    $monthSales = invoices::whereDate('created_at', '>=', $monthStart)
-        ->where('save', 1)
-        ->sum(DB::raw('cashamount + bankamount + creaditamount + Bank_transfer'));
-
-
-    /* ================= DELIVERY (NO TAX) ================= */
-
-    $todayDeliveryCount = delivery_to_customer_withoud_tax_invoices::whereDate('created_at', $today)
-        ->where('save', 1)->count();
-
-    $todayDeliverySales = delivery_to_customer_withoud_tax_invoices::whereDate('created_at', $today)
-        ->where('save', 1)
-        ->sum(DB::raw('cashamount + bankamount + creaditamount + Bank_transfer'));
-
-    $todayDeliveryReturns = return_sales_deliverys::whereDate('created_at', $today)
-        ->sum(DB::raw('(return_Unit_Price * return_quantity) - discountvalue - discountoninvoice'));
-
-    $todayDeliveryNet = round($todayDeliverySales - $todayDeliveryReturns, 2);
-
-    $monthDeliveryCount = delivery_to_customer_withoud_tax_invoices::whereDate('created_at', '>=', $monthStart)
-        ->where('save', 1)->count();
-
-    $monthDeliverySales = delivery_to_customer_withoud_tax_invoices::whereDate('created_at', '>=', $monthStart)
-        ->where('save', 1)
-        ->sum(DB::raw('cashamount + bankamount + creaditamount + Bank_transfer'));
-
-
-    /* ================= PURCHASES (تعديل التواريخ) ================= */
-
-    $todayPurchasesCount = resource_purchases::whereDate('created_at', $today)
-        ->where('save', 1)->count();
-
-    $todayPurchasesTotal = resource_purchases::whereDate('created_at', $today)
-        ->where('save', 1)
-        ->sum(DB::raw('In_debt'));
-
-    $monthPurchasesCount = resource_purchases::whereDate('created_at', '>=', $monthStart)
-        ->where('save', 1)->count();
-
-    // جلب جميع مشتريات الشهر شاملة اليوم الحالي
-    $monthPurchasesTotal = resource_purchases::whereDate('created_at', '>=', $monthStart)
-        ->where('save', 1)->sum(DB::raw('In_debt'));
-
-
-    /* ================= RETURNS COUNT ================= */
-
-    $uniqueReturnSalesCount = return_sales::whereDate('created_at', $today)
-        ->distinct('invoice_id')
-        ->count('invoice_id');
-
-    $resourcePurchasesCount = resource_purchases::whereDate('created_at', '>=', $today)
-        ->where('recoveredـpieces', '!=', 0)
-        ->count();
-
-   $latestInvoices = invoices::with(['customer', 'returnSales'])
-    ->whereDate('created_at', $today)
-    ->where('save', 1)
-    ->latest()
-    ->take(5)
-    ->get();
-
-    $customersCount = customers::count();
-    $suppliersCount = supllier::count();
-
-    return view('index', compact(
-        'todayEarnings',
-        'todayInvoicesCount',
-        'monthInvoicesCount',
-        'monthSales',
-        'todayDeliveryCount',
-        'todayDeliveryNet',
-        'monthDeliveryCount',
-        'monthDeliverySales',
-        'todayPurchasesCount',
-        'todayPurchasesTotal',
-        'monthPurchasesCount',
-        'monthPurchasesTotal',
-        'uniqueReturnSalesCount',
-        'resourcePurchasesCount',
-        'latestInvoices',
-        'customersCount',
-        'suppliersCount'
-    ));
+  $branchId = $request->get('branch_id'); // null = كل الفروع
+ 
+        $data = $this->buildDashboardData($branchId);
+ 
+        $branches = branchs::orderBy('name')->get();
+ 
+        return view('index', array_merge($data, [
+            'branches'       => $branches,
+            'selectedBranch' => $branchId,
+        ]));
 }
+
+ /**
+     * يستقبل طلب AJAX عند تغيير الفرع من الـ select، ويرجع كل الأرقام + جداول HTML جاهزة
+     * بدون إعادة تحميل الصفحة.
+     */
+    public function branchStats(Request $request)
+    {
+        $branchId = $request->get('branch_id');
+ 
+        $data = $this->buildDashboardData($branchId);
+ 
+        return response()->json([
+            'kpis' => [
+                'todayInvoicesCount'    => $data['todayInvoicesCount'],
+                'todayEarnings'         => number_format($data['todayEarnings'], 2),
+                'todayPurchasesCount'   => $data['todayPurchasesCount'],
+                'todayPurchasesTotal'   => number_format($data['todayPurchasesTotal'], 2),
+                'customersCount'        => $data['customersCount'],
+                'suppliersCount'        => $data['suppliersCount'],
+                'todayDeliveryCount'    => $data['todayDeliveryCount'],
+                'todayDeliveryNet'      => number_format($data['todayDeliveryNet'], 2),
+                'uniqueReturnSalesCount'=> $data['uniqueReturnSalesCount'],
+                'resourcePurchasesCount'=> $data['resourcePurchasesCount'],
+                'receiptVouchersCount'  => $data['receiptVouchersCount'],
+                'receiptVouchersTotal'  => number_format($data['receiptVouchersTotal'], 2),
+                'paymentVouchersCount'  => $data['paymentVouchersCount'],
+                'paymentVouchersTotal'  => number_format($data['paymentVouchersTotal'], 2),
+                'transfersCount'        => $data['transfersCount'],
+                'transfersTotal'        => number_format($data['transfersTotal'], 2),
+                'salesReturnsTotal'     => number_format($data['salesReturnsTotal'], 2),
+                'purchaseReturnsTotal'  => number_format($data['purchaseReturnsTotal'], 2),
+            ],
+            'chart' => [
+                'monthSales'         => (float) $data['monthSales'],
+                'monthDeliverySales' => (float) $data['monthDeliverySales'],
+                'monthPurchasesTotal'=> (float) $data['monthPurchasesTotal'],
+                'customersCount'     => $data['customersCount'],
+                'suppliersCount'     => $data['suppliersCount'],
+            ],
+            'latestInvoicesHtml' => view('partials.latest-invoices', ['latestInvoices' => $data['latestInvoices']])->render(),
+            'transfersHtml'      => view('partials.branch-transfers', ['transfers' => $data['transfers']])->render(),
+        ]);
+    }
+ 
+    /**
+     * يبني كل بيانات اللوحة (مبيعات، مشتريات، سندات، تحويلات، مرتجعات، عملاء، موردين)
+     * مفلترة حسب الفرع لو اتبعت، أو مجمّعة لكل الفروع لو $branchId = null.
+     * منطق مشترك بين التحميل الأول وطلب الـ AJAX حتى لا يتكرر الكود.
+     */
+    private function buildDashboardData($branchId = null)
+    {
+        $today      = Carbon::today()->toDateString();
+        $monthStart = Carbon::now()->startOfMonth()->toDateString();
+ 
+        // ================= المبيعات اليوم / الشهر =================
+        $todayInvoicesQuery = invoices::whereDate('created_at', $today)->where('save', 1);
+        $monthInvoicesQuery = invoices::whereDate('created_at', '>=', $monthStart)->where('save', 1);
+        $todayReturnsQuery  = return_sales::whereDate('created_at', $today);
+ 
+        if ($branchId) {
+            $todayInvoicesQuery->where('branchs_id', $branchId);
+            $monthInvoicesQuery->where('branchs_id', $branchId);
+            $todayReturnsQuery->where('branchs_id', $branchId);
+        }
+ 
+        $todayInvoicesCount = (clone $todayInvoicesQuery)->count();
+        $todaySales = (clone $todayInvoicesQuery)->sum(DB::raw('cashamount + bankamount + creaditamount + Bank_transfer'));
+        $todayReturns = (clone $todayReturnsQuery)->sum(DB::raw('(return_Unit_Price * return_quantity) - discountvalue - discountoninvoice'));
+ 
+        // جلب نسبة الضريبة
+        $avtSetting = DB::table('avts')->find(1);
+        $vat = $avtSetting ? ($avtSetting->AVT ?? 0) : 0;
+ 
+        $todayEarnings = round($todaySales - ($todayReturns + ($todayReturns * $vat)), 2);
+ 
+        $monthInvoicesCount = (clone $monthInvoicesQuery)->count();
+        $monthSales = (clone $monthInvoicesQuery)->sum(DB::raw('cashamount + bankamount + creaditamount + Bank_transfer'));
+ 
+        // ================= التسليم بدون ضريبة =================
+        $todayDeliveryQuery = delivery_to_customer_withoud_tax_invoices::whereDate('created_at', $today)->where('save', 1);
+        $monthDeliveryQuery = delivery_to_customer_withoud_tax_invoices::whereDate('created_at', '>=', $monthStart)->where('save', 1);
+        $todayDeliveryReturnsQuery = return_sales_deliverys::whereDate('created_at', $today);
+ 
+        if ($branchId) {
+            $todayDeliveryQuery->where('branchs_id', $branchId);
+            $monthDeliveryQuery->where('branchs_id', $branchId);
+            $todayDeliveryReturnsQuery->where('branchs_id', $branchId);
+        }
+ 
+        $todayDeliveryCount = (clone $todayDeliveryQuery)->count();
+        $todayDeliverySales = (clone $todayDeliveryQuery)->sum(DB::raw('cashamount + bankamount + creaditamount + Bank_transfer'));
+        $todayDeliveryReturns = (clone $todayDeliveryReturnsQuery)->sum(DB::raw('(return_Unit_Price * return_quantity) - discountvalue - discountoninvoice'));
+        $todayDeliveryNet = round($todayDeliverySales - $todayDeliveryReturns, 2);
+ 
+        $monthDeliveryCount = (clone $monthDeliveryQuery)->count();
+        $monthDeliverySales = (clone $monthDeliveryQuery)->sum(DB::raw('cashamount + bankamount + creaditamount + Bank_transfer'));
+ 
+        // ================= المشتريات =================
+        $todayPurchasesQuery = resource_purchases::whereDate('created_at', $today)->where('save', 1);
+        $monthPurchasesQuery = resource_purchases::whereDate('created_at', '>=', $monthStart)->where('save', 1);
+ 
+        if ($branchId) {
+            $todayPurchasesQuery->where('branchs_id', $branchId);
+            $monthPurchasesQuery->where('branchs_id', $branchId);
+        }
+ 
+        $todayPurchasesCount = (clone $todayPurchasesQuery)->count();
+        $todayPurchasesTotal = (clone $todayPurchasesQuery)->sum(DB::raw('In_debt'));
+        $monthPurchasesCount = (clone $monthPurchasesQuery)->count();
+        $monthPurchasesTotal = (clone $monthPurchasesQuery)->sum(DB::raw('In_debt'));
+ 
+        // ================= المرتجعات =================
+        $uniqueReturnSalesQuery = return_sales::whereDate('created_at', $today);
+        if ($branchId) {
+            $uniqueReturnSalesQuery->where('branchs_id', $branchId);
+        }
+        $uniqueReturnSalesCount = (clone $uniqueReturnSalesQuery)->distinct('invoice_id')->count('invoice_id');
+        $salesReturnsTotal = (clone $uniqueReturnSalesQuery)->sum(DB::raw('(return_Unit_Price * return_quantity) - discountvalue - discountoninvoice'));
+ 
+        $resourcePurchasesReturnsQuery = resource_purchases::whereDate('created_at', '>=', $today)
+            ->where('recoveredـpieces', '!=', 0);
+        if ($branchId) {
+            $resourcePurchasesReturnsQuery->where('branchs_id', $branchId);
+        }
+        $resourcePurchasesCount = (clone $resourcePurchasesReturnsQuery)->count();
+        $purchaseReturnsTotal = (clone $resourcePurchasesReturnsQuery)->sum(DB::raw('recoveredـpieces'));
+ 
+        // ================= سندات القبض والصرف =================
+        // ⚠️ افتراض: الجدول credittransactions فيه عمود type_decument
+        // 1 = سند قبض / 2 = سند صرف — عدّل الشرط لو مختلف عندك
+        $receiptVouchersQuery = credittransactions::whereDate('created_at', '<=', $today)
+            ->whereDate('created_at', '>=', $today )
+            ->where('note', 'LIKE', '%' . 'سند قبض' . '%')
+            ->where('decument_id', 0)->
+              where('save', 1);
+
+
+        $paymentVouchersQuery = credittransactions::whereDate('created_at', $today)
+            ->where('type_decument', 2)->where('decument_id', 0)->where('cost_center','!=', 0)
+            ->where('save', 1);
+ 
+        if ($branchId) {
+            $receiptVouchersQuery->where('branchs_id', $branchId);
+            $paymentVouchersQuery->where('branchs_id', $branchId);
+        }
+ 
+        $receiptVouchersCount = (clone $receiptVouchersQuery)->count();
+        $receiptVouchersTotal = (clone $receiptVouchersQuery)->sum('recive_amount');
+        $paymentVouchersCount = (clone $paymentVouchersQuery)->count();
+        $paymentVouchersTotal = (clone $paymentVouchersQuery)->sum('recive_amount');
+ 
+        // ================= تحويل المنتجات بين الفروع =================
+        // بيشمل أي تحويل الفرع طرف فيه (مُرسِل أو مُستقبِل) لو فيه فلتر فرع
+        $transfersQuery = product_movement_another_branch::whereDate('created_at', $today)
+            ->with(['branchfrom', 'branchto']);
+ 
+        if ($branchId) {
+            $transfersQuery->where(function ($q) use ($branchId) {
+                $q->where('branch_from', $branchId)->orWhere('branch_to', $branchId);
+            });
+        }
+ 
+        $transfersCount = (clone $transfersQuery)->count();
+        $transfersTotal = (clone $transfersQuery)->sum('Totalcost');
+        $transfers = (clone $transfersQuery)->latest()->take(5)->get();
+ 
+        // ================= أحدث الفواتير =================
+        $latestInvoicesQuery = invoices::with(['customer', 'returnSales'])
+            ->whereDate('created_at', $today)
+            ->where('save', 1);
+ 
+        if ($branchId) {
+            $latestInvoicesQuery->where('branchs_id', $branchId);
+        }
+ 
+        $latestInvoices = $latestInvoicesQuery->latest()->take(5)->get();
+ 
+        // ================= عدد العملاء والموردين =================
+        // ⚠️ لو جدولي customers / supllier مالهمش عمود فرع، هيفضلوا يعرضوا الإجمالي العام
+        // حتى لو اخترت فرع معين — قولّي لو فيه عمود ربط عشان أظبطها
+        $customersCount = customers::count();
+        $suppliersCount = supllier::count();
+ 
+        return compact(
+            'todayEarnings',
+            'todayInvoicesCount',
+            'monthInvoicesCount',
+            'monthSales',
+            'todayDeliveryCount',
+            'todayDeliveryNet',
+            'monthDeliveryCount',
+            'monthDeliverySales',
+            'todayPurchasesCount',
+            'todayPurchasesTotal',
+            'monthPurchasesCount',
+            'monthPurchasesTotal',
+            'uniqueReturnSalesCount',
+            'salesReturnsTotal',
+            'resourcePurchasesCount',
+            'purchaseReturnsTotal',
+            'receiptVouchersCount',
+            'receiptVouchersTotal',
+            'paymentVouchersCount',
+            'paymentVouchersTotal',
+            'transfersCount',
+            'transfersTotal',
+            'transfers',
+            'latestInvoices',
+            'customersCount',
+            'suppliersCount'
+        );
+    }
+
+
 
 public function getlastprice_delivery($product_id, $customer_id)
 {

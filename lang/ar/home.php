@@ -1013,4 +1013,30 @@ return [
     'warehouses' => 'المستودعات',
     'main_warehouse' => 'المخزن الرئيسي',
     'secandry_warehouses' => 'المخازن الفرعية',
+       'select_branch'        => 'اختر الفرع',
+    'all_branches'         => 'كل الفروع',
+    'branch_filter_hint'   => 'اختر فرعًا لعرض عملياته فقط',
+ 
+    'receipt_vouchers'     => 'سندات القبض (اليوم)',
+    'payment_vouchers'     => 'سندات الصرف (اليوم)',
+    'branch_transfers'     => 'تحويلات بين الفروع (اليوم)',
+    'transfer'              => 'تحويل',
+    'returns_total'        => 'إجمالي المرتجعات (اليوم)',
+    'sales_return'          => 'مرتجع بيع',
+    'purchase_return'      => 'مرتجع شراء',
+ 
+    'branch_transfers_today' => 'تحويلات المنتجات بين الفروع (اليوم)',
+    'from_branch'            => 'من فرع',
+    'to_branch'               => 'إلى فرع',
+    'transfer_completed'    => 'مكتمل',
+    'transfer_pending'      => 'قيد التنفيذ',
+    'no_transfers_today'    => 'لا توجد تحويلات بين الفروع اليوم',
+    'select_language'=>"اختار  اللغة",
+    "live"=> "مباشر",
+    "pending_invoices_warning"=> "يوجد فواتير معلقة",
+    "you_have"=> "لديك",
+    "invoices_waiting_to_send"=> "فواتير بانتظار الإرسال",
+    "send_pending_invoices_now"=> "إرسال الفواتير المعلقة الآن",
+      "zatca_authority"=>"منصة فاتورة"
+
 ];

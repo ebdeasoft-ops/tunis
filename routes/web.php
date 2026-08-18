@@ -438,6 +438,7 @@ Route::middleware([
         Route::post('updatecustomerDataRecipt', 'updatecustomerDataRecipt');
         Route::post('reciptprinter', 'reciptprinter');
         Route::get('/dashboard', 'dashboard')->name('dashboard');
+        Route::get('/home/branch-stats', 'branchStats')->name('home.branch-stats');
 
         // المسارات السابقة للـ الكنترولر
         Route::post('save_delivery_sale', 'save_delivery_sale');

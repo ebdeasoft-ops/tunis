@@ -128,7 +128,7 @@ $logo=camplogo;
         <td>{{ $invoice->branch->name }}</td>
         <td>{{ $invoice->user->name }}</td>
         <td>
-            @if($invoice->vat == 1)
+            @if($invoice->expensesAvt == 1)
                 <span class="badge badge-success" style="padding: 5px 10px; border-radius: 5px;">
                     <i class="fa fa-check"></i> يخضع للضريبة
                 </span>

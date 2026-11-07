@@ -11,24 +11,55 @@ use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
 class Exportproducts implements FromCollection, WithHeadings, ShouldAutoSize, WithStyles
 {
-    private $totalRows;
-    private $branchId; // المتغير لاستقبال رقم الفرع
+    // اسم عمود المجموعة في جدول المنتجات (عدّله إن كان مختلفاً في قاعدة البيانات)
+    const GROUP_COLUMN = 'product_group';
 
-    // المُنشئ لاستقبال رقم الفرع عند استدعاء الكلاس
-    public function __construct($branchId)
+    private $totalRows = 2;
+    private $branchId;
+    private $groupId;
+    private $search;
+    private $location;
+
+    public function __construct($branchId, $groupId = null, $search = null, $location = null)
     {
         $this->branchId = $branchId;
+        $this->groupId  = $groupId;
+        $this->search   = $search;
+        $this->location = $location;
     }
 
     public function collection()
     {
-        // استخدام رقم الفرع الممرر للكلاس
-        $products = products::where('branchs_id', $this->branchId)
-            ->where('numberofpice', '>', 0)
-            ->get(['id', 'product_name', 'Product_Code', 'Product_Location', 'numberofpice', 'purchasingـprice']);
+        $query = products::where('numberofpice', '>', 0);
+
+        // الفرع: "-" أو فارغ = كل الفروع
+        if (!empty($this->branchId) && $this->branchId !== '-') {
+            $query->where('branchs_id', $this->branchId);
+        }
+
+        // المجموعة
+        if (!empty($this->groupId) && $this->groupId !== '-') {
+            $query->where(self::GROUP_COLUMN, $this->groupId);
+        }
+
+        // البحث بالاسم أو رقم المنتج
+        if (!empty($this->search)) {
+            $search = $this->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('product_name', 'like', '%' . $search . '%')
+                  ->orWhere('Product_Code', 'like', '%' . $search . '%');
+            });
+        }
+
+        // الموقع
+        if (!empty($this->location)) {
+            $query->where('Product_Location', 'like', '%' . $this->location . '%');
+        }
+
+        $products = $query->get(['id', 'product_name', 'Product_Code', 'Product_Location', 'numberofpice', 'purchasingـprice']);
 
         $grandTotal = 0;
-        
+
         $data = $products->map(function ($item) use (&$grandTotal) {
             $rowTotal = $item->numberofpice * $item->purchasingـprice;
             $grandTotal += $rowTotal;
@@ -40,17 +71,17 @@ class Exportproducts implements FromCollection, WithHeadings, ShouldAutoSize, Wi
                 $item->Product_Location,
                 $item->numberofpice,
                 $item->purchasingـprice,
-                $rowTotal 
+                $rowTotal,
             ];
         });
 
-        // إضافة سطر الإجمالي
+        // سطر الإجمالي
         $data->push([
-            '', '', '', 'الاجمالي الكلي للمخزون المتوفر', '', '', $grandTotal
+            '', '', '', 'الاجمالي الكلي للمخزون المتوفر', '', '', $grandTotal,
         ]);
 
-        // تخزين عدد الصفوف لتنسيق السطر الأخير
-        $this->totalRows = $data->count() + 1; 
+        // +1 لصف العناوين
+        $this->totalRows = $data->count() + 1;
 
         return $data;
     }
@@ -62,34 +93,33 @@ class Exportproducts implements FromCollection, WithHeadings, ShouldAutoSize, Wi
 
     public function styles(Worksheet $sheet)
     {
+        $sheet->setRightToLeft(true);
+
         return [
-            // 1. تنسيق رأس الجدول
             1 => [
                 'font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF']],
                 'fill' => [
                     'fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID,
-                    'startColor' => ['rgb' => '4CAF50']
+                    'startColor' => ['rgb' => '4CAF50'],
                 ],
-                'alignment' => ['horizontal' => 'center']
+                'alignment' => ['horizontal' => 'center'],
             ],
 
-            // 2. تنسيق سطر الإجمالي
             $this->totalRows => [
                 'font' => ['bold' => true],
                 'fill' => [
                     'fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID,
-                    'startColor' => ['rgb' => 'FFFF00']
+                    'startColor' => ['rgb' => 'FFFF00'],
                 ],
             ],
 
-            // 3. إضافة حدود وتنسيق المحاذاة
             'A1:G' . $this->totalRows => [
                 'borders' => [
                     'allBorders' => [
                         'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
                     ],
                 ],
-                'alignment' => ['horizontal' => 'right']
+                'alignment' => ['horizontal' => 'right'],
             ],
         ];
     }

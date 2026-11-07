@@ -17,9 +17,237 @@ use App\Exports\ReceivedMovementsExport; // سنقوم بإنشائها أو ي�
 class ProductMovementAnotherBranchController extends Controller
 {
 
+/**
+ * تحديث كمية المنتج وحساب متوسط التكلفة المرجّح
+ */
+private function addStockWithAverageCost($productId, $qty, $newCost)
+{
+    DB::transaction(function () use ($productId, $qty, $newCost) {
+        // lockForUpdate عشان لو في عمليتين استلام في نفس اللحظة ما يتلخبطش الحساب
+        $product = products::lockForUpdate()->find($productId);
+
+        $oldQty   = max((float) $product->numberofpice, 0); // الكمية السالبة ما تدخلش في المتوسط
+        $oldCost  = (float) $product->{'purchasingـprice'};
+        $newQty   = (float) $qty;
+        $totalQty = $oldQty + $newQty;
+
+        $avgCost = $totalQty > 0
+            ? (($oldQty * $oldCost) + ($newQty * (float) $newCost)) / $totalQty
+            : (float) $newCost;
+
+        $product->numberofpice = $product->numberofpice + $qty;
+        $product->{'purchasingـprice'} = round($avgCost, 4);
+        $product->save();
+    });
+}
+
+public function reciveNewF(Request $request)
+{
+    app()->setLocale(LaravelLocalization::getCurrentLocale());
+
+    $now = \Carbon\Carbon::now()->addHours(3);
+
+    if ($request->order_id == 0) {
+        // ===== استلام جديد: إنشاء أمر استلام =====
+        $product_movement_another_branch = product_movement_another_branch::create([
+            'branch_to'           => Auth()->user()->branchs_id,
+            'branch_from'         => $request->branch,
+            'user_to'             => Auth()->user()->id,
+            'send_invoice_number' => $request->reciveInvoiceNumber,
+            'user_from'           => $request->userfrom,
+            'Totalcost'           => $request->thecostProduct * $request->quentity,
+            'created_at'          => $now,
+        ]);
+
+        product_movement_another_branch_items::create([
+            'order_id'                  => $product_movement_another_branch->id,
+            'product_id'                => $request->product_no,
+            'quantity'                  => $request->quentity,
+            'cost_per_each_withoud_tax' => $request->thecostProduct,
+            'created_at'                => $now,
+            'updated_at'                => $now,
+        ]);
+
+        // زيادة الكمية + حساب متوسط التكلفة
+        $this->addStockWithAverageCost(
+            $request->product_no,
+            $request->quentity,
+            $request->thecostProduct
+        );
+
+        $orderId   = $product_movement_another_branch->id;
+        $orderData = $product_movement_another_branch;
+    } else {
+        // ===== إضافة صنف لأمر استلام موجود =====
+        $orderData = product_movement_another_branch::find($request->order_id);
+
+        product_movement_another_branch::where('id', $request->order_id)->update([
+            'Totalcost'  => $orderData->Totalcost + ($request->thecostProduct * $request->quentity),
+            'created_at' => $now,
+        ]);
+
+        product_movement_another_branch_items::create([
+            'order_id'                  => $request->order_id,
+            'product_id'                => $request->product_no,
+            'quantity'                  => $request->quentity,
+            'cost_per_each_withoud_tax' => $request->thecostProduct,
+            'created_at'                => $now,
+            'updated_at'                => $now,
+        ]);
+
+        // زيادة الكمية + حساب متوسط التكلفة
+        $this->addStockWithAverageCost(
+            $request->product_no,
+            $request->quentity,
+            $request->thecostProduct
+        );
+
+        $orderId = $request->order_id;
+    }
+
+    // ===== تجهيز الأصناف للرد (نفس المنطق في الحالتين) =====
+    $items     = product_movement_another_branch_items::where('order_id', $orderId)->get();
+    $dataitems = [];
+    $count     = 0;
+
+    foreach ($items as $item) {
+        $count++;
+        $product = products::find($item->product_id);
+
+        $dataitems[] = [
+            "count"            => $count,
+            'productname'      => $product->product_name,
+            "product_code"     => $product->Product_Code,
+            "details_items_no" => $item->id,
+            'cost'             => $item->cost_per_each_withoud_tax,
+            'quantity'         => $item->quantity,
+            'total'            => $item->quantity * $item->cost_per_each_withoud_tax,
+        ];
+    }
+
+    return [
+        "orderData"  => $orderData,
+        "orderItems" => $dataitems,
+    ];
+}
 
 
+//  public function reciveNewF(Request $request)
+//     {
 
+//         //
+//         app()->setLocale(LaravelLocalization::getCurrentLocale());
+
+//         // return $request;
+//         $product = products::find($request->product_no);
+//         if ($request->order_id == 0) {
+//             $product_movement_another_branch = product_movement_another_branch::create(
+//                 [
+//                     'branch_to' => Auth()->user()->branchs_id,
+//                     'branch_from' => $request->branch,
+//                     'user_to' => Auth()->user()->id,
+//                     'send_invoice_number' => $request->reciveInvoiceNumber,
+//                     'user_from' => $request->userfrom,
+//                     'Totalcost' => $request->thecostProduct * $request->quentity,
+//                     'created_at' => \Carbon\Carbon::now()->addHours(3),
+
+//                 ]
+//             );
+//             $product_movement_another_branch_items = product_movement_another_branch_items::create(
+//                 [
+//                     'order_id' => $product_movement_another_branch->id,
+//                     'product_id' => $request->product_no,
+//                     'quantity' => $request->quentity,
+//                     'cost_per_each_withoud_tax' => $request->thecostProduct,
+//                     'created_at' => \Carbon\Carbon::now()->addHours(3),
+//                     'updated_at' => \Carbon\Carbon::now()->addHours(3),
+//                 ]
+//             );
+//             $product = products::find($request->product_no);
+//             products::where('id', $request->product_no)->Update([
+
+//                 'numberofpice' => $product->numberofpice + $request->quentity,
+//                 'purchasingـprice'=>$request->thecostProduct
+//             ]);
+//             $product_movement_another_branch_items = product_movement_another_branch_items::where('order_id', $product_movement_another_branch->id)->get();
+//             $orderDate = [];
+//             $count = 0;
+//             foreach ($product_movement_another_branch_items as $product_movement_another_branch_item) {
+//                 $count++;
+
+//                 $product = products::find($product_movement_another_branch_item->product_id);
+
+//                 $dataitems[] = [
+//                     "count" => $count,
+//                     'productname' => $product->product_name,
+//                     "product_code" => $product->Product_Code,
+//                     "details_items_no" => $product_movement_another_branch_item->id,
+//                     'cost' => $product_movement_another_branch_item->cost_per_each_withoud_tax,
+//                     'quantity' => $product_movement_another_branch_item->quantity,
+//                     'total' => $product_movement_another_branch_item->quantity * $product_movement_another_branch_item->cost_per_each_withoud_tax,
+
+//                 ];
+//             }
+
+//             $data = [
+//                 "orderData" => $product_movement_another_branch,
+//                 "orderItems" => $dataitems
+//             ];
+//             return $data;
+//         } else {
+//             $product_movement_another_branch_data = product_movement_another_branch::find($request->order_id);
+//             $product_movement_another_branch = product_movement_another_branch::where('id', $request->order_id)->update(
+//                 [
+
+//                     'Totalcost' => $product_movement_another_branch_data->Totalcost + ($request->thecostProduct * $request->quentity),
+//                     'created_at' => \Carbon\Carbon::now()->addHours(3),
+
+//                 ]
+//             );
+//             $product_movement_another_branch_items = product_movement_another_branch_items::create(
+//                 [
+//                     'order_id' => $request->order_id,
+//                     'product_id' => $request->product_no,
+//                     'quantity' => $request->quentity,
+//                     'cost_per_each_withoud_tax' => $request->thecostProduct,
+//                     'created_at' => \Carbon\Carbon::now()->addHours(3),
+//                     'updated_at' => \Carbon\Carbon::now()->addHours(3),
+//                 ]
+//             );
+//             $product = products::find($request->product_no);
+//             products::where('id', $request->product_no)->Update([
+
+//  'numberofpice' => $product->numberofpice + $request->quentity,
+//                 'purchasingـprice'=>$request->thecostProduct
+//                 ]);
+//             $product_movement_another_branch_items = product_movement_another_branch_items::where('order_id', $request->order_id)->get();
+
+//             $dataitems = [];
+//             $count = 0;
+//             foreach ($product_movement_another_branch_items as $product_movement_another_branch_item) {
+//                 $count++;
+
+//                 $product = products::find($product_movement_another_branch_item->product_id);
+
+//                 $dataitems[] = [
+//                     "count" => $count,
+//                     'productname' => $product->product_name,
+//                     "product_code" => $product->Product_Code,
+//                     "details_items_no" => $product_movement_another_branch_item->id,
+//                     'cost' => $product_movement_another_branch_item->cost_per_each_withoud_tax,
+//                     'quantity' => $product_movement_another_branch_item->quantity,
+//                     'total' => $product_movement_another_branch_item->quantity * $product_movement_another_branch_item->cost_per_each_withoud_tax,
+
+//                 ];
+//             }
+
+//             $data = [
+//                 "orderData" => $product_movement_another_branch_data,
+//                 "orderItems" => $dataitems
+//             ];
+//             return $data;
+//         }
+//     }
 
 
 public function exportReceivedPdf(Request $request)
@@ -211,97 +439,216 @@ public function showMyDrafts(Request $request)
 
     public function create(Request $request)
     {
-        // 1. التحقق من البيانات
-        $this->validate($request, [
-            'products' => 'required|array',
-            'products.*' => 'required|exists:products,id',
-            'branch' => 'required',
-            'employeereciver' => 'required|exists:users,id',
-            'quantities' => 'required|array',
-            'quantities.*' => 'required|numeric|min:0.01',
-            'prices' => 'required|array',
-            'status' => 'required|in:completed,draft',
-            'draft_id' => 'nullable|exists:product_movement_another_branches,id',
-        ]);
+        // // 1. التحقق من البيانات
+        // $this->validate($request, [
+        //     'products' => 'required|array',
+        //     'products.*' => 'required|exists:products,id',
+        //     'branch' => 'required',
+        //     'employeereciver' => 'required|exists:users,id',
+        //     'quantities' => 'required|array',
+        //     'quantities.*' => 'required|numeric|min:0.01',
+        //     'prices' => 'required|array',
+        //     'status' => 'required|in:completed,draft',
+        //     'draft_id' => 'nullable|exists:product_movement_another_branches,id',
+        // ]);
 
-        return DB::transaction(function () use ($request) {
-            $now = Carbon::now();
-            $user = Auth::user();
+        // return DB::transaction(function () use ($request) {
+        //     $now = Carbon::now();
+        //     $user = Auth::user();
 
-            $isUpdatingDraft = $request->has('draft_id') && !empty($request->draft_id);
+        //     $isUpdatingDraft = $request->has('draft_id') && !empty($request->draft_id);
 
-            if ($isUpdatingDraft) {
-                $movement = product_movement_another_branch::findOrFail($request->draft_id);
+        //     if ($isUpdatingDraft) {
+        //         $movement = product_movement_another_branch::findOrFail($request->draft_id);
 
-                // 🌟 [مهم جداً] إذا كان الاعتماد النهائي لحركة كانت مسودة سابقاً،
-                // نقوم أولاً بمسح بنود المسودة القديمة من جدول البنود بعد جلبها لإعادة البناء النظيف.
-                product_movement_another_branch_items::where('order_id', $movement->id)->delete();
+        //         // 🌟 [مهم جداً] إذا كان الاعتماد النهائي لحركة كانت مسودة سابقاً،
+        //         // نقوم أولاً بمسح بنود المسودة القديمة من جدول البنود بعد جلبها لإعادة البناء النظيف.
+        //         product_movement_another_branch_items::where('order_id', $movement->id)->delete();
 
-                $movement->update([
+        //         $movement->update([
+        //             'branch_to' => $request->branch,
+        //             'user_to' => $request->employeereciver,
+        //             'status' => $request->status,
+        //             'updated_at' => $now,
+        //         ]);
+        //     } else {
+        //         // إنشاء حركة جديدة تماماً لأول مرة
+        //         $movement = product_movement_another_branch::create([
+        //             'branch_from' => $user->branchs_id,
+        //             'branch_to' => $request->branch,
+        //             'user_from' => $user->id,
+        //             'user_to' => $request->employeereciver,
+        //             'status' => $request->status,
+        //             'reciveInvoiceNumber' => 1,
+        //             'created_at' => $now,
+        //             'updated_at' => $now,
+        //             'Totalcost' => 0,
+        //             'cost_withod_tax' => 0,
+        //         ]);
+        //     }
+
+        //     $orderId = $movement->id;
+        //     $totalCost = 0;
+        //     $totalCostWithoutTax = 0;
+
+        //     // 3. معالجة جدول المنتجات الحالي والجديد الماثل أمامنا على الشاشة
+        //     foreach ($request->products as $index => $product_id) {
+        //         $quantity = $request->quantities[$index];
+        //         $price = $request->prices[$index];
+
+        //         $product = products::lockForUpdate()->findOrFail($product_id);
+
+        //         // 🌟 منطق توازن المخزن المحدث:
+        //         // الخصم الفعلي من المخزن يتم "فقط" إذا كانت الحالة الحالية للملف هي اعتماد نهائي (completed)
+        //         if ($request->status === 'completed') {
+        //             $product->decrement('numberofpice', $quantity);
+        //         }
+
+        //         // إعادة إنشاء البند بالوضع والكمية الجديدة المحدثة على الشاشة
+        //         product_movement_another_branch_items::create([
+        //             'order_id' => $orderId,
+        //             'product_id' => $product_id,
+        //             'quantity' => $quantity,
+        //             'cost_per_each_withoud_tax' => $price,
+        //             'created_at' => $now,
+        //         ]);
+
+        //         // إعادة حساب الإجماليات المالية بناءً على المدخلات الأخيرة المعدلة
+        //         $totalCost += ($price * $quantity);
+        //         $purchasingPriceField = isset($product->purchasingـprice) ? $product->purchasingـprice : $product->purchasing_price;
+        //         $totalCostWithoutTax += ($purchasingPriceField * $quantity);
+        //     }
+
+        //     // 4. تحديث الإجمالي النهائي والدقيق في الفاتورة الرئيسية
+        //     $movement->update([
+        //         'Totalcost' => $totalCost,
+        //         'cost_withod_tax' => $totalCostWithoutTax
+        //     ]);
+
+        //     $message = $request->status === 'draft'
+        //         ? __('home.Movement_Draft_Updated_Successfully')
+        //         : __('home.Movement_Approved_Successfully');
+        //     return redirect()->back()->with('productupdatedlocation', $message)->with('saved_movement_id', $orderId);
+        // });
+        
+        
+        
+        //
+        app()->setLocale(LaravelLocalization::getCurrentLocale());
+
+        // return $request;
+        $product = products::find($request->product_no);
+        if ($request->order_id == 0) {
+            $product_movement_another_branch = product_movement_another_branch::create(
+                [
+                    'branch_from' => Auth()->user()->branchs_id,
                     'branch_to' => $request->branch,
-                    'user_to' => $request->employeereciver,
-                    'status' => $request->status,
-                    'updated_at' => $now,
-                ]);
-            } else {
-                // إنشاء حركة جديدة تماماً لأول مرة
-                $movement = product_movement_another_branch::create([
-                    'branch_from' => $user->branchs_id,
-                    'branch_to' => $request->branch,
-                    'user_from' => $user->id,
-                    'user_to' => $request->employeereciver,
-                    'status' => $request->status,
-                    'reciveInvoiceNumber' => 1,
-                    'created_at' => $now,
-                    'updated_at' => $now,
-                    'Totalcost' => 0,
-                    'cost_withod_tax' => 0,
-                ]);
-            }
+                    'user_from' => Auth()->user()->id,
+                    'reciveInvoiceNumber' => $request->reciveInvoiceNumber,
+                    'user_to' => $request->userfrom,
+                    'Totalcost' => $request->thecostProduct * $request->quentity,
+                    'created_at' => \Carbon\Carbon::now()->addHours(3),
 
-            $orderId = $movement->id;
-            $totalCost = 0;
-            $totalCostWithoutTax = 0;
+                ]
+            );
+            $product_movement_another_branch_items = product_movement_another_branch_items::create(
+                [
+                    'order_id' => $product_movement_another_branch->id,
+                    'product_id' => $request->product_no,
+                    'quantity' => $request->quentity,
+                    'cost_per_each_withoud_tax' => $request->thecostProduct,
+                    'created_at' => \Carbon\Carbon::now()->addHours(3),
+                    'updated_at' => \Carbon\Carbon::now()->addHours(3),
+                ]
+            );
+            $product = products::find($request->product_no);
+            products::where('id', $request->product_no)->Update([
 
-            // 3. معالجة جدول المنتجات الحالي والجديد الماثل أمامنا على الشاشة
-            foreach ($request->products as $index => $product_id) {
-                $quantity = $request->quantities[$index];
-                $price = $request->prices[$index];
-
-                $product = products::lockForUpdate()->findOrFail($product_id);
-
-                // 🌟 منطق توازن المخزن المحدث:
-                // الخصم الفعلي من المخزن يتم "فقط" إذا كانت الحالة الحالية للملف هي اعتماد نهائي (completed)
-                if ($request->status === 'completed') {
-                    $product->decrement('numberofpice', $quantity);
-                }
-
-                // إعادة إنشاء البند بالوضع والكمية الجديدة المحدثة على الشاشة
-                product_movement_another_branch_items::create([
-                    'order_id' => $orderId,
-                    'product_id' => $product_id,
-                    'quantity' => $quantity,
-                    'cost_per_each_withoud_tax' => $price,
-                    'created_at' => $now,
-                ]);
-
-                // إعادة حساب الإجماليات المالية بناءً على المدخلات الأخيرة المعدلة
-                $totalCost += ($price * $quantity);
-                $purchasingPriceField = isset($product->purchasingـprice) ? $product->purchasingـprice : $product->purchasing_price;
-                $totalCostWithoutTax += ($purchasingPriceField * $quantity);
-            }
-
-            // 4. تحديث الإجمالي النهائي والدقيق في الفاتورة الرئيسية
-            $movement->update([
-                'Totalcost' => $totalCost,
-                'cost_withod_tax' => $totalCostWithoutTax
+                'numberofpice' => $product->numberofpice - $request->quentity,
             ]);
+            $product_movement_another_branch_items = product_movement_another_branch_items::where('order_id', $product_movement_another_branch->id)->get();
+            $orderDate = [];
+            $count = 0;
+            foreach ($product_movement_another_branch_items as $product_movement_another_branch_item) {
+                $count++;
 
-            $message = $request->status === 'draft'
-                ? __('home.Movement_Draft_Updated_Successfully')
-                : __('home.Movement_Approved_Successfully');
-            return redirect()->back()->with('productupdatedlocation', $message)->with('saved_movement_id', $orderId);
-        });
+                $product = products::find($product_movement_another_branch_item->product_id);
+
+                $dataitems[] = [
+                    "count" => $count,
+                    'productname' => $product->product_name,
+                    "product_code" => $product->Product_Code,
+                    "details_items_no" => $product_movement_another_branch_item->id,
+                    'cost' => $product_movement_another_branch_item->cost_per_each_withoud_tax,
+                    'quantity' => $product_movement_another_branch_item->quantity,
+                    'total' => $product_movement_another_branch_item->quantity * $product_movement_another_branch_item->cost_per_each_withoud_tax,
+
+                ];
+            }
+
+            $data = [
+                "orderData" => $product_movement_another_branch,
+                "orderItems" => $dataitems
+            ];
+            return $data;
+        } else {
+            
+            if(product_movement_another_branch_items::where('product_id',$request->product_no)->where('order_id',$request->order_id)->first()==NULL){
+            $product_movement_another_branch_data = product_movement_another_branch::find($request->order_id);
+            $product_movement_another_branch = product_movement_another_branch::where('id', $request->order_id)->update(
+                [
+
+                    'Totalcost' => $product_movement_another_branch_data->Totalcost + ($request->thecostProduct * $request->quentity),
+                    'created_at' => \Carbon\Carbon::now()->addHours(3),
+
+                ]
+            );
+            $product_movement_another_branch_items = product_movement_another_branch_items::create(
+                [
+                    'order_id' => $request->order_id,
+                    'product_id' => $request->product_no,
+                    'quantity' => $request->quentity,
+                    'cost_per_each_withoud_tax' => $request->thecostProduct,
+                    'created_at' => \Carbon\Carbon::now()->addHours(3),
+                    'updated_at' => \Carbon\Carbon::now()->addHours(3),
+                ]
+            );
+            $product = products::find($request->product_no);
+            products::where('id', $request->product_no)->Update([
+
+                'numberofpice' => $product->numberofpice - $request->quentity,
+            ]);
+            
+        }
+            $product_movement_another_branch_items = product_movement_another_branch_items::where('order_id', $request->order_id)->get();
+
+            $dataitems = [];
+            $count = 0;
+            foreach ($product_movement_another_branch_items as $product_movement_another_branch_item) {
+                $count++;
+
+                $product = products::find($product_movement_another_branch_item->product_id);
+
+                $dataitems[] = [
+                    "count" => $count,
+                    'productname' => $product->product_name,
+                    "product_code" => $product->Product_Code,
+                    "details_items_no" => $product_movement_another_branch_item->id,
+                    'cost' => $product_movement_another_branch_item->cost_per_each_withoud_tax,
+                    'quantity' => $product_movement_another_branch_item->quantity,
+                    'total' => $product_movement_another_branch_item->quantity * $product_movement_another_branch_item->cost_per_each_withoud_tax,
+
+                ];
+            }
+            $product_movement_another_branch_data = product_movement_another_branch::find($request->order_id);
+
+            $data = [
+                "orderData" => $product_movement_another_branch_data,
+                "orderItems" => $dataitems
+            ];
+            return $data;
+        }
+    
     }
 
 
@@ -616,7 +963,7 @@ public function sentReport(Request $request)
         'items.product'
     ])
     ->where('branch_from', $currentBranchId)
-    ->where('status', 'completed');
+    ;
 
     // 🌟 إضافة شرط البحث برقم الحركة (Movement No.)
     if ($request->filled('movement_id')) {

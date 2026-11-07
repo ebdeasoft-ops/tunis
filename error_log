@@ -1,0 +1,5 @@
+[10-Jun-2026 13:11:01 UTC] PHP Warning:  require(/home/ebdea/public_html/alhyakilupdate.ebdea.online/ALHYAKIL_UPDATE/vendor/autoload.php): Failed to open stream: No such file or directory in /home/ebdea/public_html/alhyakilupdate.ebdea.online/ALHYAKIL_UPDATE/artisan on line 18
+[10-Jun-2026 13:11:01 UTC] PHP Fatal error:  Uncaught Error: Failed opening required '/home/ebdea/public_html/alhyakilupdate.ebdea.online/ALHYAKIL_UPDATE/vendor/autoload.php' (include_path='.:/opt/cpanel/ea-php82/root/usr/share/pear') in /home/ebdea/public_html/alhyakilupdate.ebdea.online/ALHYAKIL_UPDATE/artisan:18
+Stack trace:
+#0 {main}
+  thrown in /home/ebdea/public_html/alhyakilupdate.ebdea.online/ALHYAKIL_UPDATE/artisan on line 18

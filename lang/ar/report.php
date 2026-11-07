@@ -12,7 +12,7 @@ return [
     | these language lines according to your application's requirements.
     |
     */
-
+    'network_or_transfer' => 'تحويل بنكي / شبكة',
     'Cashsales' => ' مبيعات نقدية',
     'Creditsales' => 'مبيعات الأجل',
     'networksales' => ' مبيعات الشبكة',

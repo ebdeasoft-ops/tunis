@@ -158,68 +158,81 @@
         </div>
     </div>
 </div>
-    <div class="modal" id="paymentmethod">
-            <div class="modal-dialog modal-dialog-centered" role="document">
-                <div class="modal-content modal-content-demo">
-                    <div class="modal-header">
-                        <h6 class="modal-title">{{ __('home.paymentmethod') }}</h6>
-                        <button aria-label="Close" class="close" data-dismiss="modal" type="button"><span
-                                aria-hidden="true">&times;</span></button>
-                    </div>
-                    <div class="modal-body">
-                        <div class="row mg-b-15">
-                            <label style="font-size: 16px;"
-                                class="control-label parent-label">&nbsp;&nbsp;{{ __('home.total') }}:&nbsp;</label>
-                            <label style="font-size: 20px; font-weight: bold; color: #ff4f1f;" id="totalvalue">0</label>
-                            <label style="font-size: 15px;"
-                                class="control-label parent-label">&nbsp;{{ __('home.SAR') }}</label>
-                        </div>
+  <!-- enter payments -->
+<div class="modal" id="paymentmethod">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content modal-content-demo">
+            <div class="modal-header">
+                <h6 class="modal-title"> {{ __('home.paymentmethod') }} </h6>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <label style="font-size:16px" class="control-label parent-label">&nbsp;&nbsp;{{ __('home.total') }}
+                        :&nbsp; </label>
+                    <label style="font-size:20px" id="totalvalue">0</label>
+                    <label style="font-size:15px" class="control-label parent-label">&nbsp;{{ __('home.SAR') }}
+                        &nbsp;&nbsp;&nbsp;&nbsp; </label>
+                    <br>
 
-                        <div class="form-group">
-                            <label for="paymodal">{{ __('home.paymentmethod') }}</label>
-                            <select class="form-control" name="paymodal" id="paymodal" required>
-                                <option value="Cash">{{ __('report.cash') }}</option>
-                                <option value="Shabka">{{ __('report.shabka') }}</option>
-                                <option value="Bank_transfer">{{ __('home.Bank_transfer') }}</option>
-                                <option value="Credit">{{ __('report.credit') }}</option>
-                            </select>
-                        </div>
 
-                        <div class="row">
-                            <div class="col">
-                                <label for="cashamount" class="control-label parent-label">{{ __('report.cash') }}</label>
-                                <input type="text" class="form-control parent-input" name="cashamount" id="cashamount"
-                                    readonly value="0">
-                            </div>
-                            <div class="col">
-                                <label for="bankamount" class="control-label parent-label">{{ __('report.shabka') }}</label>
-                                <input type="text" class="form-control parent-input" name="bankamount" id="bankamount"
-                                    readonly value="0">
-                            </div>
-                            <div class="col">
-                                <label for="Bank_transfer"
-                                    class="control-label parent-label">{{ __('home.Bank_transfer') }}</label>
-                                <input type="text" class="form-control parent-input" name="Bank_transfer" id="Bank_transfer"
-                                    readonly value="0">
-                            </div>
-                            <div class="col">
-                                <label for="creaditamount"
-                                    class="control-label parent-label">{{ __('report.credit') }}</label>
-                                <input type="text" class="form-control parent-input" name="creaditamount" id="creaditamount"
-                                    readonly value="0">
-                            </div>
-                        </div>
-                        <!-- حقل خفي لتخزين رقم الفاتورة المراد دفعها -->
-                        <input type="hidden" id="invoiceid_payment">
+                </div>
+                <div class=" col">
+                    <label> {{ __('home.paymentmethod') }} </label>
+                    <br>
+
+                    <select class="form-control" name="paymodal" id='paymodal' required>
+
+                        <option value="Cash"> {{ __('report.cash') }}</option>
+                        <option value="Shabka"> {{ __('report.shabka') }} </option>
+                        <option value="Bank_transfer"> {{ __('home.Bank_transfer') }} </option>
+                        <option value="Credit"> {{ __('report.credit') }} </option>
+                        <option value="Bank_transfer"> {{ __('home.bank_arbic') }} </option>
+                        <option value="Partition"> {{ __('home.Partition of the amount') }} </option>
+
+                    </select>
+
+
+                </div>
+                <br>
+                <div class="row">
+
+                    <div class="col">
+
+                        <label class="control-label parent-label">{{ __('report.cash') }}</label>
+                        <input type="text" class="form-control parent-input" name="cashamount" id="cashamount" readonly
+                            value=0>
                     </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary"
-                            data-dismiss="modal">{{ __('home.cancel') }}</button>
-                        <button type="button" id="confirmpayment" class="btn btn-danger">{{ __('home.confirm') }}</button>
+
+                    <div class="col">
+
+                        <label class="control-label parent-label">{{ __('report.shabka') }}</label>
+                        <input type="text" class="form-control parent-input" name="bankamount" id="bankamount" readonly
+                            value=0>
                     </div>
+
+                    <div class="col">
+
+                        <label class="control-label parent-label">{{ __('home.Bank_transfer') }}</label>
+                        <input type="text" class="form-control parent-input" name="Bank_transfer" id="Bank_transfer"
+                            readonly value=0>
+                    </div>
+                    <div class="col">
+
+                        <label class="control-label parent-label">{{ __('report.credit') }}</label><br>
+                        <input type="text" class="form-control parent-input" name="creaditamount" id="creaditamount"
+                            readonly value=0>
+                    </div>
+                    <input hidden type="text" id="invoiceid">
                 </div>
             </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">{{ __('home.cancel') }}</button>
+                <button id="confirmpayment" name="confirmpayment" data-dismiss="modal"
+                    class="btn btn-danger">{{ __('home.confirm') }}</button>
+            </div>
         </div>
+    </div>
+</div>
 
 @endsection
 
@@ -267,7 +280,7 @@
                 var id = button.data('id');
                 var invoice = button.data('totalinvoice');
 
-                $('#invoiceid_payment').val(id);
+                $('#invoiceid').val(id);
                 document.getElementById('totalvalue').innerHTML = invoice;
                 $('#cashamount').val(invoice);
             });
@@ -292,7 +305,7 @@
 
                 if (Number(text) == totalEntered) {
                     $.ajax({
-                        url: "{{URL::to('updatepaymentconfirmpayment')}}/" + $('#invoiceid_payment').val() + '/' +
+                        url: "{{URL::to('updatepaymentconfirmpayment')}}/" + $('#invoiceid').val() + '/' +
                             $('#cashamount').val() + '/' + $('#bankamount').val() + '/' +
                             $('#creaditamount').val() + "/" + $('#Bank_transfer').val() + '/' +
                             paymentMethodValue + '/' + anotherBankValue,

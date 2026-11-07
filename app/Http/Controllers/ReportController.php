@@ -50,6 +50,7 @@ use App\Exports\Export_Account_staatment;
 use App\Exports\ExpensesExport;
 use App\Exports\ProductsSalesAndPurchaseReport;
 use App\Exports\StockQuantityExport;
+use App\Exports\SalesAndReturnExport;
 
 use Illuminate\Support\Facades\View;
 
@@ -133,8 +134,13 @@ class ReportController extends Controller
     {
         app()->setLocale(LaravelLocalization::getCurrentLocale());
 
-        $start_at = $request->start_at;
-        $end_at = $request->end_at;
+
+        set_time_limit(1000); // 5 دقايق بدل الافتراضي (غالباً 30 أو 60 ثانية)
+        ini_set('memory_limit', '512M');
+        
+        
+        $start_at =  $request->start_at. " 00:00:00" ;
+        $end_at = $request->end_at . " 23:59:59";
 
         // بناء استعلام المبيعات بشكل ديناميكي ونظيف بدلاً من الـ if-else المتكررة
         $invoicesQuery = sales::whereDate('created_at', '>=', $start_at)
@@ -270,8 +276,8 @@ class ReportController extends Controller
     // دالة كشف حساب الموردين والعملاء المشتركة
     public function search_account_statement_modal(Request $request)
     {
-        $start_at = $request->start_at;
-        $end_at = $request->end_at;
+        $start_at =  $request->start_at. " 00:00:00" ;
+        $end_at = $request->end_at . " 23:59:59";
         $supplierId = $request->supplierId;
         $branch_id = $request->branch;
 
@@ -944,25 +950,85 @@ private static function calculateTotalWithChildren($accountId, $allAccounts, $tr
         return view('reports.cost_center', compact('data'))->with('start', $request->start_at)->with('end', $request->end_at)->with('cost_center', $request->cost_center);
     }
 
-    public function search_sales_and_return(Request $request)
-    {
-        app()->setLocale(LaravelLocalization::getCurrentLocale());
-
-        if ($request->branch == '-') {
-            $Invoices = invoices::whereDate('created_at', '>=', $request->start_at)->whereDate('created_at', '<=', $request->end_at)->where('save', 1)->get();
-            $Invoicesreturn = return_sales::whereDate('created_at', '>=', $request->start_at)->whereDate('created_at', '<=', $request->end_at)->get();
-        } else {
-            $Invoices = invoices::where('branch_id', $request->branch)->whereDate('created_at', '>=', $request->start_at)->whereDate('created_at', '<=', $request->end_at)->where('save', 1)->get();
-            $Invoicesreturn = return_sales::where('branch_id', $request->branch)->whereDate('created_at', '>=', $request->start_at)->whereDate('created_at', '<=', $request->end_at)->get();
-        }
-
-        $data = [
-            'invoices' => $Invoices,
-            'returnsales' => $Invoicesreturn
-        ];
-
-        return view('reports.print_sales_and_return', compact('data'))->with('start', $request->start_at)->with('end', $request->end_at)->with('branch_id', $request->branch);
+public function search_sales_and_return(Request $request)
+{
+    app()->setLocale(LaravelLocalization::getCurrentLocale());
+ 
+    $from = $request->start_at . ' 00:00:00';
+    $to   = $request->end_at . ' 23:59:59';
+ 
+    // الأعمدة اللازمة فقط (بدون xml / xmltags / qr_zatca / hash ...)
+    $invoicesQuery = invoices::select([
+            'id', 'created_at', 'customer_id', 'Pay',
+            'cashamount', 'bankamount', 'Bank_transfer', 'creaditamount',
+            'Number_of_Quantity', 'discount', 'discountOnProduct', 'branchs_id',
+        ])
+        ->with('customer:id,name')
+        ->where('created_at', '>=', $from)
+        ->where('created_at', '<=', $to)
+        ->where('save', 1);
+ 
+    $returnsQuery = return_sales::select([
+            'id', 'invoice_id', 'created_at', 'branch_id',
+            'return_Unit_Price', 'return_quantity', 'discountvalue', 'discountoninvoice',
+        ])
+        ->where('created_at', '>=', $from)
+        ->where('created_at', '<=', $to);
+ 
+    if ($request->branch != '-') {
+        $invoicesQuery->where('branchs_id', $request->branch);
+        $returnsQuery->where('branch_id', $request->branch);
     }
+ 
+    // فترة كبيرة (أكثر من 1000 فاتورة): تنزيل إكسيل بدل العرض
+    if ((clone $invoicesQuery)->count() > 1000) {
+        ini_set('memory_limit', '512M');
+        set_time_limit(300);
+ 
+        return Excel::download(
+            new SalesAndReturnExport($from, $to, $request->branch),
+            'sales_and_return_' . $request->start_at . '_' . $request->end_at . '.xlsx'
+        );
+    }
+ 
+    $Invoices       = $invoicesQuery->get();
+    $Invoicesreturn = $returnsQuery->get();
+ 
+    // استعلامات مجمّعة بدل استعلام لكل فاتورة داخل الـ Blade
+    $ids = $Invoices->pluck('id');
+ 
+    $returnTotals = \App\Models\return_sales::whereIn('invoice_id', $ids)
+        ->selectRaw('invoice_id, SUM(discountoninvoice) as disc_inv, SUM(discountvalue) as disc_val')
+        ->groupBy('invoice_id')
+        ->get()
+        ->keyBy('invoice_id');
+ 
+    $salesDiscounts = \App\Models\sales::whereIn('invoice_id', $ids)
+        ->selectRaw('invoice_id, SUM(Discount_Value) as disc')
+        ->groupBy('invoice_id')
+        ->pluck('disc', 'invoice_id');
+ 
+    $returnGroups   = $Invoicesreturn->groupBy('invoice_id');
+    $returnInvoices = invoices::select('id', 'Pay', 'customer_id')
+        ->with('customer:id,name')
+        ->whereIn('id', $returnGroups->keys())
+        ->get()
+        ->keyBy('id');
+ 
+    $data = [
+        'invoices'       => $Invoices,
+        'returnsales'    => $Invoicesreturn,
+        'returnTotals'   => $returnTotals,
+        'salesDiscounts' => $salesDiscounts,
+        'returnGroups'   => $returnGroups,
+        'returnInvoices' => $returnInvoices,
+    ];
+ 
+    return view('reports.print_sales_and_return', compact('data'))
+        ->with('start', $request->start_at)
+        ->with('end', $request->end_at)
+        ->with('branch_id', $request->branch);
+}
 
     public function Customer_debt_restructuring()
     {
@@ -1500,8 +1566,8 @@ private static function calculateTotalWithChildren($accountId, $allAccounts, $tr
         }
 
         $branch = $request->branch;
-        $startAt = $request->start_at;
-        $endAt = $request->end_at;
+        $startAt =  $request->start_at. " 00:00:00" ;
+        $endAt = $request->end_at . " 23:59:59";
 
         // 1. بناء الاستعلامات الأساسية مع شحن العلاقات (Eager Loading) لمنع N+1 Problem
         $salesQuery = sales::with('productData')
@@ -1699,8 +1765,8 @@ $orderDetailsQuery->whereHas('order', function($q) use ($branch) {
         }
 
         $branch = $request->branch;
-        $startAt = $request->start_at;
-        $endAt = $request->end_at;
+        $startAt =  $request->start_at. " 00:00:00" ;
+        $endAt = $request->end_at . " 23:59:59";
 
         // جلب البيانات مع العلاقات لمنع الـ N+1 Problem وتحسين سرعة الـ ERP
         $salesQuery = sales::with('productData')
@@ -2273,7 +2339,7 @@ public function search_stockquantity(Request $request)
     $location = $request->Location;
     $display = $request->choosequantitytodisplay;
     $quantity = $request->quantity;
-    $endAt = $request->end_at;
+    $endAt = $request->end_at . " 23:59:59";
 
     $query = \App\Models\products::query();
 
@@ -2363,8 +2429,8 @@ public function search_stockquantity(Request $request)
 
     public function search_account_statement(Request $request)
     {
-        $start_at = $request->start_at;
-        $end_at = $request->end_at;
+        $start_at =  $request->start_at. " 00:00:00" ;
+        $end_at = $request->end_at . " 23:59:59";
         $supplierId = $request->supplierId;
         $branch_id = $request->branch;
 
@@ -2503,8 +2569,8 @@ public function search_stockquantity(Request $request)
     {
         app()->setLocale(LaravelLocalization::getCurrentLocale());
         $branch = $request->branch;
-        $start = $request->start_at;
-        $end = $request->end_at;
+        $start =  $request->start_at. " 00:00:00" ;
+        $end = $request->end_at . " 23:59:59";
 
         // Eager Loading لجميع العلاقات لمنع الـ N+1 Queries تماماً
         $relations = ['user', 'branch'];
@@ -2631,8 +2697,8 @@ public function search_stockquantity(Request $request)
         app()->setLocale(LaravelLocalization::getCurrentLocale());
 
         $customerId = $request->UserId;
-        $startAt = $request->start_at;
-        $endAt = $request->end_at;
+        $startAt =  $request->start_at. " 00:00:00" ;
+        $endAt = $request->end_at . " 23:59:59";
 
         $customer = customers::findOrFail($customerId);
         $remainingAmount = $customer->opeing_blance ?? 0; // يفضل تصحيحها في قاعدة البيانات لاحقاً إلى opening_balance
@@ -2791,8 +2857,8 @@ public function search_stockquantity(Request $request)
     {
         app()->setLocale(LaravelLocalization::getCurrentLocale());
 
-        $startAt = $request->start_at;
-        $endAt = $request->end_at;
+        $startAt =  $request->start_at. " 00:00:00" ;
+        $endAt = $request->end_at . " 23:59:59";
         $ids = financial_accounts::where('parent_account_number', 102)->pluck('id');
 
         // بناء الاستعلام الأساسي لتفادي تكرار الكود لقسمي (كل الفروع / فرع محدد)
@@ -2981,8 +3047,8 @@ public function search_stockquantity(Request $request)
     {
         app()->setLocale(LaravelLocalization::getCurrentLocale());
 
-        $start_at = $request->start_at;
-        $end_at = $request->end_at;
+        $start_at =  $request->start_at. " 00:00:00" ;
+        $end_at = $request->end_at . " 23:59:59";
 
         $branch = $request->branch;
 
@@ -3304,8 +3370,8 @@ public function search_stockquantity(Request $request)
      */
     public function addetions(Request $request)
     {
-        $start_at = $request->start_at;
-        $end_at = $request->end_at;
+        $start_at =  $request->start_at. " 00:00:00" ;
+        $end_at = $request->end_at . " 23:59:59";
         $branch = $request->branch;
 
         // مصفوفة لتسهيل بناء الاستعلامات وتقليل التكرار
@@ -3570,10 +3636,12 @@ public function search_stockquantity(Request $request)
      */
     public function sales_profitssearch(Request $request)
     {
+        ini_set('memory_limit', '512M');
+            set_time_limit(120);
         app()->setLocale(LaravelLocalization::getCurrentLocale());
 
-        $start = $request->start_at;
-        $end = $request->end_at;
+        $start =  $request->start_at. " 00:00:00" ;
+        $end = $request->end_at . " 23:59:59";
 
         // بناء استعلام المبيعات ديناميكياً
         $salesQuery = sales::whereDate('created_at', '>=', $start)
@@ -4014,8 +4082,8 @@ public function search_stockquantity(Request $request)
 
         $branch = $request->branch;
         $pay = $request->pay;
-        $startat = $request->start_at;
-        $end_at = $request->end_at;
+        $startat =  $request->start_at. " 00:00:00" ;
+        $end_at = $request->end_at . " 23:59:59";
         $customer_id = $request->customer_id;
 
         $fileName = 'INVOICES_FROM_' . $startat . '_TO_' . $end_at . '.xlsx';
@@ -4149,13 +4217,18 @@ public function search_stockquantity(Request $request)
     /**
      * جرد المخزون وتصديره Excel
      */
-    public function Stocktaking($request)
-    {
-        // إذا أرسل المستخدم ID فرع نستخدمه، وإلا نأخذ الخاص بالمستخدم
-        $branchId = $request;
-        return Excel::download(new Exportproducts($branchId), 'Stocktaking_Report.xlsx');
-    }
-
+public function Stocktaking(Request $request, $id)
+{
+    return Excel::download(
+        new Exportproducts(
+            $id,                          // الفرع ("-" = كل الفروع)
+            $request->query('group'),     // المجموعة
+            $request->query('search'),    // البحث بالاسم أو الرقم
+            $request->query('location')   // الموقع
+        ),
+        'Stocktaking_Report.xlsx'
+    );
+}
 
     /**
      * جرد المخزون وتصديره بصيغة PDF عبر ميزة التصدير المباشر

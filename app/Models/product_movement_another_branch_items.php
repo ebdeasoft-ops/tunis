@@ -18,7 +18,7 @@ class product_movement_another_branch_items extends Model
               'order_id_sender',
         'reciver_branch'
     ];
-public function movement()
+public function order()
 {
     // افترضنا هنا أن اسم الموديل الخاص بالحركة هو product_movement_another_branch 
     // تأكد من اسم الموديل الصحيح لديك

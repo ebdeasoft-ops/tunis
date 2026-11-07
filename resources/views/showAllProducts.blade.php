@@ -328,13 +328,23 @@ $(document).ready(function() {
     });
 
     // 5. زر التصدير (Export)
-    $('#unified_export_btn').on('click', function(e) {
-        e.preventDefault();
-        let branchId = $('#branchs_id').val();
+// 5. زر التصدير (Export) - يرسل كل الفلاتر
+// 5. زر التصدير (Export) - يرسل كل الفلاتر
+$('#unified_export_btn').on('click', function(e) {
+    e.preventDefault();
 
-        if (!branchId) return alert('الرجاء اختيار فرع أولاً');
-        window.location.href = "{{ url('Stocktaking') }}/" + branchId;
+    let branchId = $('#branchs_id').val() || '-';
+    let params = $.param({
+        group:    $('#product_group').val() || '',
+        search:   $.trim($('#searchaboutproduct').val() || ''),
+        location: $.trim($('#Location').val() || '')
     });
+
+    let url = "{{ LaravelLocalization::localizeUrl('Stocktaking') }}/" + encodeURIComponent(branchId) + "?" + params;
+    console.log('Export URL:', url);
+    window.location.href = url;
+});
+
 
     // 6. اختيار منتج (جلب الكمية)
     $('select[name="searchproductNo"]').on('change', function() {

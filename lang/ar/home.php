@@ -13,6 +13,8 @@ return [
     |
     */
     'tax_integration'=>'الربط مع  زكاة',
+        'network_or_transfer' => 'تحويل بنكي / شبكة',
+
     'arabic'=>'اللغة العربية',
     'housing_allowance' => 'بدل السكن',
 'transportation_allowance' => 'بدل الانتقال',

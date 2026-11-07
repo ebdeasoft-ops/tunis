@@ -528,7 +528,7 @@ public function budgetsheet(Request $request)
                     'type_decument' => 2,
                     'sent_serf_count' => $serf_count,
                     'type' => $request->pay_method_type,
-                    'cost_center' => $item['cost_center'],
+                    'cost_center' => $item['cost_center']??0,
                     'orginal_type' => $target_acc->orginal_type ?? 0,
                     'orginal_id' => $target_acc->orginal_id ?? 0,
                 ]);
@@ -546,7 +546,7 @@ public function budgetsheet(Request $request)
                         'expensesAvt' => $reason_data->expensesAvt,
                         'created_at' => $request->date . ' ' . now()->format('H:i:s'),
                         'date_export' => $request->date,
-                        'updated_at' => \Carbon\Carbon::now()->addHours(3),
+                        'updated_at' => \Carbon\Carbon::now(),
                         'Theـamountـpaid' => $amount_exclusive, // المصروف يسجل بالصافي أيضاً
                         'type' => 2,
                     ]);
@@ -679,7 +679,7 @@ public function budgetsheet(Request $request)
             'type_decument' => 2,
             'sent_serf_count' => $sent_serf_count,
             'type' => $pay_method_type,
-            'cost_center' => $item['cost_center'],
+            'cost_center' => $item['cost_center']??0,
             'orginal_type' => $target_acc->orginal_type ?? 0,
             'orginal_id' => $target_acc->orginal_id ?? 0,
             'created_at' => $request->date . ' ' . now()->format('H:i:s'),
@@ -698,7 +698,7 @@ public function budgetsheet(Request $request)
                 'notes' => $notes . ' | سند صرف رقم: ' . $sent_serf_count,
                 'expensesAvt' => $reason_data->expensesAvt,
                 'date_export' => $request->date,
-                'updated_at' => \Carbon\Carbon::now()->addHours(3),
+                'updated_at' => \Carbon\Carbon::now(),
                 'Theـamountـpaid' => $amount_exclusive, // تسجيل المصروف بالصافي
                 'type' => 2,
                 'created_at' => $request->date . ' ' . now()->format('H:i:s'),
@@ -1262,7 +1262,7 @@ public function budgetsheet(Request $request)
             supllier::where('id', $account->orginal_id)->update([
                 'In_debt' => $account->current_balance,
                 'opeing_blance' => $amount,
-                'updated_at' => Carbon::now()->addHours(3)
+                'updated_at' => Carbon::now()
             ]);
         }
     }
@@ -1726,7 +1726,7 @@ public function budgetsheet(Request $request)
             'currentblance' => $financial_accounts->current_balance ?? 0,
             'Pay_Method_Name' => 'Cash',
             'created_at' => $request->date,
-            'updated_at' => Carbon::now()->addHours(3),
+            'updated_at' => Carbon::now(),
             'orginal_id' => $financial_accounts->orginal_id ?? 0,
             'recive_amount' => $request->debit_1 + $request->credit_1,
             'debtor' => $request->debit_1,
@@ -1773,7 +1773,7 @@ public function budgetsheet(Request $request)
             $dely_record_count = $last_record ? $last_record->dely_record + 1 : 1;
         }
 
-        $createdAt = $date != '0' ? $date . ' ' . substr(Carbon::now()->addHours(3), 12) : Carbon::now()->addHours(3);
+        $createdAt = $date != '0' ? $date . ' ' . substr(Carbon::now(), 12) : Carbon::now();
 
         credittransactions::create([
             'attachments' => $the_file_path_1,
@@ -1787,7 +1787,7 @@ public function budgetsheet(Request $request)
             'Pay_Method_Name' => 'Cash',
             'created_at' => $createdAt,
             'date_export' => $request->date,
-            'updated_at' => Carbon::now()->addHours(3),
+            'updated_at' => Carbon::now(),
             'orginal_id' => $financial_accounts->orginal_id ?? 0,
             'recive_amount' => $request->debit_1 + $request->credit_1,
             'debtor' => $request->debit_1,
@@ -2069,7 +2069,7 @@ public function budgetsheet(Request $request)
         }
 
         $customerAccount = financial_accounts::find($clientId);
-        $now = Carbon::now()->addHours(3);
+        $now = Carbon::now();
 
         if (in_array($customerAccount->account_type, [1, 4])) {
             $customerAccount->update([
@@ -2272,7 +2272,7 @@ public function budgetsheet(Request $request)
             $sent_serf_count = $recent_id->sent_serf_count + 1;
         }
 
-        $now = Carbon::now()->addHours(3);
+        $now = Carbon::now();
 
         if (in_array($customerdata->account_type, [1, 4])) {
             $customerdata->update([
@@ -2497,7 +2497,7 @@ public function budgetsheet(Request $request)
 
         $newcustomer = $request->payupdate;
         $type = $request->pay_type_desc;
-        $now = Carbon::now()->addHours(3);
+        $now = Carbon::now();
 
         $transaction = credittransactions::find($request->transactionId);
         if (!$transaction) {

@@ -25,8 +25,45 @@ class AppServiceProvider extends ServiceProvider
      */
 
     //
+
+    // في AppServiceProvider أو أي مكان بيتنفذ قبل توليد الـ PDF
+
+
+
    public function boot(): void
 {
+
+    // تسجيل خط Cairo مع نفس نسخة dompdf اللي فعليًا بتستخدمها PDF::loadHTML()
+    // (مش نسخة منفصلة زي قبل كده) + استخدام realpath() لتوحيد الشرطات في المسار
+    $this->app->extend('dompdf.wrapper', function ($pdf, $app) {
+        $fontDir = storage_path('fonts' . DIRECTORY_SEPARATOR);
+
+        if (!is_dir($fontDir)) {
+            mkdir($fontDir, 0775, true);
+        }
+
+        $pdf->getDomPDF()->getOptions()->setFontDir($fontDir);
+        $pdf->getDomPDF()->getOptions()->setFontCache($fontDir);
+
+        $fontMetrics = $pdf->getDomPDF()->getFontMetrics();
+
+        $regularFontPath = realpath(public_path('fonts' . DIRECTORY_SEPARATOR . 'Cairo-Regular.ttf'));
+
+        if ($regularFontPath) {
+            $fontMetrics->registerFont(
+                ['family' => 'Cairo', 'style' => 'normal', 'weight' => 'normal'],
+                $regularFontPath
+            );
+
+            $fontMetrics->registerFont(
+                ['family' => 'Cairo', 'style' => 'normal', 'weight' => 'bold'],
+                $regularFontPath
+            );
+        }
+
+        return $pdf;
+    });
+
     Paginator::useBootstrap();
 
     // التحقق من وجود الجدول في قاعدة البيانات قبل الاستعلام عنه لمنع الأخطاء أثناء الـ Migration

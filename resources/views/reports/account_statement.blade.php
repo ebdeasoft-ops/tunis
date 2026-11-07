@@ -71,6 +71,10 @@
                         method="POST" role="search" autocomplete="off">
                         {{ csrf_field() }}
 
+                        <!-- حقول مخفية لحفظ النوع والاكشن المختار عبر الـ Modal -->
+                        <input type="hidden" name="type" id="selected_type_input">
+                        <input type="hidden" name="action" id="selected_action_input">
+
                         <div class="row">
 
                             <div class="col-lg-3" id="start_at">
@@ -100,11 +104,9 @@
                                 </div><!-- input-group -->
                             </div>
 
-                            <div class="col-lg-2 mg-t-20 mg-lg-t-0" id="type">
+                            <div class="col-lg-3 mg-t-20 mg-lg-t-0" id="supplier_div">
                                 <p class="mg-b-10 parent-label"> {{ __('home.saerch_by_numberaccount_or_name') }} </p>
                                 <select class="form-control parent-input select2" name="supplierId" required>
-
-
                                     @foreach (App\Models\financial_accounts::get() as $section)
                                     <option style="font-size: 15px" value="{{ $section->id }}"> {{ $section->name }}
                                     </option>
@@ -112,9 +114,7 @@
                                 </select>
                             </div><!-- col-4 -->
 
-
-
-                            <div class="col-lg-2" id="type">
+                            <div class="col-lg-3" id="branch_div">
                                 <p class="mg-b-10 parent-label"> {{ __('users.branch') }} </p>
                                 <select class="form-control parent-input" name="branch" required>
                                     @if(Auth()->user()->branchs_id==1||Auth()->user()->branchs_id==9)
@@ -129,52 +129,36 @@
                                     </option>
                                     @endif
                                     @endforeach
-
                                 </select>
-
                             </div>
-
-                            <div class="col-lg-2 mg-t-20 mg-lg-t-0" id="type">
-                                <p class="mg-b-10 parent-label">{{ __('home.type') }}</p>
-                                <select class="form-control parent-input select2" name="type" required>
-                                    <option style="font-size: 15px" value="public">{{ __('home.public') }}</option>
-                                    <option style="font-size: 15px" value="client_and_supplier">
-                                        {{ __('home.client_and_supplier') }}</option>
-                                </select>
-                            </div><!-- col-4 -->
 
                         </div>
 
                         <br>
                         <div class="d-flex justify-content-center mt-3">
-                            <button type="submit" name="action" value="search" class="btn btn-success mx-2">
+                            <!-- زر البحث يفتح الـ Modal -->
+                            <button type="button" class="btn btn-success mx-2" data-toggle="modal" data-target="#typeSelectionModal" onclick="setActionType('search')">
                                 {{ __('home.search') }} <i class="las la-search"></i>
                             </button>
 
-                            <button type="submit" name="action" value="export" class="btn btn-primary mx-2">
+                            <!-- زر التصدير يفتح الـ Modal -->
+                            <button type="button" class="btn btn-primary mx-2" data-toggle="modal" data-target="#typeSelectionModal" onclick="setActionType('export')">
                                 تصدير Excel <i class="las la-file-excel"></i>
                             </button>
                         </div>
 
                     </form>
 
-
-
-
                     @if (isset($Invoices))
                     <div style="border-radius: 10px" class="card m-3 p-2 pb-0">
                         <?php
                         $userId = 0;
                         $count = 0;
-                        ?>
-                        <?php
-                        $userId = 0;
                         $startat = '';
                         $endat = '';
                         $totalprice = 0;
                         $totaladdedvalue = 0;
-                          ?>
-
+                         ?>
 
                         <div class="table-responsive  ">
                             <table style="border:2px solid rgba(0,0,0,.3);"
@@ -184,25 +168,20 @@
                                     <tr>
                                         <th class="border-bottom-0">#</th>
                                         <th class="border-bottom-0">{{ __('home.decoumentNo') }}</th>
-
                                         <th class="border-bottom-0">{{ __('report.date') }}</th>
-
                                         <th class="border-bottom-0"> {{ __('home.employee') }}</th>
                                         <th class="border-bottom-0"> {{ __('home.acount_name') }}</th>
                                         <th class="border-bottom-0"> {{ __('accountes.Theamountpaid') }}</th>
-
                                         <th class="border-bottom-0">{{ __('home.paymentmethod') }}</th>
                                         <th class="border-bottom-0">{{ __('home.notesClient') }}</th>
                                         <th class="border-bottom-0">{{ __('home.attachments') }}</th>
                                     </tr>
-
                                 </thead>
                                 <?php
                                 $i = 0;
                                 ?>
                                 @foreach ($Invoices as $invoice)
                                 <?php
-
                                 $totalEachInvoce = 0;
 
                                 if ($count == 0) {
@@ -211,26 +190,16 @@
                                 }
                                 $endat = $invoice->created_at;
                                 $count++;
-
                                 ?>
-
-
-
-
-
-
-
 
                                 <?php
                                 $i++;
-
                                 $date = explode(' ', $invoice->created_at);
                                 ?>
                                 <tbody>
                                     <tr>
                                         <td>{{ $i }}</td>
                                         <td>{{ $invoice->id}}</td>
-
                                         <td>{{ $date[0] }}</td>
                                         <td>{{ $invoice->user->name }}</td>
                                         <td>{{ $invoice->financial_accounts_data->name }}</td>
@@ -255,12 +224,8 @@
                                                 -
                                                 @endif
                                         </td>
-
                                     </tr>
-
                                 </tbody>
-
-
                                 <br>
                                 @endforeach
                             </table>
@@ -279,7 +244,7 @@
                                     {{ __('home.print') }}
                                     <svg style="width: 20px !important" class="svg-icon-buttons" viewBox="0 0 20 20">
                                         <path
-                                            d="M17.453,12.691V7.723 M17.453,12.691V7.723 M1.719,12.691V7.723 M18.281,12.691V7.723 M12.691,12.484H7.309c-0.228,0-0.414,0.187-0.414,0.414s0.187,0.414,0.414,0.414h5.383c0.229,0,0.414-0.187,0.414-0.414S12.92,12.484,12.691,12.484M12.691,14.555H7.309c-0.228,0-0.414,0.187-0.414,0.414s0.187,0.414,0.414,0.414h5.383c0.229,0,0.414-0.187,0.414-0.414S12.92,14.555,12.691,14.555 M12.691,12.484H7.309c-0.228,0-0.414,0.187-0.414,0.414s0.187,0.414,0.414,0.414h5.383c0.229,0,0.414-0.187,0.414-0.414S12.92,12.484,12.691,12.484 M12.691,14.555H7.309c-0.228,0-0.414,0.187-0.414,0.414s0.187,0.414,0.414,0.414h5.383c0.229,0,0.414-0.187,0.414-0.414S12.92,14.555,12.691,14.555 M12.691,14.555H7.309c-0.228,0-0.414,0.187-0.414,0.414s0.187,0.414,0.414,0.414h5.383c0.229,0,0.414-0.187,0.414-0.414S12.92,14.555,12.691,14.555M12.691,12.484H7.309c-0.228,0-0.414,0.187-0.414,0.414s0.187,0.414,0.414,0.414h5.383c0.229,0,0.414-0.187,0.414-0.414S12.92,12.484,12.691,12.484 M7.309,13.312h5.383c0.229,0,0.414-0.187,0.414-0.414s-0.186-0.414-0.414-0.414H7.309c-0.228,0-0.414,0.187-0.414,0.414S7.081,13.312,7.309,13.312 M12.691,14.555H7.309c-0.228,0-0.414,0.187-0.414,0.414s0.187,0.414,0.414,0.414h5.383c0.229,0,0.414-0.187,0.414-0.414S12.92,14.555,12.691,14.555 M16.625,6.066h-1.449V3.168c0-0.228-0.186-0.414-0.414-0.414H5.238c-0.228,0-0.414,0.187-0.414,0.414v2.898H3.375c-0.913,0-1.656,0.743-1.656,1.656v4.969c0,0.913,0.743,1.656,1.656,1.656h1.449v2.484c0,0.228,0.187,0.414,0.414,0.414h9.523c0.229,0,0.414-0.187,0.414-0.414v-2.484h1.449c0.912,0,1.656-0.743,1.656-1.656V7.723C18.281,6.81,17.537,6.066,16.625,6.066 M5.652,3.582h8.695v2.484H5.652V3.582zM14.348,16.418H5.652v-4.969h8.695V16.418z M17.453,12.691c0,0.458-0.371,0.828-0.828,0.828h-1.449v-2.484c0-0.228-0.186-0.414-0.414-0.414H5.238c-0.228,0-0.414,0.186-0.414,0.414v2.484H3.375c-0.458,0-0.828-0.37-0.828-0.828V7.723c0-0.458,0.371-0.828,0.828-0.828h13.25c0.457,0,0.828,0.371,0.828,0.828V12.691z M7.309,13.312h5.383c0.229,0,0.414-0.187,0.414-0.414s-0.186-0.414-0.414-0.414H7.309c-0.228,0-0.414,0.187-0.414,0.414S7.081,13.312,7.309,13.312M7.309,15.383h5.383c0.229,0,0.414-0.187,0.414-0.414s-0.186-0.414-0.414-0.414H7.309c-0.228,0-0.414,0.187-0.414,0.414S7.081,15.383,7.309,15.383 M12.691,14.555H7.309c-0.228,0-0.414,0.187-0.414,0.414s0.187,0.414,0.414,0.414h5.383c0.229,0,0.414-0.187,0.414-0.414S12.92,14.555,12.691,14.555 M12.691,12.484H7.309c-0.228,0-0.414,0.187-0.414,0.414s0.187,0.414,0.414,0.414h5.383c0.229,0,0.414-0.187,0.414-0.414S12.92,12.484,12.691,12.484 M12.691,12.484H7.309c-0.228,0-0.414,0.187-0.414,0.414s0.187,0.414,0.414,0.414h5.383c0.229,0,0.414-0.187,0.414-0.414S12.92,12.484,12.691,12.484M12.691,14.555H7.309c-0.228,0-0.414,0.187-0.414,0.414s0.187,0.414,0.414,0.414h5.383c0.229,0,0.414-0.187,0.414-0.414S12.92,14.555,12.691,14.555">
+                                            d="M17.453,12.691V7.723 M17.453,12.691V7.723 M1.719,12.691V7.723 M18.281,12.691V7.723 M12.691,12.484H7.309c-0.228,0-0.414,0.187-0.414,0.414s0.187,0.414,0.414,0.414h5.383c0.229,0,0.414-0.187,0.414-0.414S12.92,12.484,12.691,12.484M12.691,14.555H7.309c-0.228,0-0.414,0.187-0.414,0.414s0.187,0.414,0.414,0.414h5.383c0.229,0,0.414-0.187,0.414-0.414S12.92,14.555,12.691,14.555 M12.691,12.484H7.309c-0.228,0-0.414,0.187-0.414,0.414s0.187,0.414,0.414,0.414h5.383c0.229,0,0.414-0.187,0.414-0.414S12.92,12.484,12.691,12.484 M12.691,14.555H7.309c-0.228,0-0.414,0.187-0.414,0.414s0.187,0.414,0.414,0.414h5.383c0.229,0,0.414-0.187,0.414-0.414S12.92,14.555,12.691,14.555 M12.691,14.555H7.309c-0.228,0-0.414,0.187-0.414,0.414s0.187,0.414,0.414,0.414h5.383c0.229,0,0.414-0.187,0.414-0.414S12.92,14.555,12.691,14.555M12.691,12.484H7.309c-0.228,0-0.414,0.187-0.414,0.414s0.187,0.414,0.414,0.414h5.383c0.229,0,0.414-0.187,0.414-0.414S12.92,12.484,12.691,12.484 M7.309,13.312h5.383c0.229,0,0.414-0.187,0.414-0.414s-0.186-0.414-0.414-0.414H7.309c-0.228,0-0.414,0.187-0.414,0.414S7.081,13.312,7.309,13.312 M12.691,14.555H7.309c-0.228,0-0.414,0.187-0.414,0.414s0.187,0.414,0.414,0.414h5.383c0.229,0,0.414-0.187,0.414-0.414S12.92,14.555,12.691,14.555 M16.625,6.066h-1.449V3.168c0-0.228-0.186-0.414-0.414-0.414H5.238c-0.228,0-0.414,0.187-0.414,0.414v2.898H3.375c-0.913,0-1.656,0.743-1.656,1.656v4.969c0,0.913,0.743,1.656,1.656,1.656h1.449v2.484c0,0.228,0.187,0.414,0.414,0.414h9.523c0.229,0,0.414-0.187,0.414-0.414v-2.484h1.449c0.912,0,1.656-0.743,1.656-1.656V7.723C18.281,6.81,17.537,6.066,16.625,6.066 M5.652,3.582h8.695v2.484H5.652V3.582zM14.348,16.418H5.652v-4.969h8.695V16.418z M17.453,12.691c0,0.458-0.371,0.828-0.828,0.828h-1.449v-2.484c0-0.228-0.186-0.414-0.414-0.414H5.238c-0.228,0-0.414,0.186-0.414,0.414v2.484H3.375c-0.458,0-0.828-0.37-0.828-0.828V7.723c0-0.458,0.371-0.828,0.828-0.828h13.25c0.457,0,0.828,0.371,0.828,0.828V12.691z M7.309,13.312h5.383c0.229,0,0.414-0.187,0.414-0.414s-0.186-0.414-0.414-0.414H7.309c-0.228,0-0.414,0.187-0.414,0.414S7.081,13.312,7.309,13.312M7.309,15.383h5.383c0.229,0,0.414-0.187,0.414-0.414s-0.186-0.414-0.414-0.414H7.309c-0.228,0-0.414,0.187-0.414,0.414S7.081,15.383,7.309,15.383 M12.691,14.555H7.309c-0.228,0-0.414,0.187-0.414,0.414s0.187,0.414,0.414,0.414h5.383c0.229,0,0.414-0.187,0.414-0.414S12.92,14.555,12.691,14.555 M12.691,12.484H7.309c-0.228,0-0.414,0.187-0.414,0.414s0.187,0.414,0.414,0.414h5.383c0.229,0,0.414-0.187,0.414-0.414S12.92,12.484,12.691,12.484 M12.691,12.484H7.309c-0.228,0-0.414,0.187-0.414,0.414s0.187,0.414,0.414,0.414h5.383c0.229,0,0.414-0.187,0.414-0.414S12.92,12.484,12.691,12.484">
                                         </path>
                                     </svg>
                                 </a>
@@ -288,15 +253,11 @@
                             @endif
                             @endif
                         </div>
-
                         <br>
-
                     </div>
                 </div>
             </div>
-
         </div>
-
     </div>
     <!-- row closed -->
 </div>
@@ -304,6 +265,32 @@
 </div>
 <!-- main-content closed -->
 </div>
+
+<!-- Modal اختيار النوع -->
+<div class="modal fade" id="typeSelectionModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">{{ __('home.type') }}</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body text-center">
+                <p class="mb-3 font-weight-bold">الرجاء اختيار نوع التقرير قبل المتابعة:</p>
+                
+                <button type="button" class="btn btn-info btn-lg m-2" onclick="submitFormWithType('public')">
+                    {{ __('home.public') }} (عام)
+                </button>
+                
+                <button type="button" class="btn btn-warning btn-lg m-2 text-white" onclick="submitFormWithType('client_and_supplier')">
+                    {{ __('home.client_and_supplier') }} (عميل ومورد)
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
 @endsection
 @section('js')
 <!-- Internal Data tables -->
@@ -335,7 +322,7 @@
 <!-- Internal Select2.min js -->
 <script src="{{ URL::asset('assets/plugins/select2/js/select2.min.js') }}"></script>
 <!--Internal Ion.rangeSlider.min js -->
-<script src="{{ URL::asset('assets/plugins/ion-rangeslider/js/ion.rangeSlider.min.js') }}"></script>
+<script src="{{ URL::asset('assets/plugins/ion-rangeslider/js/ion.RangeSlider.min.js') }}"></script>
 <!--Internal  jquery-simple-datetimepicker js -->
 <script src="{{ URL::asset('assets/plugins/amazeui-datetimepicker/js/amazeui.datetimepicker.min.js') }}"></script>
 <!-- Ionicons js -->
@@ -358,5 +345,26 @@ $(document).ready(function() {
     });
 
 });
+</script>
+
+<!-- دوال JavaScript للتحكم بالـ Modal وإرسال الفورم -->
+<script>
+let currentAction = 'search';
+
+function setActionType(action) {
+    currentAction = action;
+    document.getElementById('selected_action_input').value = action;
+}
+
+function submitFormWithType(typeValue) {
+    // تعيين القيمة في الحقل المخفي
+    document.getElementById('selected_type_input').value = typeValue;
+    
+    // إغلاق الـ Modal
+    $('#typeSelectionModal').modal('hide');
+    
+    // إرسال الفورم
+    document.querySelector('form[role="search"]').submit();
+}
 </script>
 @endsection

@@ -458,7 +458,7 @@ public function save_delivery_sale(Request $request)
         $paymentMethod = $request->payment_type;
         $branchId = Auth::user()->branchs_id;
         $userBranchId = Auth::user()->branch->id;
-        $now = Carbon::now()->addHours(3);
+        $now = Carbon::now();
 
         // 1. تحديد قيم المبالغ بناءً على طريقة الدفع الجديدة
         if ($paymentMethod == 'Cash') {
@@ -1212,7 +1212,7 @@ public function confirmpaymentconfirmpaymentdelivery_to_customer_withoud_tax_inv
             return [0];
         }
 
-        $nowTime = Carbon::now()->addHours(3);
+        $nowTime = Carbon::now();
 
         if ($invoice->update_invoice) {
             delivery_to_customer_withoud_tax_invoices::find($invoice->update_invoice)->update([
@@ -2524,7 +2524,7 @@ public function geta_jax_Recent_Invoices_pending()
 {
     LaravelLocalization::setLocale(LaravelLocalization::getCurrentLocale());
     $data = temp_invoice::where('branchs_id', Auth()->user()->branchs_id)
-        ->where('pending_invoice', 1)
+       
         ->orderby('id', 'desc')
         ->paginate(20);
     return view('ajax_Recent_Invoices_pending', compact('data'));
@@ -2786,7 +2786,7 @@ function sent_to_zatca_return_items($request)
     {
         // - Then Call Invoice required data from database depend on your query statment and required company id
 
-        $setting = settings::where('branchs_id', 1)->first();
+        $setting = settings::where('branchs_id', 9)->first();
 
         $previous_invoice = null;
         $invoice = invoices::find($request);
@@ -2813,7 +2813,7 @@ function sent_to_zatca_return_items($request)
         }
         $myuuid = Uuid::uuid4();
 
-        $created_at = \Carbon\Carbon::now()->addHours(3);
+        $created_at = \Carbon\Carbon::now();
         invoices::find($request)->update(
             [
                 'issue_date_return' => substr($created_at, 0, 10),
@@ -2847,7 +2847,7 @@ function sent_to_zatca_return_items($request)
             $total_withot_tax_sum = $total_withot_tax_sum + $total_withot_tax * 1;
             $tax_sum = $tax_sum + $tax;
             $total_with_tax_sum = $total_with_tax_sum + $total_with_tax;
-             $rat_tax = number_format($item->tax_rate, 2, '.', '') ;
+             $rat_tax = number_format($item->tax_rate*100, 2, '.', '') ;
             $taxCategoryCode = ($item->tax_rate == 0) ? 'E' : 'S';
             $itemTaxCategory = (new LineTaxCategory())
                 ->setTaxCategory($taxCategoryCode)
@@ -3021,7 +3021,7 @@ function sent_to_zatca_return_items($request)
         }
 
         if ($response['success']) {
-            settings::where('branchs_id', 1)->update([
+            settings::where('branchs_id', 9)->update([
                 'previous_hash_invoice' => $response['hash'],
                 'invoices_count' => $setting->invoices_count + 1
             ]);
@@ -3046,7 +3046,7 @@ function sent_to_zatca_return_items($request)
     {
         // - Then Call Invoice required data from database depend on your query statment and required company id
 
-        $setting = settings::where('branchs_id', 1)->first();
+        $setting = settings::where('branchs_id', 9)->first();
 
         ### Zatca Integration have two steps second : Send Invoices to zatca Step example :
         // - Add below line to start of controller file which used
@@ -3282,7 +3282,7 @@ function sent_to_zatca_return_items($request)
         }
 
         if ($response['success']) {
-            settings::where('branchs_id', 1)->update([
+            settings::where('branchs_id', 9)->update([
                 'previous_hash_invoice' => $response['hash'],
                 'invoices_count' => $setting->invoices_count + 1
             ]);
@@ -3320,7 +3320,7 @@ function sendzatca_fromsale($request)
 {
         // - Then Call Invoice required data from database depend on your query statment and required company id
 
-        $setting = settings::where('branchs_id', 1)->first();
+        $setting = settings::where('branchs_id', 9)->first();
 
         ### Zatca Integration have two steps second : Send Invoices to zatca Step example :
         // - Add below line to start of controller file which used
@@ -3556,7 +3556,7 @@ $current_item_tax_rate = ($tax_sum > 0) ? 15 : 0; // افترضنا 15، يمك�
         }
 
         if ($response['success']) {
-            settings::where('branchs_id', 1)->update([
+            settings::where('branchs_id', 9)->update([
                 'previous_hash_invoice' => $response['hash'],
                 'invoices_count' => $setting->invoices_count + 1
             ]);
@@ -3674,7 +3674,7 @@ public function updatepaymentconfirmpaymentpurchases($invoiceId, $cashamount, $b
 
         $branchId = Auth::user()->branchs_id;
         $userId = Auth::user()->id;
-        $now = Carbon::now()->addHours(3);
+        $now = Carbon::now();
 
         $oldpayment = 0;
         $oldpayment_parent = 0;
@@ -3937,7 +3937,7 @@ if ($quoute->branchs_id != $branchId1) {
                     $branchId = auth()->user()->branch->id;
 
         $userId = auth()->user()->id;
-        $now = Carbon::now()->addHours(3);
+        $now = Carbon::now();
         // 1. Create temporary invoice
         $Invoice = temp_invoice::create([
             'customer_id' => $quoute->customer_id ?? 1,
@@ -4095,7 +4095,7 @@ public function updatecustomerDataInvoice(Request $request)
                 ->update([
                     'user_id' => auth()->user()->id,
                     'customer_id' => $financial_accounts_new->id,
-                    'updated_at' => Carbon::now()->addHours(3),
+                    'updated_at' => Carbon::now(),
                 ]);
         }
 
@@ -4133,7 +4133,7 @@ public function getByCode(Request $request)
     $avtSaleRate = Avt::find(1);
     $taxRate = $avtSaleRate ? $avtSaleRate->AVT : 0;
     $user = auth()->user();
-    $now = Carbon::now()->addHours(3);
+    $now = Carbon::now();
 
     // Guard against insufficient stock upfront
     if ($updateProduct->numberofpice < $request->quantity) {
@@ -4933,7 +4933,7 @@ public function generate_pdf($request)
     $tran = ['data' => $data];
 
     // 6. توليد اسم ملف فريد وآمن محاسبياً لأنظمة التشغيل
-    $fileName = \Carbon\Carbon::now()->addHours(3)->format('Y-m-d_H-i-s');
+    $fileName = \Carbon\Carbon::now()->format('Y-m-d_H-i-s');
 
     // 7. صب البيانات في الـ HTML وتحويلها إلى PDF
     $html = view('pdf.translation', $tran)->toArabicHTML();
@@ -5104,7 +5104,7 @@ public function increaseProduct(Request $request)
     // تحديث كمية المبيعات المؤقتة
     $saleData->update([
         'quantity'   => $saleData->quantity + $request->increasequantity,
-        'updated_at' => Carbon::now()->addHours(3),
+        'updated_at' => Carbon::now(),
     ]);
 
     $InvoiceData = temp_invoice::find($saleData->invoice_id);
@@ -5114,7 +5114,7 @@ public function increaseProduct(Request $request)
         'Price'              => round($InvoiceData->Price + ($saleData->Unit_Price * $request->increasequantity), 2),
         'Added_Value'        => round($InvoiceData->Added_Value + ($saleData->Unit_Price * $request->increasequantity * $avtSaleRate->AVT), 2),
         'Number_of_Quantity' => $InvoiceData->Number_of_Quantity + $request->increasequantity,
-        'updated_at'         => Carbon::now()->addHours(3),
+        'updated_at'         => Carbon::now(),
     ]);
 
     $products = temp_sales::where('invoice_id', $saleData->invoice_id)->get();
@@ -5183,7 +5183,7 @@ public function printReceiptToStorehouse(Request $request)
         $productSales =sales::where('id', $request->id)->update(
             [
                 'quantity' => $saleData->quantity - $request->return_quentity,
-                'updated_at' => \Carbon\Carbon::now()->addHours(3),
+                'updated_at' => \Carbon\Carbon::now(),
             ]
         );
 
@@ -5200,7 +5200,7 @@ public function printReceiptToStorehouse(Request $request)
                 'Added_Value' => round(($InvoiceData->Added_Value - ($saleData->Unit_Price * $request->return_quentity * $avtSaleRate->AVT)), 2),
 
                 'Number_of_Quantity' => $InvoiceData->Number_of_Quantity - $request->return_quentity,
-                'updated_at' => \Carbon\Carbon::now()->addHours(3),
+                'updated_at' => \Carbon\Carbon::now(),
             ]
         );
 
@@ -5212,7 +5212,7 @@ public function printReceiptToStorehouse(Request $request)
             // $updateCustomer = customers::where('id', $InvoiceData->customer_id)->update(
             //     [
             //         'Balance' => $customerdata->Balance - (($request->return_quentity * $saleData->Unit_Price) + ($request->return_quentity * $saleData->Added_Value)),
-            //         'updated_at' => \Carbon\Carbon::now()->addHours(3),
+            //         'updated_at' => \Carbon\Carbon::now(),
 
             //     ]
             // );
@@ -5247,6 +5247,354 @@ public function printReceiptToStorehouse(Request $request)
     }
 
 
+//public function returnAll(Request $request)
+// {
+//     $locale = LaravelLocalization::getCurrentLocale();
+//     app()->setLocale($locale);
+
+//     $page = $request->pagename;
+//     $avtSaleRate = Avt::find(1);
+
+//     // الحالة الأولى: إذا لم يتم تحديد فاتورة للاسترجاع الكامل
+//     if (empty($request->invoice_no_delete_All)) {
+//         $products = products::where('branchs_id', auth()->user()->branchs_id)->paginate(10);
+
+//         // حماية أمنية: للتأكد من أن اسم الـ View الممرر آمن ولا يسبب خطأ 500
+//         if (!view()->exists($page)) {
+//             abort(404, "Page not found");
+//         }
+//         return view($page, compact('products'));
+//     }
+
+//     // البدء في معالجة الاسترجاع الكامل داخل Transaction لضمان سلامة القيود المحاسبية
+//     return DB::transaction(function () use ($request, $avtSaleRate, $locale) {
+//         $invoiceId = $request->invoice_no_delete_All;
+//         $InvoiceData = invoices::findOrFail($invoiceId);
+//         $discount_value_invoice = $InvoiceData->discount;
+//         $paymentMethod = $request->pay_return_sale ?? $InvoiceData->Pay;
+
+//         $saleData =sales::where('invoice_id', $InvoiceData->id)->get();
+//         $count = $saleData->count();
+//         $total_cost_value = 0;
+
+//         $successMessage = $locale == 'ar' ? "تم عملية الاسترجاع بنجاح شكرا" : "The recovery process was successful. Thank you.";
+
+//         foreach ($saleData as $sale) {
+//             $updateProduct = products::findOrFail($sale->product_id);
+
+//             // حساب تكلفة البضاعة المباعة المرتجعة بناءً على سعر الشراء القديم
+//             $total_cost_value += $updateProduct->purchasingـprice * $sale->quantity;
+
+//             if ($updateProduct->branchs_id == $InvoiceData->branchs_id) {
+//                 // تحديث الكميات في نفس الفرع
+//                 $updateProduct->update([
+//                     'numberofpice' => $updateProduct->numberofpice + $sale->quantity,
+//                     'numberـofـsales' => $updateProduct->numberـofـsales - $sale->quantity
+//                 ]);
+//                 session()->flash('success', $successMessage);
+//             } else {
+//                 // البحث عن المنتج في الفرع الآخر الخاص بالفاتورة
+//                 $mproduct = products::where('branchs_id', $InvoiceData->branchs_id)
+//                                     ->where('Product_Code', $updateProduct->Product_Code)
+//                                     ->first();
+
+//                 if ($mproduct != null) {
+//                     $mproduct->update([
+//                         'numberofpice' => $mproduct->numberofpice + $sale->quantity,
+//                         'purchasingـprice' => $updateProduct->purchasingـprice,
+//                     ]);
+//                     session()->flash('success', $successMessage);
+//                 } else {
+//                     // إنشاء المنتج في الفرع الجديد إذا لم يكن موجوداً مسبقاً
+//                     $newproducts = products::create([
+//                         'product_name' => $updateProduct->product_name,
+//                         'name_en' => $updateProduct->name_en,
+//                         'branchs_id' => $InvoiceData->branchs_id,
+//                         'user_id' => auth()->user()->id,
+//                         'Product_Location' => $updateProduct->Product_Location,
+//                         'Product_Code' => $updateProduct->Product_Code,
+//                         'purchasingـprice' => $updateProduct->purchasingـprice,
+//                         'average_cost' => $updateProduct->purchasingـprice,
+//                         'Status' => 1,
+//                         'notes' => $updateProduct->notes,
+//                         'unit' => $updateProduct->unit,
+//                         'minmum_quantity_stock_alart' => $updateProduct->minmum_quantity_stock_alart,
+//                         'numberofpice' => $sale->quantity, // إسناد مباشر بدلاً من تحديث منفصل مكرر
+//                     ]);
+
+//                     $newProductMessage = $locale == 'ar'
+//                         ? "تم عملية الاسترجاع . المنتج المسترجع غير مسجل لديكم مسبقا تم تسجيل " . $updateProduct->product_name . " بنفس رقم المنتج شكرا"
+//                         : "The product is not previously registered. It has been registered with a name " . $updateProduct->product_name . " and a product number, such as the number below";
+
+//                     session()->flash('createnewproduct', $newProductMessage);
+//                 }
+//             }
+
+//             // صفر كميات تسليم المنتجات للعميل
+//             Delivery_product_to_the_customer::where('invoice_id', $sale->invoice_id)
+//                 ->where('product_id', $sale->product_id)
+//                 ->update([
+//                     'quantity' => 0,
+//                     'updated_at' => Carbon::now(),
+//                 ]);
+
+//             $discount_value_invoice -= $sale->Discount_Value;
+
+//             // تسجيل حركة مرتجعات المبيعات
+//             if ($sale->quantity > 0) {
+//                 return_sales::create([
+//                     'user_id' => auth()->user()->id,
+//                     'product_id' => $sale->product_id,
+//                     'invoice_id' => $sale->invoice_id,
+//                     'branch_id' => auth()->user()->branch->id,
+//                     'discountvalue' => $sale->Discount_Value,
+//                     'discountoninvoice' => ($count == 1) ? $discount_value_invoice : 0, // الحفاظ على منطق الحقل الشرطي بناء على العدد
+//                     'return_Added_Value' => $sale->Added_Value,
+//                     'return_Unit_Price' => $sale->Unit_Price,
+//                     'return_quantity' => $sale->quantity,
+//                     'created_at' => Carbon::now(),
+//                     'tax_rate'=>$sale->tax_rate,
+
+//                 ]);
+//             }
+
+//             // تحديث حركة البيع الأصلية لتصفير الكمية وتحديد المرتجع
+//           sales::where('id', $sale->id)->update([
+//                 'quantity' => 0,
+//                 'quantityreturn' => $sale->quantity,
+//                 'updated_at' => Carbon::now(),
+//                 'Discount_Value' => 0
+//             ]);
+//         }
+
+//         // الحسابات المالية الإجمالية للفاتورة المرتجعة
+//         $total_withoud_tax = $InvoiceData->Price - $InvoiceData->discount;
+//         $total_tax = $total_withoud_tax * $avtSaleRate->AVT;
+//         $net_total_amount = $total_withoud_tax + $total_tax; // الصافي الإجمالي المرتجع (شامل الضريبة)
+
+//         $note_text = ' فاتورة مرتجع مبيعات رقم :' . (string) $InvoiceData->id;
+//         $now_time = Carbon::now();
+
+//         // 1. معالجة حسابات طرق الدفع (شبكة، تحويل، كاش، آجل)
+//         if (in_array($paymentMethod, ["Shabka", "Bank_transfer", "Cash"])) {
+//             $accountId = in_array($paymentMethod, ["Shabka", "Bank_transfer"]) ? 4 : 5;
+
+//             // الحساب الرئيسي
+//             $mainAccount = financial_accounts::findOrFail($accountId);
+//             $mainAccount->update([
+//                 'current_balance' => $mainAccount->current_balance - $net_total_amount,
+//                 'creditor_current' => $mainAccount->creditor_current + $net_total_amount,
+//             ]);
+
+//             credittransactions::create([
+//                 'user_id' => auth()->user()->id,
+//                 'customer_id' => $accountId,
+//                 'recive_amount' => $net_total_amount,
+//                 'branchs_id' => auth()->user()->branchs_id,
+//                 'pay_method' => $paymentMethod,
+//                 'note' => $note_text,
+//                 'currentblance' => $mainAccount->current_balance,
+//                 'Pay_Method_Name' => $paymentMethod,
+//                 'created_at' => $now_time,
+//                 'updated_at' => $now_time,
+//                 'orginal_id' => 0,
+//                 'creditor' => $net_total_amount,
+//                 'debtor' => 0,
+//             ]);
+
+//             // الحساب الفرعي التابع للفرع
+//             $subAccount = financial_accounts::where('parent_account_number', $accountId)
+//                 ->where('branchs_id', auth()->user()->branchs_id)
+//                 ->firstOrFail();
+
+//             $subAccount->update([
+//                 'current_balance' => $subAccount->current_balance - $net_total_amount,
+//                 'creditor_current' => $subAccount->creditor_current + $net_total_amount,
+//             ]);
+
+//             credittransactions::create([
+//                 'user_id' => auth()->user()->id,
+//                 'customer_id' => $subAccount->id,
+//                 'recive_amount' => $net_total_amount,
+//                 'branchs_id' => auth()->user()->branchs_id,
+//                 'pay_method' => $paymentMethod,
+//                 'note' => $note_text,
+//                 'currentblance' => $subAccount->current_balance,
+//                 'Pay_Method_Name' => $paymentMethod,
+//                 'created_at' => $now_time,
+//                 'updated_at' => $now_time,
+//                 'orginal_id' => 0,
+//                 'creditor' => $net_total_amount,
+//                 'debtor' => 0,
+//             ]);
+//         } elseif ($paymentMethod == "Credit") {
+//             $customerdata = customers::findOrFail($InvoiceData->customer_id);
+//             $customerdata->decrement('Balance', $net_total_amount);
+
+//             $custAccount = financial_accounts::where('orginal_type', 1)
+//                 ->where('orginal_id', $InvoiceData->customer_id)
+//                 ->firstOrFail();
+
+//             $custAccount->update([
+//                 'current_balance' => $custAccount->current_balance - $net_total_amount,
+//                 'creditor_current' => $custAccount->creditor_current + $net_total_amount,
+//             ]);
+
+//             credittransactions::create([
+//                 'user_id' => auth()->user()->id,
+//                 'customer_id' => $custAccount->id,
+//                 'recive_amount' => $net_total_amount,
+//                 'branchs_id' => auth()->user()->branchs_id,
+//                 'pay_method' => $paymentMethod,
+//                 'note' => $note_text,
+//                 'currentblance' => $custAccount->current_balance,
+//                 'Pay_Method_Name' => $paymentMethod,
+//                 'created_at' => $now_time,
+//                 'updated_at' => $now_time,
+//                 'orginal_id' => 0,
+//                 'creditor' => $net_total_amount,
+//                 'debtor' => 0,
+//             ]);
+//         }
+
+//         // جلب بيانات العميل لإدخالها في القيود الضريبية العامة
+//         $customerInfo = customers::find($InvoiceData->customer_id);
+
+//         // 2. قيد حساب ضريبة القيمة المضافة (مدين بالضريبة المسترجعة) - الحساب رقم 102
+//         $taxAccount = financial_accounts::where('parent_account_number', 102)
+//             ->where('branchs_id', auth()->user()->branchs_id)
+//             ->firstOrFail();
+
+//         $taxAccount->update([
+//             'current_balance' => ($taxAccount->debtor_current + $total_tax) - $taxAccount->creditor_current,
+//             'debtor_current' => $taxAccount->debtor_current + $total_tax,
+//         ]);
+
+//         credittransactions::create([
+//             'user_id' => auth()->user()->id,
+//             'customer_id' => $taxAccount->id,
+//             'recive_amount' => $total_tax,
+//             'branchs_id' => auth()->user()->branchs_id,
+//             'pay_method' => $paymentMethod,
+//             'note' => $note_text,
+//             'currentblance' => $taxAccount->current_balance,
+//             'Pay_Method_Name' => $paymentMethod,
+//             'created_at' => $now_time,
+//             'updated_at' => $now_time,
+//             'orginal_id' => 0,
+//             'creditor' => 0,
+//             'debtor' => $total_tax,
+//             'vat' => 1,
+//             'name' => $customerInfo->name ?? null,
+//             'tax' => $customerInfo->tax_no ?? null,
+//         ]);
+
+//         // 3. قيد حساب مرتجعات المبيعات (جعل حساب المبيعات/المرتجع مديناً بالقيمة الإجمالية دون الضريبة) - الحساب رقم 184
+//         $returnAcc = financial_accounts::where('parent_account_number', 184)
+//             ->where('branchs_id', auth()->user()->branchs_id)
+//             ->firstOrFail();
+
+//         $returnAcc->update([
+//             'current_balance' => $returnAcc->current_balance - $total_withoud_tax,
+//             'debtor_current' => $returnAcc->debtor_current + $total_withoud_tax,
+//         ]);
+
+//         credittransactions::create([
+//             'user_id' => auth()->user()->id,
+//             'customer_id' => $returnAcc->id,
+//             'recive_amount' => $total_withoud_tax,
+//             'branchs_id' => auth()->user()->branchs_id,
+//             'pay_method' => $paymentMethod,
+//             'note' => $note_text,
+//             'currentblance' => $returnAcc->current_balance,
+//             'Pay_Method_Name' => $paymentMethod,
+//             'created_at' => $now_time,
+//             'updated_at' => $now_time,
+//             'orginal_id' => 0,
+//             'creditor' => 0,
+//             'debtor' => $total_withoud_tax
+//         ]);
+
+//         // 4. قيد تكلفة البضاعة المباعة (دائن بقيمة التكلفة لتقليل المصروف) - الحساب رقم 183
+//         $cogsAcc = financial_accounts::where('parent_account_number', 183)
+//             ->where('branchs_id', auth()->user()->branchs_id)
+//             ->firstOrFail();
+
+//         $cogsAcc->update([
+//             'current_balance' => $cogsAcc->current_balance - $total_cost_value,
+//             'creditor_current' => $cogsAcc->creditor_current + $total_cost_value,
+//         ]);
+
+//         credittransactions::create([
+//             'user_id' => auth()->user()->id,
+//             'customer_id' => $cogsAcc->id,
+//             'recive_amount' => $total_cost_value,
+//             'branchs_id' => auth()->user()->branchs_id,
+//             'pay_method' => $paymentMethod,
+//             'note' => $note_text,
+//             'currentblance' => $cogsAcc->current_balance,
+//             'Pay_Method_Name' => $paymentMethod,
+//             'created_at' => $now_time,
+//             'updated_at' => $now_time,
+//             'orginal_id' => 0,
+//             'creditor' => $total_cost_value,
+//             'debtor' => 0
+//         ]);
+
+//         // 5. قيد حساب المخزون (مدين لإعادة إدخال قيمة البضاعة المرتجعة للمخزن السلعي) - الحساب رقم 181
+//         $stockAcc = financial_accounts::where('parent_account_number', 181)
+//             ->where('branchs_id', auth()->user()->branchs_id)
+//             ->firstOrFail();
+
+//         $stockAcc->update([
+//             'current_balance' => $stockAcc->current_balance + $total_cost_value,
+//             'debtor_current' => $stockAcc->debtor_current + $total_cost_value,
+//         ]);
+
+//         credittransactions::create([
+//             'user_id' => auth()->user()->id,
+//             'customer_id' => $stockAcc->id,
+//             'recive_amount' => $total_cost_value,
+//             'branchs_id' => auth()->user()->branchs_id,
+//             'pay_method' => $paymentMethod,
+//             'note' => $note_text,
+//             'currentblance' => $stockAcc->current_balance,
+//             'Pay_Method_Name' => $paymentMethod,
+//             'created_at' => $now_time,
+//             'updated_at' => $now_time,
+//             'orginal_id' => 0,
+//             'creditor' => 0,
+//             'debtor' => $total_cost_value
+//         ]);
+
+//         // حساب رقم الإشعار (NOTICE_Number) للاتساق المالي للمرتجعات
+//         if ($InvoiceData->NOTICE_Number != 0) {
+//             $NOTICE_Number = $InvoiceData->NOTICE_Number;
+//         } else {
+//             $recentreturn = invoices::where('id', '!=', $invoiceId)
+//                 ->where('NOTICE_Number', '!=', 0)
+//                 ->orderBy('NOTICE_Number', 'DESC')
+//                 ->first();
+//             $NOTICE_Number = $recentreturn ? ($recentreturn->NOTICE_Number + 1) : 1;
+//         }
+
+//         // تصفير وتحديث الفاتورة الأصلية لتتحول إلى فاتورة مرتجعة بالكامل
+//         $InvoiceData->update([
+//             'Price' => 0,
+//             'Added_Value' => 0,
+//             'Number_of_Quantity' => 0,
+//             'discountOnInvoice' => $InvoiceData->discount - ($sale->Discount_Value ?? 0),
+//             'discount' => 0,
+//             'updated_at' => $now_time,
+//             'NOTICE_Number' => $NOTICE_Number,
+//             'payment_return' => $request->pay_return_sale,
+//         ]);
+
+//         return [
+//             'message' => $successMessage,
+//         ];
+//     });
+// }
 public function returnAll(Request $request)
 {
     $locale = LaravelLocalization::getCurrentLocale();
@@ -5270,12 +5618,16 @@ public function returnAll(Request $request)
     return DB::transaction(function () use ($request, $avtSaleRate, $locale) {
         $invoiceId = $request->invoice_no_delete_All;
         $InvoiceData = invoices::findOrFail($invoiceId);
-        $discount_value_invoice = $InvoiceData->discount;
         $paymentMethod = $request->pay_return_sale ?? $InvoiceData->Pay;
 
-        $saleData =sales::where('invoice_id', $InvoiceData->id)->get();
-        $count = $saleData->count();
+        $saleData = sales::where('invoice_id', $InvoiceData->id)->get();
         $total_cost_value = 0;
+
+        // ===== إصلاح الخصم =====
+        // خصم الفاتورة (على مستوى الفاتورة) = إجمالي الخصم - مجموع خصومات الأصناف
+        // نحسبه مرة واحدة قبل الحلقة، ونسجله مرة واحدة فقط على أول سطر مرتجع
+        $invoiceLevelDiscount = round(max($InvoiceData->discount - $saleData->sum('Discount_Value'), 0), 2);
+        $invoiceDiscountRecorded = false;
 
         $successMessage = $locale == 'ar' ? "تم عملية الاسترجاع بنجاح شكرا" : "The recovery process was successful. Thank you.";
 
@@ -5319,7 +5671,7 @@ public function returnAll(Request $request)
                         'notes' => $updateProduct->notes,
                         'unit' => $updateProduct->unit,
                         'minmum_quantity_stock_alart' => $updateProduct->minmum_quantity_stock_alart,
-                        'numberofpice' => $sale->quantity, // إسناد مباشر بدلاً من تحديث منفصل مكرر
+                        'numberofpice' => $sale->quantity,
                     ]);
 
                     $newProductMessage = $locale == 'ar'
@@ -5335,10 +5687,8 @@ public function returnAll(Request $request)
                 ->where('product_id', $sale->product_id)
                 ->update([
                     'quantity' => 0,
-                    'updated_at' => Carbon::now()->addHours(3),
+                    'updated_at' => Carbon::now(),
                 ]);
-
-            $discount_value_invoice -= $sale->Discount_Value;
 
             // تسجيل حركة مرتجعات المبيعات
             if ($sale->quantity > 0) {
@@ -5348,21 +5698,22 @@ public function returnAll(Request $request)
                     'invoice_id' => $sale->invoice_id,
                     'branch_id' => auth()->user()->branch->id,
                     'discountvalue' => $sale->Discount_Value,
-                    'discountoninvoice' => ($count == 1) ? $discount_value_invoice : 0, // الحفاظ على منطق الحقل الشرطي بناء على العدد
+                    // خصم الفاتورة يُسجَّل مرة واحدة على أول سطر مرتجع (مهما كان عدد الأصناف)
+                    'discountoninvoice' => $invoiceDiscountRecorded ? 0 : $invoiceLevelDiscount,
                     'return_Added_Value' => $sale->Added_Value,
                     'return_Unit_Price' => $sale->Unit_Price,
                     'return_quantity' => $sale->quantity,
-                    'created_at' => Carbon::now()->addHours(3),
-                    'tax_rate'=>$sale->tax_rate,
-
+                    'created_at' => Carbon::now(),
+                    'tax_rate' => $sale->tax_rate,
                 ]);
+                $invoiceDiscountRecorded = true;
             }
 
             // تحديث حركة البيع الأصلية لتصفير الكمية وتحديد المرتجع
-           sales::where('id', $sale->id)->update([
+            sales::where('id', $sale->id)->update([
                 'quantity' => 0,
                 'quantityreturn' => $sale->quantity,
-                'updated_at' => Carbon::now()->addHours(3),
+                'updated_at' => Carbon::now(),
                 'Discount_Value' => 0
             ]);
         }
@@ -5373,7 +5724,7 @@ public function returnAll(Request $request)
         $net_total_amount = $total_withoud_tax + $total_tax; // الصافي الإجمالي المرتجع (شامل الضريبة)
 
         $note_text = ' فاتورة مرتجع مبيعات رقم :' . (string) $InvoiceData->id;
-        $now_time = Carbon::now()->addHours(3);
+        $now_time = Carbon::now();
 
         // 1. معالجة حسابات طرق الدفع (شبكة، تحويل، كاش، آجل)
         if (in_array($paymentMethod, ["Shabka", "Bank_transfer", "Cash"])) {
@@ -5583,7 +5934,8 @@ public function returnAll(Request $request)
             'Price' => 0,
             'Added_Value' => 0,
             'Number_of_Quantity' => 0,
-            'discountOnInvoice' => $InvoiceData->discount - ($sale->Discount_Value ?? 0),
+            // إصلاح: نحفظ خصم الفاتورة الصحيح (وليس خصم آخر صنف في الحلقة فقط)
+            'discountOnInvoice' => $invoiceLevelDiscount,
             'discount' => 0,
             'updated_at' => $now_time,
             'NOTICE_Number' => $NOTICE_Number,
@@ -5595,7 +5947,6 @@ public function returnAll(Request $request)
         ];
     });
 }
-
 public function updateproductallDataInvoices(Request $request)
 {
     $avtSaleRate = Avt::find(1);
@@ -5626,7 +5977,7 @@ public function updateproductallDataInvoices(Request $request)
             'Number_of_Quantity' => $newQuantity,
             'discount' => ($newQuantity == 0) ? 0 : $newDiscount, // حماية تلقائية لتصفير الخصم إذا انعدمت الكمية
             'discountOnProduct' => $request->discount,
-            'updated_at' => Carbon::now()->addHours(3),
+            'updated_at' => Carbon::now(),
         ]);
 
         // 3. تحديث حركة المبيعات المؤقتة الحالية `temp_sales`
@@ -5635,7 +5986,7 @@ public function updateproductallDataInvoices(Request $request)
             'Discount_Value' => $request->discount,
             'Unit_Price' => $request->price,
             'Added_Value' => $request->avt,
-            'updated_at' => Carbon::now()->addHours(3),
+            'updated_at' => Carbon::now(),
         ]);
 
         // 4. تجميع كافة المنتجات الحالية داخل الفاتورة لإرسال الرد المحدث لـ Datatable / POS View
@@ -5700,7 +6051,7 @@ public function updateproductallDataInvoices(Request $request)
         //     $updateCustomer = customers::where('id', $InvoiceData->customer_id)->update(
         //         [
         //             'Balance' => $customerdata->Balance - ((($request->return_quentity * $saleData->Unit_Price) - $saleData->Discount_Value) + ((($request->return_quentity * $saleData->Unit_Price) - $saleData->Discount_Value) * $avtSaleRate->AVT)),
-        //             'updated_at' => \Carbon\Carbon::now()->addHours(3),
+        //             'updated_at' => \Carbon\Carbon::now(),
 
         //         ]
         //     );
@@ -5712,7 +6063,7 @@ public function updateproductallDataInvoices(Request $request)
                 'Price' => round($InvoiceData->Price - (($saleData->Unit_Price * $request->return_quentity)), 2),
                 'Added_Value' => round($InvoiceData->Added_Value - ((($saleData->Unit_Price * $request->return_quentity)) * $avtSaleRate->AVT), 2),
                 'Number_of_Quantity' => $InvoiceData->Number_of_Quantity - $request->return_quentity,
-                'updated_at' => \Carbon\Carbon::now()->addHours(3),
+                'updated_at' => \Carbon\Carbon::now(),
             ]
         );
         $InvoiceData = temp_invoice::find($saleData->invoice_id);
@@ -5723,7 +6074,7 @@ public function updateproductallDataInvoices(Request $request)
             // $updateCustomer = customers::where('id', $InvoiceData->customer_id)->update(
             //     [
             //         'Balance' => $customerdata->Balance - $InvoiceData->discount,
-            //         'updated_at' => \Carbon\Carbon::now()->addHours(3),
+            //         'updated_at' => \Carbon\Carbon::now(),
 
             //     ]
             // );
@@ -5747,7 +6098,7 @@ public function updateproductallDataInvoices(Request $request)
         $productSales = temp_sales::where('id', $request->id)->update(
             [
                 'quantity' => $saleData->quantity - $request->return_quentity,
-                'updated_at' => \Carbon\Carbon::now()->addHours(3),
+                'updated_at' => \Carbon\Carbon::now(),
                 'Discount_Value' => 0
             ]
         );
@@ -5825,7 +6176,7 @@ public function updateproductallDataInvoices(Request $request)
         }
     }
 
-    public function update_return_Sale(Request $request)
+   public function update_return_Sale(Request $request)
 {
     app()->setLocale(LaravelLocalization::getCurrentLocale());
     $avtSaleRate = Avt::find(1);
@@ -5838,8 +6189,51 @@ public function updateproductallDataInvoices(Request $request)
 
     // توحيد استقبال كمية المرتجع لتفادي الأخطاء الإملائية في الطلب
     $returnQuantity = $request->return_quantity ?? $request->return_quentity;
+
+    // حماية: الكمية لازم تكون رقم موجب ولا تتجاوز الكمية المتبقية في السطر
+    if (!is_numeric($returnQuantity) || $returnQuantity <= 0 || $returnQuantity > $saleData->quantity) {
+        abort(422, 'Invalid return quantity');
+    }
+
     $total_cost_value = $updateProduct->purchasingـprice * $returnQuantity;
     $paymentMethod = $InvoiceData->Pay;
+
+    // ===== إصلاح الخصم =====
+    // كل الأرقام هنا تُحسب "قبل" أي تحديث على sales أو invoices،
+    // لأن update() يغيّر قيمة الـ Model في الذاكرة (كان Discount_Value يصير 0 قبل استخدامه).
+    $originalQty  = $saleData->quantity;
+    $lineDiscount = (float) $saleData->Discount_Value;
+
+    $invoiceSales         = sales::where('invoice_id', $saleData->invoice_id)->get();
+    $allLineDiscounts     = (float) $invoiceSales->sum('Discount_Value');
+    $remainingQtyAll      = $invoiceSales->sum('quantity');
+    $isFullInvoiceReturn  = ($remainingQtyAll - $returnQuantity) <= 0;
+
+    // خصم الفاتورة (على مستوى الفاتورة) = إجمالي الخصم - مجموع خصومات الأصناف
+    $invoiceLevelDiscount = max(round($InvoiceData->discount - $allLineDiscounts, 2), 0);
+    $netAfterLineDiscounts = $InvoiceData->Price - $allLineDiscounts;
+
+    // حصة خصم الصنف المرتجع (تناسبياً مع الكمية المرتجعة، والكل إذا رجعت كل الكمية)
+    $returnedLineDiscount = ($returnQuantity >= $originalQty)
+        ? $lineDiscount
+        : round($lineDiscount * $returnQuantity / $originalQty, 2);
+
+    // صافي المرتجع بعد خصم الصنف
+    $returnedLineNet = round(($returnQuantity * $saleData->Unit_Price) - $returnedLineDiscount, 2);
+
+    // حصة خصم الفاتورة: تناسبياً مع قيمة المرتجع، والباقي كله عند آخر مرتجع
+    if ($isFullInvoiceReturn) {
+        $invoiceDiscountShare = $invoiceLevelDiscount;
+    } elseif ($netAfterLineDiscounts > 0) {
+        $invoiceDiscountShare = round($invoiceLevelDiscount * $returnedLineNet / $netAfterLineDiscounts, 2);
+    } else {
+        $invoiceDiscountShare = 0;
+    }
+
+    // القيمة النهائية المرتجعة (بعد خصم الصنف وخصم الفاتورة)
+    $total_value    = round($returnedLineNet - $invoiceDiscountShare, 2);
+    $total_tax      = round($total_value * $avtSaleRate->AVT, 2);
+    $total_with_tax = $total_value + $total_tax;
 
     // 2. معالجة حركة المخزون وحساب الفروع
     if ($updateProduct->branchs_id == $InvoiceData->branchs_id) {
@@ -5854,7 +6248,7 @@ public function updateproductallDataInvoices(Request $request)
             ->where('product_id', $saleData->product_id)
             ->update([
                 'quantity' => $saleData->quantity - $returnQuantity,
-                'updated_at' => \Carbon\Carbon::now()->addHours(3),
+                'updated_at' => \Carbon\Carbon::now(),
             ]);
 
         $mproduct = products::where('branchs_id', $InvoiceData->branchs_id)
@@ -5897,9 +6291,6 @@ public function updateproductallDataInvoices(Request $request)
     }
 
     // 3. تسجيل حركة مرتجع المبيعات (return_sales)
-    $isLastItem = (sales::where('invoice_id', $saleData->invoice_id)->where('quantity', '!=', 0)->count() == 1)
-                  && (($saleData->quantity - $returnQuantity) == 0);
-
     return_sales::create([
         'user_id' => auth()->user()->id,
         'product_id' => $saleData->product_id,
@@ -5907,11 +6298,13 @@ public function updateproductallDataInvoices(Request $request)
         'branch_id' => auth()->user()->branch->id,
         'return_Added_Value' => $saleData->Added_Value,
         'return_Unit_Price' => $saleData->Unit_Price,
-        'discountvalue' => $saleData->Discount_Value,
-        'discountoninvoice' => $isLastItem ? ($InvoiceData->discount - $saleData->Discount_Value) : 0,
+        // خصم الصنف: حصة الكمية المرتجعة فقط
+        'discountvalue' => $returnedLineDiscount,
+        // خصم الفاتورة: حصة هذا المرتجع (والباقي كله عند آخر مرتجع)
+        'discountoninvoice' => $invoiceDiscountShare,
         'returnshabkavalue' => $returnshabkavalue,
         'return_quantity' => $returnQuantity,
-        'created_at' => \Carbon\Carbon::now()->addHours(3),
+        'created_at' => \Carbon\Carbon::now(),
         'tax_rate'=>$saleData->tax_rate,
 
     ]);
@@ -5920,7 +6313,8 @@ public function updateproductallDataInvoices(Request $request)
     $saleData->update([
         'quantity' => $saleData->quantity - $returnQuantity,
         'quantityreturn' => $saleData->quantityreturn + $returnQuantity,
-        'Discount_Value' => 0
+        // كان يُصفَّر دائماً حتى لو بقي جزء من الكمية؛ الآن نُنقص الحصة المرتجعة فقط
+        'Discount_Value' => round($lineDiscount - $returnedLineDiscount, 2),
     ]);
 
     // 5. حسابات أرقام الإشعارات الدائنة وتحديث الفاتورة
@@ -5933,16 +6327,20 @@ public function updateproductallDataInvoices(Request $request)
         $NOTICE_Number = $recentreturn == null ? 1 : $recentreturn->NOTICE_Number + 1;
     }
 
+    // الخصم المتبقي على الفاتورة بعد هذا المرتجع
+    $newInvoiceDiscount = max(round($InvoiceData->discount - $returnedLineDiscount - $invoiceDiscountShare, 2), 0);
+
     // تحديث قيم الفاتورة الحالية
     $InvoiceData->update([
         'Price' => round($InvoiceData->Price - ($saleData->Unit_Price * $returnQuantity), 2),
-        'Added_Value' => round($InvoiceData->Added_Value - ((($saleData->Unit_Price * $returnQuantity) - $saleData->Discount_Value) * $avtSaleRate->AVT), 2),
+        // ضريبة المرتجع محسوبة بعد الخصمين (خصم الصنف + حصة خصم الفاتورة)
+        'Added_Value' => round($InvoiceData->Added_Value - $total_tax, 2),
         'Number_of_Quantity' => $InvoiceData->Number_of_Quantity - $returnQuantity,
         'NOTICE_Number' => $NOTICE_Number,
-        'discountOnInvoice' => $InvoiceData->discount - $saleData->Discount_Value,
-        'discount' => $InvoiceData->discount - $saleData->Discount_Value,
+        'discountOnInvoice' => $newInvoiceDiscount,
+        'discount' => $newInvoiceDiscount,
         'payment_return' => $request->pay_return_sale,
-        'updated_at' => \Carbon\Carbon::now()->addHours(3),
+        'updated_at' => \Carbon\Carbon::now(),
     ]);
 
     // إعادة تصفير القيم الفاتورة إذا أصبحت الكمية الإجمالية صفر
@@ -5955,15 +6353,13 @@ public function updateproductallDataInvoices(Request $request)
     }
 
     // 6. الحسابات المالية الموحدة (القيود اليومية المحاسبية)
+    // (total_value / total_tax / total_with_tax تم حسابها أعلاه بعد الخصومات)
     $customerdata = customers::find($InvoiceData->customer_id);
-    $total_value = ($returnQuantity * $saleData->Unit_Price) - $saleData->Discount_Value;
-    $total_tax = $total_value * $avtSaleRate->AVT;
-    $total_with_tax = $total_value + $total_tax;
 
     $payReturnMethod = $request->pay_return_sale;
     $userId = auth()->user()->id;
     $userBranchId = auth()->user()->branchs_id;
-    $now = Carbon::now()->addHours(3);
+    $now = Carbon::now();
     $invoiceNote = ' فاتورة مرتجع مبيعات رقم :' . $InvoiceData->id;
 
     $commonTransactionData = [
@@ -6110,8 +6506,6 @@ public function updateproductallDataInvoices(Request $request)
 
 
 
-
-
     public function update(Request $request)
     {
         //
@@ -6136,7 +6530,7 @@ public function updateproductallDataInvoices(Request $request)
             $updateCustomer = customers::where('id', $InvoiceData->customer_id)->update(
                 [
                     'Balance' => $customerdata->Balance - ((($request->return_quentity * $saleData->Unit_Price) - $saleData->Discount_Value) + ((($request->return_quentity * $saleData->Unit_Price) - $saleData->Discount_Value) * $avtSaleRate->AVT)),
-                    'updated_at' => \Carbon\Carbon::now()->addHours(3),
+                    'updated_at' => \Carbon\Carbon::now(),
 
                 ]
             );
@@ -6164,7 +6558,7 @@ public function updateproductallDataInvoices(Request $request)
             'return_Added_Value' => $saleData->Added_Value,
             'return_Unit_Price' => $saleData->Unit_Price,
             'return_quantity' => $request->return_quentity,
-            'created_at' => \Carbon\Carbon::now()->addHours(3),
+            'created_at' => \Carbon\Carbon::now(),
             'tax_rate'=>$saleData->tax_rate,
 
         ]);
@@ -6182,7 +6576,7 @@ public function updateproductallDataInvoices(Request $request)
                 'Price' => round($InvoiceData->Price - (($saleData->Unit_Price * $request->return_quentity)), 2),
                 'Added_Value' => round($InvoiceData->Added_Value - ((($saleData->Unit_Price * $request->return_quentity)) * $avtSaleRate->AVT), 2),
                 'Number_of_Quantity' => $InvoiceData->Number_of_Quantity - $request->return_quentity,
-                'updated_at' => \Carbon\Carbon::now()->addHours(3),
+                'updated_at' => \Carbon\Carbon::now(),
                 'NOTICE_Number' => $NOTICE_Number
 
             ]
@@ -6190,7 +6584,7 @@ public function updateproductallDataInvoices(Request $request)
         $productSales =sales::where('id', $request->id)->update(
             [
                 'quantity' => $saleData->quantity - $request->return_quentity,
-                'updated_at' => \Carbon\Carbon::now()->addHours(3),
+                'updated_at' => \Carbon\Carbon::now(),
                 'Discount_Value' => 0
             ]
         );
@@ -6202,7 +6596,7 @@ public function updateproductallDataInvoices(Request $request)
             $updateCustomer = customers::where('id', $InvoiceData->customer_id)->update(
                 [
                     'Balance' => $customerdata->Balance - $InvoiceData->discount,
-                    'updated_at' => \Carbon\Carbon::now()->addHours(3),
+                    'updated_at' => \Carbon\Carbon::now(),
 
                 ]
             );
@@ -6338,10 +6732,10 @@ public function cancelInvoiceDiscont($invoiceId)
                         'Added_Value' => ($request->product_price - $request->product_price_after_dis) * $avtSaleRate->AVT,
                         'Pay' => $request->pay,
                         'Number_of_Quantity' => $request->quantity,
-                        'created_at' => \Carbon\Carbon::now()->addHours(3),
-                        'updated_at' => \Carbon\Carbon::now()->addHours(3),
-                        'issue_date' => substr(\Carbon\Carbon::now()->addHours(3), 0, 10),
-                        'issue_time' => substr(\Carbon\Carbon::now()->addHours(3), 12),
+                        'created_at' => \Carbon\Carbon::now(),
+                        'updated_at' => \Carbon\Carbon::now(),
+                        'issue_date' => substr(\Carbon\Carbon::now(), 0, 10),
+                        'issue_time' => substr(\Carbon\Carbon::now(), 12),
                     ]
                 );
                 $invoiceNumber = $Invoice->id;
@@ -6353,7 +6747,7 @@ public function cancelInvoiceDiscont($invoiceId)
                         'Price' => round($InvoiceData->Price + ($request->product_price - $request->product_price_after_dis), 2),
                         'Added_Value' => round(($InvoiceData->Added_Value + (($request->product_price - $request->product_price_after_dis) * $avtSaleRate->AVT)), 2),
                         'Number_of_Quantity' => $InvoiceData->Number_of_Quantity + $request->quantity,
-                        'updated_at' => \Carbon\Carbon::now()->addHours(3),
+                        'updated_at' => \Carbon\Carbon::now(),
                     ]
                 );
             }
@@ -6369,7 +6763,7 @@ public function cancelInvoiceDiscont($invoiceId)
                     'quantity' => $request->quantity,
                     'branch_id' => Auth()->User()->branch->id,
 
-                    'created_at' => \Carbon\Carbon::now()->addHours(3),
+                    'created_at' => \Carbon\Carbon::now(),
                 ]
             );
         } else {

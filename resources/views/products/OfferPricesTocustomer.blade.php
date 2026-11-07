@@ -414,7 +414,7 @@ td .d-flex {
                             style="background-color: #fcfcfc; border: 1px solid #e1e1e1; border-radius: 8px; justify-content: space-between; align-items: flex-end;">
 
                             <div class="col-md-2"><label class="form-label">{{ __('home.discound_on_invoice') }}
-                                </label><input type="text" id="discound_on_invoice" name="discound_on_invoice" readonly
+                                </label><input type="text" id="discound_on_invoice" name="discound_on_invoice" 
                                     oninput='calculateTotalDiscount()' class="form-control"></div>
 
                             <div class="col-lg-4">
@@ -670,7 +670,7 @@ td .d-flex {
                                 {{__('home.searchaboutproduct')}} </label>
                             <input autocomplete="off" dir="ltr" type="text" autofocus class="form-control parent-input"
                                 placeholder="{{ __('home.Search By Name or Product Number') }}" id="searchaboutproduct"
-                                name="searchaboutproduct" onkeyup="searchaboutproductfunction()" autofocus>
+                                name="searchaboutproduct" oninput="searchaboutproductfunction()" autofocus>
                         </div>
                         <div class="col-lg-3 mb-2">
                             <label for="inputName" class="control-label parent-label">{{ __('home.groups') }}</label>

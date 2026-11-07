@@ -1,202 +1,284 @@
 @extends('layouts.master')
+
 @section('css')
-    <style>
-        @media print {
-            #print_Button {
-                display: none;
-            }
-        }
-        body {
-            font: 13pt Georgia, "Times New Roman", Times, serif;
-            line-height: 1.5;
-            border-style: solid;
-        }
-    </style>
+    <!-- Internal Data table css -->
+    <link href="{{ URL::asset('assets/plugins/datatable/css/dataTables.bootstrap4.min.css') }}" rel="stylesheet" />
+    <link href="{{ URL::asset('assets/plugins/datatable/css/buttons.bootstrap4.min.css') }}" rel="stylesheet">
+    <link href="{{ URL::asset('assets/plugins/datatable/css/responsive.bootstrap4.min.css') }}" rel="stylesheet" />
+    <link href="{{ URL::asset('assets/plugins/select2/css/select2.min.css') }}" rel="stylesheet">
+    <link href="{{ URL::asset('assets/plugins/spectrum-colorpicker/spectrum.css') }}" rel="stylesheet">
 @endsection
+
 @section('title')
-{{__('home.year_sales_report')}}
-@stop
+    {{ __('report.employeeـsales') }}
+@endsection
+
 @section('page-header')
     <!-- breadcrumb -->
     <div class="breadcrumb-header justify-content-between">
-    </div>
-    <!-- breadcrumb -->
-@endsection
-@section('content')
-    <!-- row -->
-    <?php
-        $currentdata = \Carbon\Carbon::now()->addHours(3)->format("Y-m-d H:i:s");
-        $currentYear = date('Y');
-        $lastYear = $currentYear - 1;
-    ?>
-
-    <div class="row row-sm">
-        <div class="col-md-12 col-xl-12">
-            <div class=" main-content-body-invoice" id="print">
-                <div class="card card-invoice">
-                    <div class="card-body">
-                     <div class="invoice-header" style="display: flex;justify-content:space-between;width:100%">
-
-                        <div class="billed-from" style="width:33%;text-align: center;" >
-                            <br>
-                             <span style="font-size:25px">{{Nameen}}</span>
-                            <br>
-                            <p dir=ltr> {{describtionen}} </p>
-                            <span dir=ltr>{{STen}} </span>
-                            <p dir=ltr> {{Taxen}} </p>
-                        </div>
-                        <div class="row">
-                        <?php
-                            $logo=camplogo;
-                        ?>
-                            <a href="https://ebdeasoft.com/"><img src="{{ asset('assets\img\brand').'/'.$logo }}" class="logo-1" alt="logo" style="width: 110px; height: 70px;"></a>
-                        </div>
-
-                        <div class="billed-from" style="width:33%;text-align: center;">
-                            <br>
-                             <span style="font-size:25px">{{Namear}}</span>
-                            <br>
-                            <p> {{describtionar}}</p>
-                            <p>{{STar}}</p>
-                            <p>{{Taxar}}</p>
-                        </div><!-- billed-from -->
-                    </div><!-- invoice-header -->
-<br>
-<center> <h3>تقرير مقارنة مبيعات العامين ({{ $lastYear }} و {{ $currentYear }}) / Sales Comparison Report</h3> </center>
-                        <div class="table-padding table-responsive ">
-                                <table style="border: 2px solid rgba(0,0,0,0)" class="table table-striped table-bordered text-center my-2">
-                                    <col style="width:15%">
-                                    <col style="width:15%">
-                                    <col style="width:15%">
-                                    <col style="width:20%">
-                                    <col style="width:15%">
-                                    <col style="width:20%">
-                                    <thead>
-                                        <tr>
-                                            <th style="background-color: rgba(236, 240, 250, 1);"> <label style="font-size: 14px;color:#419BB2 ;font-weight:bold;"> {{ __('report.fromdate') }}:</label></th>
-                                            <th style="background-color: rgba(236, 240, 250, 1);"> <label style="font-size: 14px;color:#419BB2 ;font-weight:bold;"> {{ $currentYear . '-01-01'}}</label></th>
-                                            <th style="background-color: rgba(236, 240, 250, 1);"> <label style="font-size: 14px;color:#419BB2 ;font-weight:bold;"> {{ __('report.todate') }}</label></th>
-                                            <th style="background-color: rgba(236, 240, 250, 1);"> <label style="font-size: 14px;color:#419BB2 ;font-weight:bold;"> {{ $currentYear . '-12-31' }}</label></th>
-                                            <th style="background-color: rgba(236, 240, 250, 1);"> <label style="font-size: 14px;color:#419BB2 ;font-weight:bold;"> {{ __('home.exportTime') }} </label></th>
-                                            <th style="background-color: rgba(236, 240, 250, 1);"> <label style="font-size: 14px;color:#419BB2 ;font-weight:bold;"> {{ $currentdata }}</label></th>
-                                        </tr>
-                                    </thead>
-                                </table>
-                            </div>
-                           <?php
-                            $totalCurrentCount = 0;
-                            $totalCurrentAmount = 0;
-                            $totalLastCount = 0;
-                            $totalLastAmount = 0;
-                           ?>
-                        <div class="card-body">
-                        <br><br>
-                                <div class="table-responsive">
-                                    <table id="example" class="table key-buttons text-md-nowrap table-bordered table-striped text-center">
-                                        <thead>
-                                            <tr>
-                                                <th class="border-bottom-0">NO</th>
-                                                <th class="border-bottom-0">الشهر MONTH</th>
-                                                <th>عدد فواتير السنة السابقة ({{ $lastYear }})</th>
-                                                <th>إجمالي السنة السابقة ({{ $lastYear }}) [SAR]</th>
-                                                <th>عدد فواتير السنة الحالية ({{ $currentYear }})</th>
-                                                <th>إجمالي السنة الحالية ({{ $currentYear }}) [SAR]</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            <?php
-                                                $monthsNames = [
-                                                    1 => ['يناير', 'January'],
-                                                    2 => ['فبراير', 'February'],
-                                                    3 => ['مارس', 'March'],
-                                                    4 => ['أبريل', 'April'],
-                                                    5 => ['مايو', 'May'],
-                                                    6 => ['يونيو', 'June'],
-                                                    7 => ['يوليو', 'July'],
-                                                    8 => ['أغسطس', 'August'],
-                                                    9 => ['سبتمبر', 'September'],
-                                                    10 => ['أكتوبر', 'October'],
-                                                    11 => ['نوفمبر', 'November'],
-                                                    12 => ['ديسمبر', 'December']
-                                                ];
-                                            ?>
-
-                                            @for ($i = 0; $i < 12; $i++)
-                                                <?php
-                                                    $mIndex = $i;
-                                                    
-                                                    // بيانات السنة السابقة
-                                                    $lastYearCount = $data[2][$mIndex] ?? 0;
-                                                    $lastYearTotal = round(
-                                                        ($data[3][$mIndex]['total_cash'] ?? 0) + 
-                                                        ($data[3][$mIndex]['total_bank'] ?? 0) + 
-                                                        ($data[3][$mIndex]['total_credit'] ?? 0) + 
-                                                        ($data[3][$mIndex]['total_transfer'] ?? 0), 2
-                                                    );
-
-                                                    // بيانات السنة الحالية
-                                                    $currentYearCount = $data[0][$mIndex] ?? 0;
-                                                    $currentYearTotal = round(
-                                                        ($data[1][$mIndex]['total_cash'] ?? 0) + 
-                                                        ($data[1][$mIndex]['total_bank'] ?? 0) + 
-                                                        ($data[1][$mIndex]['total_credit'] ?? 0) + 
-                                                        ($data[1][$mIndex]['total_transfer'] ?? 0), 2
-                                                    );
-
-                                                    // تجميع المجاميع
-                                                    $totalLastCount += $lastYearCount;
-                                                    $totalLastAmount += $lastYearTotal;
-                                                    
-                                                    $totalCurrentCount += $currentYearCount;
-                                                    $totalCurrentAmount += $currentYearTotal;
-                                                ?>
-                                                <tr>
-                                                    <td>{{ $i + 1 }}</td>
-                                                    <td>{{ $monthsNames[$i+1][0] }} {{ $monthsNames[$i+1][1] }}</td>
-                                                    <td>{{ $lastYearCount }}</td>
-                                                    <td>{{ $lastYearTotal }}</td>
-                                                    <td>{{ $currentYearCount }}</td>
-                                                    <td>{{ $currentYearTotal }}</td>
-                                                </tr>
-                                            @endfor
-
-                                            <!-- صف الإجمالي العام -->
-                                            <tr style="font-weight: bold; background-color: #f5f6fb;">
-                                                <td colspan="2" class="text-left">الإجمالي العام (TOTAL)</td>
-                                                <td>{{ $totalLastCount }}</td>
-                                                <td>{{ $totalLastAmount }} SAR</td>
-                                                <td>{{ $totalCurrentCount }}</td>
-                                                <td>{{ $totalCurrentAmount }} SAR</td>
-                                            </tr>
-                                        </tbody>
-                                    </table>
-                                    <br><br>
-                                <p>{{__('home.employeereciver')}} : {{Auth()->user()->name}}</p>
-                                <br>
-                                <p>{{__('home.thesignature')}} : </p>
-                                </div>
-
-                        <hr class="mg-b-40">
-
-                        <button class="btn btn-danger print-style float-left mt-3 mr-2" id="print_Button" onclick="printDiv()"> <i
-                                class="mdi mdi-printer ml-1"></i>{{__('home.print')}}</button>
-                        </div>
-                        </div>
-                </div>
+        <div class="my-auto">
+            <div class="d-flex">
+                <h4 class="content-title mb-0 my-auto">{{ __('report.employeeـsales') }}</h4>
+                <span class="text-muted mt-1 tx-13 mr-2 mb-0">/ التقرير</span>
             </div>
         </div>
     </div>
+    <!-- breadcrumb -->
 @endsection
+
+@section('content')
+
+    <!-- عرض الأخطاء -->
+    @if ($errors->any())
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <button aria-label="Close" class="close" data-dismiss="alert" type="button">
+                <span aria-hidden="true">&times;</span>
+            </button>
+            <strong>خطأ!</strong>
+            <ul class="mb-0 mt-2">
+                @foreach ($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
+
+    <!-- رسائل التنبيه -->
+    @if (session()->has('notfountreturnproduct'))
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <strong>{{ session()->get('notfountreturnproduct') }}</strong>
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+    @endif
+
+    <!-- row -->
+    <div class="row">
+        <div class="col-xl-12">
+            <div class="card shadow-sm mg-b-20" style="border-radius: 12px; border: none;">
+                <div class="card-header bg-transparent pb-3 pt-4 border-bottom-0">
+                    
+                    <!-- نموذج البحث -->
+                    <form action="{{ url(Mcamara\LaravelLocalization\Facades\LaravelLocalization::getCurrentLocale() . '/employeeSalesSearch') }}"
+                          method="POST" role="search" autocomplete="off">
+                        {{ csrf_field() }}
+
+                        <div class="row align-items-end">
+                            <!-- من تاريخ -->
+                            <div class="col-lg-4 mg-t-10" id="start_at">
+                                <label class="form-label font-weight-bold text-muted">{{ __('report.fromdate') }}</label>
+                                <div class="input-group">
+                                    <div class="input-group-prepend">
+                                        <div class="input-group-text bg-light">
+                                            <i class="fas fa-calendar-alt text-primary"></i>
+                                        </div>
+                                    </div>
+                                    <input class="form-control fc-datepicker" value="{{ $start_at ?? '' }}"
+                                           name="start_at" placeholder="YYYY-MM-DD" type="text" required>
+                                </div>
+                            </div>
+
+                            <!-- إلى تاريخ -->
+                            <div class="col-lg-4 mg-t-10" id="end_at">
+                                <label class="form-label font-weight-bold text-muted">{{ __('report.todate') }}</label>
+                                <div class="input-group">
+                                    <div class="input-group-prepend">
+                                        <div class="input-group-text bg-light">
+                                            <i class="fas fa-calendar-alt text-primary"></i>
+                                        </div>
+                                    </div>
+                                    <input class="form-control fc-datepicker" name="end_at"
+                                           value="{{ $end_at ?? '' }}" placeholder="YYYY-MM-DD" type="text" required>
+                                </div>
+                            </div>
+
+                            <!-- اختيار الموظف -->
+                            <div class="col-lg-4 mg-t-10">
+                                <label class="form-label font-weight-bold text-muted">{{ __('report.Enter_employeeـname') }}</label>
+                                <select class="form-control select2" name="productname" required>
+                                    <option value="-"> {{ __('report.Enter_employeeـname') }} </option>
+                                    @foreach (App\Models\User::all() as $section)
+                                        <option value="{{ $section->id }}" {{ (isset($userId) && $userId == $section->id) ? 'selected' : '' }}>
+                                            {{ $section->name }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- زر البحث -->
+                        <div class="d-flex justify-content-center mt-4">
+                            <button type="submit" class="btn btn-primary px-4 py-2 shadow-sm" style="border-radius: 8px;">
+                                <i class="las la-search font-weight-bold ml-1" style="font-size: 16px;"></i>
+                                {{ __('home.search') }}
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                @if (isset($Invoices))
+                    <div class="card-body pt-0">
+                        @php
+                            $userId = 0;
+                            $count = 0;
+                            $totalprice = 0;
+                            $avt = App\Models\Avt::find(1);
+                            $saleavt = $avt ? $avt->AVT : 0;
+                            $totaladdedvalue = 0;
+                            $totaldiscount = 0;
+                            $startat = '';
+                            $endat = '';
+                        @endphp
+
+                        <!-- جدول الفواتير -->
+                        <div class="table-responsive hoverable-table mt-3">
+                            <table class="table text-md-nowrap table-hover border-top-0" id="example1" data-page-length='50' style="text-align: center;">
+                                <thead>
+                                    <tr class="bg-light">
+                                        <th style="color: #FF4F1F; font-weight: bold;">{{ __('home.Invoice_no') }}</th>
+                                        <th style="color: #FF4F1F; font-weight: bold;">{{ __('home.sallerName') }}</th>
+                                        <th style="color: #FF4F1F; font-weight: bold;">{{ __('home.clietName') }}</th>
+                                        <th style="color: #FF4F1F; font-weight: bold;">{{ __('home.date') }}</th>
+                                        <th style="color: #FF4F1F; font-weight: bold;">{{ __('home.branch') }}</th>
+                                        <th style="color: #FF4F1F; font-weight: bold;">{{ __('home.total') }}</th>
+                                        <th style="color: #FF4F1F; font-weight: bold;">{{ __('home.paymentmethod') }}</th>
+                                        <th style="color: #FF4F1F; font-weight: bold;">{{ __('home.operations') }}</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach ($Invoices as $product)
+                                        @php
+                                            $totaladdedvalue += ($product->Price - $product->discount) * $saleavt;
+                                            $totalprice += ($product->Price - $product->discount);
+                                            $totaldiscount += $product->discount;
+                                            if ($count == 0) {
+                                                $userId = $product->user_id;
+                                                $startat = $product->created_at;
+                                            }
+                                            $endat = $product->created_at;
+                                            $count++;
+
+                                            // تحديد طريقة الدفع
+                                            $pay = match($product->Pay) {
+                                                'Cash' => __('report.cash'),
+                                                'Shabka' => __('report.shabka'),
+                                                'Credit' => __('report.credit'),
+                                                'Bank_transfer' => __('home.Bank_transfer'),
+                                                default => __('home.Partition of the amount'),
+                                            };
+                                        @endphp
+                                        <tr>
+                                            <td>{{ $product->id }}</td>
+                                            <td>{{ $product->user->name ?? '-' }}</td>
+                                            <td dir="ltr">{{ $product->customer->name ?? '-' }}</td>
+                                            <td>{{ $product->created_at }}</td>
+                                            <td>{{ $product->branch->name ?? '-' }}</td>
+                                            <td class="font-weight-bold text-success">
+                                                {{ round(($product->Price - $product->discount) + (($product->Price - $product->discount) * $saleavt), 2) }}
+                                            </td>
+                                            <td>
+                                                <span class="badge badge-pill badge-light px-2 py-1">{{ $pay }}</span>
+                                            </td>
+                                            <td>
+                                                <a class="btn btn-sm btn-outline-primary" href="showInvoiceRecent/{{ $product->id }}">
+                                                    <i class="fas fa-print ml-1"></i> {{ __('home.show') }}
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- جدول الإجماليات -->
+                        <div class="row justify-content-end mt-4">
+                            <div class="col-md-6">
+                                <div class="table-responsive">
+                                    <table class="table table-bordered table-striped text-center bg-light" style="border-radius: 8px; overflow: hidden;">
+                                        <thead class="bg-primary text-white">
+                                            <tr>
+                                                <th>#</th>
+                                                <th>البند</th>
+                                                <th>المبلغ</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td>1</td>
+                                                <td>{{ __('home.totaldiscount') }}</td>
+                                                <td class="text-danger font-weight-bold">{{ $totaldiscount }}</td>
+                                            </tr>
+                                            <tr>
+                                                <td>2</td>
+                                                <td>{{ __('report.totalpricewithoudtax') }}</td>
+                                                <td>{{ $totalprice }}</td>
+                                            </tr>
+                                            <tr>
+                                                <td>3</td>
+                                                <td>{{ __('report.totaltax') }}</td>
+                                                <td>{{ round($totaladdedvalue, 2) }}</td>
+                                            </tr>
+                                            <tr class="font-weight-bold bg-warning-transparent">
+                                                <td>4</td>
+                                                <td>{{ __('report.totalallprice') }}</td>
+                                                <td class="text-success font-weight-bold" style="font-size: 16px;">
+                                                    {{ round($totaladdedvalue + $totalprice, 2) }}
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- زر الطباعة -->
+                        <div class="d-flex justify-content-center mt-4 mb-3">
+                            <a class="btn btn-info px-4 py-2 shadow-sm d-flex align-items-center" style="background-color: #419BB2; border-radius: 8px; font-size: 16px;"
+                               href="{{ url('/' . 'printReportemployeeSales' . '/' . $userId . '/' . $startat . '/' . $endat) }}">
+                                <i class="fas fa-print ml-2" style="font-size: 18px;"></i>
+                                {{ __('home.print') }}
+                            </a>
+                        </div>
+                    </div>
+                @endif
+
+            </div>
+        </div>
+    </div>
+    <!-- row closed -->
+
+@endsection
+
 @section('js')
-    <script src="{{ URL::asset('assets/plugins/chart.js/Chart.bundle.min.js') }}"></script>
-    <script type="text/javascript">
-        function printDiv() {
-            var printContents = document.getElementById('print').innerHTML;
-            var originalContents = document.body.innerHTML;
-            document.body.innerHTML = printContents;
-            window.print();
-            document.body.innerHTML = originalContents;
-            location.reload();
-        }
+    <!-- Internal Data tables -->
+    <script src="{{ URL::asset('assets/plugins/datatable/js/jquery.dataTables.min.js') }}"></script>
+    <script src="{{ URL::asset('assets/plugins/datatable/js/dataTables.dataTables.min.js') }}"></script>
+    <script src="{{ URL::asset('assets/plugins/datatable/js/dataTables.responsive.min.js') }}"></script>
+    <script src="{{ URL::asset('assets/plugins/datatable/js/dataTables.bootstrap4.js') }}"></script>
+    <script src="{{ URL::asset('assets/js/table-data.js') }}"></script>
+
+    <!-- Datepicker & Select2 -->
+    <script src="{{ URL::asset('assets/plugins/jquery-ui/ui/widgets/datepicker.js') }}"></script>
+    <script src="{{ URL::asset('assets/plugins/select2/js/select2.min.js') }}"></script>
+    <script src="{{ URL::asset('assets/js/form-elements.js') }}</td>"></script>
+
+    <script>
+        $(document).ready(function() {
+            // تهيئة حقول التاريخ
+            $('.fc-datepicker').datepicker({
+                dateFormat: 'yy-mm-dd'
+            });
+
+            // تفعيل Select2 للقائمة المنسدلة للموظفين
+            $('.select2').select2({
+                width: '100%'
+            });
+
+            // إخفاء التنبيهات تلقائياً
+            setTimeout(function() {
+                $('.alert').fadeOut(500);
+            }, 4000);
+        });
     </script>
 @endsection

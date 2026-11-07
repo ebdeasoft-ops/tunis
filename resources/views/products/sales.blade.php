@@ -404,7 +404,7 @@ td .d-flex {
                                 <label class="form-label" style="color: #23395D; font-weight: bold; font-size: 13px;">
                                     <i class="fa fa-file-invoice-dollar ml-1"></i> {{ __('home.discound_on_invoice') }}
                                 </label>
-                                <input type="text" readonly id="discound_on_invoice" name="discound_on_invoice"
+                                <input type="text"  id="discound_on_invoice" name="discound_on_invoice"
                                     oninput='calculateTotalDiscount()' class="form-control"
                                     style="border: 1px solid #23395D; border-radius: 5px; height: 40px; text-align: center; font-weight: bold; color: #d32f2f;"
                                     placeholder="0.00">
@@ -704,7 +704,7 @@ td .d-flex {
                                 {{__('home.searchaboutproduct')}} </label>
                             <input autocomplete="off" dir="ltr" type="text" autofocus class="form-control parent-input"
                                 placeholder="{{ __('home.Search By Name or Product Number') }}" id="searchaboutproduct"
-                                name="searchaboutproduct" onkeyup="searchaboutproductfunction()" autofocus>
+                                name="searchaboutproduct" oninput="searchaboutproductfunction()" autofocus>
                         </div>
                         <div class="col-lg-3 mb-2">
                             <label for="inputName" class="control-label parent-label">{{ __('home.groups') }}</label>
@@ -1141,7 +1141,6 @@ td .d-flex {
 
                 {{-- 3 --}}
 
-                @if(Auth()->user()->id == 30 || Auth()->user()->id == 17)
 
 
                 <div class="row">
@@ -1167,33 +1166,8 @@ td .d-flex {
                 </div>
 
 
-                @else
 
-                <div class="row">
-                    <div class="col-lg-4">
-                        <label for="inputName" class="control-label parent-label"> {{ __('home.purachesepice') }}
-                        </label>
-                        <input autocomplete="off" type="text" class="form-control parent-input" id="cost_price" readonly
-                            name="cost_price" value=0 onkeyup="convertToNumberpurchasersPrice()">
-                    </div>
-                    <div class="col-lg-4">
-                        <label for="inputName" class="control-label parent-label" required>{{ __('home.salepice') }}
-                        </label>
-                        <input autocomplete="off" type="text" class="form-control parent-input" id="sale_price_create"
-                            readonly value=0 name="sale_price_create" onkeyup="convertToNumbersalePrice()">
-                    </div>
-                    <div class="col-lg-4">
-                        <label for="inputName" class="control-label parent-label" required>{{ __('home.quantity') }}
-                        </label>
-                        <input autocomplete="off" type="text" class="form-control parent-input" id="quantity_create"
-                            readonly value=0 name="quantity_create" onkeyup="convertToNumbersalePrice()">
-                    </div>
-
-                </div>
-
-
-
-                @endif
+      
 
 
 

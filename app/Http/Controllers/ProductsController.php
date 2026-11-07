@@ -203,8 +203,8 @@ public function importStockExcel(Request $request)
                 'branchs_id' => auth()->user()->branchs_id, // مضاف إذا كان جدول المشتريات يدعم الفروع
                 'notes' => $request->notes,
                 'discount' => $request->totaldiscound ?? 0,
-                'created_at' => \Carbon\Carbon::now()->addHours(3),
-                'updated_at' => \Carbon\Carbon::now()->addHours(3),
+                'created_at' => \Carbon\Carbon::now(),
+                'updated_at' => \Carbon\Carbon::now(),
             ]);
         } else {
             // في حالة التحديث: نجلب رأس الفاتورة الحالي
@@ -219,7 +219,7 @@ public function importStockExcel(Request $request)
                 'suplier_id' => $supplierId,
                 'notes' => $request->notes,
                 'discount' => $request->totaldiscound ?? 0,
-                'updated_at' => \Carbon\Carbon::now()->addHours(3),
+                'updated_at' => \Carbon\Carbon::now(),
             ]);
         }
 
@@ -239,8 +239,8 @@ public function importStockExcel(Request $request)
                     'Added_Value' => $addedValuePerPiece,                 // قيمة الضريبة للحبة
                     'numberofpice' => $productItem['quentity'],            // الكمية المطلوبة
                     'discount' => $productItem['discound'] ?? 0,       // الخصم على مستوى الصنف إن وجد
-                    'created_at' => \Carbon\Carbon::now()->addHours(3),
-                    'updated_at' => \Carbon\Carbon::now()->addHours(3),
+                    'created_at' => \Carbon\Carbon::now(),
+                    'updated_at' => \Carbon\Carbon::now(),
                 ]);
             }
         }
@@ -353,7 +353,7 @@ public function importStockExcel(Request $request)
         $date = $request->date;
 
         // تحديد الوقت والتاريخ بدقة
-        $createdAtDate = $date != '0' ? $date . ' ' . substr(Carbon::now()->addHours(3), 12) : Carbon::now()->addHours(3);
+        $createdAtDate = $date != '0' ? $date . ' ' . substr(Carbon::now(), 12) : Carbon::now();
 
         if ($request->orderNo == 0) {
             $createorder = orderTosupllier::create([
@@ -363,7 +363,7 @@ public function importStockExcel(Request $request)
                 'purchaseـamount' => 0,
                 'added_value' => $totalTax,
                 'created_at' => $createdAtDate,
-                'updated_at' => Carbon::now()->addHours(3),
+                'updated_at' => Carbon::now(),
             ]);
         } else {
             $createorder = orderTosupllier::find($request->orderNo);
@@ -384,7 +384,7 @@ public function importStockExcel(Request $request)
             'save' => 1,
             'branchs_id' => $request->branchs_id,
             'created_at' => $createdAtDate,
-            'updated_at' => Carbon::now()->addHours(3),
+            'updated_at' => Carbon::now(),
         ]);
 
         $cost_shipping_per_item = 0;
@@ -438,8 +438,8 @@ public function importStockExcel(Request $request)
                 'numberofpice' => $item['quentity'],
                 'sale_price' => 0,
                 'unit' => '-',
-                'created_at' => Carbon::now()->addHours(3),
-                'updated_at' => Carbon::now()->addHours(3),
+                'created_at' => Carbon::now(),
+                'updated_at' => Carbon::now(),
                 'reamingQuantity' => $updateProduct->numberofpice + $item['quentity']
             ]);
         }
@@ -467,7 +467,7 @@ public function importStockExcel(Request $request)
                 'currentblance' => ($financial_accounts ? $financial_accounts->current_balance : 0),
                 'Pay_Method_Name' => $paymentMethod,
                 'created_at' => $createdAtDate,
-                'updated_at' => Carbon::now()->addHours(3),
+                'updated_at' => Carbon::now(),
                 'orginal_id' => 0,
                 'creditor' => 0,
                 'debtor' => $shipping,
@@ -518,7 +518,7 @@ public function importStockExcel(Request $request)
                 'currentblance' => $financial_accounts ? ($financial_accounts->current_balance) : 0,
                 'Pay_Method_Name' => $paymentMethod,
                 'created_at' => $createdAtDate,
-                'updated_at' => Carbon::now()->addHours(3),
+                'updated_at' => Carbon::now(),
                 'orginal_id' => 0,
                 'creditor' => $resource_purchases->In_debt,
                 'debtor' => 0,
@@ -545,7 +545,7 @@ public function importStockExcel(Request $request)
                 'currentblance' => $financial_accounts ? $financial_accounts->current_balance : 0,
                 'Pay_Method_Name' => $paymentMethod,
                 'created_at' => $createdAtDate,
-                'updated_at' => Carbon::now()->addHours(3),
+                'updated_at' => Carbon::now(),
                 'orginal_id' => 0,
                 'creditor' => $shipping,
                 'debtor' => 0,
@@ -574,7 +574,7 @@ public function importStockExcel(Request $request)
                 'currentblance' => $financial_accounts ? $financial_accounts->current_balance : 0,
                 'Pay_Method_Name' => $paymentMethod,
                 'created_at' => $createdAtDate,
-                'updated_at' => Carbon::now()->addHours(3),
+                'updated_at' => Carbon::now(),
                 'orginal_id' => 0,
                 'creditor' => $value_total,
                 'debtor' => 0,
@@ -598,7 +598,7 @@ public function importStockExcel(Request $request)
                 'note' => ' فاتورة مشتريات رقم :' . (string) $resource_purchases->orderId,
                 'Pay_Method_Name' => $paymentMethod,
                 'created_at' => $createdAtDate,
-                'updated_at' => Carbon::now()->addHours(3),
+                'updated_at' => Carbon::now(),
                 'orginal_id' => 0,
                 'creditor' => 0,
                 'debtor' => 0,
@@ -625,7 +625,7 @@ public function importStockExcel(Request $request)
                 'currentblance' => $financial_accounts ? $financial_accounts->current_balance : 0,
                 'Pay_Method_Name' => $paymentMethod,
                 'created_at' => $createdAtDate,
-                'updated_at' => Carbon::now()->addHours(3),
+                'updated_at' => Carbon::now(),
                 'orginal_id' => 0,
                 'creditor' => $value_total,
                 'debtor' => 0,
@@ -653,7 +653,7 @@ public function importStockExcel(Request $request)
             'currentblance' => 0,
             'Pay_Method_Name' => $paymentMethod,
             'created_at' => $createdAtDate,
-            'updated_at' => Carbon::now()->addHours(3),
+            'updated_at' => Carbon::now(),
             'orginal_id' => 0,
             'creditor' => 0,
             'debtor' => $total_cost,
@@ -691,7 +691,7 @@ public function importStockExcel(Request $request)
             'currentblance' => $financial_accounts_parent_102 ? ($financial_accounts_parent_102->debtor_current - ($financial_accounts_parent_102->creditor_current - $tax_value)) : 0,
             'Pay_Method_Name' => $paymentMethod,
             'created_at' => $createdAtDate,
-            'updated_at' => Carbon::now()->addHours(3),
+            'updated_at' => Carbon::now(),
             'orginal_id' => 0,
             'creditor' => 0,
             'debtor' => $tax_value,
@@ -898,8 +898,8 @@ public function importStockExcel(Request $request)
             $create_order = offer_price_to_customer::create([
                 'customer_id' => $customertid,
                 'branchs_id' => auth()->user()->branchs_id,
-                'created_at' => \Carbon\Carbon::now()->addHours(3),
-                'updated_at' => \Carbon\Carbon::now()->addHours(3),
+                'created_at' => \Carbon\Carbon::now(),
+                'updated_at' => \Carbon\Carbon::now(),
                 'notes' => $request->notes,
                 'discount' => $request->totaldiscound,
                 'numbershowstatus' => $request->shownumberproduct,
@@ -928,8 +928,8 @@ public function importStockExcel(Request $request)
                 'PriceWithoudTax' => $sale['price'],
                 'discount' => $sale['discound'],
                 'order_id' => $create_order->id,
-                'created_at' => \Carbon\Carbon::now()->addHours(3),
-                'updated_at' => \Carbon\Carbon::now()->addHours(3),
+                'created_at' => \Carbon\Carbon::now(),
+                'updated_at' => \Carbon\Carbon::now(),
             ]);
         }
 
@@ -961,7 +961,7 @@ public function importStockExcel(Request $request)
         $date = $request->date;
 
         // تجهيز الوقت الموحد بناءً على شرطك الحالي
-        $nowWithOffset = \Carbon\Carbon::now()->addHours(3);
+        $nowWithOffset = \Carbon\Carbon::now();
         $createdAt = $date != '0' ? $date . ' ' . substr($nowWithOffset, 12) : $nowWithOffset;
         $updatedAt = $nowWithOffset;
 
@@ -1512,7 +1512,7 @@ public function ChooseProductpaginatenewupdate(Request $request)
     {
         if ($request->hasFile('attachments')) {
             $request->validate([
-                'attachments' => 'required|mimes:png,jpg,jpeg,pdf|max:2000',
+                'attachments' => 'required|mimes:png,jpg,jpeg,pdf|max:10000',
             ]);
 
             $photo = $this->uploadImage('assets/attachments', $request->attachments);
@@ -2120,8 +2120,8 @@ public function searchAllInvoicespaginatenew($date)
             $order = offer_price_to_customer::create([
                 'customer_id' => $request->clientnamesearch,
                 'branchs_id' => auth()->user()->branchs_id,
-                'created_at' => Carbon::now()->addHours(3),
-                'updated_at' => Carbon::now()->addHours(3),
+                'created_at' => Carbon::now(),
+                'updated_at' => Carbon::now(),
                 'notes' => $request->notes,
                 'numbershowstatus' => $request->numbershowstatus,
             ]);
@@ -2149,8 +2149,8 @@ public function searchAllInvoicespaginatenew($date)
             'PriceWithoudTax' => $request->saleprice,
             'discount' => $request->discount,
             'order_id' => $orderNo,
-            'created_at' => Carbon::now()->addHours(3),
-            'updated_at' => Carbon::now()->addHours(3),
+            'created_at' => Carbon::now(),
+            'updated_at' => Carbon::now(),
             'note' => $request->notes,
         ]);
 
@@ -2262,8 +2262,8 @@ public function searchAllInvoicespaginatenew($date)
             $create_order = order_price_from_supplier::create([
                 'suplier_id' => $request->supplierId,
                 'branchs_id' => auth()->user()->branchs_id,
-                'created_at' => Carbon::now()->addHours(3),
-                'updated_at' => Carbon::now()->addHours(3),
+                'created_at' => Carbon::now(),
+                'updated_at' => Carbon::now(),
             ]);
             $orderNo = $create_order->id;
         }
@@ -2272,8 +2272,8 @@ public function searchAllInvoicespaginatenew($date)
             'product_id' => $request->productNo,
             'quantity' => $request->quentity,
             'order_id' => $orderNo,
-            'created_at' => Carbon::now()->addHours(3),
-            'updated_at' => Carbon::now()->addHours(3),
+            'created_at' => Carbon::now(),
+            'updated_at' => Carbon::now(),
         ]);
 
         return $this->getFormattedSupplierOrderItems($orderNo);
@@ -2710,8 +2710,8 @@ $data = resource_purchases::where('save', 1)
                 'Limit_credit' => $request->pay,
                 'purchaseـamount' => $request->quentity * $request->quentityprice,
                 'added_value' => $request->quentity * $request->quentityprice * ($avtPurcheseRate->AVT ?? 0),
-                'created_at' => Carbon::now()->addHours(3),
-                'updated_at' => Carbon::now()->addHours(3),
+                'created_at' => Carbon::now(),
+                'updated_at' => Carbon::now(),
             ]);
 
             $orderId = $createorder->id;
@@ -2727,8 +2727,8 @@ $data = resource_purchases::where('save', 1)
                 'Pay_Method_Name' => $request->pay,
                 'notes' => $request->notes,
                 'branchs_id' => $request->branchs_id,
-                'created_at' => Carbon::now()->addHours(3),
-                'updated_at' => Carbon::now()->addHours(3),
+                'created_at' => Carbon::now(),
+                'updated_at' => Carbon::now(),
             ]);
         } else {
             $orderId = $orderNo;
@@ -2780,8 +2780,8 @@ $data = resource_purchases::where('save', 1)
                 'numberofpice' => $request->quentity,
                 'sale_price' => $request->sale_price,
                 'unit' => $request->unit_pice,
-                'created_at' => Carbon::now()->addHours(3),
-                'updated_at' => Carbon::now()->addHours(3),
+                'created_at' => Carbon::now(),
+                'updated_at' => Carbon::now(),
             ]);
         }
 
@@ -2913,7 +2913,7 @@ $data = resource_purchases::where('save', 1)
     {
         $resource_purchases = resource_purchases::where('orderId', $request)->first();
         $branchs_id = $resource_purchases->branchs_id;
-        $currentTime = now()->addHours(3);
+        $currentTime = now();
 
         // صياغة تاريخ ووقت إنشاء الفاتورة بدقة
         $createdAt = $date != '0' ? $date . ' ' . substr($currentTime, 12) : $currentTime;
@@ -3615,7 +3615,7 @@ $data = resource_purchases::where('save', 1)
     public function processOrderPurchase(Request $request, $date, $payment, $supplier, $shipping, $branchs_id, $another_bank)
     {
         // إعداد التاريخ والوقت بناءً على قيمة المتغير الممرر
-        $createdAt = $date != '0' ? $date . ' ' . substr(now()->addHours(3), 12) : now()->addHours(3);
+        $createdAt = $date != '0' ? $date . ' ' . substr(now(), 12) : now();
 
         orderTosupllier::find($request)->update([
             'Limit_credit' => $payment,
@@ -3676,8 +3676,8 @@ $data = resource_purchases::where('save', 1)
                 'note' => ' فاتورة مشتريات رقم :' . (string) $request,
                 'currentblance' => $financial_accounts->current_balance + $shipping,
                 'Pay_Method_Name' => $paymentMethod,
-                'created_at' => now()->addHours(3),
-                'updated_at' => now()->addHours(3),
+                'created_at' => now(),
+                'updated_at' => now(),
                 'orginal_id' => 0,
                 'creditor' => 0,
                 'debtor' => $shipping,
@@ -3711,8 +3711,8 @@ $data = resource_purchases::where('save', 1)
                 'note' => ' فاتورة مشتريات رقم :' . (string) $request,
                 'currentblance' => $financial_accounts->current_balance + $resource_purchases->In_debt,
                 'Pay_Method_Name' => $paymentMethod,
-                'created_at' => now()->addHours(3),
-                'updated_at' => now()->addHours(3),
+                'created_at' => now(),
+                'updated_at' => now(),
                 'orginal_id' => 0,
                 'creditor' => $resource_purchases->In_debt,
                 'debtor' => 0,
@@ -3733,8 +3733,8 @@ $data = resource_purchases::where('save', 1)
                 'note' => ' فاتورة مشتريات مصريف شحن و تفريغ رقم :' . (string) $request,
                 'currentblance' => $financial_accounts->current_balance - $shipping,
                 'Pay_Method_Name' => $paymentMethod,
-                'created_at' => now()->addHours(3),
-                'updated_at' => now()->addHours(3),
+                'created_at' => now(),
+                'updated_at' => now(),
                 'orginal_id' => 0,
                 'creditor' => $shipping,
                 'debtor' => 0,
@@ -3760,8 +3760,8 @@ $data = resource_purchases::where('save', 1)
                 'note' => ' فاتورة مشتريات رقم :' . (string) $request,
                 'currentblance' => $financial_accounts->current_balance - $shipping,
                 'Pay_Method_Name' => $paymentMethod,
-                'created_at' => now()->addHours(3),
-                'updated_at' => now()->addHours(3),
+                'created_at' => now(),
+                'updated_at' => now(),
                 'orginal_id' => 0,
                 'creditor' => $shipping,
                 'debtor' => 0,
@@ -3791,8 +3791,8 @@ $data = resource_purchases::where('save', 1)
                 'note' => ' فاتورة مشتريات رقم :' . (string) $request,
                 'currentblance' => $financial_accounts->current_balance + $resource_purchases->In_debt,
                 'Pay_Method_Name' => $paymentMethod,
-                'created_at' => now()->addHours(3),
-                'updated_at' => now()->addHours(3),
+                'created_at' => now(),
+                'updated_at' => now(),
                 'orginal_id' => 0,
                 'creditor' => 0,
                 'debtor' => 0,
@@ -3807,8 +3807,8 @@ $data = resource_purchases::where('save', 1)
                 'note' => ' فاتورة مشتريات رقم :' . (string) $request,
                 'currentblance' => $financial_accounts->current_balance - $value_total,
                 'Pay_Method_Name' => $paymentMethod,
-                'created_at' => now()->addHours(3),
-                'updated_at' => now()->addHours(3),
+                'created_at' => now(),
+                'updated_at' => now(),
                 'orginal_id' => 0,
                 'creditor' => $value_total,
                 'debtor' => 0,
@@ -3834,8 +3834,8 @@ $data = resource_purchases::where('save', 1)
                 'note' => ' فاتورة مشتريات رقم :' . (string) $request,
                 'currentblance' => $financial_accounts->current_balance - $value_total,
                 'Pay_Method_Name' => $paymentMethod,
-                'created_at' => now()->addHours(3),
-                'updated_at' => now()->addHours(3),
+                'created_at' => now(),
+                'updated_at' => now(),
                 'orginal_id' => 0,
                 'creditor' => $value_total,
                 'debtor' => 0,
@@ -3856,8 +3856,8 @@ $data = resource_purchases::where('save', 1)
                 'pay_method' => $payment,
                 'note' => ' فاتورة مشتريات رقم :' . (string) $request,
                 'Pay_Method_Name' => $paymentMethod,
-                'created_at' => now()->addHours(3),
-                'updated_at' => now()->addHours(3),
+                'created_at' => now(),
+                'updated_at' => now(),
                 'orginal_id' => 0,
                 'creditor' => 0,
                 'debtor' => 0,
@@ -3880,8 +3880,8 @@ $data = resource_purchases::where('save', 1)
                 'note' => ' فاتورة مشتريات رقم :' . (string) $request,
                 'currentblance' => $financial_accounts->current_balance - $value_total,
                 'Pay_Method_Name' => $paymentMethod,
-                'created_at' => now()->addHours(3),
-                'updated_at' => now()->addHours(3),
+                'created_at' => now(),
+                'updated_at' => now(),
                 'orginal_id' => 0,
                 'creditor' => $value_total,
                 'debtor' => 0,
@@ -3903,8 +3903,8 @@ $data = resource_purchases::where('save', 1)
                     'note' => ' فاتورة مشتريات رقم :' . (string) $request,
                     'currentblance' => $financial_accounts->current_balance - $value_total,
                     'Pay_Method_Name' => $paymentMethod,
-                    'created_at' => now()->addHours(3),
-                    'updated_at' => now()->addHours(3),
+                    'created_at' => now(),
+                    'updated_at' => now(),
                     'orginal_id' => 0,
                     'creditor' => $value_total,
                     'debtor' => 0,
@@ -3930,8 +3930,8 @@ $data = resource_purchases::where('save', 1)
                     'note' => ' فاتورة مشتريات رقم :' . (string) $request,
                     'currentblance' => $financial_accounts->current_balance - $value_total,
                     'Pay_Method_Name' => $paymentMethod,
-                    'created_at' => now()->addHours(3),
-                    'updated_at' => now()->addHours(3),
+                    'created_at' => now(),
+                    'updated_at' => now(),
                     'orginal_id' => 0,
                     'creditor' => $value_total,
                     'debtor' => 0,
@@ -3971,8 +3971,8 @@ $data = resource_purchases::where('save', 1)
             'note' => ' فاتورة مشتريات رقم :' . (string) $request,
             'currentblance' => $financial_accounts->debtor_current - ($financial_accounts->creditor_current - $tax_value),
             'Pay_Method_Name' => $paymentMethod,
-            'created_at' => now()->addHours(3),
-            'updated_at' => now()->addHours(3),
+            'created_at' => now(),
+            'updated_at' => now(),
             'orginal_id' => 0,
             'creditor' => 0,
             'debtor' => $tax_value,
@@ -4001,8 +4001,8 @@ $data = resource_purchases::where('save', 1)
             'note' => ' فاتورة مشتريات رقم :' . (string) $request,
             'currentblance' => $financial_accounts->debtor_current - ($financial_accounts->creditor_current - $tax_value),
             'Pay_Method_Name' => $paymentMethod,
-            'created_at' => now()->addHours(3),
-            'updated_at' => now()->addHours(3),
+            'created_at' => now(),
+            'updated_at' => now(),
             'orginal_id' => 0,
             'creditor' => 0,
             'debtor' => $tax_value,
@@ -4046,7 +4046,7 @@ $data = resource_purchases::where('save', 1)
         $vatrat = 0;
         $total_pieces = 0;
         $current_user_branch = auth()->user()->branchs_id;
-        $current_time = now()->addHours(3);
+        $current_time = now();
 
         // جلب تفاصيل المنتجات النشطة في الطلب لتجنب تكرار الاستعلامات
         $activeOrderDetails = orderDetails::where('numberofpice', '!=', 0)
@@ -4273,7 +4273,7 @@ $data = resource_purchases::where('save', 1)
         $paymentMethod = $payment;
         $discount = 0;
         $current_user_branch = auth()->user()->branchs_id;
-        $current_time = now()->addHours(3);
+        $current_time = now();
 
         // تحديث مخزون المنتج الأصلي
         $productData = products::find($productId);
@@ -4772,7 +4772,7 @@ $data = resource_purchases::where('save', 1)
     public function destroy(Request $request)
     {
         app()->setLocale(LaravelLocalization::getCurrentLocale());
-        $current_time = now()->addHours(3);
+        $current_time = now();
 
         $orderDetails = orderDetails::where('product_id', $request->id)
             ->where('product_name', $request->product_name)

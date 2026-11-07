@@ -231,7 +231,7 @@
 
                     <div class="col-lg-4 mg-t-20 mg-lg-t-0">
                         <label for="inputName" style="font-weight: bold" class="control-label parent-label"> {{__('home.searchaboutproduct')}} </label>
-                        <input dir="ltr" type="text" class="form-control parent-input" placeholder="{{ __('home.Search By Name or Product Number') }}" id="searchaboutproduct" name="searchaboutproduct" onkeyup="searchaboutproductfunction()">
+                        <input dir="ltr" type="text" class="form-control parent-input" placeholder="{{ __('home.Search By Name or Product Number') }}" id="searchaboutproduct" name="searchaboutproduct" oninput="searchaboutproductfunction()">
                     </div>
                     <br>
                     <div class="table-responsive" id="ajax_responce_serarchDiv">

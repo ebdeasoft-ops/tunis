@@ -169,7 +169,6 @@ class SystemSettingController extends Controller
             'mobile'=>$request->TEL,
             'plot_identification'=>$request->scander_number,
             'postal_number'=>$request->postcode,
-            'business_category'=>$request->descriptionarbic,
             'email_address'=>$request->email??'ebdeasoft@gmail.com',
             ]);
 

@@ -4121,7 +4121,34 @@ $data = resource_purchases::where('save', 1)
                 'debtor' => $grand_total,
             ]);
 
+            // [إصلاح الميزان] المرتجع الآجل كان يسجّل المورد مديناً والضريبة دائنة فقط،
+            // دون الطرف الدائن للمشتريات، فيبقى القيد غير متزن بقيمة المرتجع قبل الضريبة.
+            // (نفس الطرف المسجّل في حالة المرتجع النقدي بالأسفل)
+            $purchasesAccount = financial_accounts::where('parent_account_number', 181)
+                ->where('branchs_id', $current_user_branch)
+                ->first();
 
+            if ($purchasesAccount) {
+                financial_accounts::where('id', $purchasesAccount->id)->update([
+                    'creditor_current' => $purchasesAccount->creditor_current + $total_cost
+                ]);
+
+                credittransactions::create([
+                    'user_id' => auth()->user()->id,
+                    'customer_id' => $purchasesAccount->id,
+                    'recive_amount' => $total_cost,
+                    'branchs_id' => $current_user_branch,
+                    'pay_method' => $payment,
+                    'note' => ' مرتجع مشتريات فاتورة رقم :' . (string) $orderNumber,
+                    'currentblance' => $purchasesAccount->current_balance + $total_cost,
+                    'Pay_Method_Name' => $paymentMethod,
+                    'created_at' => $current_time,
+                    'updated_at' => $current_time,
+                    'orginal_id' => 0,
+                    'creditor' => $total_cost,
+                    'debtor' => 0,
+                ]);
+            }
 
         } else {
             resource_purchases::where('orderId', $orderNumber)->update([

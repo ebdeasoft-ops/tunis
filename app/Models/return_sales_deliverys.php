@@ -34,6 +34,6 @@ class return_sales_deliverys extends Model
        }
        public function branch()
        {
-           return $this->belongsTo(App\Models\branchs::class,'branch_id');
+           return $this->belongsTo(branchs::class, 'branch_id'); // [إصلاح] كان App\Models\App\Models\branchs (كلاس غير موجود)
        }
 }

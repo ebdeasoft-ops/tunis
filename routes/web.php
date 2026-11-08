@@ -78,65 +78,74 @@ Route::group(['prefix' => 'admin', 'middleware' => ['auth']], function () {
     Route::get('documents/alerts', [ContractController::class, 'documentAlerts'])->name('documents.alerts');
 });
 // ضع هذا السطر قبل Route::resource
-Route::get('leaves/balance-report', [LeaveController::class, 'leaveBalanceReport'])->name('leaves.balance_report');
-
-// مسار الـ Resource يأتي بعده
-Route::resource('leaves', LeaveController::class);
-Route::resource('hr-settings', HrSettingController::class)->only(['index', 'update']);
-Route::prefix('attendances')->name('attendances.')->group(function () {
-    // مسار استيراد الإكسيل (يُوضع قبل الـ resource لتجنب التعارض مع الـ show)
-    Route::post('/import', [AttendanceController::class, 'import'])->name('import');
-    Route::get('/template', [AttendanceController::class, 'downloadTemplate'])->name('template');
-    // مسارات الـ Resource القياسية (index, create, store, show, edit, update, destroy)
-    Route::resource('/', AttendanceController::class)->parameters(['' => 'attendance']);
-});
-
 // الصفحة الرئيسية (تسجيل الدخول)
 Route::get('/', function () {
     return view('auth.login');
 });
 
-// --------------------------------------------------------------------------
-// مسارات عامة (Public / Guest Routes)
-// --------------------------------------------------------------------------
+// [إصلاح أمني] كل المسارات التالية كانت متاحة بدون تسجيل دخول، تم وضعها داخل auth
+Route::middleware(['auth'])->group(function () {
+    Route::get('leaves/balance-report', [LeaveController::class, 'leaveBalanceReport'])->name('leaves.balance_report');
 
-Route::get('/get-pending-invoices', function () {
-    $branchId = auth()->user()->branchs_id;
-    $url = "http://elmoaadat.ebdea.online/api/purchases/getinvoicecount_by_branch_not_recive/{$branchId}";
-    return Http::get($url)->json();
+    // مسار الـ Resource يأتي بعده
+    Route::resource('leaves', LeaveController::class);
+    Route::resource('hr-settings', HrSettingController::class)->only(['index', 'update']);
+    Route::prefix('attendances')->name('attendances.')->group(function () {
+        // مسار استيراد الإكسيل (يُوضع قبل الـ resource لتجنب التعارض مع الـ show)
+        Route::post('/import', [AttendanceController::class, 'import'])->name('import');
+        Route::get('/template', [AttendanceController::class, 'downloadTemplate'])->name('template');
+        // مسارات الـ Resource القياسية (index, create, store, show, edit, update, destroy)
+        Route::resource('/', AttendanceController::class)->parameters(['' => 'attendance']);
+    });
+
+    // --------------------------------------------------------------------------
+    // مسارات عامة سابقاً (أصبحت تتطلب تسجيل الدخول)
+    // --------------------------------------------------------------------------
+
+    Route::get('/get-pending-invoices', function () {
+        $branchId = auth()->user()->branchs_id;
+        $url = "http://elmoaadat.ebdea.online/api/purchases/getinvoicecount_by_branch_not_recive/{$branchId}";
+        // [أداء] مهلة قصيرة حتى لا تتعطل الصفحة إذا كان الخادم الخارجي لا يستجيب
+        try {
+            return Http::timeout(5)->get($url)->json();
+        } catch (\Throwable $e) {
+            report($e);
+            return response()->json(null);
+        }
+    });
+
+    Route::get('export-cost-centers', function (Request $request) {
+        return Excel::download(
+            new CostCenterExport($request->query('start_at'), $request->query('end_at'), $request->query('cost_center')),
+            'cost_centers_report_' . date('Y-m-d') . '.xlsx'
+        );
+    });
+
+    Route::group(['prefix' => 'stock', 'as' => 'stock.'], function () {
+
+        // مسار تحميل نموذج الإكسيل (Template)
+        Route::get('/download-template', [SupprocessesController::class, 'downloadTemplate'])
+            ->name('download_template');
+
+        // مسار رفع ومعالجة ملف الإكسيل عبر AJAX
+        Route::post('/import-ajax', [SupprocessesController::class, 'importStockAjax'])
+            ->name('import_ajax');
+
+    });
+
+    Route::post('Purchase_returns_Data', [ProductsController::class, 'Purchase_returns_Data']);
+    Route::post('save_invoice_purchase_roken', [ProductsController::class, 'save_invoice_purchase_roken']);
+    Route::post('searchaboutproduct_location_function', [ProductsController::class, 'searchaboutproduct_location_function']);
+    Route::get('/confirm_purchase', [ProductsController::class, 'purchases_roken']);
+    Route::get('/getquotebybranch/{branch}', [InvoicesController::class, 'getquotebybranch']);
+    Route::post('/posttestajax', [BranchsController::class, 'posttestajax']);
+    Route::get('/upload_stock', [ProductsController::class, 'upload_stock']);
+    Route::post('/products/store', [ProductsController::class, 'store'])->name('products.store');
+
+    Route::get('/stock/upload', [ProductsController::class, 'showStockUpload'])->name('stock.upload.page');
+    Route::get('/stock/download-template', [ProductsController::class, 'downloadStockTemplate'])->name('stock.download_template');
+    Route::post('/stock/import-excel', [ProductsController::class, 'importStockExcel'])->name('stock.import_excel');
 });
-
-Route::get('export-cost-centers', function (Request $request) {
-    return Excel::download(
-        new CostCenterExport($request->query('start_at'), $request->query('end_at'), $request->query('cost_center')),
-        'cost_centers_report_' . date('Y-m-d') . '.xlsx'
-    );
-});
-
-Route::group(['prefix' => 'stock', 'as' => 'stock.'], function () {
-
-    // مسار تحميل نموذج الإكسيل (Template)
-    Route::get('/download-template', [SupprocessesController::class, 'downloadTemplate'])
-        ->name('download_template');
-
-    // مسار رفع ومعالجة ملف الإكسيل عبر AJAX
-    Route::post('/import-ajax', [SupprocessesController::class, 'importStockAjax'])
-        ->name('import_ajax');
-
-});
-
-Route::post('Purchase_returns_Data', [ProductsController::class, 'Purchase_returns_Data']);
-Route::post('save_invoice_purchase_roken', [ProductsController::class, 'save_invoice_purchase_roken']);
-Route::post('searchaboutproduct_location_function', [ProductsController::class, 'searchaboutproduct_location_function']);
-Route::get('/confirm_purchase', [ProductsController::class, 'purchases_roken']);
-Route::get('/getquotebybranch/{branch}', [InvoicesController::class, 'getquotebybranch']);
-Route::post('/posttestajax', [BranchsController::class, 'posttestajax']);
-Route::get('/upload_stock', [ProductsController::class, 'upload_stock']);
-Route::post('/products/store', [ProductsController::class, 'store'])->name('products.store');
-
-Route::get('/stock/upload', [ProductsController::class, 'showStockUpload'])->name('stock.upload.page');
-Route::get('/stock/download-template', [ProductsController::class, 'downloadStockTemplate'])->name('stock.download_template');
-Route::post('/stock/import-excel', [ProductsController::class, 'importStockExcel'])->name('stock.import_excel');
 // --------------------------------------------------------------------------
 // مسارات محمية بالـ Authentication (Sanctum & Verified)
 // --------------------------------------------------------------------------

@@ -289,7 +289,8 @@
             
             Swal.fire({
                 title: 'خطأ / Error',
-                text: "{{ __('home.sorryerror') }}",
+                // [إصلاح] عرض سبب الرفض (قيد غير متزن / حساب رئيسي) إن وُجد
+                text: (response.responseJSON && response.responseJSON.message) ? response.responseJSON.message : "{{ __('home.sorryerror') }}",
                 icon: 'error',
                 confirmButtonText: 'إغلاق',
                 confirmButtonColor: '#d33'

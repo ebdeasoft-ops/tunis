@@ -274,7 +274,9 @@
                         loadAllData();
                     },
                     error: function (r) {
-                        console.log(r)
+                        console.log(r);
+                        // [إصلاح] عرض سبب الرفض للمستخدم (مثل اختيار حساب رئيسي) بدلاً من الفشل الصامت
+                        Swal.fire("{{ __('home.error') }}!", (r.responseJSON && r.responseJSON.message) ? r.responseJSON.message : "{{ __('home.sorryerror') }}", 'error');
                     }
                 });
             });

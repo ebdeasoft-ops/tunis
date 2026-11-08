@@ -22,6 +22,7 @@ class financial_accounts_Export implements FromCollection, WithHeadings, WithSty
     protected $end_at;
     protected $allAccounts;
     protected $directBalances;
+    protected $calculator;
     
     protected $grand_o_d = 0;
     protected $grand_o_c = 0;
@@ -34,8 +35,9 @@ class financial_accounts_Export implements FromCollection, WithHeadings, WithSty
 
     public function __construct($start_at, $end_at)
     {
-        $this->start_at = $start_at;
-        $this->end_at = $end_at;
+        // [أمان] تنظيف التواريخ لأنها تُدمج داخل DB::raw (منع حقن SQL)
+        $this->start_at = ($start_at && strtotime($start_at) !== false) ? date('Y-m-d', strtotime($start_at)) : date('Y-01-01');
+        $this->end_at = ($end_at && strtotime($end_at) !== false) ? date('Y-m-d', strtotime($end_at)) : date('Y-m-d');
         
         ini_set('max_execution_time', 300);
         ini_set('memory_limit', '512M');
@@ -51,39 +53,15 @@ class financial_accounts_Export implements FromCollection, WithHeadings, WithSty
             ->groupBy('customer_id')
             ->get()
             ->keyBy('customer_id');
+
+        // [إصلاح الميزان] حساب موحّد بالـ id، ويشمل الحسابات اليتيمة (أبوها غير موجود)
+        $this->calculator = new \App\Services\TrialBalanceCalculator($this->allAccounts, $this->directBalances);
     }
 
     private function getOnlyChildrenSum($accountId)
     {
-        $totals = ['o_d' => 0, 'o_c' => 0, 'c_d' => 0, 'c_c' => 0];
-        $children = $this->allAccounts->where('parent_account_number', $accountId);
-
-        if ($children->isEmpty()) {
-            $direct = $this->directBalances[$accountId] ?? null;
-            if ($direct) {
-                // استخدام round هنا لضمان دقة الأرصدة المباشرة
-                $totals['o_d'] = round((float)$direct->open_debtor, 2);
-                $totals['o_c'] = round((float)$direct->open_creditor, 2);
-                $totals['c_d'] = round((float)$direct->curr_debtor, 2);
-                $totals['c_c'] = round((float)$direct->curr_creditor, 2);
-            }
-        } else {
-            foreach ($children as $child) {
-                $childSum = $this->getOnlyChildrenSum($child->id);
-                $totals['o_d'] += $childSum['o_d'];
-                $totals['o_c'] += $childSum['o_c'];
-                $totals['c_d'] += $childSum['c_d'];
-                $totals['c_c'] += $childSum['c_c'];
-            }
-        }
-        
-        // تقريب النتائج النهائية لكل مستوى
-        $totals['o_d'] = round($totals['o_d'], 2);
-        $totals['o_c'] = round($totals['o_c'], 2);
-        $totals['c_d'] = round($totals['c_d'], 2);
-        $totals['c_c'] = round($totals['c_c'], 2);
-        
-        return $totals;
+        // [إصلاح الميزان] حساب موحّد (نفس منطق التقرير) مع احتساب الحسابات اليتيمة
+        return $this->calculator->totals($accountId);
     }
 
     public function collection()
@@ -95,8 +73,8 @@ class financial_accounts_Export implements FromCollection, WithHeadings, WithSty
         $types = acounts_type::all();
         
         foreach ($types as $type) {
-            $topAccounts = $this->allAccounts->where('account_type', $type->id)
-                ->whereIn('parent_account_number', [null, 0, '']);
+            // [إصلاح الميزان] الجذور تشمل الحساب اليتيم (أبوه غير موجود) حتى لا تضيع حركاته
+            $topAccounts = $this->calculator->roots($type->id);
 
             $initialCount = count($this->rows);
             $placeholderIdx = count($this->rows);
@@ -147,7 +125,8 @@ class financial_accounts_Export implements FromCollection, WithHeadings, WithSty
             }
         }
 
-        $final_net =round($this->grand_f_d, 2) -round($this->grand_f_c, 2);
+        // [دقة] حالة الإجمالي من مجموع المدين والدائن مباشرة (وليس من صافي كل حساب بعد تقريبه)
+        $final_net = round(($this->grand_o_d + $this->grand_c_d) - ($this->grand_o_c + $this->grand_c_c), 2);
         $this->rows[] = [
             'account_number'   => '', 
             'name'             => 'الإجمالي العام', 

@@ -66,6 +66,7 @@ class SystemSettingController extends Controller
             'otp'=>$request->otp,
 
             ]);
+            \Illuminate\Support\Facades\Cache::forget('app_boot_constants'); // [أداء] تحديث كاش الإعدادات
 
 
             $setting = settings::where('branchs_id',Auth()->user()->branchs_id)->first();
@@ -104,6 +105,7 @@ class SystemSettingController extends Controller
                          'production_secret' =>$data['productionCertificateSecret'] ,
                          'production_csid' =>$data['productionCertificateRequestID']
                      ]);
+                     \Illuminate\Support\Facades\Cache::forget('app_boot_constants'); // [أداء] تحديث كاش الإعدادات
 
                      session()->flash('RegisterDone', 'تم الربط مع الزكاة بنجاح شكرا     The link with Zakat has been completed successfully Thank you');
                      return view('system_setting.onbourding', compact('data'));
@@ -171,6 +173,7 @@ class SystemSettingController extends Controller
             'postal_number'=>$request->postcode,
             'email_address'=>$request->email??'ebdeasoft@gmail.com',
             ]);
+            \Illuminate\Support\Facades\Cache::forget('app_boot_constants'); // [أداء] تحديث كاش الإعدادات
 
 
 
@@ -193,6 +196,7 @@ class SystemSettingController extends Controller
             'bank_acount_number' =>  $request->bank_acount_number,
             'bankname' =>  $request->bankname,
         ]);
+        \Illuminate\Support\Facades\Cache::forget('app_boot_constants'); // [أداء] تحديث كاش الإعدادات
         app()->setLocale(LaravelLocalization::getCurrentLocale());
         $data = system_setting::where('branchs_id',Auth()->user()->branchs_id)->first();
         return view('system_setting.system_data', compact('data'));

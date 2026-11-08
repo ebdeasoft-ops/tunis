@@ -31,68 +31,71 @@ public function budgetsheet(Request $request)
     // 1. استقبال البيانات القادمة من نموذج البحث
     $date = $request->input('date');
     $branch = $request->input('branch');
+    $hasBranch = $branch && $branch != '-';
 
-    // 2. جلب جميع الحسابات من جدول financial_accounts الأساسي
-    $accountsQuery = DB::table('financial_accounts');
+    // 2. جميع الحسابات (بدون فلترة بالفرع؛ حسابات الخصوم وحقوق الملكية غير مربوطة بفرع)
+    $allAccounts = DB::table('financial_accounts')->get();
 
-    if ($branch && $branch != '-') {
-        $accountsQuery->where('branch_id', $branch);
-    }
-
-    $allAccounts = $accountsQuery->get();
-
-    // جلب الـ IDs التي تُستخدم كـ parent لأي حساب آخر في الجدول
-    $parentIds = $allAccounts->pluck('parent_account_number')->unique()->filter()->toArray();
-
-    // تصفية الحسابات لتشمل فقط الحسابات النهائية التي ليس لها أبناء (is_parent = 0 ولا تظهر في قائمة الآباء)
-   $finalAccounts = $allAccounts->filter(function ($account) use ($parentIds) {
-    return !in_array($account->id, $parentIds);
-});
-
-    // 3. حساب الرصيد للحسابات النهائية فقط
-    $finalAccounts->each(function ($account) use ($date, $branch) {
-        
-        // الحالة الثانية: حساب فرعي نهائي (ليس له أبناء) -> نأخذ حركاته مباشرة
-        $transQuery = DB::table('credittransactions')
-            ->where('customer_id', $account->id); // أو account_id حسب عمود الربط لديك
-
-        // تصفية حركات الفرع إذا تم تحديده
-        if ($branch && $branch != '-') {
-            $transQuery->where('branchs_id', $branch);
-        }
-
-        // تصفية حركات التاريخ (حتى التاريخ المحدد)
-        if ($date) {
-            $transQuery->where('created_at', '<=', $date . ' 23:59:59');
-        }
-
-        $totals = $transQuery->select(
-            DB::raw('SUM(debtor) as total_debtor'),
-            DB::raw('SUM(creditor) as total_creditor')
-        )->first();
-
-        // جمع المدين (الافتتاحي + الحركات)
-        $movDebit = $totals->total_debtor ?? 0;
-        $totalDebit =  $movDebit;
-
-        // جمع الدائن (الافتتاحي + الحركات)
-        $movCredit = $totals->total_creditor ?? 0;
-        $totalCredit =  $movCredit;
-
-        // حساب الرصيد النهائي حسب طبيعة الحساب
-        if ($account->account_type == 1) { 
-            // الأصول (طبيعتها مدين: مدين - دائن)
-            $account->current_balance = $totalDebit - $totalCredit;
-        } else { 
-            // الخصوم (2) وحقوق الملكية (5) (طبيعتها دائن: دائن - مدين)
-            $account->current_balance = $totalCredit - $totalDebit;
-        }
+    // الحسابات النهائية = التي ليس لها أبناء في الشجرة كاملة
+    $parentIds = $allAccounts->pluck('parent_account_number')->filter()->unique()->flip();
+    $finalAccounts = $allAccounts->filter(function ($account) use ($parentIds) {
+        return !isset($parentIds[$account->id]);
     });
 
-    // 4. تصنيف الحسابات النهائية حسب أنواعها للرؤية في الواجهة (Blade)
-    $assets = $finalAccounts->where('account_type', 1);       // الأصول
-    $liabilities = $finalAccounts->where('account_type', 2);  // الخصوم
-    $equity = $finalAccounts->where('account_type', 5);       // حقوق الملكية
+    // 3. أرصدة كل الحسابات في استعلام واحد (القيود المعتمدة فقط، والفرع يُطبّق على القيود)
+    $transQuery = DB::table('credittransactions')
+        ->where('save', 1)
+        ->select('customer_id', DB::raw('SUM(debtor) as total_debtor'), DB::raw('SUM(creditor) as total_creditor'))
+        ->groupBy('customer_id');
+
+    if ($hasBranch) {
+        $transQuery->where('branchs_id', $branch);
+    }
+    if ($date) {
+        $transQuery->where('created_at', '<=', date('Y-m-d', strtotime($date)) . ' 23:59:59');
+    }
+
+    $totals = $transQuery->get()->keyBy('customer_id');
+
+    $netProfit = 0;
+    foreach ($finalAccounts as $account) {
+        $row = $totals->get($account->id);
+        $debit = $row ? (float) $row->total_debtor : 0;
+        $credit = $row ? (float) $row->total_creditor : 0;
+
+        if ($account->account_type == 1) {
+            // الأصول (طبيعتها مدين)
+            $account->current_balance = $debit - $credit;
+        } else {
+            // الخصوم وحقوق الملكية والإيرادات والمصروفات (دائن - مدين)
+            $account->current_balance = $credit - $debit;
+        }
+
+        // صافي الربح = الإيرادات - المصروفات
+        if (in_array($account->account_type, [3, 4])) {
+            $netProfit += $credit - $debit;
+        }
+    }
+
+    // إظهار الحسابات التي لها رصيد فقط
+    $withBalance = $finalAccounts->filter(function ($account) {
+        return abs($account->current_balance) >= 0.005;
+    });
+
+    // 4. تصنيف الحسابات
+    $assets = $withBalance->where('account_type', 1)->values();
+    $liabilities = $withBalance->where('account_type', 2)->values();
+    $equity = $withBalance->where('account_type', 5)->values();
+
+    // صافي ربح / خسارة الفترة ضمن حقوق الملكية حتى تتساوى الميزانية
+    if (abs($netProfit) >= 0.005) {
+        $equity->push((object) [
+            'id' => 0,
+            'name' => $netProfit >= 0 ? 'صافي ربح الفترة' : 'صافي خسارة الفترة',
+            'account_type' => 5,
+            'current_balance' => $netProfit,
+        ]);
+    }
 
     // جلب الفروع لعرضها في قائمة البحث بالواجهة
     $branches = DB::table('branchs')->get();
@@ -248,6 +251,13 @@ public function budgetsheet(Request $request)
             'items.*.account_id' => 'required',
             'items.*.amount' => 'required|numeric|min:0',
         ]);
+        // [إصلاح الميزان] منع الترحيل على حساب رئيسي في سند القبض
+        $parentNames = $this->parentAccountsAmong(
+            collect($request->items)->pluck('account_id')->push($request->main_account_id)
+        );
+        if (!empty($parentNames)) {
+            return response()->json(['status' => 'error', 'message' => $this->parentAccountsMessage($parentNames)], 422);
+        }
 
         DB::beginTransaction();
         try {
@@ -622,6 +632,13 @@ public function budgetsheet(Request $request)
         // 2. بيانات حساب الدفع
         $payment_id = $request->payment_account_id;
         $main_payment_acc = financial_accounts::findOrFail($payment_id);
+        // [إصلاح الميزان] منع الترحيل على حساب رئيسي في سند الصرف
+        $parentNames = $this->parentAccountsAmong(
+            collect($request->items)->pluck('client_account_id')->push($payment_id)
+        );
+        if (!empty($parentNames)) {
+            return response()->json(['status' => 'error', 'message' => $this->parentAccountsMessage($parentNames)], 422);
+        }
         $payment_name = $request->pay_method_type;
         $branch_id = $main_payment_acc->branchs_id;
         $pay_method_type = $request->pay_method_type;
@@ -653,13 +670,14 @@ public function budgetsheet(Request $request)
 
         $target_acc = financial_accounts::find($clientId);
 
-        // --- أ: تحديث الحساب المستلم (مدين) بالمبلغ الشامل ---
+        // --- أ: تحديث الحساب المستلم (مدين) بالمبلغ الصافي ---
+        // [إصلاح] الحركة تُسجَّل بالصافي والضريبة في حسابها، فكان رصيد الحساب يزيد بالضريبة مرتين
         if ($target_acc->account_type == 1 || $target_acc->account_type == 4) {
-            $target_acc->increment('current_balance', $amount_inclusive);
-            $target_acc->increment('debtor_current', $amount_inclusive);
+            $target_acc->increment('current_balance', $amount_exclusive);
+            $target_acc->increment('debtor_current', $amount_exclusive);
         } else {
-            $target_acc->decrement('current_balance', $amount_inclusive);
-            $target_acc->increment('debtor_current', $amount_inclusive);
+            $target_acc->decrement('current_balance', $amount_exclusive);
+            $target_acc->increment('debtor_current', $amount_exclusive);
         }
 
         // --- تسسجيل الحركة الأساسية للمصروف (بالقيمة الصافية بدون ضريبة) ---
@@ -880,6 +898,22 @@ public function budgetsheet(Request $request)
             'credit' => 'required|array',
         ]);
 
+        // [إصلاح الميزان] كان القيد الافتتاحي يُحفظ ويُرحّل مباشرة دون التحقق من تساوي الطرفين
+        $total_debit = round(array_sum(array_map('floatval', $request->debit)), 2);
+        $total_credit = round(array_sum(array_map('floatval', $request->credit)), 2);
+        if (abs($total_debit - $total_credit) > 0.009) {
+            return response()->json([
+                'status' => 'error',
+                'message' => "القيد غير متوازن محاسبياً! إجمالي المدين ($total_debit) يجب أن يساوي إجمالي الدائن ($total_credit)."
+                    . "\n The entry is not balanced: debit ($total_debit) must equal credit ($total_credit).",
+            ], 422);
+        }
+        // [إصلاح الميزان] منع الترحيل على حساب رئيسي (الميزان يقرأ الحسابات الفرعية فقط)
+        $parentNames = $this->parentAccountsAmong($request->account_id);
+        if (!empty($parentNames)) {
+            return response()->json(['status' => 'error', 'message' => $this->parentAccountsMessage($parentNames)], 422);
+        }
+
         try {
             DB::beginTransaction();
 
@@ -1005,6 +1039,11 @@ public function budgetsheet(Request $request)
         // مراجعة ميزان القيد قبل الحفظ (المدين يجب أن يساوي الدائن بدقة)
         if (abs($total_debit - $total_credit) > 0.0001) {
             return response()->json([0, "القيد غير متوازن محاسبياً! إجمالي المدين يجب أن يساوي إجمالي الدائن."]);
+        }
+        // [إصلاح الميزان] منع الترحيل على حساب رئيسي (مثل "الخزينة" بدلاً من خزينة الفرع)
+        $parentNames = $this->parentAccountsAmong($request->accounts);
+        if (!empty($parentNames)) {
+            return response()->json([0, $this->parentAccountsMessage($parentNames)]);
         }
 
         try {

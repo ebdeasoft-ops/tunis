@@ -920,16 +920,20 @@ public function dashboard(Request $request)
     {
         $today      = Carbon::today()->toDateString();
         $monthStart = Carbon::now()->startOfMonth()->toDateString();
+        // [أداء] نطاقات زمنية بدلاً من whereDate() حتى تستفيد قاعدة البيانات من فهرس created_at
+        // (whereDate تلف العمود بدالة DATE() فتمنع استخدام الفهرس) — النتيجة مطابقة تماماً
+        $todayRange = [$today . ' 00:00:00', $today . ' 23:59:59'];
+        $monthFrom  = $monthStart . ' 00:00:00';
  
         // ================= المبيعات اليوم / الشهر =================
-        $todayInvoicesQuery = invoices::whereDate('created_at', $today)->where('save', 1);
-        $monthInvoicesQuery = invoices::whereDate('created_at', '>=', $monthStart)->where('save', 1);
-        $todayReturnsQuery  = return_sales::whereDate('created_at', $today);
+        $todayInvoicesQuery = invoices::whereBetween('created_at', $todayRange)->where('save', 1);
+        $monthInvoicesQuery = invoices::where('created_at', '>=', $monthFrom)->where('save', 1);
+        $todayReturnsQuery  = return_sales::whereBetween('created_at', $todayRange);
  
         if ($branchId) {
             $todayInvoicesQuery->where('branchs_id', $branchId);
             $monthInvoicesQuery->where('branchs_id', $branchId);
-            $todayReturnsQuery->where('branchs_id', $branchId);
+            $todayReturnsQuery->where('branch_id', $branchId); // [إصلاح] جدول return_sales يستخدم branch_id وليس branchs_id
         }
  
         $todayInvoicesCount = (clone $todayInvoicesQuery)->count();
@@ -946,14 +950,14 @@ public function dashboard(Request $request)
         $monthSales = (clone $monthInvoicesQuery)->sum(DB::raw('cashamount + bankamount + creaditamount + Bank_transfer'));
  
         // ================= التسليم بدون ضريبة =================
-        $todayDeliveryQuery = delivery_to_customer_withoud_tax_invoices::whereDate('created_at', $today)->where('save', 1);
-        $monthDeliveryQuery = delivery_to_customer_withoud_tax_invoices::whereDate('created_at', '>=', $monthStart)->where('save', 1);
-        $todayDeliveryReturnsQuery = return_sales_deliverys::whereDate('created_at', $today);
+        $todayDeliveryQuery = delivery_to_customer_withoud_tax_invoices::whereBetween('created_at', $todayRange)->where('save', 1);
+        $monthDeliveryQuery = delivery_to_customer_withoud_tax_invoices::where('created_at', '>=', $monthFrom)->where('save', 1);
+        $todayDeliveryReturnsQuery = return_sales_deliverys::whereBetween('created_at', $todayRange);
  
         if ($branchId) {
             $todayDeliveryQuery->where('branchs_id', $branchId);
             $monthDeliveryQuery->where('branchs_id', $branchId);
-            $todayDeliveryReturnsQuery->where('branchs_id', $branchId);
+            $todayDeliveryReturnsQuery->where('branch_id', $branchId); // [إصلاح] جدول return_sales_deliverys يستخدم branch_id
         }
  
         $todayDeliveryCount = (clone $todayDeliveryQuery)->count();
@@ -965,8 +969,8 @@ public function dashboard(Request $request)
         $monthDeliverySales = (clone $monthDeliveryQuery)->sum(DB::raw('cashamount + bankamount + creaditamount + Bank_transfer'));
  
         // ================= المشتريات =================
-        $todayPurchasesQuery = resource_purchases::whereDate('created_at', $today)->where('save', 1);
-        $monthPurchasesQuery = resource_purchases::whereDate('created_at', '>=', $monthStart)->where('save', 1);
+        $todayPurchasesQuery = resource_purchases::whereBetween('created_at', $todayRange)->where('save', 1);
+        $monthPurchasesQuery = resource_purchases::where('created_at', '>=', $monthFrom)->where('save', 1);
  
         if ($branchId) {
             $todayPurchasesQuery->where('branchs_id', $branchId);
@@ -979,14 +983,14 @@ public function dashboard(Request $request)
         $monthPurchasesTotal = (clone $monthPurchasesQuery)->sum(DB::raw('In_debt'));
  
         // ================= المرتجعات =================
-        $uniqueReturnSalesQuery = return_sales::whereDate('created_at', $today);
+        $uniqueReturnSalesQuery = return_sales::whereBetween('created_at', $todayRange);
         if ($branchId) {
-            $uniqueReturnSalesQuery->where('branchs_id', $branchId);
+            $uniqueReturnSalesQuery->where('branch_id', $branchId); // [إصلاح] branch_id وليس branchs_id
         }
         $uniqueReturnSalesCount = (clone $uniqueReturnSalesQuery)->distinct('invoice_id')->count('invoice_id');
         $salesReturnsTotal = (clone $uniqueReturnSalesQuery)->sum(DB::raw('(return_Unit_Price * return_quantity) - discountvalue - discountoninvoice'));
  
-        $resourcePurchasesReturnsQuery = resource_purchases::whereDate('created_at', '>=', $today)
+        $resourcePurchasesReturnsQuery = resource_purchases::where('created_at', '>=', $today . ' 00:00:00')
             ->where('recoveredـpieces', '!=', 0);
         if ($branchId) {
             $resourcePurchasesReturnsQuery->where('branchs_id', $branchId);
@@ -997,14 +1001,13 @@ public function dashboard(Request $request)
         // ================= سندات القبض والصرف =================
         // ⚠️ افتراض: الجدول credittransactions فيه عمود type_decument
         // 1 = سند قبض / 2 = سند صرف — عدّل الشرط لو مختلف عندك
-        $receiptVouchersQuery = credittransactions::whereDate('created_at', '<=', $today)
-            ->whereDate('created_at', '>=', $today )
+        $receiptVouchersQuery = credittransactions::whereBetween('created_at', $todayRange)
             ->where('note', 'LIKE', '%' . 'سند قبض' . '%')
             ->where('decument_id', 0)->
               where('save', 1);
 
 
-        $paymentVouchersQuery = credittransactions::whereDate('created_at', $today)
+        $paymentVouchersQuery = credittransactions::whereBetween('created_at', $todayRange)
             ->where('type_decument', 2)->where('decument_id', 0)->where('cost_center','!=', 0)
             ->where('save', 1);
  
@@ -1020,7 +1023,7 @@ public function dashboard(Request $request)
  
         // ================= تحويل المنتجات بين الفروع =================
         // بيشمل أي تحويل الفرع طرف فيه (مُرسِل أو مُستقبِل) لو فيه فلتر فرع
-        $transfersQuery = product_movement_another_branch::whereDate('created_at', $today)
+        $transfersQuery = product_movement_another_branch::whereBetween('created_at', $todayRange)
             ->with(['branchfrom', 'branchto']);
  
         if ($branchId) {
@@ -1035,7 +1038,7 @@ public function dashboard(Request $request)
  
         // ================= أحدث الفواتير =================
         $latestInvoicesQuery = invoices::with(['customer', 'returnSales'])
-            ->whereDate('created_at', $today)
+            ->whereBetween('created_at', $todayRange)
             ->where('save', 1);
  
         if ($branchId) {
@@ -4401,6 +4404,13 @@ return response("<div class='alert alert-danger'>الفاتورة غير موج�
             ->first();
         $bankAccountId = $branchBank ? $branchBank->id : 4;
 
+        // [إصلاح الميزان] عند تعديل الدفع كان تصفير قيد البنك القديم يتم على بنك الفرع فقط، فإذا كانت الفاتورة
+        // مدفوعة على "البنك العربي الوطني" (1157) يبقى قيده ويُضاف القيد الجديد فوقه (مدين مكرر).
+        // ملاحظة: عمود another_bank غير موجود في جدول invoices فلا يمكن معرفة البنك القديم منه،
+        // لذا نصفّر قيد هذه الفاتورة على البنكين (لا يوجد قيد على 1157 إلا إذا دُفعت عليه فعلاً).
+        $oldBankAccountId = $bankAccountId;
+        $oldBankIds = array_values(array_unique([$bankAccountId, 1157]));
+
         // =========================================================
         // أولاً: إلغاء وتصفير أثر الدفعة القديمة (تنظيف كامل للحسابات)
         // =========================================================
@@ -4420,7 +4430,7 @@ return response("<div class='alert alert-danger'>الفاتورة غير موج�
    // تصفير قيود البنك القديمة المرتبطة بالفاتورة
                 DB::table('credittransactions')
                     ->where('note', 'فاتورة مبيعات رقم :' . $invoiceId)
-                    ->where('customer_id', $bankAccountId)
+                    ->whereIn('customer_id', $oldBankIds)
                     ->update(['save' => 0, 'recive_amount' => 0, 'debtor' => 0, 'creditor' => 0]);
 
                    $customerFinancialAccount = financial_accounts::where('orginal_type', 1)
@@ -4439,7 +4449,7 @@ return response("<div class='alert alert-danger'>الفاتورة غير موج�
             $oldBankAmount = $invoice->Bank_transfer + $invoice->bankamount;
             if ($oldBankAmount > 0) {
                 // تحديد البنك القديم الذي تم الحفظ عليه بناءً على الحقل المخزن تلافياً لأي تحديث خيارات
-                $oldTargetBankId =  $bankAccountId;
+                $oldTargetBankId = $oldBankAccountId;
 
                 if (method_exists($this, 'adjustAccountBalance')) {
                     $this->adjustAccountBalance($oldTargetBankId, $branchId, -$oldBankAmount);
@@ -4448,7 +4458,7 @@ return response("<div class='alert alert-danger'>الفاتورة غير موج�
                 // تصفير قيود البنك القديمة المرتبطة بالفاتورة
                 DB::table('credittransactions')
                     ->where('note', 'فاتورة مبيعات رقم :' . $invoiceId)
-                    ->where('customer_id', $oldTargetBankId)
+                    ->whereIn('customer_id', $oldBankIds)
                     ->update(['save' => 0, 'recive_amount' => 0, 'debtor' => 0, 'creditor' => 0]);
          // تصفير القيود القديمة للكاش
             DB::table('credittransactions')

@@ -80,8 +80,8 @@ class FinancialAccountsController extends Controller
         app()->setLocale(\LaravelLocalization::getCurrentLocale());
 
         $search_text = $request->search_text;
-        $start_at = $request->start_at ?: date('Y-01-01');
-        $end_at = $request->end_at ?: date('Y-m-d');
+        $start_at = $this->safeDate($request->start_at, date('Y-01-01'));
+        $end_at = $this->safeDate($request->end_at, date('Y-m-d'));
         $type_id = $request->type_id;
 
         // جلب كافة الحسابات مرة واحدة لتقليل الضغط على قاعدة البيانات أثناء العملية التكرارية
@@ -117,10 +117,12 @@ class FinancialAccountsController extends Controller
 
         $accounts = $query->orderBy('account_number', 'asc')->get();
 
+        // [إصلاح الميزان] حساب موحّد بالـ id + يشمل الحركات المباشرة على الحسابات الأب
+        $calculator = new \App\Services\TrialBalanceCalculator($allAccounts, $directBalances);
+
         $finalData = [];
         foreach ($accounts as $account) {
-            // نستخدم الدالة التكرارية (المعرفة بالأسفل) لحساب المجموع الصافي للحساب وأبنائه
-            $sums = $this->calculateRecursiveBalance($account->id, $allAccounts, $directBalances);
+            $sums = $calculator->totals($account->id);
 
             $net = ($sums['o_d'] + $sums['c_d']) - ($sums['o_c'] + $sums['c_c']);
 

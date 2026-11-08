@@ -585,67 +585,38 @@ public function search_purchase_product_by_date(Request $request)
         app()->setLocale(LaravelLocalization::getCurrentLocale());
 
         $currentYear = date('Y');
-        $start_at = $request->input('start_at', $currentYear . '-01-01');
-        $end_at = $request->input('end_at', $currentYear . '-12-31');
+        $start_at = $this->safeDate($request->input('start_at'), $currentYear . '-01-01');
+        $end_at = $this->safeDate($request->input('end_at'), $currentYear . '-12-31');
 
         $types = acounts_type::whereIn('id', [1, 2, 3, 4, 5])->get();
         $allAccounts = financial_accounts::all();
 
-        // جلب الحركات لكل الحسابات
-        $transactions = DB::table('credittransactions')
-            ->join('financial_accounts', 'credittransactions.customer_id', '=', 'financial_accounts.id')
-            ->where('credittransactions.save', 1)
-            ->whereBetween('credittransactions.created_at', ['2020-01-01', $end_at . ' 23:59:59'])
-            ->select(
-                'financial_accounts.id as account_row_id', 
-                DB::raw("SUM(CASE WHEN DATE(credittransactions.created_at) < '{$start_at}' THEN credittransactions.debtor ELSE 0 END) as open_debtor"),
-                DB::raw("SUM(CASE WHEN DATE(credittransactions.created_at) < '{$start_at}' THEN credittransactions.creditor ELSE 0 END) as open_creditor"),
-                DB::raw("SUM(CASE WHEN DATE(credittransactions.created_at) >= '{$start_at}' AND DATE(credittransactions.created_at) <= '{$end_at}' THEN credittransactions.debtor ELSE 0 END) as curr_debtor"),
-                DB::raw("SUM(CASE WHEN DATE(credittransactions.created_at) >= '{$start_at}' AND DATE(credittransactions.created_at) <= '{$end_at}' THEN credittransactions.creditor ELSE 0 END) as curr_creditor")
-            )
-            ->groupBy('financial_accounts.id')
-            ->get()
-            ->keyBy('account_row_id');
+        // [إصلاح الميزان] كان الحساب الأب يظهر صفراً في التقرير، والآن يظهر مجموع أرصدة أبنائه،
+        // مع سطر إجمالي عام. الربط بالـ id فقط، والحساب اليتيم يُعامل كحساب جذري.
+        $calculator = new \App\Services\TrialBalanceCalculator($allAccounts, $this->trialBalanceDirectBalances($start_at, $end_at));
 
-   $accountTotals = [];
+        $accountTotals = [];
         foreach ($allAccounts as $acc) {
-            // فحص مباشر من قاعدة البيانات: هل هذا الحساب لديه أبناء (parent_account_number يساوي id هذا الحساب أو رقم حسابه)؟
-            $hasChildren = DB::table('financial_accounts')
-                ->where('parent_account_number', $acc->id)
-                ->exists();
-
-            if ($hasChildren ) {
-                // إذا كان أباً (مثل الخزينة): نجعل أقماره صفراً تماماً لكي تظهر علامة (-)
-                $accountTotals[$acc->id] = [
-                    'debtor' => 0,
-                    'creditor' => 0,
-                    'balance' => 0,
-                    'is_parent' => true
-                ];
-            } else {
-                // إذا لم يكن أباً (حساب فرعي نهائي): نحسب حركاته المباشرة فقط
-                $totalDebtor = 0;
-                $totalCreditor = 0;
-                if(isset($transactions[$acc->id])) {
-                    $t = $transactions[$acc->id];
-                    $totalDebtor += ($t->open_debtor + $t->curr_debtor);
-                    $totalCreditor += ($t->open_creditor + $t->curr_creditor);
-                }
-                $accountTotals[$acc->id] = [
-                    'debtor' => $totalDebtor,
-                    'creditor' => $totalCreditor,
-                    'balance' => $totalDebtor - $totalCreditor,
-                    'is_parent' => false
-                ];
-            }
+            $t = $calculator->totals($acc->id);
+            $totalDebtor = round($t['o_d'] + $t['c_d'], 2);
+            $totalCreditor = round($t['o_c'] + $t['c_c'], 2);
+            $accountTotals[$acc->id] = [
+                'debtor' => $totalDebtor,
+                'creditor' => $totalCreditor,
+                'balance' => round($totalDebtor - $totalCreditor, 2),
+                'is_parent' => $calculator->hasChildren($acc->id),
+            ];
         }
-            $rootAccounts = $allAccounts->whereIn('account_type', [1, 2, 3, 4, 5])
-            ->where(function($q) {
-                return $q->parent_account_number == null || $q->parent_account_number == 0;
-            });
+
+        // الحسابات الجذرية (تشمل الحساب الذي يشير أبوه إلى حساب غير موجود حتى لا تضيع حركاته)
+        $rootAccounts = $calculator->roots()->whereIn('account_type', [1, 2, 3, 4, 5]);
+        $rootIds = $rootAccounts->pluck('id')->map(function ($v) { return (string) $v; })->flip()->all();
+        $grandTotals = $calculator->grandTotals();
 
         return view('reports.budgetsheet_general', compact(
-            'rootAccounts', 
+            'rootAccounts',
+            'rootIds',
+            'grandTotals', 
             'types', 
             'allAccounts',
             'accountTotals',
@@ -695,59 +666,47 @@ private static function calculateTotalWithChildren($accountId, $allAccounts, $tr
     public function getAccountChildren(Request $request)
     {
         $accountId = $request->input('parent_id');
-        $start_at = $request->input('start_at');
-        $end_at = $request->input('end_at');
+        $start_at = $this->safeDate($request->input('start_at'));
+        $end_at = $this->safeDate($request->input('end_at'));
 
-        // البحث عن الحساب الأب لمعرفة رقم الحساب (account_number) أو الـ id
-        $parentAccount = financial_accounts::where('account_number', $accountId)->orWhere('id', $accountId)->first();
-        
+        // [إصلاح الميزان] الربط بالـ id فقط (كان يخلط بين id و account_number فيجلب أبناء خطأ أحياناً)
+        $allAccounts = financial_accounts::all();
+        $calculator = new \App\Services\TrialBalanceCalculator($allAccounts, $this->trialBalanceDirectBalances($start_at, $end_at));
+
         $children = collect();
-        if ($parentAccount) {
-            // جلب الأبناء الذين يتبعون هذا الحساب
-            $children = financial_accounts::where('parent_account_number', $parentAccount->account_number)
-                ->orWhere('parent_account_number', $parentAccount->id)
-                ->get();
+        if ($allAccounts->firstWhere('id', $accountId)) {
+            $children = collect($calculator->childrenOf($accountId));
         }
 
-        $accountIds = $children->pluck('id')->toArray();
-        
+        // رصيد كل ابن: الفرعي = حركاته، والأب = مجموع أبنائه (بدلاً من تصفيره)
         $directBalances = collect();
-        if (!empty($accountIds)) {
-            $directBalances = DB::table('credittransactions')
-                ->join('financial_accounts', 'credittransactions.customer_id', '=', 'financial_accounts.id')
-                ->where('credittransactions.save', 1)
-                ->whereIn('financial_accounts.id', $accountIds)
-                ->whereBetween('credittransactions.created_at', ['2020-01-01', $end_at . ' 23:59:59'])
-                ->select(
-                    'financial_accounts.id as account_row_id', 
-                    DB::raw("SUM(CASE WHEN DATE(credittransactions.created_at) < '{$start_at}' THEN credittransactions.debtor ELSE 0 END) as open_debtor"),
-                    DB::raw("SUM(CASE WHEN DATE(credittransactions.created_at) < '{$start_at}' THEN credittransactions.creditor ELSE 0 END) as open_creditor"),
-                    DB::raw("SUM(CASE WHEN DATE(credittransactions.created_at) >= '{$start_at}' AND DATE(credittransactions.created_at) <= '{$end_at}' THEN credittransactions.debtor ELSE 0 END) as curr_debtor"),
-                    DB::raw("SUM(CASE WHEN DATE(credittransactions.created_at) >= '{$start_at}' AND DATE(credittransactions.created_at) <= '{$end_at}' THEN credittransactions.creditor ELSE 0 END) as curr_creditor")
-                )
-                ->groupBy('financial_accounts.id')
-                ->get()
-                ->keyBy('account_row_id');
-        }
-
-        // التأكد من أن أي ابن يعتبر "أباً" لفروع أخرى تصفير حركاته المباشرة
         foreach ($children as $child) {
-            $hasSubChildren = DB::table('financial_accounts')
-                ->where('parent_account_number', $child->id)
-                ->orWhere('parent_account_number', $child->account_number)
-                ->exists();
-
-            if ($child->is_parent == 1 || $hasSubChildren) {
-                $directBalances[$child->id] = (object)[
-                    'open_debtor' => 0,
-                    'open_creditor' => 0,
-                    'curr_debtor' => 0,
-                    'curr_creditor' => 0
-                ];
-            }
+            $directBalances[$child->id] = $calculator->totalsAsRow($child->id);
         }
 
         return view('reports.partials.budget_ajax_rows', compact('children', 'directBalances', 'start_at', 'end_at'));
+    }
+
+    /**
+     * [إصلاح الميزان] أرصدة الحركات المباشرة لكل حساب (افتتاحي قبل start_at + حركة الفترة) — استعلام واحد.
+     * التواريخ يجب أن تكون منظّفة مسبقاً بـ safeDate().
+     */
+    private function trialBalanceDirectBalances($start_at, $end_at)
+    {
+        return DB::table('credittransactions')
+            ->join('financial_accounts', 'credittransactions.customer_id', '=', 'financial_accounts.id')
+            ->where('credittransactions.save', 1)
+            ->where('credittransactions.created_at', '<=', $end_at . ' 23:59:59')
+            ->select(
+                'financial_accounts.id as account_row_id',
+                DB::raw("SUM(CASE WHEN DATE(credittransactions.created_at) < '{$start_at}' THEN credittransactions.debtor ELSE 0 END) as open_debtor"),
+                DB::raw("SUM(CASE WHEN DATE(credittransactions.created_at) < '{$start_at}' THEN credittransactions.creditor ELSE 0 END) as open_creditor"),
+                DB::raw("SUM(CASE WHEN DATE(credittransactions.created_at) >= '{$start_at}' AND DATE(credittransactions.created_at) <= '{$end_at}' THEN credittransactions.debtor ELSE 0 END) as curr_debtor"),
+                DB::raw("SUM(CASE WHEN DATE(credittransactions.created_at) >= '{$start_at}' AND DATE(credittransactions.created_at) <= '{$end_at}' THEN credittransactions.creditor ELSE 0 END) as curr_creditor")
+            )
+            ->groupBy('financial_accounts.id')
+            ->get()
+            ->keyBy('account_row_id');
     }
 
     public function low_sell()
@@ -1297,15 +1256,29 @@ public function search_sales_and_return(Request $request)
         $reamingamount = 0;
         $supplier = supllier::find($request->UserId);
 
-        $Invoices = resource_purchases::where('suplier_id', $request->UserId)
+        $Invoices = resource_purchases::with('branch')
+            ->where('suplier_id', $request->UserId)
             ->whereDate('created_at', '>=', $request->start_at)
             ->whereDate('created_at', '<=', $request->end_at)
             ->where('save', 1)
             ->get();
 
-        $returnsales = orderDetails::whereDate('updated_at', '>=', $request->start_at)
+        // [أداء] جلب أوامر هذا المورد مرة واحدة، وتقييد بنود المرتجعات عليها بدلاً من تحميل كل البنود
+        // في قاعدة البيانات ثم فحص كل بند باستعلامين (النتيجة نفسها لأن الشرط suplier_id كان يُفحص لاحقاً)
+        $supplierOrders = orderTosupllier::where('suplier_id', $request->UserId)->get()->keyBy('id');
+        $supplierOrderIds = $supplierOrders->keys();
+
+        $returnsales = orderDetails::whereIn('order_owner', $supplierOrderIds)
+            ->whereDate('updated_at', '>=', $request->start_at)
             ->whereDate('updated_at', '<=', $request->end_at)
             ->get();
+
+        // خريطة أول فاتورة شراء لكل أمر (بديل resource_purchases::where('orderId', ..)->first() داخل الحلقة)
+        $purchasesByOrder = resource_purchases::whereIn('orderId', $supplierOrderIds)
+            ->orderBy('id')
+            ->get()
+            ->groupBy('orderId')
+            ->map(function ($g) { return $g->first(); });
 
         $credittransactions = transactiontosuplliers::where('orginal_type', 2)
             ->where('orginal_id', $request->UserId)
@@ -1324,8 +1297,8 @@ public function search_sales_and_return(Request $request)
 
         if ($returnsales) {
             foreach ($returnsales as $returnsale) {
-                $invoice = orderTosupllier::find($returnsale->order_owner);
-                $resource_purchases = resource_purchases::where('orderId', $returnsale->order_owner)->first();
+                $invoice = $supplierOrders->get($returnsale->order_owner);
+                $resource_purchases = $purchasesByOrder->get($returnsale->order_owner);
 
                 if ($invoice && $invoice->suplier_id == $request->UserId) {
                     $totalpricefinal = $returnsale->purchasingـprice * $returnsale->returns_purchase;
@@ -1358,6 +1331,12 @@ public function search_sales_and_return(Request $request)
             }
         }
 
+        // [أداء] جلب بنود كل الفواتير (الحالية والسابقة) باستعلام واحد بدلاً من استعلام لكل فاتورة
+        $Invoiceslast = resource_purchases::where('suplier_id', $request->UserId)->where('Pay_Method_Name', 'Credit')->whereDate('created_at', '<', $request->start_at)->where('save', 1)->get();
+        $detailsByOrder = orderDetails::whereIn('order_owner', $Invoices->pluck('orderId')->merge($Invoiceslast->pluck('orderId'))->unique()->values())
+            ->get()
+            ->groupBy('order_owner');
+
         if ($Invoices != null) {
             foreach ($Invoices as $product) {
                 $pays = match ($product->Pay_Method_Name) {
@@ -1370,7 +1349,7 @@ public function search_sales_and_return(Request $request)
 
                 $totalprice = 0;
                 $totalAddedvalue = 0;
-                foreach (orderDetails::where('order_owner', $product->orderId)->get() as $items) {
+                foreach ($detailsByOrder->get($product->orderId, collect()) as $items) {
                     $totalprice += ($items->purchasingـprice) * (($items->numberofpice + $items->returns_purchase));
                     $totalAddedvalue += $items->Added_Value * (($items->returns_purchase + $items->numberofpice));
                 }
@@ -1414,13 +1393,14 @@ public function search_sales_and_return(Request $request)
             $reamingamount -= (double) $product->Pay_Method_Name; // انتبه: هل هذا الحقل يمثل القيمة فعلاً بقاعدة بياناتك؟ مررتها كما هي لتجنب كسر منطقك القديم
         }
 
-        $Invoiceslast = resource_purchases::where('suplier_id', $request->UserId)->where('Pay_Method_Name', 'Credit')->whereDate('created_at', '<', $request->start_at)->where('save', 1)->get();
-        $returnsalesLast = orderDetails::whereDate('created_at', '<', $request->start_at)->get();
+        // (تم جلب $Invoiceslast مسبقاً بالأعلى)
+        // [أداء] تقييد البنود على أوامر هذا المورد فقط (كانت تُحمّل كل بنود الشراء في النظام)
+        $returnsalesLast = orderDetails::whereIn('order_owner', $supplierOrderIds)->whereDate('created_at', '<', $request->start_at)->get();
 
         foreach ($Invoiceslast as $item) {
             $totalprice = 0;
             $totalAddedvalue = 0;
-            foreach (orderDetails::where('order_owner', $item->orderId)->get() as $items) {
+            foreach ($detailsByOrder->get($item->orderId, collect()) as $items) {
                 $totalprice += $items->purchasingـprice * $items->numberofpice;
                 $totalAddedvalue += $items->Added_Value * $items->numberofpice;
             }
@@ -1428,8 +1408,8 @@ public function search_sales_and_return(Request $request)
         }
 
         foreach ($returnsalesLast as $returnsale) {
-            $invoice = orderTosupllier::find($returnsale->order_owner);
-            $resource_purchases = resource_purchases::where('orderId', $returnsale->order_owner)->first();
+            $invoice = $supplierOrders->get($returnsale->order_owner);
+            $resource_purchases = $purchasesByOrder->get($returnsale->order_owner);
 
             if ($invoice && $invoice->suplier_id == $request->UserId) {
                 $totalpricefinal = $returnsale->purchasingـprice * $returnsale->returns_purchase;
@@ -1457,10 +1437,12 @@ public function search_sales_and_return(Request $request)
      */
     public function serverDBBackup()
     {
-        $mysqlHostName = env('DB_HOST', '127.0.0.1');
-        $mysqlUserName = env('DB_USERNAME');
-        $mysqlPassword = env('DB_PASSWORD');
-        $DbName = env('DB_DATABASE');
+        // [إصلاح] env() تُرجع null بعد php artisan config:cache، لذا نقرأ من config
+        $dbConfig = config('database.connections.' . config('database.default'));
+        $mysqlHostName = $dbConfig['host'] ?? '127.0.0.1';
+        $mysqlUserName = $dbConfig['username'] ?? '';
+        $mysqlPassword = $dbConfig['password'] ?? '';
+        $DbName = $dbConfig['database'] ?? '';
         $tables = array();
 
         $connect = new \PDO("mysql:host=$mysqlHostName;dbname=$DbName;charset=utf8", "$mysqlUserName", "$mysqlPassword", [
@@ -4211,7 +4193,11 @@ public function search_stockquantity(Request $request)
      */
     public function financial_accounts_Export_CSV()
     {
-        return Excel::download(new financial_accounts_Export(), 'financial_accounts_Export.csv');
+        // [إصلاح] كان يُستدعى بدون المعاملات المطلوبة مما يسبب ArgumentCountError
+        $start_at = $this->safeDate(request()->query('start_at'), date('Y-01-01'));
+        $end_at = $this->safeDate(request()->query('end_at'), date('Y-m-d'));
+
+        return Excel::download(new financial_accounts_Export($start_at, $end_at), 'financial_accounts_Export.csv');
     }
 
     /**

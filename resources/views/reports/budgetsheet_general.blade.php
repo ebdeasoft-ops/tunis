@@ -143,9 +143,8 @@ $logo=camplogo;
                     <!-- Financial Tables by Type -->
                     @foreach($types as $type)
                     @php
-                    $typeRootAccounts = $allAccounts->where('account_type', $type->id)->where(function($q) {
-                    return $q->parent_account_number == null || $q->parent_account_number == 0;
-                    });
+                    // [إصلاح الميزان] الجذور محسوبة في الـ Controller (تشمل الحسابات اليتيمة)
+                    $typeRootAccounts = $rootAccounts->where('account_type', $type->id);
                     @endphp
 
                     <table>
@@ -168,7 +167,7 @@ $logo=camplogo;
                             @endphp
                             <tr style="background-color: #e8f4f8; font-weight: bold; color: #2c3e50;">
                                 <td style="text-align: right; padding-right: 15px;">
-                                    <span class="toggle-account" data-id="{{ $account->account_number }}">
+                                    <span class="toggle-account" data-id="{{ $account->id }}">
                                         <i class="fa fa-folder text-primary ml-1 fa-icon"></i> {{ $account->name }}
                                     </span>
                                 </td>
@@ -181,6 +180,22 @@ $logo=camplogo;
                     </table>
                     <br>
                     @endforeach
+
+                    {{-- [إصلاح الميزان] الإجمالي العام: يجب أن يتساوى المدين والدائن --}}
+                    <table>
+                        <tr style="background-color: #2c3e50; color: #fff; font-weight: bold;">
+                            <td style="text-align: right; padding-right: 15px;">الإجمالي العام | Grand Total</td>
+                            <td>{{ number_format($grandTotals['debtor'], 2) }}</td>
+                            <td>{{ number_format($grandTotals['creditor'], 2) }}</td>
+                            <td>
+                                @if(abs($grandTotals['difference']) < 0.01)
+                                    متزن | Balanced ✓
+                                @else
+                                    فرق | Difference: {{ number_format($grandTotals['difference'], 2) }}
+                                @endif
+                            </td>
+                        </tr>
+                    </table>
 
                     <hr>
 

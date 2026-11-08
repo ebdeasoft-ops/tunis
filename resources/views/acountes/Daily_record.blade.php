@@ -267,6 +267,9 @@ const accounts = @json(\App\Models\financial_accounts::where('active', 1)->where
         
         loadLatestRecords(); 
                     if($('#record_id').val() == 0) resetForm(); 
+                } else {
+                    // [إصلاح] كان رفض القيد (غير متزن / حساب رئيسي) لا يظهر للمستخدم إطلاقاً
+                    Swal.fire({ title: 'خطأ / Error', text: res[1] || "{{ __('home.sorryerror') }}", icon: 'error', confirmButtonText: 'إغلاق', confirmButtonColor: '#d33' });
                 }
             },
                     error: function(response) {

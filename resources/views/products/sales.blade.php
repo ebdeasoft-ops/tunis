@@ -2829,17 +2829,17 @@ function calculateTotalDiscount() {
     let netTotal = totalSum - finalDiscountTotal;
 
     // الضريبة = 30.652173... * 0.15 = 4.597826...
-    let taxTotal = netTotal * avtsale;
+    let taxTotal = Math.round((netTotal * avtsale + Number.EPSILON) * 100) / 100;
 
     // الإجمالي النهائي = 30.652173... + 4.597826... = 35.25 (تقريباً)
     // لكن بما أن الخصم الإجمالي شامل الضريبة هو 5، فالصافي المطلوب هو 30 تماماً
-    let grandTotal = netTotal + taxTotal;
+    let grandTotal = Math.round((netTotal + taxTotal + Number.EPSILON) * 100) / 100;
 
     // 6. العرض في الحقول مع التقريب لخانة واحدة فقط إذا لزم الأمر أو خانتين
     // لجعلها 30.00 بالضبط:
     document.getElementById('totaldiscound').value = finalDiscountTotal.toFixed(2);
     document.getElementById('totalTax').value = taxTotal.toFixed(2);
-    document.getElementById('grandTotal').value = Math.round(grandTotal * 100) / 100; // حل مشكلة 29.99
+    document.getElementById('grandTotal').value = grandTotal.toFixed(2);
 
     // تأكيد إضافي إذا كان الفرق ضئيل جداً نتيجة تقريب المتصفح
     if (Math.abs(grandTotal - 30) < 0.01) {

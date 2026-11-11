@@ -2438,6 +2438,20 @@ public function search_stockquantity(Request $request)
         // جلب المعاملات بناءً على الحسابات المحددة (سواء حساب واحد أو عدة حسابات لها نفس الرقم الضريبي للعميل والمورد)
         $query_base = credittransactions::whereIn('customer_id', $accountIds)->where('save', 1);
 
+        $invoiceIdFromNote = function ($note) {
+            return preg_match('/فاتورة\s*مبيعات\s*رقم\s*:\s*(\d+)/u', $note ?? '', $matches)
+                ? (int) $matches[1]
+                : null;
+        };
+        $invoicePoMap = function ($transactions) use ($invoiceIdFromNote) {
+            $invoiceIds = $transactions->map(fn ($item) => $invoiceIdFromNote($item->note))
+                ->filter()->unique()->values();
+
+            return $invoiceIds->isEmpty()
+                ? collect()
+                : invoices::whereIn('id', $invoiceIds)->pluck('p_o', 'id');
+        };
+
         if ($branch_id != '-') {
             $query_base->where('branchs_id', $branch_id);
         }
@@ -2451,9 +2465,16 @@ public function search_stockquantity(Request $request)
             $current_transactions = $query_base->whereDate('created_at', '>=', $start_at)
                 ->whereDate('created_at', '<=', $end_at)
                 ->with(['user', 'branch'])->get();
+            $invoicePoById = $invoicePoMap($current_transactions);
 
             $data_list = [];
             foreach ($current_transactions as $item) {
+                $invoiceId = $invoiceIdFromNote($item->note);
+                $note = $item->note;
+                if ($invoiceId) {
+                    $note .= ' - P.O: ' . ($invoicePoById[$invoiceId] ?? '-');
+                }
+
                 $data_list[] = [
                     'id' => $item->id,
                     'dely_record' => $item->dely_record,
@@ -2463,7 +2484,7 @@ public function search_stockquantity(Request $request)
                     'recive_amount' => $item->recive_amount,
                     'depit' => $item->debtor,
                     'credit' => $item->creditor,
-                    'note' => $item->note,
+                    'note' => $note,
                 ];
             }
 
@@ -2492,6 +2513,7 @@ public function search_stockquantity(Request $request)
 
         $LAST_credittransactions = $query_last->get();
         $credittransactions = $query_curr->with(['user', 'branch', 'financial_accounts_data'])->get();
+        $invoicePoById = $invoicePoMap($credittransactions);
 
         $List_dely_record = [];
         foreach ($credittransactions as $item) {
@@ -2514,6 +2536,12 @@ public function search_stockquantity(Request $request)
                 $payment = $paymentMap[$item->Pay_Method_Name] ?? __('report.credit');
             }
 
+            $invoiceId = $invoiceIdFromNote($item->note);
+            $note = "{$item->note}-({$payment})-{$name_parent}";
+            if ($invoiceId) {
+                $note .= ' - P.O: ' . ($invoicePoById[$invoiceId] ?? '-');
+            }
+
             $List_dely_record[] = [
                 'id' => $item->id,
                 'recive_amount' => $item->recive_amount,
@@ -2523,7 +2551,7 @@ public function search_stockquantity(Request $request)
                 'dely_record' => $item->dely_record,
                 'date_export' => $item->date_export,
                 'date' => $item->created_at,
-                'note' => "{$item->note}-({$payment})-{$name_parent}",
+                'note' => $note,
                 'user' => $item->user->name ?? '-',
                 'branch' => $item->branch->name ?? '-',
             ];

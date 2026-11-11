@@ -1393,8 +1393,9 @@ function calculateTotals_with_tax() {
             });
         }
         let subtotal = price * qty;
-        let tax = (subtotal - discound) * taxFactor;
-        let totalRow = subtotal - discound + tax;
+        // Round tax to cents before adding it to avoid one-cent floating-point errors.
+        let tax = Math.round(((subtotal - discound) * taxFactor + Number.EPSILON) * 100) / 100;
+        let totalRow = Math.round((subtotal - discound + tax + Number.EPSILON) * 100) / 100;
 
         r.querySelector('.product-price').value = price.toFixed(2);
         r.querySelector('.product-totalprice_withodtax').value = subtotal.toFixed(2);
@@ -2277,8 +2278,8 @@ function calculateTotals() {
         let subtotal = price * qty;
         let discountAmount = discountInput;
         let taxableAmount = subtotal - discountAmount;
-        let tax = taxableAmount * avtsale;
-        let totalRow = taxableAmount + tax;
+        let tax = Math.round((taxableAmount * avtsale + Number.EPSILON) * 100) / 100;
+        let totalRow = Math.round((taxableAmount + tax + Number.EPSILON) * 100) / 100;
 
         r.querySelector('.product-totalprice_withodtax').value = subtotal.toFixed(2);
         r.querySelector('.product-tax').value = tax.toFixed(2);

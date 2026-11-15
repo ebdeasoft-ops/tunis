@@ -195,17 +195,17 @@ $logo=camplogo;
                                     <tr>
 
                                             <td class="tx-16">الاجمالي - SUB TOTAL </td>
-                                        <td class="tx-">{{round($data['invoicetotal_price'],1)}}</td>
+                                        <td class="tx-">{{ number_format($data['invoicetotal_price'], 2) }}</td>
                                     </tr>
                                     <tr>
         <?php
                                 $avt = App\Models\Avt::find(1);?>
                                             <td class="tx-16">ضريبة القيمة المضافة({{$avt->AVT*100}}%) -VALUE ADDED TAX   ({{$avt->AVT*100}}%) </td>
-                                                                                   <td class="tx-">{{round($data['invoicetotal_addedvalue'],1)}}</td>
+                                                                                   <td class="tx-">{{ number_format($data['invoicetotal_addedvalue'], 2) }}</td>
                                     </tr>
                                     <tr>
                                             <td class="tx-16">الخصم - DISCOUNT </td>
-                                        <td class="tx-">{{round($data['invoicetotal_discount'],1)}}</td>
+                                        <td class="tx-">{{ number_format($data['invoicetotal_discount'], 2) }}</td>
                                     </tr>
 
                                     <tr>

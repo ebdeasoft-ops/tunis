@@ -396,9 +396,10 @@ public function previousSales_not_sended_Invoices_all_branchs()
 
         $saleData = sales::where("invoice_id", $request->show_invoice_number)->where('quantity', '!=', 0)->get();
         $InvoiceData = invoices::find($request->show_invoice_number);
+        $st = \App\Support\SalesInvoiceTotals::fromInvoice($InvoiceData, $avtSaleRate->AVT ?? null);
         $data = [
-            "invoicetotal_price" => $InvoiceData->Price - $InvoiceData->discount,
-            "invoicetotal_addedvalue" => ($InvoiceData->Price - $InvoiceData->discount) * $avtSaleRate->AVT,
+            "invoicetotal_price" => $st['net'],
+            "invoicetotal_addedvalue" => $st['vat'],
             "invoicetotal_discount" => $InvoiceData->discount,
             'salesData' => $saleData,
             'invoiceData' => $InvoiceData,
@@ -4859,7 +4860,8 @@ public function showInvoiceRecent($request)
     $setting = system_setting::find(1);
 
     // 2. حساب إجمالي الفاتورة الفعلي المدفوع (شامل الضريبة والخصومات)
-    $Total_Amount = $InvoiceData->Bank_transfer + $InvoiceData->creaditamount + $InvoiceData->bankamount + $InvoiceData->cashamount;
+    $st = \App\Support\SalesInvoiceTotals::fromInvoice($InvoiceData, $taxRate);
+    $Total_Amount = $st['total'];
     $totAL = number_format($Total_Amount, 2, '.', ''); // توحيد صيغة الرقم بنقطة عشرية دائماً
 
     // 3. فصل الريالات عن الهلالات بشكل آمن يمنع خطأ الـ Explode في الأرقام الصحيحة
@@ -4872,14 +4874,14 @@ public function showInvoiceRecent($request)
         $setting->name_ar,
         $setting->Tax,
         (string)$InvoiceData->issue_date . 'T' . (string)$InvoiceData->issue_time,
-        number_format($Total_Amount, 2, '.', ''),
-        number_format(($Total_Amount * $taxRate / (1 + $taxRate)), 2, '.', ''),
+        number_format($st['total'], 2, '.', ''),
+        number_format($st['vat'], 2, '.', ''),
     ];
 
     // 5. بناء المصفوفة النهائية وتفقيط المبالغ بالاعتماد على دالة convertNumber العربية التي أصلحناها
     $data = [
-        "invoicetotal_price"      => number_format(($Total_Amount / (1 + $taxRate)), 2, '.', ''),
-        "invoicetotal_addedvalue" => number_format(($Total_Amount * $taxRate / (1 + $taxRate)), 2, '.', ''),
+        "invoicetotal_price"      => number_format($st['net'], 2, '.', ''),
+        "invoicetotal_addedvalue" => number_format($st['vat'], 2, '.', ''),
         "invoicetotal_discount"   => $InvoiceData->discount,
         'salesData'               => $saleData,
         'invoiceData'             => $InvoiceData,
@@ -4911,7 +4913,8 @@ public function generate_pdf($request)
     $setting = system_setting::find(1);
 
     // 2. حساب إجمالي الفاتورة الفعلي المدفوع (شامل الضريبة)
-    $Total_Amount = $InvoiceData->Bank_transfer + $InvoiceData->creaditamount + $InvoiceData->bankamount + $InvoiceData->cashamount;
+    $st = \App\Support\SalesInvoiceTotals::fromInvoice($InvoiceData, $taxRate);
+    $Total_Amount = $st['total'];
     $totAL = number_format($Total_Amount, 2, '.', ''); // توحيد الصيغة بنقطة عشرية دائماً
 
     // 3. فصل الريالات عن الهلالات بطريقة آمنة تمنع خطأ الـ Explode
@@ -4924,14 +4927,14 @@ public function generate_pdf($request)
         $setting->name_ar,
         $setting->Tax,
         (string)$InvoiceData->issue_date . 'T' . (string)$InvoiceData->issue_time,
-        number_format($Total_Amount, 2, '.', ''),
-        number_format(($Total_Amount * $taxRate / (1 + $taxRate)), 2, '.', ''),
+        number_format($st['total'], 2, '.', ''),
+        number_format($st['vat'], 2, '.', ''),
     ];
 
     // 5. بناء مصفوفة البيانات النهائية للـ View وتفقيط العملة بشكل صحيح
     $data = [
-        "invoicetotal_price"      => number_format(($Total_Amount / (1 + $taxRate)), 2, '.', ''),
-        "invoicetotal_addedvalue" => number_format(($Total_Amount * $taxRate / (1 + $taxRate)), 2, '.', ''),
+        "invoicetotal_price"      => number_format($st['net'], 2, '.', ''),
+        "invoicetotal_addedvalue" => number_format($st['vat'], 2, '.', ''),
         "invoicetotal_discount"   => $InvoiceData->discount,
         'salesData'               => $saleData,
         'invoiceData'             => $InvoiceData,
@@ -4974,9 +4977,10 @@ public function showRecieptRecent($request)
 
     $Total_Amount = $InvoiceData->Bank_transfer + $InvoiceData->creaditamount + $InvoiceData->bankamount + $InvoiceData->cashamount;
 
+    $st = \App\Support\SalesInvoiceTotals::fromInvoice($InvoiceData, $avtSaleRate->AVT ?? null);
     $data = [
-        "invoicetotal_price"       => $InvoiceData->Price - $InvoiceData->discount,
-        "invoicetotal_addedvalue"   => ($InvoiceData->Price - $InvoiceData->discount) * $avtSaleRate->AVT,
+        "invoicetotal_price"       => $st['net'],
+        "invoicetotal_addedvalue"   => $st['vat'],
         "invoicetotal_discount"     => $InvoiceData->discount,
         'salesData'                 => $saleData,
         'invoiceData'               => $InvoiceData,
@@ -4993,9 +4997,10 @@ public function showInvoice($request)
     $saleData =sales::where("invoice_id", $request)->get();
     $InvoiceData = invoices::find($request);
 
+    $st = \App\Support\SalesInvoiceTotals::fromInvoice($InvoiceData, $avtSaleRate->AVT ?? null);
     $data = [
-        "invoicetotal_price"       => $InvoiceData->Price - $InvoiceData->discount,
-        "invoicetotal_addedvalue"   => ($InvoiceData->Price - $InvoiceData->discount) * $avtSaleRate->AVT,
+        "invoicetotal_price"       => $st['net'],
+        "invoicetotal_addedvalue"   => $st['vat'],
         "invoicetotal_discount"     => $InvoiceData->discount,
         'salesData'                 => $saleData,
         'invoiceData'               => $InvoiceData,
@@ -5043,8 +5048,8 @@ public function changePaymethodIninvoice($orderId, $paymentMethod)
 
         $saleData = sales::where("invoice_id", $request->show_invoice_number)->where('quantity', '!=', 0)->get();
         $InvoiceData = invoices::find($request->show_invoice_number);
-        $totAL = round(($InvoiceData->Price - $InvoiceData->discount) + (($InvoiceData->Price - $InvoiceData->discount) * $avtSaleRate->AVT), 2);
-        $totAL = number_format($totAL, 2);
+        $st = \App\Support\SalesInvoiceTotals::fromInvoice($InvoiceData, $avtSaleRate->AVT ?? null);
+        $totAL = number_format($st['total'], 2);
 
 
         list($whole, $decimal) = explode('.', str_replace(",", "", $totAL));
@@ -5063,8 +5068,8 @@ public function changePaymethodIninvoice($orderId, $paymentMethod)
             $setting->name_ar,
             $setting->Tax,
             (string) $InvoiceData->issue_date . 'T' . (string) $InvoiceData->issue_time,
-            number_format(($Total_Amount), 2, '.', ''),
-            number_format((($Total_Amount * 100 / (100 + ($avtSaleRate->AVT * 100)))) * $avtSaleRate->AVT, 2, '.', ''),
+            number_format($st['total'], 2, '.', ''),
+            number_format($st['vat'], 2, '.', ''),
         ];
         $data[] = '';
         $data[] = '';
@@ -5073,8 +5078,8 @@ public function changePaymethodIninvoice($orderId, $paymentMethod)
 
         $data = [
 
-            "invoicetotal_price" => $InvoiceData->Price - $InvoiceData->discount,
-            "invoicetotal_addedvalue" => ($InvoiceData->Price - $InvoiceData->discount) * $avtSaleRate->AVT,
+            "invoicetotal_price" => $st['net'],
+            "invoicetotal_addedvalue" => $st['vat'],
             "invoicetotal_discount" => $InvoiceData->discount,
             'salesData' => $saleData,
             'invoiceData' => $InvoiceData,
@@ -5170,9 +5175,10 @@ public function printReceiptToStorehouse(Request $request)
     $saleData =sales::where("invoice_id", $request->show_invoice_number)->where('quantity', '!=', 0)->get();
     $InvoiceData = invoices::find($request->show_invoice_number);
 
+    $st = \App\Support\SalesInvoiceTotals::fromInvoice($InvoiceData, $avtSaleRate->AVT ?? null);
     $data = [
-        "invoicetotal_price"       => $InvoiceData->Price - $InvoiceData->discount,
-        "invoicetotal_addedvalue"   => ($InvoiceData->Price - $InvoiceData->discount) * $avtSaleRate->AVT,
+        "invoicetotal_price"       => $st['net'],
+        "invoicetotal_addedvalue"   => $st['vat'],
         "invoicetotal_discount"     => $InvoiceData->discount,
         'salesData'                 => $saleData,
         'invoiceData'               => $InvoiceData,

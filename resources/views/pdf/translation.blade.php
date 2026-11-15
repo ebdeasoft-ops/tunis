@@ -348,9 +348,10 @@
             $price = $invoice->cashamount + $invoice->Bank_transfer + $invoice->bankamount + $invoice->creaditamount;
             $avt = App\Models\Avt::find(1);
 
-            $price_befor_tax = ($price * 100) / (100 + $avt->AVT * 100);
-            $invoicetotal_addedvalue = $price_befor_tax * $avt->AVT;
-            $invoicetotal_price = $price_befor_tax;
+            // القيم المحفوظة للفاتورة (نفس الشاشة والقيد) بدل إعادة حساب الضريبة
+            $st = \App\Support\SalesInvoiceTotals::fromInvoice($invoice, $avt->AVT ?? null);
+            $invoicetotal_addedvalue = $st['vat'];
+            $invoicetotal_price = $st['net'];
             $invoicetotal_discount = $invoice->discount + $discountreturn;
 
             $sellerName = sallerQrCode;

@@ -1412,15 +1412,8 @@ function calculateTotals_with_tax() {
         $('#profit').val(profit.toFixed(2));
     });
 
-    document.getElementById('totalSum').value = total.toFixed(2);
-    document.getElementById('totaldiscound').value = discountTotal.toFixed(2);
-    document.getElementById('totalTax').value = taxTotal.toFixed(2);
-    document.getElementById('grandTotal').value = grand.toFixed(2);
-
-    // الحفاظ على خصم الفاتورة عند تعديل أي صنف
-    if (parseFloat($('#discound_on_invoice').val() || 0) > 0) {
-        calculateTotalDiscount();
-    }
+    // الإجماليات تُحسب بالدالة الموحدة (نفس الطباعة و PDF)
+    applyQuoteTotals();
 }
 
 
@@ -1455,42 +1448,62 @@ function replaceproduct(id) {
 
 let rowIndex = 1;
 
-function calculateTotalDiscount() {
-    // 1. جلب القيم وتحويلها لأرقام بدقة عالية
-    let discountOnInvoice = parseFloat($('#discound_on_invoice').val() || 0); // القيمة 5
-    let totalSum = parseFloat(document.getElementById('totalSum').value || 0); // القيمة 35
-    let avtsale = parseFloat($('#avtValue').val() || 0.15); // نسبة الضريبة
+/* =====================================================================
+ * الحساب الموحّد لإجماليات عرض السعر
+ * مطابق تماماً لـ App\Support\QuotationTotals في PHP (الطباعة و PDF):
+ *   الإجمالي = round2(Σ سعر×كمية) ، الخصم = round2(خصم الأصناف + خصم الفاتورة)
+ *   الضريبة = round2((الإجمالي − الخصم) × النسبة) مرة واحدة على الإجمالي
+ *   المستحق = round2(الخاضع + الضريبة)
+ * ===================================================================== */
+function quoteRound2(value) {
+    let clean = parseFloat(Number(value || 0).toFixed(8)); // إزالة ضوضاء الـ float
+    let sign = clean < 0 ? -1 : 1;
+    return sign * Math.floor(Math.abs(clean) * 100 + 0.5 + 1e-9) / 100;
+}
 
-    // 2. حساب الخصم الصافي (قبل الضريبة) بدون تقريب وسيط
-    // 5 / 1.15 = 4.347826086956522...
-    let amountBeforeTax = discountOnInvoice / (1 + avtsale);
+function quoteVatRate() {
+    let rate = parseFloat($('#avtValue').val());
+    if (isNaN(rate)) rate = 0.15;
+    return rate > 1 ? rate / 100 : rate;
+}
 
-    // 3. حساب إجمالي الخصومات من الجدول (إن وجدت)
-    let tableDiscountTotal = 0;
+function quoteTotals() {
+    let rate = quoteVatRate();
+    let subTotal = 0, itemsDiscount = 0;
+
     document.querySelectorAll('#productsTableBody tr').forEach(r => {
-        let discound = parseFloat(r.querySelector('.product-discound').value) || 0;
-        tableDiscountTotal += discound;
+        let price = parseFloat(r.querySelector('.product-price').value) || 0;
+        let qty = parseFloat(r.querySelector('.product-quentity').value) || 0;
+        let disc = parseFloat(r.querySelector('.product-discound').value) || 0;
+        subTotal += price * qty;
+        itemsDiscount += disc;
     });
 
-    // 4. إجمالي الخصم الكلي (خام)
-    let finalDiscountTotal = tableDiscountTotal + amountBeforeTax;
+    // خصم الفاتورة يُدخل شامل الضريبة ويُحفظ بدونها (نفس منطق save_invoice_qutation)
+    let invoiceDiscountWithTax = parseFloat($('#discound_on_invoice').val() || 0) || 0;
+    let invoiceDiscount = parseFloat((invoiceDiscountWithTax / (1 + rate)).toFixed(6));
 
-    // 5. الحسابات النهائية:
-    // الصافي = 35 - 4.347826... = 30.652173...
-    let netTotal = totalSum - finalDiscountTotal;
+    subTotal = quoteRound2(subTotal);
+    let discount = quoteRound2(itemsDiscount + invoiceDiscount);
+    let taxable = quoteRound2(subTotal - discount);
+    let vat = quoteRound2(taxable * rate);
+    let grandTotal = quoteRound2(taxable + vat);
 
-    // الضريبة = 30.652173... * 0.15 = 4.597826...
-    let taxTotal = netTotal * avtsale;
+    return { subTotal, discount, taxable, vat, grandTotal };
+}
 
-    // الإجمالي النهائي = 30.652173... + 4.597826... = 35.25 (تقريباً)
-    // لكن بما أن الخصم الإجمالي شامل الضريبة هو 5، فالصافي المطلوب هو 30 تماماً
-    let grandTotal = netTotal + taxTotal;
+function applyQuoteTotals() {
+    let t = quoteTotals();
+    document.getElementById('totalSum').value = t.subTotal.toFixed(2);
+    document.getElementById('totaldiscound').value = t.discount.toFixed(2);
+    document.getElementById('totalTax').value = t.vat.toFixed(2);
+    document.getElementById('grandTotal').value = t.grandTotal.toFixed(2);
+    return t;
+}
 
-    // 6. العرض في الحقول مع التقريب لخانة واحدة فقط إذا لزم الأمر أو خانتين
-    // لجعلها 30.00 بالضبط:
-    document.getElementById('totaldiscound').value = finalDiscountTotal.toFixed(2);
-    document.getElementById('totalTax').value = taxTotal.toFixed(2);
-    document.getElementById('grandTotal').value = (Math.round((grandTotal + Number.EPSILON) * 100) / 100).toFixed(2);
+// يُستدعى عند كتابة "الخصم على الفاتورة"
+function calculateTotalDiscount() {
+    applyQuoteTotals();
 }
 
 $("#updateinvoicebyidforsaleupdate").click(function(e) {
@@ -2293,15 +2306,8 @@ function calculateTotals() {
         discountTotal += discountAmount;
     });
 
-    document.getElementById('totalSum').value = total.toFixed(2);
-    document.getElementById('totaldiscound').value = discountTotal.toFixed(2);
-    document.getElementById('totalTax').value = taxTotal.toFixed(2);
-    document.getElementById('grandTotal').value = grand.toFixed(2);
-
-    // الحفاظ على خصم الفاتورة عند تعديل أي صنف
-    if (parseFloat($('#discound_on_invoice').val() || 0) > 0) {
-        calculateTotalDiscount();
-    }
+    // الإجماليات تُحسب بالدالة الموحدة (نفس الطباعة و PDF)
+    applyQuoteTotals();
 }
 
 function searchaboutproductfunction() {

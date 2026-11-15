@@ -2101,22 +2101,16 @@ public function searchAllInvoicespaginatenew($date)
         // Eager load products to avoid N+1 querying inside the loop
         $itemsRequest = offer_price_to_customer_items::with('product')->where('order_id', $id)->get();
 
-        $totalsale_price = 0;
-        $totaldiscount = (float) $discountvalue;
-
-        foreach ($itemsRequest as $item) {
-            $totalsale_price += ($item->PriceWithoudTax * $item->quantity);
-            $totaldiscount += $item->discount;
-        }
-
         $avt = Avt::find(1);
-        $totaladdedvalue = ($totalsale_price - $totaldiscount) * ($avt->AVT ?? 0);
+        // الحساب الموحد (نفس الشاشة والطباعة و PDF)
+        $qt = \App\Support\QuotationTotals::calculate($itemsRequest, (float) $discountvalue, $avt->AVT ?? 0);
 
         return [
-            'total_purchases_AddedValue' => round($totaladdedvalue, 2),
-            'totaldiscount' => round($totaldiscount, 2),
-            'total_purchases' => round($totalsale_price, 2),
-            'totalafterdiscount' => round($totalsale_price - $totaldiscount, 2)
+            'total_purchases_AddedValue' => $qt['vat'],
+            'totaldiscount' => $qt['discount'],
+            'total_purchases' => $qt['sub_total'],
+            'totalafterdiscount' => $qt['taxable'],
+            'grand_total' => $qt['grand_total'],
         ];
     }
 

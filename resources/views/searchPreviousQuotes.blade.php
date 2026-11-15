@@ -24,16 +24,9 @@
                 
                 @php
                     // حساب الإجماليات والخصومات
+                    // الحساب الموحد (نفس الشاشة والطباعة و PDF)
                     $items = App\Models\offer_price_to_customer_items::where('order_id', $product->id)->get();
-                    $subTotal = $items->sum(fn($i) => $i->PriceWithoudTax * $i->quantity);
-                    $itemsDiscount = $items->sum('discount');
-                    
-                    // خصم إضافي على مستوى الفاتورة
-                    $invoice = App\Models\offer_price_to_customer::find($product->id);
-                    $extraDiscount = $invoice ? $invoice->discount : 0;
-
-                    $totalNet = round($subTotal, 2) - round($itemsDiscount + $extraDiscount, 2);
-                    $totalWithTax = round($totalNet * $avtRate, 2) + $totalNet;
+                    $totalWithTax = \App\Support\QuotationTotals::calculate($items, $product->discount ?? 0, $avtRate)['grand_total'];
                 @endphp
 
                 <td class="font-weight-bold text-dark">

@@ -425,8 +425,8 @@
                 </tr>
             @endforeach
             @php
-                // إضافة خصم الفاتورة (نفس منطق صفحة الطباعة)
-                $totaldiscount += (float) ($offer_price_to_customer->discount ?? 0);
+                // الحساب الموحد (نفس الشاشة والطباعة)
+                $qt = \App\Support\QuotationTotals::calculate($itemsRequest, $offer_price_to_customer->discount ?? 0, $avt->AVT ?? 0);
             @endphp
         </tbody>
     </table>
@@ -439,25 +439,24 @@
             <table class="bordered totals-table">
                 <tbody>
                     <tr>
-                        <td>{{ round($totalpricePurchases, 2) }}</td>
+                        <td>{{ number_format($qt['sub_total'], 2, '.', '') }}</td>
                         <td><span class="label-ar">الاجمالي</span><span class="label-en">SUB TOTAL</span></td>
                     </tr>
                     <tr>
-                        <td>{{ round($totaldiscount, 2) }}</td>
+                        <td>{{ number_format($qt['discount'], 2, '.', '') }}</td>
                         <td><span class="label-ar">الخصم</span><span class="label-en">DISCOUNT</span></td>
                     </tr>
                     <tr>
-                        <td>{{ round($totalpricePurchases, 2) - round($totaldiscount, 2) }}</td>
+                        <td>{{ number_format($qt['taxable'], 2, '.', '') }}</td>
                         <td><span class="label-ar">الاجمالي بعد الخصم</span><span class="label-en">SUB TOTAL AFTER DISCOUNT</span></td>
                     </tr>
                     <tr>
-                        <td>{{ round((round($totalpricePurchases, 2) - round($totaldiscount, 2)) * $avt->AVT, 2) }}</td>
+                        <td>{{ number_format($qt['vat'], 2, '.', '') }}</td>
                         <td><span class="label-ar">ضريبة القيمة المضافة ({{ $avt->AVT * 100 }}%)</span><span class="label-en">VALUE ADDED TAX</span></td>
                     </tr>
 
                     @php
-                        $total = round((round($totalpricePurchases, 2) - round($totaldiscount, 2)) * $avt->AVT, 2)
-                            + (round($totalpricePurchases, 2) - round($totaldiscount, 2));
+                        $total = $qt['grand_total'];
 
                         [$whole, $decimal] = explode('.', number_format((float) $total, 2, '.', ''));
 

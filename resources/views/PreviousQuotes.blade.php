@@ -144,17 +144,10 @@
                                 <td>{{ $product->branch->name }}</td>
                                 <td>
                                     @php
-                                        $items = $pageItems->get($product->id, collect());
-                                        $subTotal = 0;
-                                        $discountTotal = 0;
-                                        foreach($items as $item) {
-                                            $subTotal += ($item->PriceWithoudTax * $item->quantity);
-                                            $discountTotal += $item->discount;
-                                        }
-                                        // خصم الفاتورة (بدون ضريبة) يُطرح قبل حساب الضريبة - نفس منطق الطباعة و PDF
-                                        $discountTotal += (float) ($product->discount ?? 0);
-                                        $netPrice = round($subTotal, 2) - round($discountTotal, 2);
-                                        $totalWithTax = round($netPrice * $avtSaleRate, 2) + $netPrice;
+                                        // الحساب الموحد (نفس الشاشة والطباعة و PDF)
+                                        $totalWithTax = \App\Support\QuotationTotals::calculate(
+                                            $pageItems->get($product->id, collect()), $product->discount ?? 0, $avtSaleRate
+                                        )['grand_total'];
                                     @endphp
                                     <span class="total-badge">{{ number_format($totalWithTax, 2) }}</span>
                                 </td>

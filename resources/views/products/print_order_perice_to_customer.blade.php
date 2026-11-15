@@ -469,19 +469,21 @@
                   </table>
                   <!-- جدول الإجماليات النهائية -->
                   <?php $avt = App\Models\Avt::find(1);
-                        $subTotalAfterDisc = round($totalpricePurchases, 2) - round($totaldiscount + ($offer_price_to_customer->discount ?? 0), 2);
-                        $taxValue = round($subTotalAfterDisc * ($avt->AVT ?? 0), 2);
-                        $netTotalWithTax = round($subTotalAfterDisc + $taxValue, 2);
+                        // الحساب الموحد (نفس الشاشة و PDF)
+                        $qt = \App\Support\QuotationTotals::calculate($itemsRequest, $offer_price_to_customer->discount ?? 0, $avt->AVT ?? 0);
+                        $subTotalAfterDisc = $qt['taxable'];
+                        $taxValue = $qt['vat'];
+                        $netTotalWithTax = $qt['grand_total'];
                   ?>
                   <div class="totals-wrap">
                     <div class="totals-card">
                       <div class="totals-row">
                         <span class="td-tax-line">الإجمالي قبل الخصم / Sub Total</span>
-                        <span class="td-tax-line">{{ number_format($totalpricePurchases, 2) }}</span>
+                        <span class="td-tax-line">{{ number_format($qt['sub_total'], 2) }}</span>
                       </div>
                       <div class="totals-row discount">
                         <span class="td-tax-line">إجمالي الخصم / Total Discount</span>
-                        <span class="td-tax-line">{{ number_format($totaldiscount + ($offer_price_to_customer->discount ?? 0), 2) }}</span>
+                        <span class="td-tax-line">{{ number_format($qt['discount'], 2) }}</span>
                       </div>
                       <div class="totals-row">
                         <span class="td-tax-line">المبلغ الخاضع للضريبة / Taxable Amount</span>

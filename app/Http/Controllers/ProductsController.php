@@ -875,12 +875,15 @@ public function importStockExcel(Request $request)
             }
 
             $customer = customers::find($InvoiceData->customer_id);
+            $avtRate = Avt::find(1)->AVT ?? 0;
 
             $data = [
                 'invoice_number' => $InvoiceData->id,
                 'customer' => $customer,
                 'product' => $allProdctsD,
-                'invoice_id' => $InvoiceData->id
+                'invoice_id' => $InvoiceData->id,
+                // خصم الفاتورة شامل الضريبة (كما يُدخل في حقل "الخصم على الفاتورة")
+                'discound' => round(((float) $InvoiceData->discount) * (1 + $avtRate), 2),
             ];
 
             return $data;
@@ -894,6 +897,19 @@ public function importStockExcel(Request $request)
         $customertid = $request->clientnamesearch;
         $avt = Avt::find(1);
 
+        // خصم الفاتورة فقط (بدون ضريبة)؛ خصومات الأصناف تُحفظ في كل صنف
+        // الطباعة و PDF يجمعان: خصومات الأصناف + خصم الفاتورة
+        $invoiceDiscount = 0;
+        if ($request->filled('discound_on_invoice')) {
+            $invoiceDiscount = ((float) $request->discound_on_invoice) / (1 + ($avt->AVT ?? 0));
+        } else {
+            $itemsDiscount = collect($request->products ?? [])->sum(function ($p) {
+                return (float) ($p['discound'] ?? 0);
+            });
+            $invoiceDiscount = max(0, ((float) $request->totaldiscound) - $itemsDiscount);
+        }
+        $invoiceDiscount = round($invoiceDiscount, 6);
+
         if ($request->show_invoice_number_update == 0) {
             $create_order = offer_price_to_customer::create([
                 'customer_id' => $customertid,
@@ -901,7 +917,7 @@ public function importStockExcel(Request $request)
                 'created_at' => \Carbon\Carbon::now(),
                 'updated_at' => \Carbon\Carbon::now(),
                 'notes' => $request->notes,
-                'discount' => $request->totaldiscound,
+                'discount' => $invoiceDiscount,
                 'numbershowstatus' => $request->shownumberproduct,
             ]);
         } else {
@@ -915,7 +931,7 @@ public function importStockExcel(Request $request)
                 'notes' => $request->notes,
                 'p_o' => $request->p_o,
                 'type' => $request->typeedecument,
-                'discount' => $request->totaldiscound,
+                'discount' => $invoiceDiscount,
                 'numbershowstatus' => $request->shownumberproduct,
             ]);
         }

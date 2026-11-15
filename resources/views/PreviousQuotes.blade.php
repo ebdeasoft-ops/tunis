@@ -129,7 +129,11 @@
                         <tbody>
                             @php 
                                 $avtData = App\Models\Avt::find(1);
-                                $avtSaleRate = $avtData ? $avtData->AVT : 1;
+                                $avtSaleRate = $avtData ? $avtData->AVT : 0.15;
+
+                                // تحميل أصناف كل عروض الصفحة في استعلام واحد
+                                $pageItems = App\Models\offer_price_to_customer_items::whereIn('order_id', $data->pluck('id'))
+                                    ->get()->groupBy('order_id');
                             @endphp
                             
                             @foreach ($data as $product)
@@ -140,13 +144,15 @@
                                 <td>{{ $product->branch->name }}</td>
                                 <td>
                                     @php
-                                        $items = App\Models\offer_price_to_customer_items::where('order_id', $product->id)->get();
+                                        $items = $pageItems->get($product->id, collect());
                                         $subTotal = 0;
                                         $discountTotal = 0;
                                         foreach($items as $item) {
                                             $subTotal += ($item->PriceWithoudTax * $item->quantity);
                                             $discountTotal += $item->discount;
                                         }
+                                        // خصم الفاتورة (بدون ضريبة) يُطرح قبل حساب الضريبة - نفس منطق الطباعة و PDF
+                                        $discountTotal += (float) ($product->discount ?? 0);
                                         $netPrice = round($subTotal, 2) - round($discountTotal, 2);
                                         $totalWithTax = round($netPrice * $avtSaleRate, 2) + $netPrice;
                                     @endphp

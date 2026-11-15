@@ -424,6 +424,10 @@
                     <td>{{ $i }}</td>
                 </tr>
             @endforeach
+            @php
+                // إضافة خصم الفاتورة (نفس منطق صفحة الطباعة)
+                $totaldiscount += (float) ($offer_price_to_customer->discount ?? 0);
+            @endphp
         </tbody>
     </table>
 

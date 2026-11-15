@@ -1416,6 +1416,11 @@ function calculateTotals_with_tax() {
     document.getElementById('totaldiscound').value = discountTotal.toFixed(2);
     document.getElementById('totalTax').value = taxTotal.toFixed(2);
     document.getElementById('grandTotal').value = grand.toFixed(2);
+
+    // الحفاظ على خصم الفاتورة عند تعديل أي صنف
+    if (parseFloat($('#discound_on_invoice').val() || 0) > 0) {
+        calculateTotalDiscount();
+    }
 }
 
 
@@ -1485,12 +1490,7 @@ function calculateTotalDiscount() {
     // لجعلها 30.00 بالضبط:
     document.getElementById('totaldiscound').value = finalDiscountTotal.toFixed(2);
     document.getElementById('totalTax').value = taxTotal.toFixed(2);
-    document.getElementById('grandTotal').value = Math.round(grandTotal * 100) / 100; // حل مشكلة 29.99
-
-    // تأكيد إضافي إذا كان الفرق ضئيل جداً نتيجة تقريب المتصفح
-    if (Math.abs(grandTotal - 30) < 0.01) {
-        document.getElementById('grandTotal').value = "30.00";
-    }
+    document.getElementById('grandTotal').value = (Math.round((grandTotal + Number.EPSILON) * 100) / 100).toFixed(2);
 }
 
 $("#updateinvoicebyidforsaleupdate").click(function(e) {
@@ -1609,7 +1609,7 @@ $("#updateinvoicebyidforsaleupdate").click(function(e) {
                     row_add.querySelector('.product-name').value = product_name;
                     row_add.querySelector('.product-code').value = product_code;
                     row_add.querySelector('.product-price').value = purchasingـprice;
-                    row_add.querySelector('.product-discound').value = 0;
+                    row_add.querySelector('.product-discound').value = product['Discount_Value'] || 0;
                     row_add.querySelector('.product-quentity').value = quentity;
 
                     index = rowIndex++; // 👈 يزيد دايمًا
@@ -1621,7 +1621,8 @@ $("#updateinvoicebyidforsaleupdate").click(function(e) {
             });
             calculateTotals()
 
-            $('#discound_on_invoice').val(data['discound']).trigger('input');
+            $('#discound_on_invoice').val(data['discound'] || '');
+            calculateTotals();
             try {
                 $('#clientnamesearch').append(
                     $('<option>', {
@@ -2296,6 +2297,11 @@ function calculateTotals() {
     document.getElementById('totaldiscound').value = discountTotal.toFixed(2);
     document.getElementById('totalTax').value = taxTotal.toFixed(2);
     document.getElementById('grandTotal').value = grand.toFixed(2);
+
+    // الحفاظ على خصم الفاتورة عند تعديل أي صنف
+    if (parseFloat($('#discound_on_invoice').val() || 0) > 0) {
+        calculateTotalDiscount();
+    }
 }
 
 function searchaboutproductfunction() {

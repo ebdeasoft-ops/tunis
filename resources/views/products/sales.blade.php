@@ -375,7 +375,9 @@ td .d-flex {
                                         <th> # </th>
                                         <th>{{ __('home.productNo') }} </th>
                                         <th>{{ __('home.product') }}</th>
+                                        @can('Show purchase price')
                                         <th>{{ __('home.purchase') }}</th>
+                                        @endcan
                                         <th>{{ __('home.saleperpice') }}</th>
 
                                         <th> {{ __('home.productprice') }} </th>
@@ -1475,7 +1477,7 @@ $("#getinvoiceupdate").click(function(e) {
                                             <td class="text-start">
                                                 <input type="text" class="form-control product-name" name="products[${index}][product_name]"  value="${item.product_name}" >
                                             </td>
-                                                                        <td><input type="text" class="form-control product-cost" readonly value="-"></td>
+                                                                        @can('Show purchase price')<td><input type="text" class="form-control product-cost" readonly value="-"></td>@endcan
 
                                             <td><input type="text" name="products[${index}][price-tax]" class="form-control product-price-tax" value="${priceWithTax.toFixed(2)}" onchange="calculateTotals_with_tax()"></td>
                                             <td><input type="text" name="products[${index}][price]" class="form-control product-price" value="${unitPrice.toFixed(2)}" onchange="calculateTotals()"></td>
@@ -3111,58 +3113,56 @@ function calculateTotals_with_tax() {
 
 
 
+// ===== البحث عن منتج أثناء الكتابة (oninput) =====
+// تأخير بسيط + إلغاء الطلب السابق حتى لا تظهر نتائج قديمة فوق الجديدة
+var productSearchTimer = null, productSearchXhr = null, productSearchSeq = 0;
+
 function searchaboutproductfunction() {
-    searchtext = $('#searchaboutproduct').val();
-    branchs_id = $('#branchs_id').val();
-    var token_search = $("#token_search").val();
-    jQuery.ajax({
-        url: "{{ URL::to('searchChooseProductpaginatenewSaleBypost')}}",
-        type: 'post',
-        cache: false,
-        dataType: 'html',
-        data: {
-            "_token": token_search,
-            "searchtext": searchtext,
-            "locale": "{{ app()->getLocale() }}", // ✅ صح
-            "branchs_id": branchs_id,
-            "currentrow": window.currentRow,
-        },
-
-        success: function(data) {
-            $("#ajax_responce_serarchDiv").html(data);
-            document.getElementById('searchaboutproduct').focus();
-
-        },
-
-    });
-
+    clearTimeout(productSearchTimer);
+    productSearchTimer = setTimeout(runProductSearch, 250);
 }
 
-$('#SearchProduct').on('show.bs.modal', function(event) {
-    searchtext = '';
-    branchs_id = $('#branchs_id').val();
-    var token_search = $("#token_search").val();
+function runProductSearch() {
+    var seq = ++productSearchSeq;
+    if (productSearchXhr) {
+        productSearchXhr.abort();
+    }
 
-    jQuery.ajax({
+    productSearchXhr = jQuery.ajax({
         url: "{{ URL::to('searchChooseProductpaginatenewSaleBypost')}}",
         type: 'post',
         cache: false,
         dataType: 'html',
         data: {
-            "_token": token_search,
-            "searchtext": searchtext,
-            "branchs_id": branchs_id,
-            "locale": "{{ app()->getLocale() }}", // ✅ صح
+            "_token": $("#token_search").val(),
+            "searchtext": $('#searchaboutproduct').val(),
+            "branchs_id": $('#branchs_id').val(),
+            "locale": "{{ app()->getLocale() }}",
             "currentrow": window.currentRow,
         },
         success: function(data) {
+            if (seq !== productSearchSeq) return; // نتيجة قديمة
             $("#ajax_responce_serarchDiv").html(data);
-            document.getElementById('searchaboutproduct').focus();
-
+            var el = document.getElementById('searchaboutproduct');
+            if (el && document.activeElement !== el) el.focus();
         },
-
     });
+}
 
+// Enter (أو قارئ الباركود): بحث فوري بدون انتظار
+$(document).on('keydown', '#searchaboutproduct', function(e) {
+    if (e.key === 'Enter') {
+        e.preventDefault();
+        clearTimeout(productSearchTimer);
+        runProductSearch();
+    }
+});
+
+$('#SearchProduct').on('show.bs.modal', function(event) {
+    // فتح النافذة: تفريغ البحث وعرض كل المنتجات
+    clearTimeout(productSearchTimer);
+    $('#searchaboutproduct').val('');
+    runProductSearch();
 });
 $(document).on('click', '#ajax_pagination_in_search a', function(e) {
     e.preventDefault();
@@ -3255,7 +3255,7 @@ function chooseProduct(code, productcode, name, cost, sale_price, location, avai
 
                                 </div>
                             </td>
-                            <td><input type="text" class="form-control product-cost" readonly value="0"></td>
+                            @can('Show purchase price')<td><input type="text" class="form-control product-cost" readonly value="0"></td>@endcan
 
                             <td><input type="text" name="products[${index}][price-tax]"
                                     class="form-control product-price-tax" value="0" min="0" onchange="calculateTotals_with_tax()"></td>
@@ -3333,7 +3333,7 @@ function chooseProduct(code, productcode, name, cost, sale_price, location, avai
 
         }
         row1.querySelector('.product-name').value = name;
-        row1.querySelector('.product-cost').value = cost;
+        if (row1.querySelector('.product-cost')) row1.querySelector('.product-cost').value = cost;
         row1.querySelector('.product-available_quentity').value = availablequantity;
         row1.querySelector('.product-code').value = productcode;
         row1.querySelector('.product-price').value = sale_price;

@@ -15,10 +15,10 @@
                     <th style="font-size: 15px">{{ __('home.product') }}</th>
                     <th style="font-size: 15px">{{ __('home.productlocation') }}</th>
                     <th style="font-size: 15px">{{ __('home.quantity') }}</th>
-                                         @if(Auth()->user()->id==17|| Auth()->user()->id==28|| Auth()->user()->id==11)
+                @can('Show purchase price')
                 <th style="font-size: 13px" class="border-bottom-0">{{__('home.purchaseproductwithouttax')}}</th> 
                 <th style="font-size: 13px" class="border-bottom-0">{{__('home.average_cost')}}</th>
-                @endif
+                @endcan
                     <th style="font-size: 13px">{{ __('home.sellingproduct without tax') }}</th>
                     <th style="font-size: 15px">{{ __('home.refnumber') }}</th>
                     <th style="font-size: 13px">{{ __('home.notesClient') }}</th>
@@ -43,12 +43,10 @@
                                 <span style="color:green; font-size:18px;">{{ $product->numberofpice }}</span>
                             @endif
                         </td>
-                         @if(Auth()->user()->id==17|| Auth()->user()->id==28|| Auth()->user()->id==11)
-
+                @can('Show purchase price')
                 <td id="tableData"  data-target="numberofpice">{{ $product->purchasingـprice }}</td>
                 <td id="tableData"  data-target="numberofpice">{{ $product->average_cost }}</td>
-           
-                                @endif
+                @endcan
                         <td>{{ $product->sale_price }}</td>
                         <td>{{ $product->refnumber == null ? __('home.notdata') : str_replace("+", " - ", $product->refnumber) }}
                         </td>

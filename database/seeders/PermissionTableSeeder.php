@@ -141,6 +141,7 @@ class PermissionTableSeeder extends Seeder
 
 
             'Notification',
+            'Show purchase price',
     
     ];
     
@@ -267,6 +268,7 @@ class PermissionTableSeeder extends Seeder
 
 
             'الاشعارات',
+            'عرض سعر الشراء',
     
     ];
       

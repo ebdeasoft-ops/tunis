@@ -2310,52 +2310,56 @@ function calculateTotals() {
     applyQuoteTotals();
 }
 
+// ===== البحث عن منتج أثناء الكتابة (oninput) =====
+// تأخير بسيط + إلغاء الطلب السابق حتى لا تظهر نتائج قديمة فوق الجديدة
+var productSearchTimer = null, productSearchXhr = null, productSearchSeq = 0;
+
 function searchaboutproductfunction() {
-    searchtext = $('#searchaboutproduct').val();
-    branchs_id = $('#branchs_id').val();
-    var token_search = $("#token_search").val();
-
-    jQuery.ajax({
-        url: "{{ URL::to('searchChooseProductpaginatenewSaleBypost')}}",
-        type: 'post',
-        cache: false,
-        dataType: 'html',
-        data: {
-            "_token": token_search,
-            "searchtext": searchtext,
-            "branchs_id": branchs_id,
-            "currentrow": window.currentRow,
-        },
-        success: function(data) {
-            $("#ajax_responce_serarchDiv").html(data);
-        },
-
-    });
-
+    clearTimeout(productSearchTimer);
+    productSearchTimer = setTimeout(runProductSearch, 250);
 }
 
-$('#SearchProduct').on('show.bs.modal', function(event) {
-    searchtext = '';
-    branchs_id = $('#branchs_id').val();
-    var token_search = $("#token_search").val();
+function runProductSearch() {
+    var seq = ++productSearchSeq;
+    if (productSearchXhr) {
+        productSearchXhr.abort();
+    }
 
-    jQuery.ajax({
+    productSearchXhr = jQuery.ajax({
         url: "{{ URL::to('searchChooseProductpaginatenewSaleBypost')}}",
         type: 'post',
         cache: false,
         dataType: 'html',
         data: {
-            "_token": token_search,
-            "searchtext": searchtext,
-            "branchs_id": branchs_id,
+            "_token": $("#token_search").val(),
+            "searchtext": $('#searchaboutproduct').val(),
+            "branchs_id": $('#branchs_id').val(),
+            "locale": "{{ app()->getLocale() }}",
             "currentrow": window.currentRow,
         },
         success: function(data) {
+            if (seq !== productSearchSeq) return; // نتيجة قديمة
             $("#ajax_responce_serarchDiv").html(data);
+            var el = document.getElementById('searchaboutproduct');
+            if (el && document.activeElement !== el) el.focus();
         },
-
     });
+}
 
+// Enter (أو قارئ الباركود): بحث فوري بدون انتظار
+$(document).on('keydown', '#searchaboutproduct', function(e) {
+    if (e.key === 'Enter') {
+        e.preventDefault();
+        clearTimeout(productSearchTimer);
+        runProductSearch();
+    }
+});
+
+$('#SearchProduct').on('show.bs.modal', function(event) {
+    // فتح النافذة: تفريغ البحث وعرض كل المنتجات
+    clearTimeout(productSearchTimer);
+    $('#searchaboutproduct').val('');
+    runProductSearch();
 });
 $(document).on('click', '#ajax_pagination_in_search a', function(e) {
     e.preventDefault();

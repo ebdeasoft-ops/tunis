@@ -22,7 +22,9 @@ $i=1;
                 <th style="font-size: 15px" class="border-bottom-0" style="text-align:center">{{__('home.productlocation')}}</th>
 
                 <th style="font-size: 15px" class="border-bottom-0">{{__('home.quantity')}}</th>
+                @can('Show purchase price')
                 <th style="font-size: 13px" class="border-bottom-0">{{__('home.purchaseproductwithouttax')}}</th>
+                @endcan
                 <th style="font-size: 13px" class="border-bottom-0">{{__('home.sellingproduct without tax')}}</th>
                 <th style="font-size: 15px" class="border-bottom-0">{{__('home.Add')}}</th>
 
@@ -48,7 +50,9 @@ $i=1;
                         <span style="color:green;font-size:18px">{{$product->numberofpice}}</span>
 
                         @endif</td>
+                @can('Show purchase price')
                 <td id="tableData" data-target="numberofpice">{{ $product->purchasingـprice }}</td>
+                @endcan
                 <td id="tableData" data-target="numberofpice">{{ $product->sale_price }}</td>
                 <td id="tableData">
 

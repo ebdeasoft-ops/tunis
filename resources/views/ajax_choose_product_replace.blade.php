@@ -26,7 +26,7 @@
                     <td style="color:red">{{ $invoice['operation'] }}</td>
                     <td>{{ $invoice['man'] }}</td>
                     <td>{{ $invoice['quantity'] }}</td>
-                    <td>{{ $invoice['price'] }}</td>
+                    <td>{{ $invoice['price'] ?? '-' }}</td>
 
                     <td>
                         {{-- فحص الصلاحية العام --}}

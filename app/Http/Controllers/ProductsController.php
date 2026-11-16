@@ -1750,6 +1750,16 @@ $data = resource_purchases::where('save', 1)
         array_multisort(array_map('strtotime', $dates), SORT_ASC, $products);
     }
 
+    // إخفاء سعر الشراء/التكلفة (مشتريات، مرتجع مشتريات، تحويلات) لمن ليس لديه صلاحية "عرض سعر الشراء"
+    if (!auth()->user()->can('Show purchase price')) {
+        foreach ($products as &$movement) {
+            if (in_array($movement['type'], [3, 4, 5])) {
+                $movement['price'] = null;
+            }
+        }
+        unset($movement);
+    }
+
     return view('ajax_choose_product_replace', compact('products'));
 }
 

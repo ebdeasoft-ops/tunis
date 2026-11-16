@@ -711,9 +711,11 @@ td .d-flex {
 
                                     <th style="font-size: 15px" class="border-bottom-0">{{__('home.quantity')}}
                                     </th>
+                                    @can('Show purchase price')
                                     <th style="font-size: 13px" class="border-bottom-0">
                                         {{__('home.purchaseproductwithouttax')}}
                                     </th>
+                                    @endcan
                                     <th style="font-size: 13px" class="border-bottom-0">
                                         {{__('home.sellingproduct without tax')}}
                                     </th>
@@ -1275,6 +1277,10 @@ td .d-flex {
 
 @endsection
 @section('js')
+<script>
+    // صلاحية "عرض سعر الشراء": بدونها لا يظهر سعر الشراء في التنبيهات ولا في خانة السعر
+    const CAN_SEE_COST = @can('Show purchase price') true @else false @endcan;
+</script>
 <!-- Internal Data tables -->
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
@@ -1350,7 +1356,7 @@ function calculateTotals_with_tax() {
                 <hr>
                 <div style="background: #f8f9fa; padding: 10px; border-radius: 5px;">
                     <strong>سعر النظام | System Price:</strong>
-                    <span style="color: #28a745; font-size: 1.2em;">${cost}</span>
+                    <span style="color: #28a745; font-size: 1.2em;">${CAN_SEE_COST ? cost : '—'}</span>
                 </div>
             </div>
         `,
@@ -1363,9 +1369,15 @@ function calculateTotals_with_tax() {
             });
             r.querySelector('.product-price-tax').style.borderColor = 'red';
             // إجبار السعر ليكون التكلفة + الضريبة
-            tax_with_price = cost * (1 + taxFactor);
-            r.querySelector('.product-price-tax').value = tax_with_price.toFixed(2);
-            price = cost;
+            if (CAN_SEE_COST) {
+                tax_with_price = cost * (1 + taxFactor);
+                r.querySelector('.product-price-tax').value = tax_with_price.toFixed(2);
+                price = cost;
+            } else {
+                // بدون الصلاحية: لا نكشف التكلفة، نفرّغ السعر ليُعاد إدخاله
+                r.querySelector('.product-price-tax').value = '';
+                price = 0;
+            }
         } else {
             r.querySelector('.product-price-tax').style.borderColor = '';
         }
@@ -1381,7 +1393,7 @@ function calculateTotals_with_tax() {
                     <p>لقد تخطيت الخصم المسموح به لهذا المنتج!</p>
                     <p dir="ltr">You have exceeded the allowed discount for this product!</p>
                     <hr>
-                    <strong>الحد المسموح | Allowed Limit:</strong> ${cost * discound_allow_Input}
+                    <strong>الحد المسموح | Allowed Limit:</strong> ${CAN_SEE_COST ? (cost * discound_allow_Input) : '—'}
                 </div>
             `,
                 position: 'center',
@@ -2247,7 +2259,7 @@ function calculateTotals() {
                 <hr>
                 <div style="background: #f8f9fa; padding: 10px; border-radius: 5px;">
                     <strong>سعر النظام | System Price:</strong>
-                    <span style="color: #28a745; font-size: 1.2em;">${cost}</span>
+                    <span style="color: #28a745; font-size: 1.2em;">${CAN_SEE_COST ? cost : '—'}</span>
                 </div>
             </div>
         `,
@@ -2261,8 +2273,14 @@ function calculateTotals() {
 
             r.querySelector('.product-price').classList.add('is-invalid');
             r.querySelector('.product-price').style.borderColor = 'red';
-            price = cost; // إجبار السعر ليكون مساوياً للتكلفة (اختياري)
-            r.querySelector('.product-price').value = cost.toFixed(2);
+            if (CAN_SEE_COST) {
+                price = cost; // إجبار السعر ليكون مساوياً للتكلفة (اختياري)
+                r.querySelector('.product-price').value = cost.toFixed(2);
+            } else {
+                // بدون الصلاحية: لا نكشف التكلفة، نفرّغ السعر ليُعاد إدخاله
+                price = 0;
+                r.querySelector('.product-price').value = '';
+            }
         } else {
             r.querySelector('.product-price').classList.remove('is-invalid');
             r.querySelector('.product-price').style.borderColor = '';

@@ -747,9 +747,11 @@ td .d-flex {
 
                                     <th style="font-size: 15px" class="border-bottom-0">{{__('home.quantity')}}
                                     </th>
+                                    @can('Show purchase price')
                                     <th style="font-size: 13px" class="border-bottom-0">
                                         {{__('home.purchaseproductwithouttax')}}
                                     </th>
+                                    @endcan
                                     <th style="font-size: 13px" class="border-bottom-0">
                                         {{__('home.sellingproduct without tax')}}
                                     </th>

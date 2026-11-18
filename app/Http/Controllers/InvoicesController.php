@@ -4383,15 +4383,20 @@ public function updatepaymentconfirmpayment($invoiceId, $cashamount, $bankamount
     // 1. التحقق من وجود الفاتورة أولاً
     $invoice = invoices::find($invoiceId);
     if (!$invoice) {
-return response("<div class='alert alert-danger'>الفاتورة غير موجودة</div>");
+        return response("<div class='alert alert-danger'>الفاتورة غير موجودة</div>");
     }
+
+    $cashamount = (float) $cashamount;
+    $bankamount = (float) $bankamount;
+    $creaditamount = (float) $creaditamount;
+    $Bank_transfer = (float) $Bank_transfer;
 
     // تشغيل الـ Transaction لضمان عدم حدوث خطأ محاسبي
     DB::transaction(function () use ($invoice, $invoiceId, $cashamount, $bankamount, $creaditamount, $Bank_transfer, $paymentMethod, $another_bank) {
 
         $branchId = auth()->user()->branchs_id;
         $userId = auth()->user()->id;
-        $now =$invoice->created_at;
+        $now = $invoice->created_at;
 
         // ✔️ الإصلاح: جلب كائن الخزنة واستخراج الـ ID الرقمي مباشرة لمنع انهيار السيرفر
         $cashAccountObj = financial_accounts::where('parent_account_number', 5)
@@ -4405,11 +4410,6 @@ return response("<div class='alert alert-danger'>الفاتورة غير موج�
             ->first();
         $bankAccountId = $branchBank ? $branchBank->id : 4;
 
-        // [إصلاح الميزان] عند تعديل الدفع كان تصفير قيد البنك القديم يتم على بنك الفرع فقط، فإذا كانت الفاتورة
-        // مدفوعة على "البنك العربي الوطني" (1157) يبقى قيده ويُضاف القيد الجديد فوقه (مدين مكرر).
-        // ملاحظة: عمود another_bank غير موجود في جدول invoices فلا يمكن معرفة البنك القديم منه،
-        // لذا نصفّر قيد هذه الفاتورة على البنكين (لا يوجد قيد على 1157 إلا إذا دُفعت عليه فعلاً).
-        $oldBankAccountId = $bankAccountId;
         $oldBankIds = array_values(array_unique([$bankAccountId, 1157]));
 
         // =========================================================
@@ -4428,21 +4428,21 @@ return response("<div class='alert alert-danger'>الفاتورة غير موج�
                 ->where('note', 'فاتورة مبيعات رقم :' . $invoiceId)
                 ->where('customer_id', $cashAccountId)
                 ->update(['save' => 0, 'recive_amount' => 0, 'debtor' => 0, 'creditor' => 0]);
-   // تصفير قيود البنك القديمة المرتبطة بالفاتورة
-                DB::table('credittransactions')
-                    ->where('note', 'فاتورة مبيعات رقم :' . $invoiceId)
-                    ->whereIn('customer_id', $oldBankIds)
-                    ->update(['save' => 0, 'recive_amount' => 0, 'debtor' => 0, 'creditor' => 0]);
-
-                   $customerFinancialAccount = financial_accounts::where('orginal_type', 1)
-                ->where('orginal_id', $invoice->customer_id)
-                ->first();
-                      // تصفير القيود القديمة للكاش
+            // تصفير قيود البنك القديمة المرتبطة بالفاتورة
             DB::table('credittransactions')
                 ->where('note', 'فاتورة مبيعات رقم :' . $invoiceId)
-                ->where('customer_id', $customerFinancialAccount->id)
+                ->whereIn('customer_id', $oldBankIds)
                 ->update(['save' => 0, 'recive_amount' => 0, 'debtor' => 0, 'creditor' => 0]);
 
+            $customerFinancialAccount = financial_accounts::where('orginal_type', 1)
+                ->where('orginal_id', $invoice->customer_id)
+                ->first();
+            if ($customerFinancialAccount) {
+                DB::table('credittransactions')
+                    ->where('note', 'فاتورة مبيعات رقم :' . $invoiceId)
+                    ->where('customer_id', $customerFinancialAccount->id)
+                    ->update(['save' => 0, 'recive_amount' => 0, 'debtor' => 0, 'creditor' => 0]);
+            }
         }
 
         // 2. عكس أثر البنك/الشبكة القديم وتصفيره
@@ -4450,7 +4450,7 @@ return response("<div class='alert alert-danger'>الفاتورة غير موج�
             $oldBankAmount = $invoice->Bank_transfer + $invoice->bankamount;
             if ($oldBankAmount > 0) {
                 // تحديد البنك القديم الذي تم الحفظ عليه بناءً على الحقل المخزن تلافياً لأي تحديث خيارات
-                $oldTargetBankId = $oldBankAccountId;
+                $oldTargetBankId = $bankAccountId;
 
                 if (method_exists($this, 'adjustAccountBalance')) {
                     $this->adjustAccountBalance($oldTargetBankId, $branchId, -$oldBankAmount);
@@ -4461,30 +4461,28 @@ return response("<div class='alert alert-danger'>الفاتورة غير موج�
                     ->where('note', 'فاتورة مبيعات رقم :' . $invoiceId)
                     ->whereIn('customer_id', $oldBankIds)
                     ->update(['save' => 0, 'recive_amount' => 0, 'debtor' => 0, 'creditor' => 0]);
-         // تصفير القيود القديمة للكاش
-            DB::table('credittransactions')
-                ->where('note', 'فاتورة مبيعات رقم :' . $invoiceId)
-                ->where('customer_id', $cashAccountId)
-                ->update(['save' => 0, 'recive_amount' => 0, 'debtor' => 0, 'creditor' => 0]);
+                // تصفير القيود القديمة للكاش
+                DB::table('credittransactions')
+                    ->where('note', 'فاتورة مبيعات رقم :' . $invoiceId)
+                    ->where('customer_id', $cashAccountId)
+                    ->update(['save' => 0, 'recive_amount' => 0, 'debtor' => 0, 'creditor' => 0]);
 
-
-                
-                                  $customerFinancialAccount = financial_accounts::where('orginal_type', 1)
-                ->where('orginal_id', $invoice->customer_id)
-                ->first();
-                      // تصفير القيود القديمة للكاش
-            DB::table('credittransactions')
-                ->where('note', 'فاتورة مبيعات رقم :' . $invoiceId)
-                ->where('customer_id', $customerFinancialAccount->id)
-                ->update(['save' => 0, 'recive_amount' => 0, 'debtor' => 0, 'creditor' => 0]);
-
+                $customerFinancialAccount = financial_accounts::where('orginal_type', 1)
+                    ->where('orginal_id', $invoice->customer_id)
+                    ->first();
+                if ($customerFinancialAccount) {
+                    DB::table('credittransactions')
+                        ->where('note', 'فاتورة مبيعات رقم :' . $invoiceId)
+                        ->where('customer_id', $customerFinancialAccount->id)
+                        ->update(['save' => 0, 'recive_amount' => 0, 'debtor' => 0, 'creditor' => 0]);
+                }
             }
         }
 
         // 3. تصفير حساب ومصادقة مديونية العميل القديمة تماماً
         if ($invoice->creaditamount > 0 || $invoice->Pay == 'Credit' || $invoice->Pay == 'Partition') {
             $customer = customers::find($invoice->customer_id);
-            if ($customer) {
+            if ($customer && $invoice->creaditamount > 0) {
                 $customer->decrement('Balance', $invoice->creaditamount);
             }
 
@@ -4492,7 +4490,7 @@ return response("<div class='alert alert-danger'>الفاتورة غير موج�
                 ->where('orginal_id', $invoice->customer_id)
                 ->first();
 
-            if ($customerFinancialAccount) {
+            if ($customerFinancialAccount && $invoice->creaditamount > 0) {
                 $customerFinancialAccount->decrement('current_balance', $invoice->creaditamount);
                 $customerFinancialAccount->decrement('debtor_current', $invoice->creaditamount);
 
@@ -4509,6 +4507,7 @@ return response("<div class='alert alert-danger'>الفاتورة غير موج�
                         'orginal_id' => 0,
                         'creditor' => 0,
                         'debtor' => 0,
+                        'save' => 0
                     ]);
             }
         }
@@ -4542,26 +4541,27 @@ return response("<div class='alert alert-danger'>الفاتورة غير موج�
                 'save' => 1
             ]);
 
-                 $customerFinancialAccount = financial_accounts::where('orginal_type', 1)
+            $customerFinancialAccount = financial_accounts::where('orginal_type', 1)
                 ->where('orginal_id', $invoice->customer_id)
                 ->first();
 
-            credittransactions::create([
-                'user_id' => $userId,
-                'customer_id' => $customerFinancialAccount->id, // ✔️ تعديل: الكاش يدخل في حساب الخزنة وليس البنك
-                'recive_amount' => 0,
-                'branchs_id' => $branchId,
-                'pay_method' => $paymentMethod,
-                'note' => 'فاتورة مبيعات رقم :' . $invoiceId,
-                'Pay_Method_Name' => $paymentMethod,
-                'created_at' => $now,
-                'updated_at' => $now,
-                'orginal_id' => 0,
-                'creditor' => 0,
-                'debtor' => 0,
-                'save' => 1
-            ]);
-
+            if ($customerFinancialAccount) {
+                credittransactions::create([
+                    'user_id' => $userId,
+                    'customer_id' => $customerFinancialAccount->id,
+                    'recive_amount' => 0,
+                    'branchs_id' => $branchId,
+                    'pay_method' => $paymentMethod,
+                    'note' => 'فاتورة مبيعات رقم :' . $invoiceId,
+                    'Pay_Method_Name' => $paymentMethod,
+                    'created_at' => $now,
+                    'updated_at' => $now,
+                    'orginal_id' => 0,
+                    'creditor' => 0,
+                    'debtor' => 0,
+                    'save' => 1
+                ]);
+            }
         }
 
         // 2. إضافة حركة البنك الجديدة (في حساب البنك الصواب)
@@ -4588,33 +4588,36 @@ return response("<div class='alert alert-danger'>الفاتورة غير موج�
                 'save' => 1
             ]);
 
-                          $customerFinancialAccount = financial_accounts::where('orginal_type', 1)
+            $customerFinancialAccount = financial_accounts::where('orginal_type', 1)
                 ->where('orginal_id', $invoice->customer_id)
                 ->first();
 
-            credittransactions::create([
-                'user_id' => $userId,
-                'customer_id' => $customerFinancialAccount->id, // ✔️ تعديل: الكاش يدخل في حساب الخزنة وليس البنك
-                'recive_amount' => 0,
-                'branchs_id' => $branchId,
-                'pay_method' => $paymentMethod,
-                'note' => 'فاتورة مبيعات رقم :' . $invoiceId,
-                'Pay_Method_Name' => $paymentMethod,
-                'created_at' => $now,
-                'updated_at' => $now,
-                'orginal_id' => 0,
-                'creditor' => 0,
-                'debtor' => 0,
-                'save' => 1
-            ]);
+            if ($customerFinancialAccount) {
+                credittransactions::create([
+                    'user_id' => $userId,
+                    'customer_id' => $customerFinancialAccount->id,
+                    'recive_amount' => 0,
+                    'branchs_id' => $branchId,
+                    'pay_method' => $paymentMethod,
+                    'note' => 'فاتورة مبيعات رقم :' . $invoiceId,
+                    'Pay_Method_Name' => $paymentMethod,
+                    'created_at' => $now,
+                    'updated_at' => $now,
+                    'orginal_id' => 0,
+                    'creditor' => 0,
+                    'debtor' => 0,
+                    'save' => 1
+                ]);
+            }
         }
 
         // =========================================================
         // ثالثاً: تحديث بيانات الفاتورة نفسها في قاعدة البيانات
         // =========================================================
+        $morePayment = ($paymentMethod === 'Partition' || ($cashamount > 0 && ($bankamount > 0 || $Bank_transfer > 0))) ? 1 : 0;
         $invoice->update([
             'save' => 1,
-            'morepayment_way' => 1,
+            'morepayment_way' => $morePayment,
             'cashamount' => $cashamount,
             'bankamount' => $bankamount,
             'creaditamount' => $creaditamount,

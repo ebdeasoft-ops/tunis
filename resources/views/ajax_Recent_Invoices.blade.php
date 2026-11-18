@@ -56,11 +56,21 @@
                             @endif
                         </td>
                         <td>
-                            <small>{{ $payText }}</small>
-                            @if($product->Pay == "Partition")
-                                <div class="text-muted" style="font-size: 10px;">
-                                    {{ __('report.shabka') }}: {{ $product->bankamount }} | 
-                                    {{ __('home.Bank_transfer') }}: {{ $product->Bank_transfer }}
+                            <span class="badge badge-info">{{ $payText }}</span>
+                            @if($product->Pay == "Partition" || $product->morepayment_way == 1)
+                                <div class="text-muted mt-1 text-right" style="font-size: 11px; line-height: 1.5; direction: rtl;">
+                                    @if($product->cashamount > 0)
+                                        <div><i class="fas fa-money-bill-wave text-success"></i> {{ __('report.cash') }}: <strong>{{ number_format($product->cashamount, 2) }}</strong></div>
+                                    @endif
+                                    @if($product->bankamount > 0)
+                                        <div><i class="fas fa-credit-card text-primary"></i> {{ __('report.shabka') }}: <strong>{{ number_format($product->bankamount, 2) }}</strong></div>
+                                    @endif
+                                    @if($product->Bank_transfer > 0)
+                                        <div><i class="fas fa-university text-info"></i> {{ __('home.Bank_transfer') }}: <strong>{{ number_format($product->Bank_transfer, 2) }}</strong></div>
+                                    @endif
+                                    @if($product->creaditamount > 0)
+                                        <div><i class="fas fa-user-clock text-warning"></i> {{ __('report.credit') }}: <strong>{{ number_format($product->creaditamount, 2) }}</strong></div>
+                                    @endif
                                 </div>
                             @endif
                         </td>
@@ -97,6 +107,11 @@
                                    data-effect="effect-scale" 
                                    data-id="{{ $product->id }}" 
                                    data-totalinvoice="{{ $totalWithTax }}" 
+                                   data-pay="{{ $product->Pay }}"
+                                   data-cash="{{ $product->cashamount }}"
+                                   data-shabka="{{ $product->bankamount }}"
+                                   data-transfer="{{ $product->Bank_transfer }}"
+                                   data-credit="{{ $product->creaditamount }}"
                                    data-toggle="modal" href="#paymentmethod" title="{{ __('home.updatepayment') }}">
                                     <i class="las la-pen"></i>
                                 </a>

@@ -109,6 +109,9 @@ public function budgetsheet(Request $request)
      */
     private function reverseVoucherBalances($columnName, $countValue)
     {
+        if (empty($countValue) || $countValue == 0 || $countValue === '0') {
+            return;
+        }
         $old_transactions = DB::table('credittransactions')->where($columnName, $countValue)->get();
 
         foreach ($old_transactions as $old_tx) {
@@ -147,7 +150,6 @@ public function budgetsheet(Request $request)
 
         $request->validate([
             'receipt_id' => 'required',
-            'sent_abd_count' => 'required',
             'main_account_id' => 'required',
             'items' => 'required|array|min:1',
         ]);
@@ -156,15 +158,45 @@ public function budgetsheet(Request $request)
         try {
             $sent_count = $request->sent_abd_count;
 
-            // 1. تصفير وعكس الأرصدة القديمة بأمان
-            $this->reverseVoucherBalances('sent_abd_count', $sent_count);
+            if (!empty($sent_count) && $sent_count != 0) {
+                // 1. تصفير وعكس الأرصدة القديمة بأمان
+                $this->reverseVoucherBalances('sent_abd_count', $sent_count);
 
-            // 2. حذف الحركات القديمة بعد عكس أرصدتها
-            DB::table('credittransactions')->where('sent_abd_count', $sent_count)->delete();
+                // 2. حذف الحركات القديمة بعد عكس أرصدتها
+                DB::table('credittransactions')->where('sent_abd_count', $sent_count)->delete();
+            } else {
+                // إذا كان السند قديماً بدون رقم أو رقمه 0
+                $oldRow = DB::table('credittransactions')->where('id', $request->receipt_id)->first();
+                if ($oldRow) {
+                    $related = DB::table('credittransactions')
+                        ->where('created_at', $oldRow->created_at)
+                        ->where('branchs_id', $oldRow->branchs_id)
+                        ->where('sent_abd_count', 0)
+                        ->get();
+                    if ($related->isEmpty()) {
+                        $related = collect([$oldRow]);
+                    }
+                    foreach ($related as $rel) {
+                        $account = financial_accounts::find($rel->customer_id);
+                        if ($account) {
+                            $account->decrement('debtor_current', $rel->debtor);
+                            $account->decrement('creditor_current', $rel->creditor);
+                            $account->update([
+                                'current_balance' => $account->debtor_current - $account->creditor_current
+                            ]);
+                            $this->syncExternalBalances($account);
+                        }
+                        DB::table('credittransactions')->where('id', $rel->id)->delete();
+                    }
+                }
+                $max_count = DB::table('credittransactions')->where('type_decument', 1)->max('sent_abd_count');
+                $sent_count = ($max_count ? $max_count : 0) + 1;
+            }
 
             // 3. تسجيل البيانات الجديدة وتحديث الأرصدة
             $total_receipt_amount = 0;
 
+            $lastTxId = 0;
             // الطرف الدائن (الحسابات الفرعية)
             foreach ($request->items as $item) {
                 $amount = $item['amount'];
@@ -180,7 +212,7 @@ public function budgetsheet(Request $request)
                         'current_balance' => $sub_account->debtor_current - $sub_account->creditor_current
                     ]);
 
-                    DB::table('credittransactions')->insert([
+                    $lastTxId = DB::table('credittransactions')->insertGetId([
                         'sent_abd_count' => $sent_count,
                         'customer_id' => $sub_account->id,
                         'debtor' => 0,
@@ -195,6 +227,8 @@ public function budgetsheet(Request $request)
                         'created_at' => now(),
                         'branchs_id' => Auth::user()->branchs_id ?? 1,
                         'recive_amount' => $amount,
+                        'decument_id' => 0,
+                        'save' => 1,
                     ]);
 
                     $this->syncExternalBalances($sub_account);
@@ -224,6 +258,8 @@ public function budgetsheet(Request $request)
                     'created_at' => now(),
                     'branchs_id' => Auth::user()->branchs_id ?? 1,
                     'recive_amount' => $total_receipt_amount,
+                    'decument_id' => $lastTxId ?: 1,
+                    'save' => 1,
                 ]);
             }
 
@@ -454,7 +490,28 @@ public function budgetsheet(Request $request)
 
     public function getDetailsJS_Kabd($serf_count)
     {
-        $details = credittransactions::where('sent_abd_count', $serf_count)->get();
+        if (str_starts_with((string)$serf_count, 'id_') || $serf_count === 0 || $serf_count === '0') {
+            $id = str_replace('id_', '', (string)$serf_count);
+            $record = credittransactions::with('financial_accounts_data')->find($id);
+            if (!$record) {
+                return response()->json(['message' => 'السند غير موجود'], 404);
+            }
+            if (!empty($record->sent_abd_count) && $record->sent_abd_count != 0) {
+                $details = credittransactions::with('financial_accounts_data')->where('sent_abd_count', $record->sent_abd_count)->get();
+            } else {
+                $details = credittransactions::with('financial_accounts_data')
+                    ->where('created_at', $record->created_at)
+                    ->where('branchs_id', $record->branchs_id)
+                    ->where('sent_abd_count', 0)
+                    ->get();
+                if ($details->isEmpty()) {
+                    $details = collect([$record]);
+                }
+            }
+        } else {
+            $details = credittransactions::with('financial_accounts_data')->where('sent_abd_count', $serf_count)->get();
+        }
+
         if ($details->isEmpty()) {
             return response()->json(['message' => 'السند غير موجود'], 404);
         }

@@ -346,7 +346,13 @@ public function changesInEquity(Request $request)
         app()->setLocale(LaravelLocalization::getCurrentLocale());
 
         // الحسابات التي سنقبض منها (العملاء/الموردين/الخ..)
-        $accounts = financial_accounts::where('active', 1)->where('is_parent', 0)->where('orginal_type','!=',2)->where('id','!=',1)->get();
+        $accounts = financial_accounts::where('active', 1)
+            ->where('is_parent', 0)
+            ->where(function($q) {
+                $q->whereNull('orginal_type')->orWhere('orginal_type', '!=', 2);
+            })
+            ->where('id', '!=', 1)
+            ->get();
 
         // الحسابات التي سيتم الإيداع فيها (الصناديق والبنوك فقط)
         $main_accounts = financial_accounts::whereIn('orginal_type', [1, 2])->get();

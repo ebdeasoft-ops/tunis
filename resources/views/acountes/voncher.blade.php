@@ -227,7 +227,12 @@
 
         function search_by_decoumentNo_function() {
             let docNo = $("#search_by_decoumentNo").val();
-            let url = (docNo == '') ? "{{URL::to('get_all_send_kabd_jax')}}" : "{{URL::to('search_by_decoumentNo_send_abd')}}/" + docNo;
+            let getUrl = "{{ LaravelLocalization::localizeUrl('get_all_send_kabd_jax') }}";
+            let searchUrl = "{{ LaravelLocalization::localizeUrl('search_by_decoumentNo_send_abd') }}/" + docNo;
+            let url = (docNo == '') ? getUrl : searchUrl;
+            if (window.location.protocol === 'https:' && url.startsWith('http:')) {
+                url = url.replace('http:', 'https:');
+            }
             $.ajax({
                 url: url, type: "GET", dataType: "html",
                 success: function (data) { $("#ajax_responce_allinvoicesDiv").html(data); }
@@ -248,8 +253,12 @@
             }).then((result) => {
                 if (result.isConfirmed) {
                     Swal.fire({ title: "{{ __('home.deleting') }}...", allowOutsideClick: false, didOpen: () => { Swal.showLoading(); } });
+                    let deleteUrl = "{{ LaravelLocalization::localizeUrl('voucher/delete-full') }}/" + sent_count;
+                    if (window.location.protocol === 'https:' && deleteUrl.startsWith('http:')) {
+                        deleteUrl = deleteUrl.replace('http:', 'https:');
+                    }
                     $.ajax({
-                        url: "{{ url('voucher/delete-full') }}/" + sent_count,
+                        url: deleteUrl,
                         type: 'DELETE',
                         data: { "_token": "{{ csrf_token() }}" },
                         success: function (response) {
@@ -265,11 +274,31 @@
         function fillFormForEdit(data, serf_count, id) {
             $('#receipt_tbody').empty();
             let i = 0;
+            let debtorFound = false;
+            let pendingPaymentMethod = null;
+
             data.forEach(function (item) {
                 if (parseFloat(item.debtor) > 0) {
-                    $('#date_input').val(item.date_export);
-                    $('#payment_method').val(item.pay_method).trigger('change');
-                    $('#main_account_id').val(item.customer_id).trigger('change');
+                    debtorFound = true;
+                    let exportDate = item.date_export || (item.created_at ? item.created_at.substring(0, 10) : '');
+                    if (exportDate) $('#date_input').val(exportDate);
+
+                    let pm = item.type || item.Pay_Method_Name || item.pay_method;
+                    if (pm) {
+                        if (pm.toLowerCase().indexOf('cash') !== -1 || pm.indexOf('نقد') !== -1) pendingPaymentMethod = 'Cash';
+                        else if (pm.toLowerCase().indexOf('shabka') !== -1 || pm.indexOf('شبك') !== -1) pendingPaymentMethod = 'Shabka';
+                        else if (pm.toLowerCase().indexOf('bank') !== -1 || pm.indexOf('تحويل') !== -1) pendingPaymentMethod = 'Bank_transfer';
+                        else pendingPaymentMethod = pm;
+                    }
+
+                    if (item.customer_id) {
+                        let mainSelect = $('#main_account_id');
+                        if (mainSelect.find(`option[value="${item.customer_id}"]`).length === 0) {
+                            let accName = (item.financial_accounts_data && item.financial_accounts_data.name) ? item.financial_accounts_data.name : ('حساب ' + item.customer_id);
+                            mainSelect.append(new Option(accName, item.customer_id, true, true));
+                        }
+                        mainSelect.val(item.customer_id).trigger('change');
+                    }
                 }
                 else if (parseFloat(item.creditor) > 0) {
                     i++;
@@ -304,27 +333,99 @@
                         </tr>`;
                     $('#receipt_tbody').append(rowHtml);
                     let currentRow = $(`#row_${i}`);
-                    currentRow.find('.row-acc').val(item.customer_id).select2({ width: '100%', dir: "{{ app()->getLocale() == 'ar' ? 'rtl' : 'ltr' }}" });
+                    let rowSelect = currentRow.find('.row-acc');
+                    if (item.customer_id) {
+                        if (rowSelect.find(`option[value="${item.customer_id}"]`).length === 0) {
+                            let accName = (item.financial_accounts_data && item.financial_accounts_data.name) ? item.financial_accounts_data.name : ('حساب ' + item.customer_id);
+                            rowSelect.append(new Option(accName, item.customer_id, true, true));
+                        }
+                        rowSelect.val(item.customer_id);
+                    }
+                    rowSelect.select2({ width: '100%', dir: "{{ app()->getLocale() == 'ar' ? 'rtl' : 'ltr' }}" });
                     currentRow.find('.row-cost').val(item.cost_center || "").select2({ width: '100%', dir: "{{ app()->getLocale() == 'ar' ? 'rtl' : 'ltr' }}" });
                 }
             });
-            $('#sent_abd_count_id').val(serf_count);
+
+            if (!debtorFound && data.length > 0) {
+                let first = data[0];
+                let exportDate = first.date_export || (first.created_at ? first.created_at.substring(0, 10) : '');
+                if (exportDate) $('#date_input').val(exportDate);
+                let pm = first.type || first.Pay_Method_Name || first.pay_method;
+                if (pm) {
+                    if (pm.toLowerCase().indexOf('cash') !== -1 || pm.indexOf('نقد') !== -1) pendingPaymentMethod = 'Cash';
+                    else if (pm.toLowerCase().indexOf('shabka') !== -1 || pm.indexOf('شبك') !== -1) pendingPaymentMethod = 'Shabka';
+                    else if (pm.toLowerCase().indexOf('bank') !== -1 || pm.indexOf('تحويل') !== -1) pendingPaymentMethod = 'Bank_transfer';
+                    else pendingPaymentMethod = pm;
+                }
+            }
+
+            // تطبيق طريقة الدفع بعد اكتمال تغيير الحساب الرئيسي لضمان عدم استبدالها
+            if (pendingPaymentMethod) {
+                $('#payment_method').val(pendingPaymentMethod).trigger('change');
+                $('#pay_method_type').val(pendingPaymentMethod);
+            }
+
+            // تحديث مؤشر الصفوف
+            rowIdx = i;
+            if (i === 0) {
+                addRow();
+            }
+
+            $('#sent_abd_count_id').val(serf_count || 0);
             $('#receipt_id').val(id);
             updateGrandTotal();
             $('#submitBtn').text("{{ __('home.update_selected_voucher') }}").removeClass('btn-success').addClass('btn-info');
-            $('#form_title').html('<i class="fas fa-edit ml-2"></i> {{ __('home.edit_voucher_no') }}: ' + serf_count);
+            $('#form_title').html('<i class="fas fa-edit ml-2"></i> {{ __('home.edit_voucher_no') }}: ' + (serf_count && serf_count != 0 ? serf_count : id));
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
+        function fetchAndFillVoucher(sent_abd_count, id, btn) {
+            let baseUrl = "{{ LaravelLocalization::localizeUrl('getDetailsJS_Kabd') }}";
+            if (window.location.protocol === 'https:' && baseUrl.startsWith('http:')) {
+                baseUrl = baseUrl.replace('http:', 'https:');
+            }
+            let fetchUrl = (sent_abd_count && sent_abd_count != 0 && sent_abd_count != '0')
+                ? (baseUrl + '/' + sent_abd_count)
+                : (baseUrl + '/id_' + id);
+
+            let originalIcon = null;
+            let buttonEl = btn ? $(btn) : null;
+            if (buttonEl && buttonEl.length) {
+                originalIcon = buttonEl.html();
+                buttonEl.html('<i class="fas fa-spinner fa-spin"></i>').prop('disabled', true);
+            }
+
+            $.ajax({
+                url: fetchUrl,
+                type: "GET",
+                dataType: "json",
+                success: function (response) {
+                    if (buttonEl && buttonEl.length) buttonEl.html(originalIcon).prop('disabled', false);
+                    fillFormForEdit(response, sent_abd_count, id);
+                },
+                error: function (xhr) {
+                    if (buttonEl && buttonEl.length) buttonEl.html(originalIcon).prop('disabled', false);
+                    let msg = (xhr.responseJSON && xhr.responseJSON.message) ? xhr.responseJSON.message : "{{ __('home.error') }}";
+                    Swal.fire({ title: "{{ __('home.error') }}!", text: msg, icon: 'error' });
+                }
+            });
+        }
+
+        window.editVoucher = function (btn, sent_abd_count, id) {
+            if ((!sent_abd_count || sent_abd_count === '') && btn) {
+                sent_abd_count = $(btn).attr('data-sent_abd_count') || $(btn).data('sent_abd_count');
+            }
+            if ((!id || id === '') && btn) {
+                id = $(btn).attr('data-id') || $(btn).data('id');
+            }
+            fetchAndFillVoucher(sent_abd_count, id, btn);
+        };
+
         $(document).on('click', '.edit-btn', function (e) {
             e.preventDefault();
-            var sent_abd_count = $(this).data('sent_abd_count');
-            var id = $(this).data('id');
-            $.ajax({
-                url: "{{ url('getDetailsJS_Kabd') }}/" + sent_abd_count,
-                type: "GET",
-                success: function (response) { fillFormForEdit(response, sent_abd_count, id); }
-            });
+            var sent_abd_count = $(this).attr('data-sent_abd_count') || $(this).data('sent_abd_count');
+            var id = $(this).attr('data-id') || $(this).data('id');
+            fetchAndFillVoucher(sent_abd_count, id, this);
         });
 
         function printVoucherNow() {
@@ -347,14 +448,18 @@
             addRow();
             search_by_decoumentNo_function();
 
-            $('#pay_method_select').on('change', function () { $('#pay_method_type').val($(this).val()); });
+            $('#pay_method_select, #payment_method').on('change', function () { $('#pay_method_type').val($(this).val()); });
 
             $('#voucherForm').on('submit', function (e) {
                 e.preventDefault();
                 let submitBtn = $('#submitBtn');
                 let receiptId = $('#receipt_id').val();
                 let isEdit = (receiptId !== "" && receiptId !== undefined);
-                let actionUrl = isEdit ? "{{ url('voucher-update-all') }}" : $(this).attr('action');
+                let updateUrl = "{{ LaravelLocalization::localizeUrl('voucher-update-all') }}";
+                if (window.location.protocol === 'https:' && updateUrl.startsWith('http:')) {
+                    updateUrl = updateUrl.replace('http:', 'https:');
+                }
+                let actionUrl = isEdit ? updateUrl : $(this).attr('action');
 
                 submitBtn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> {{ __('home.processing') }}...');
 

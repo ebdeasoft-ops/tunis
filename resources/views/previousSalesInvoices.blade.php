@@ -159,80 +159,90 @@
     </div>
 </div>
   <!-- enter payments -->
-<div class="modal" id="paymentmethod">
-    <div class="modal-dialog modal-dialog-centered" role="document">
-        <div class="modal-content modal-content-demo">
-            <div class="modal-header">
-                <h6 class="modal-title"> {{ __('home.paymentmethod') }} </h6>
-            </div>
-            <div class="modal-body">
-                <div class="row">
-                    <label style="font-size:16px" class="control-label parent-label">&nbsp;&nbsp;{{ __('home.total') }}
-                        :&nbsp; </label>
-                    <label style="font-size:20px" id="totalvalue">0</label>
-                    <label style="font-size:15px" class="control-label parent-label">&nbsp;{{ __('home.SAR') }}
-                        &nbsp;&nbsp;&nbsp;&nbsp; </label>
-                    <br>
-
-
+    <div class="modal fade" id="paymentmethod" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content modal-content-demo">
+                <div class="modal-header">
+                    <h6 class="modal-title font-weight-bold">{{ __('home.paymentmethod') }}</h6>
+                    <button aria-label="Close" class="close" data-dismiss="modal" type="button"><span
+                            aria-hidden="true">&times;</span></button>
                 </div>
-                <div class=" col">
-                    <label> {{ __('home.paymentmethod') }} </label>
-                    <br>
+                <div class="modal-body">
+                    <!-- عرض إجمالي الفاتورة -->
+                    <div class="alert alert-light text-center py-2 mb-3" style="border: 1px solid #e1e6f1; border-radius: 8px;">
+                        <span style="font-size: 15px; color: #555;">{{ __('home.total') }}:</span>
+                        <span style="font-size: 22px; font-weight: bold; color: #ff4f1f; margin: 0 6px;" id="totalvalue">0.00</span>
+                        <span style="font-size: 14px; color: #555;">{{ __('home.SAR') }}</span>
+                    </div>
 
-                    <select class="form-control" name="paymodal" id='paymodal' required>
+                    <div class="form-group">
+                        <label for="paymodal" class="font-weight-bold">{{ __('home.paymentmethod') }}</label>
+                        <select class="form-control" name="paymodal" id="paymodal" required>
+                            <option value="Cash">{{ __('report.cash') }}</option>
+                            <option value="Shabka">{{ __('report.shabka') }}</option>
+                            <option value="Bank_transfer">{{ __('home.Bank_transfer') }}</option>
+                            <option value="Credit">{{ __('report.credit') }}</option>
+                            <option value="Partition">{{ __('home.Partition of the amount') }}</option>
+                        </select>
+                    </div>
 
-                        <option value="Cash"> {{ __('report.cash') }}</option>
-                        <option value="Shabka"> {{ __('report.shabka') }} </option>
-                        <option value="Bank_transfer"> {{ __('home.Bank_transfer') }} </option>
-                        <option value="Credit"> {{ __('report.credit') }} </option>
-                        <option value="Bank_transfer"> {{ __('home.bank_arbic') }} </option>
-                        <option value="Partition"> {{ __('home.Partition of the amount') }} </option>
+                    <!-- حقول توزيع وتجزئة المبالغ -->
+                    <div class="card p-3 mb-2" style="background-color: #f8fafc; border: 1px dashed #d0d7de; border-radius: 8px;">
+                        <div class="row">
+                            <div class="col-6 mb-3">
+                                <label for="cashamount" class="control-label parent-label mb-1" style="font-size: 13px;">
+                                    <i class="fas fa-money-bill-wave text-success"></i> {{ __('report.cash') }}
+                                </label>
+                                <input type="number" step="any" min="0" class="form-control parent-input payment-amount-input" name="cashamount" id="cashamount"
+                                    readonly value="0">
+                            </div>
+                            <div class="col-6 mb-3">
+                                <label for="bankamount" class="control-label parent-label mb-1" style="font-size: 13px;">
+                                    <i class="fas fa-credit-card text-primary"></i> {{ __('report.shabka') }}
+                                </label>
+                                <input type="number" step="any" min="0" class="form-control parent-input payment-amount-input" name="bankamount" id="bankamount"
+                                    readonly value="0">
+                            </div>
+                            <div class="col-6 mb-3">
+                                <label for="Bank_transfer" class="control-label parent-label mb-1" style="font-size: 13px;">
+                                    <i class="fas fa-university text-info"></i> {{ __('home.Bank_transfer') }}
+                                </label>
+                                <input type="number" step="any" min="0" class="form-control parent-input payment-amount-input" name="Bank_transfer" id="Bank_transfer"
+                                    readonly value="0">
+                            </div>
+                            <div class="col-6 mb-3">
+                                <label for="creaditamount" class="control-label parent-label mb-1" style="font-size: 13px;">
+                                    <i class="fas fa-user-clock text-warning"></i> {{ __('report.credit') }}
+                                </label>
+                                <input type="number" step="any" min="0" class="form-control parent-input payment-amount-input" name="creaditamount" id="creaditamount"
+                                    readonly value="0">
+                            </div>
+                        </div>
 
-                    </select>
+                        <!-- شريط مراقبة المبالغ والمتبقي لحظياً -->
+                        <div id="partition_info_box" class="mt-2 pt-2 border-top d-flex justify-content-between align-items-center" style="font-size: 13px;">
+                            <div>
+                                <span class="text-muted">مجموع المدخل: </span>
+                                <strong id="entered_sum_display" class="text-primary font-weight-bold">0.00</strong>
+                            </div>
+                            <div>
+                                <span class="text-muted">المتبقي: </span>
+                                <strong id="remaining_sum_display" class="font-weight-bold text-success">0.00</strong>
+                            </div>
+                        </div>
+                    </div>
 
-
+                    <!-- حقل خفي لتخزين رقم الفاتورة المراد دفعها -->
+                    <input type="hidden" id="invoiceid_payment">
                 </div>
-                <br>
-                <div class="row">
-
-                    <div class="col">
-
-                        <label class="control-label parent-label">{{ __('report.cash') }}</label>
-                        <input type="text" class="form-control parent-input" name="cashamount" id="cashamount" readonly
-                            value=0>
-                    </div>
-
-                    <div class="col">
-
-                        <label class="control-label parent-label">{{ __('report.shabka') }}</label>
-                        <input type="text" class="form-control parent-input" name="bankamount" id="bankamount" readonly
-                            value=0>
-                    </div>
-
-                    <div class="col">
-
-                        <label class="control-label parent-label">{{ __('home.Bank_transfer') }}</label>
-                        <input type="text" class="form-control parent-input" name="Bank_transfer" id="Bank_transfer"
-                            readonly value=0>
-                    </div>
-                    <div class="col">
-
-                        <label class="control-label parent-label">{{ __('report.credit') }}</label><br>
-                        <input type="text" class="form-control parent-input" name="creaditamount" id="creaditamount"
-                            readonly value=0>
-                    </div>
-                    <input hidden type="text" id="invoiceid">
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary"
+                        data-dismiss="modal">{{ __('home.cancel') }}</button>
+                    <button type="button" id="confirmpayment" class="btn btn-danger font-weight-bold">{{ __('home.confirm') }}</button>
                 </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">{{ __('home.cancel') }}</button>
-                <button id="confirmpayment" name="confirmpayment" data-dismiss="modal"
-                    class="btn btn-danger">{{ __('home.confirm') }}</button>
             </div>
         </div>
     </div>
-</div>
 
 @endsection
 
@@ -274,15 +284,99 @@
                 $(this).find('.modal-body #id').val(id);
             });
 
-            // مودال طريقة الدفع وتصفير القيم
+            // دالة حساب المجاميع والمتبقي في المودال لحظياً
+            function updatePaymentCalculations() {
+                let totalInvoice = parseFloat($('#totalvalue').text()) || 0;
+                let cash = parseFloat($('#cashamount').val()) || 0;
+                let bank = parseFloat($('#bankamount').val()) || 0;
+                let transfer = parseFloat($('#Bank_transfer').val()) || 0;
+                let credit = parseFloat($('#creaditamount').val()) || 0;
+
+                let enteredTotal = cash + bank + transfer + credit;
+                let remaining = totalInvoice - enteredTotal;
+
+                $('#entered_sum_display').text(enteredTotal.toFixed(2));
+                $('#remaining_sum_display').text(remaining.toFixed(2));
+
+                if (Math.abs(remaining) < 0.01) {
+                    $('#remaining_sum_display').removeClass('text-danger text-warning').addClass('text-success');
+                } else if (remaining < 0) {
+                    $('#remaining_sum_display').removeClass('text-success text-warning').addClass('text-danger');
+                } else {
+                    $('#remaining_sum_display').removeClass('text-success text-danger').addClass('text-warning');
+                }
+            }
+
+            // مراقبة كتابة المبالغ لحظياً في أي حقل
+            $(document).on('input keyup change', '.payment-amount-input', function () {
+                updatePaymentCalculations();
+            });
+
+            // فتح مودال طريقة الدفع وتعبئة بيانات الفاتورة
             $('#paymentmethod').on('show.bs.modal', function (event) {
                 var button = $(event.relatedTarget);
                 var id = button.data('id');
-                var invoice = button.data('totalinvoice');
+                var invoice = parseFloat(button.data('totalinvoice')) || 0;
+                var payMethod = button.data('pay') || 'Cash';
+                var cash = parseFloat(button.data('cash')) || 0;
+                var shabka = parseFloat(button.data('shabka')) || 0;
+                var transfer = parseFloat(button.data('transfer')) || 0;
+                var credit = parseFloat(button.data('credit')) || 0;
 
-                $('#invoiceid').val(id);
-                document.getElementById('totalvalue').innerHTML = invoice;
-                $('#cashamount').val(invoice);
+                $('#invoiceid_payment').val(id);
+                $('#totalvalue').text(invoice.toFixed(2));
+
+                // تعيين طريقة الدفع الحالية
+                $('#paymodal').val(payMethod);
+
+                if (payMethod === 'Partition') {
+                    $('#cashamount').val(cash);
+                    $('#bankamount').val(shabka);
+                    $('#Bank_transfer').val(transfer);
+                    $('#creaditamount').val(credit);
+                    $('#cashamount, #bankamount, #Bank_transfer, #creaditamount').prop('readOnly', false);
+                } else {
+                    $('#cashamount, #bankamount, #Bank_transfer, #creaditamount').val(0).prop('readOnly', true);
+                    if (payMethod === 'Cash') $('#cashamount').val(invoice);
+                    else if (payMethod === 'Shabka') $('#bankamount').val(invoice);
+                    else if (payMethod === 'Bank_transfer') $('#Bank_transfer').val(invoice);
+                    else if (payMethod === 'Credit') $('#creaditamount').val(invoice);
+                    else {
+                        $('#paymodal').val('Cash');
+                        $('#cashamount').val(invoice);
+                    }
+                }
+
+                updatePaymentCalculations();
+            });
+
+            // تغيير نوع الدفع من القائمة المنسدلة
+            $('select[name="paymodal"]').on('change', function () {
+                var method = $(this).val();
+                var total = parseFloat($('#totalvalue').text()) || 0;
+
+                if (method === 'Partition') {
+                    // تمكين التعديل على جميع حقول التجزئة (نقدي، شبكة، تحويل بنكي، آجل)
+                    $('#cashamount, #bankamount, #Bank_transfer, #creaditamount').prop('readOnly', false);
+
+                    // إذا كانت الحقول فارغة أو صفر، نضع قيمة افتراضية في الكاش لتسهيل البدء
+                    let currentEntered = (parseFloat($('#cashamount').val()) || 0) +
+                                         (parseFloat($('#bankamount').val()) || 0) +
+                                         (parseFloat($('#Bank_transfer').val()) || 0) +
+                                         (parseFloat($('#creaditamount').val()) || 0);
+                    if (currentEntered === 0) {
+                        $('#cashamount').val(total);
+                    }
+                } else {
+                    // حماية الحقول وتعيين القيمة الإجمالية لطريقة الدفع المختارة فقط
+                    $('#cashamount, #bankamount, #Bank_transfer, #creaditamount').val(0).prop('readOnly', true);
+                    if (method === 'Cash') $('#cashamount').val(total);
+                    else if (method === 'Shabka') $('#bankamount').val(total);
+                    else if (method === 'Bank_transfer') $('#Bank_transfer').val(total);
+                    else if (method === 'Credit') $('#creaditamount').val(total);
+                }
+
+                updatePaymentCalculations();
             });
 
             // ==========================================
@@ -291,89 +385,68 @@
             $("#confirmpayment").click(function (e) {
                 e.preventDefault();
 
-                // تعبئة الحقول الفارغة بأصفار منعاً لأخطاء الحسابات
-                if ($('#cashamount').val() == '') $('#cashamount').val(0);
-                if ($('#bankamount').val() == '') $('#bankamount').val(0);
-                if ($('#creaditamount').val() == '') $('#creaditamount').val(0);
-                if ($('#Bank_transfer').val() == '') $('#Bank_transfer').val(0);
-
-                let text = document.getElementById('totalvalue').innerText;
+                let cash = parseFloat($('#cashamount').val()) || 0;
+                let bank = parseFloat($('#bankamount').val()) || 0;
+                let transfer = parseFloat($('#Bank_transfer').val()) || 0;
+                let credit = parseFloat($('#creaditamount').val()) || 0;
+                let totalInvoice = parseFloat($('#totalvalue').text()) || 0;
                 let paymentMethodValue = $('#paymodal').val();
                 let anotherBankValue = 5;
 
-                let totalEntered = Number($('#cashamount').val()) + Number($('#Bank_transfer').val()) + Number($('#bankamount').val()) + Number($('#creaditamount').val());
+                let totalEntered = cash + bank + transfer + credit;
 
-                if (Number(text) == totalEntered) {
-                    $.ajax({
-                        url: "{{URL::to('updatepaymentconfirmpayment')}}/" + $('#invoiceid').val() + '/' +
-                            $('#cashamount').val() + '/' + $('#bankamount').val() + '/' +
-                            $('#creaditamount').val() + "/" + $('#Bank_transfer').val() + '/' +
-                            paymentMethodValue + '/' + anotherBankValue,
-                        type: "GET",
-                        dataType: "html",
-                        success: function (data) {
-                            // تحديث الجدول وإغلاق المودال تلقائياً
-                            $("#ajax_responce_allinvoicesDiv").html(data);
-                            $('#paymentmethod').modal('hide');
-                            Swal.fire({
-                                title: "تم التحديث بنجاح | Updated Successfully",
-                                html: `
-            <div style="font-size: 16px; line-height: 1.6;">
-                تم تحديث طريقة الدفع وتعديل الحسابات بنجاح.<br>
-                <span style="color: #666; font-size: 14px;">The payment method has been updated and accounts adjusted successfully.</span>
-            </div>
-        `,
-                                icon: "success",
-                                confirmButtonText: "موافق | OK",
-                                confirmButtonColor: "#28a745" // لون أخضر مريح يدل على النجاح
-                            });
-
-
-                        },
-                        error: function (response) {
-                            alert("{{ __('home.sorryerror') }}");
-                        }
+                // التحقق من أن مجموع المبالغ يتطابق مع إجمالي الفاتورة
+                if (Math.abs(totalEntered - totalInvoice) > 0.05) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'المبلغ غير متطابق',
+                        html: `
+                            <div style="font-size: 15px; text-align: center;">
+                                مجموع المبالغ المدخلة: <strong>${totalEntered.toFixed(2)}</strong> ر.س<br>
+                                إجمالي الفاتورة المطلوب: <strong>${totalInvoice.toFixed(2)}</strong> ر.س<br>
+                                <span class="text-danger font-weight-bold">يرجى ضبط المبالغ ليتطابق المجموع تماماً مع إجمالي الفاتورة.</span>
+                            </div>
+                        `,
+                        confirmButtonText: 'حسناً',
+                        confirmButtonColor: '#ff4f1f'
                     });
-                } else {
-                    $('#saveinvice').val(0);
-                    alert("{{ __('home.entermonycorrect') }}");
-                }
-            });
-
-            // مراقبة حقل السيلكت في المودال لتوزيع المبالغ تلقائياً وحماية الحقول (ReadOnly)
-            $('select[name="paymodal"]').on('change', function () {
-                var selectCustomer = $(this).val();
-                var value = 0;
-
-                if ($('#cashamount').val() != 0) {
-                    value = $('#cashamount').val();
-                } else if ($('#bankamount').val() != 0) {
-                    value = $('#bankamount').val();
-                } else if ($('#Bank_transfer').val() != 0) {
-                    value = $('#Bank_transfer').val();
-                } else {
-                    value = $('#creaditamount').val();
+                    return;
                 }
 
-                if (selectCustomer == 'Cash') {
-                    $('#cashamount').val(value);
-                    $('#bankamount').val(0); $('#creaditamount').val(0); $('#Bank_transfer').val(0);
-                    $("#bankamount, #cashamount, #Bank_transfer").prop('readOnly', true);
-                } else if (selectCustomer == 'Shabka') {
-                    $('#cashamount').val(0); $('#bankamount').val(value); $('#creaditamount').val(0); $('#Bank_transfer').val(0);
-                    $("#bankamount, #cashamount, #Bank_transfer").prop('readOnly', true);
-                } else if (selectCustomer == 'Credit') {
-                    $('#cashamount').val(0); $('#bankamount').val(0); $('#Bank_transfer').val(0); $('#creaditamount').val(value);
-                    $("#bankamount, #cashamount, #Bank_transfer").prop('readOnly', true);
-                } else if (selectCustomer == 'Bank_transfer') {
-                    $('#cashamount').val(0); $('#bankamount').val(0); $('#creaditamount').val(0); $('#Bank_transfer').val(value);
-                    $("#bankamount, #cashamount, #Bank_transfer").prop('readOnly', true);
-                } else {
-                    // في حال اختيار دفع متعدد (Partition)
-                    $('#cashamount').val(value);
-                    $('#bankamount').val(0); $('#creaditamount').val(0); $('#Bank_transfer').val(0);
-                    $("#bankamount, #cashamount, #Bank_transfer").prop('readOnly', false);
-                }
+                let invoiceId = $('#invoiceid_payment').val();
+                let url = "{{URL::to('updatepaymentconfirmpayment')}}/" + invoiceId + '/' +
+                          cash + '/' + bank + '/' + credit + '/' + transfer + '/' +
+                          paymentMethodValue + '/' + anotherBankValue;
+
+                $.ajax({
+                    url: url,
+                    type: "GET",
+                    dataType: "html",
+                    success: function (data) {
+                        $("#ajax_responce_allinvoicesDiv").html(data);
+                        $('#paymentmethod').modal('hide');
+                        Swal.fire({
+                            title: "تم التحديث بنجاح | Updated Successfully",
+                            html: `
+                                <div style="font-size: 16px; line-height: 1.6;">
+                                    تم تحديث طريقة الدفع وتعديل الحسابات بنجاح.<br>
+                                    <span style="color: #666; font-size: 14px;">The payment method has been updated and accounts adjusted successfully.</span>
+                                </div>
+                            `,
+                            icon: "success",
+                            confirmButtonText: "موافق | OK",
+                            confirmButtonColor: "#28a745"
+                        });
+                    },
+                    error: function (response) {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'خطأ',
+                            text: "{{ __('home.sorryerror') }}",
+                            confirmButtonText: 'حسناً'
+                        });
+                    }
+                });
             });
 
             // ==========================================

@@ -34,8 +34,10 @@
 
                         {{-- زر التعديل --}}
                         <button type="button"
-                            class="btn btn-info btn-sm d-flex align-items-center justify-content-center"
-                            style="height: 30px; width: 30px;" data-id="{{ $invoice->id }}"
+                            class="btn btn-info btn-sm d-flex align-items-center justify-content-center edit-btn"
+                            style="height: 30px; width: 30px;"
+                            onclick="editVoucher(this, '{{ $invoice->sent_abd_count }}', '{{ $invoice->id }}')"
+                            data-id="{{ $invoice->id }}"
                             data-sent_abd_count="{{ $invoice->sent_abd_count }}"
                             data-payment_acc="{{ $invoice->branchs_id }}" data-method="{{ $invoice->type }}"
                             data-date="{{ $invoice->date_export }}" data-client_acc="{{ $invoice->customer_id }}"
@@ -100,6 +102,8 @@
         </tbody>
     </table>
 </div>
+@if(isset($data) && method_exists($data, 'links'))
 <div class="d-flex justify-content-center mt-3" id="ajax_pagination_in_search">
     {{ $data->links() }}
 </div>
+@endif

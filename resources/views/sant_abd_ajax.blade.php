@@ -16,7 +16,7 @@
             @foreach ($data as $index => $invoice)
             <tr>
                 <td>{{ $invoice->sent_abd_count }}</td>
-                <td>{{ $invoice->created_at }}</td>
+                <td>{{ $invoice->date_export ?: ($invoice->created_at ? (is_string($invoice->created_at) ? substr($invoice->created_at, 0, 10) : $invoice->created_at->format('Y-m-d')) : '-') }}</td>
                 <td>{{ $invoice->user->name ?? '-' }}</td>
                 <td>{{ $invoice->financial_accounts_data->name ?? '-' }}</td>
                 <td>{{ $invoice->recive_amount }}</td>
@@ -40,7 +40,7 @@
                             data-id="{{ $invoice->id }}"
                             data-sent_abd_count="{{ $invoice->sent_abd_count }}"
                             data-payment_acc="{{ $invoice->branchs_id }}" data-method="{{ $invoice->type }}"
-                            data-date="{{ $invoice->date_export }}" data-client_acc="{{ $invoice->customer_id }}"
+                            data-date="{{ $invoice->date_export ?: ($invoice->created_at ? (is_string($invoice->created_at) ? substr($invoice->created_at, 0, 10) : $invoice->created_at->format('Y-m-d')) : '') }}" data-client_acc="{{ $invoice->customer_id }}"
                             data-amount="{{ $invoice->recive_amount }}" data-cost_center="{{ $invoice->cost_center }}"
                             data-tax_rate="{{ $invoice->vat == 1 ? '0.15' : '0' }}" data-notes="{{ $invoice->note }}"
                             title="{{ __('home.Edit') }}">

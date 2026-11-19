@@ -271,17 +271,60 @@
             });
         }
 
+        function setDateInputValue(inputSelector, rawDate) {
+            if (!rawDate) return;
+            let input = $(inputSelector);
+            if (!input.length) return;
+
+            let inputType = input.attr('type');
+            let d = new Date(rawDate);
+
+            if (!isNaN(d.getTime())) {
+                let year = d.getFullYear();
+                let month = String(d.getMonth() + 1).padStart(2, '0');
+                let day = String(d.getDate()).padStart(2, '0');
+
+                if (inputType === 'datetime-local') {
+                    let hours = String(d.getHours()).padStart(2, '0');
+                    let minutes = String(d.getMinutes()).padStart(2, '0');
+                    input.val(`${year}-${month}-${day}T${hours}:${minutes}`);
+                } else {
+                    input.val(`${year}-${month}-${day}`);
+                }
+            } else {
+                let str = String(rawDate).trim().replace(' ', 'T');
+                let parts = str.split('T');
+                let datePart = parts[0];
+                let timePart = parts[1] ? parts[1].substring(0, 5) : '00:00';
+
+                if (inputType === 'datetime-local') {
+                    input.val(`${datePart}T${timePart}`);
+                } else {
+                    input.val(datePart);
+                }
+            }
+        }
+
         function fillFormForEdit(data, serf_count, id) {
             $('#receipt_tbody').empty();
             let i = 0;
             let debtorFound = false;
             let pendingPaymentMethod = null;
 
+            // استخراج وتعيين تاريخ السند في خانة التاريخ بدقة حسب نوع الحقل (date أو datetime-local)
+            if (Array.isArray(data)) {
+                for (let k = 0; k < data.length; k++) {
+                    let rawDate = data[k].date_export || data[k].created_at;
+                    if (rawDate) {
+                        setDateInputValue('#date_input', rawDate);
+                        break;
+                    }
+                }
+            }
+
             data.forEach(function (item) {
                 if (parseFloat(item.debtor) > 0) {
                     debtorFound = true;
-                    let exportDate = item.date_export || (item.created_at ? item.created_at.substring(0, 10) : '');
-                    if (exportDate) $('#date_input').val(exportDate);
 
                     let pm = item.type || item.Pay_Method_Name || item.pay_method;
                     if (pm) {
@@ -348,8 +391,6 @@
 
             if (!debtorFound && data.length > 0) {
                 let first = data[0];
-                let exportDate = first.date_export || (first.created_at ? first.created_at.substring(0, 10) : '');
-                if (exportDate) $('#date_input').val(exportDate);
                 let pm = first.type || first.Pay_Method_Name || first.pay_method;
                 if (pm) {
                     if (pm.toLowerCase().indexOf('cash') !== -1 || pm.indexOf('نقد') !== -1) pendingPaymentMethod = 'Cash';

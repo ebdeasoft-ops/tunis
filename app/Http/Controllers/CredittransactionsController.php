@@ -195,6 +195,8 @@ public function budgetsheet(Request $request)
 
             // 3. تسجيل البيانات الجديدة وتحديث الأرصدة
             $total_receipt_amount = 0;
+            $exportDate = !empty($request->date) ? date('Y-m-d', strtotime($request->date)) : date('Y-m-d');
+            $createdAt = !empty($request->date) ? date('Y-m-d H:i:s', strtotime($request->date . ' ' . date('H:i:s'))) : now();
 
             $lastTxId = 0;
             // الطرف الدائن (الحسابات الفرعية)
@@ -218,13 +220,13 @@ public function budgetsheet(Request $request)
                         'debtor' => 0,
                         'creditor' => $amount,
                         'user_id' => $user_id,
-                        'date_export' => $request->date ?? now()->format('Y-m-d'),
+                        'date_export' => $exportDate,
                         'pay_method' => $request->pay_method_type,
                         'Pay_Method_Name' => $payment_name,
                         'note' => ($item['note'] ?? '') . ' | تعديل سند قبض رقم: ' . $sent_count,
                         'currentblance' => $sub_account->current_balance,
                         'type_decument' => 1,
-                        'created_at' => now(),
+                        'created_at' => $createdAt,
                         'branchs_id' => Auth::user()->branchs_id ?? 1,
                         'recive_amount' => $amount,
                         'decument_id' => 0,
@@ -249,13 +251,13 @@ public function budgetsheet(Request $request)
                     'debtor' => $total_receipt_amount,
                     'creditor' => 0,
                     'user_id' => $user_id,
-                    'date_export' => $request->date ?? now()->format('Y-m-d'),
+                    'date_export' => $exportDate,
                     'pay_method' => $request->pay_method_type,
                     'Pay_Method_Name' => $payment_name,
                     'note' => 'إجمالي تعديل سند قبض رقم: ' . $sent_count,
                     'currentblance' => $main_account->current_balance,
                     'type_decument' => 1,
-                    'created_at' => now(),
+                    'created_at' => $createdAt,
                     'branchs_id' => Auth::user()->branchs_id ?? 1,
                     'recive_amount' => $total_receipt_amount,
                     'decument_id' => $lastTxId ?: 1,
@@ -312,6 +314,8 @@ public function budgetsheet(Request $request)
             $sent_abd_count = $recent_record ? $recent_record->sent_abd_count + 1 : 1;
             $total_receipt_amount = 0;
             $createTransactionId = 0;
+            $exportDate = !empty($request->date) ? date('Y-m-d', strtotime($request->date)) : date('Y-m-d');
+            $createdAt = !empty($request->date) ? date('Y-m-d H:i:s', strtotime($request->date . ' ' . date('H:i:s'))) : now();
 
             foreach ($request->items as $item) {
                 $amount = $item['amount'];
@@ -333,7 +337,8 @@ public function budgetsheet(Request $request)
                         'recive_amount' => $amount,
                         'branchs_id' => Auth::user()->branchs_id ?? 1,
                         'pay_method' => $payment_name,
-                        'date_export' => $request->date,
+                        'date_export' => $exportDate,
+                        'created_at' => $createdAt,
                         'note' => ($item['note'] ?? $request->notes) . ' | سند قبض | رقم: ' . $sent_abd_count,
                         'debtor' => 0,
                         'creditor' => $amount,
@@ -363,7 +368,8 @@ public function budgetsheet(Request $request)
                     'customer_id' => $main_account->id,
                     'recive_amount' => $total_receipt_amount,
                     'branchs_id' => Auth::user()->branchs_id ?? 1,
-                    'date_export' => $request->date,
+                    'date_export' => $exportDate,
+                    'created_at' => $createdAt,
                     'note' => 'إجمالي سند قبض | رقم: ' . $sent_abd_count,
                     'debtor' => $total_receipt_amount,
                     'creditor' => 0,

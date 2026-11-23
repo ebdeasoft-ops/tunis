@@ -1,4 +1,14 @@
 @if (isset($data) && !empty($data) && count($data) > 0)
+@php
+    // مرفقات كل السندات المعروضة في الصفحة (استعلام واحد) حتى يظهر المرفق في كل أسطر السند
+    $pageVouchers = collect(method_exists($data, 'items') ? $data->items() : $data)
+        ->pluck('sent_serf_count')->filter()->unique()->values();
+    $voucherAttachments = App\Models\credittransactions::whereIn('sent_serf_count', $pageVouchers)
+        ->whereNotNull('attachments')->where('attachments', '!=', '')
+        ->get(['sent_serf_count', 'attachments'])
+        ->groupBy('sent_serf_count')
+        ->map(fn ($rows) => $rows->pluck('attachments')->unique()->values());
+@endphp
 <div class="table-responsive w-100" id="ajax_responce_allinvoicesDiv">
     <table class="table text-md-nowrap text-center our-table w-100" id="example2"
         style="border: 2px solid rgba(0,0,0,.3); width: 100% !important;">
@@ -11,6 +21,7 @@
                     <th>{{ __('home.acount_name') }}</th>
                     <th>{{ __('accountes.Theamountpaid') }}</th>
                     <th>{{ __('home.paymentmethod') }}</th>
+                    <th>{{ __('home.Attachment') }}</th>
                     <th>{{ __('home.operations') }}</th>
                 </tr>
             </thead>
@@ -40,6 +51,24 @@
                             @else
                                 <span class="badge badge-pill badge-warning">{{ __('report.shabka') }}</span>
                             @endif
+                        </td>
+
+                        {{-- المرفقات --}}
+                        <td>
+                            @php
+                                $rowFiles = $invoice->sent_serf_count ? $voucherAttachments->get($invoice->sent_serf_count, collect()) : collect();
+                                if ($invoice->attachments && !$rowFiles->contains($invoice->attachments)) {
+                                    $rowFiles = $rowFiles->concat([$invoice->attachments]);
+                                }
+                            @endphp
+                            @forelse ($rowFiles as $file)
+                                <a href="{{ url('openfile/' . $file) }}" target="_blank"
+                                    class="btn btn-secondary btn-sm mb-1" title="{{ __('home.show') }}">
+                                    <i class="fas fa-paperclip"></i>
+                                </a>
+                            @empty
+                                <span class="text-muted">-</span>
+                            @endforelse
                         </td>
 
                         {{-- العمليات --}}
@@ -72,13 +101,6 @@
                                     </button>
                                 </form>
 
-                                {{-- المرفقات --}}
-                                @if($invoice->attachments)
-                                    <a href="{{ url('openfile/' . $invoice->attachments) }}" target="_blank"
-                                        class="btn btn-secondary btn-sm" title="{{ __('home.show') }}">
-                                        <i class="fas fa-paperclip"></i>
-                                    </a>
-                                @endif
                             </div>
                         </td>
                     </tr>

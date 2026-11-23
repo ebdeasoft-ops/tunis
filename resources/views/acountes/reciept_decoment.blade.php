@@ -314,6 +314,7 @@
                 $('#cancel_edit').hide();
                 $('#add_row').show();
                 $('#dynamic_field tbody tr:not(:first)').remove();
+                $('#dynamic_field .existing-att').remove();
                 $('.select2').val('').trigger('change');
                 calculate();
             }
@@ -373,7 +374,8 @@
                         $.each(response, function (index, item) {
                             // نتحقق أن القيد مدين (debtor > 0)
                             // ونستبعد حساب الضريبة إذا كان رقمه ثابتاً (مثلاً 102)
-                            if (parseFloat(item.debtor) > 0 && item.customer_id != 102) {
+                            // [إصلاح] سطر الضريبة يُدمج مع سطر المصروف (يأتي من السيرفر is_tax_line)
+                            if (parseFloat(item.debtor) > 0 && !item.is_tax_line) {
                                 addDynamicRowWithData(item);
                             }
                         });
@@ -387,6 +389,17 @@
                     }
                 });
             });
+            // تهريب النص داخل value="..." + إزالة لواحق النظام من البيان
+            function escAttr(v) {
+                return String(v ?? '').replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+            }
+            function stripVoucherNote(n) {
+                return String(n ?? '')
+                    .replace(/\s*\|\s*(?:سند صرف رقم|تعديل سند رقم|تعديل سند قبض رقم)\s*:\s*\d+/g, '')
+                    .replace(/\s*\|\s*(?:ضريبة\s+)?سند صرف\s*\|\s*:\s*\d+/g, '')
+                    .replace(/\s*\|\s*سند قبض\s*\|\s*رقم\s*:\s*\d+/g, '')
+                    .trim();
+            }
             // دالة بناء السطر بالبيانات عند التعديل
             function addDynamicRowWithData(item) {
                 var html = `<tr id="row${i}">
@@ -407,17 +420,21 @@
                     @endforeach
                 </select>
             </td>
-            <td><input type="number" name="items[${i}][amount]" value="${item.recive_amount}" step="0.01" class="form-control amount-input" required></td>
+            <td><input type="number" name="items[${i}][amount]" value="${item.amount_inclusive ?? item.recive_amount}" step="0.01" class="form-control amount-input" required></td>
             <td>
                 <select class="form-control tax-select row-tax" name="items[${i}][tax_rate]">
-                    <option value="0" ${item.vat == 0 ? 'selected' : ''}>0%</option>
-                    <option value="0.05" ${item.vat_rate == 0.05 ? 'selected' : ''}>5%</option>
-                    <option value="0.15" ${item.vat_rate == 0.15 ? 'selected' : ''}>15%</option>
+                    <option value="0" ${(item.tax_rate ?? '0') == '0' ? 'selected' : ''}>0%</option>
+                    <option value="0.05" ${item.tax_rate == '0.05' ? 'selected' : ''}>5%</option>
+                    <option value="0.15" ${item.tax_rate == '0.15' ? 'selected' : ''}>15%</option>
                 </select>
             </td>
             <td><input type="text" name="items[${i}][tax_value]" class="form-control tax-value" readonly value="0.00"></td>
-            <td><input type="text" name="items[${i}][notes]" value="${item.note || ''}" class="form-control"></td>
-            <td><input type="file" name="items[${i}][attachment]" class="form-control-file"></td>
+            <td><input type="text" name="items[${i}][notes]" value="${escAttr(item.notes_clean ?? stripVoucherNote(item.note))}" class="form-control"></td>
+            <td>
+                <input type="file" name="items[${i}][attachment]" class="form-control-file">
+                ${item.attachments ? `<input type="hidden" class="existing-att" name="items[${i}][existing_attachment]" value="${item.attachments}">
+                <a href="{{ url('openfile') }}/${item.attachments}" target="_blank" class="existing-att d-inline-block mt-1"><i class="fas fa-paperclip"></i> {{ __('home.show') }}</a>` : ''}
+            </td>
             <td><button type="button" class="btn btn-danger btn-sm btn_remove">X</button></td>
         </tr>`;
 
@@ -452,17 +469,21 @@
                     @endforeach
                 </select>
             </td>
-            <td><input type="number" name="items[${i}][amount]" value="${item.recive_amount}" step="0.01" class="form-control amount-input" required></td>
+            <td><input type="number" name="items[${i}][amount]" value="${item.amount_inclusive ?? item.recive_amount}" step="0.01" class="form-control amount-input" required></td>
             <td>
                 <select class="form-control tax-select row-tax" name="items[${i}][tax_rate]">
-                    <option value="0" ${item.vat == 0 ? 'selected' : ''}>0%</option>
-                    <option value="0.05" ${item.vat_rate == 0.05 ? 'selected' : ''}>5%</option>
-                    <option value="0.15" ${item.vat_rate == 0.15 ? 'selected' : ''}>15%</option>
+                    <option value="0" ${(item.tax_rate ?? '0') == '0' ? 'selected' : ''}>0%</option>
+                    <option value="0.05" ${item.tax_rate == '0.05' ? 'selected' : ''}>5%</option>
+                    <option value="0.15" ${item.tax_rate == '0.15' ? 'selected' : ''}>15%</option>
                 </select>
             </td>
             <td><input type="text" name="items[${i}][tax_value]" class="form-control tax-value" readonly value="0.00"></td>
-            <td><input type="text" name="items[${i}][notes]" value="${item.note || ''}" class="form-control"></td>
-            <td><input type="file" name="items[${i}][attachment]" class="form-control-file"></td>
+            <td><input type="text" name="items[${i}][notes]" value="${escAttr(item.notes_clean ?? stripVoucherNote(item.note))}" class="form-control"></td>
+            <td>
+                <input type="file" name="items[${i}][attachment]" class="form-control-file">
+                ${item.attachments ? `<input type="hidden" class="existing-att" name="items[${i}][existing_attachment]" value="${item.attachments}">
+                <a href="{{ url('openfile') }}/${item.attachments}" target="_blank" class="existing-att d-inline-block mt-1"><i class="fas fa-paperclip"></i> {{ __('home.show') }}</a>` : ''}
+            </td>
             <td>${i === 0 ? '' : '<button type="button" class="btn btn-danger btn-sm btn_remove">X</button>'}</td>
         </tr>`;
 

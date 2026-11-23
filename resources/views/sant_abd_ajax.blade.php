@@ -1,3 +1,14 @@
+@php
+    // مرفقات كل السندات المعروضة في الصفحة (استعلام واحد) حتى يظهر المرفق في كل أسطر السند
+    $pageVouchers = (isset($data) && count($data) > 0)
+        ? collect(method_exists($data, 'items') ? $data->items() : $data)->pluck('sent_abd_count')->filter()->unique()->values()
+        : collect();
+    $voucherAttachments = $pageVouchers->isEmpty() ? collect() : App\Models\credittransactions::whereIn('sent_abd_count', $pageVouchers)
+        ->whereNotNull('attachments')->where('attachments', '!=', '')
+        ->get(['sent_abd_count', 'attachments'])
+        ->groupBy('sent_abd_count')
+        ->map(fn ($rows) => $rows->pluck('attachments')->unique()->values());
+@endphp
 <div class="table-responsive">
     <table class="table table-bordered table-striped text-center mb-0">
         <thead>
@@ -75,13 +86,21 @@
                             </button>
                         </form>
 
-                        {{-- المرفقات --}}
-                        @if($invoice->attachments)
-                        <a href="{{ url('openfile/' . $invoice->attachments) }}" target="_blank"
+                        {{-- المرفقات (كل مرفقات السند) --}}
+                        @php
+                            $rowFiles = $invoice->sent_abd_count ? $voucherAttachments->get($invoice->sent_abd_count, collect()) : collect();
+                            if ($invoice->attachments && !$rowFiles->contains($invoice->attachments)) {
+                                $rowFiles = $rowFiles->concat([$invoice->attachments]);
+                            }
+                        @endphp
+                        @if($rowFiles->isNotEmpty())
+                        @foreach ($rowFiles as $file)
+                        <a href="{{ url('openfile/' . $file) }}" target="_blank"
                             class="btn btn-secondary btn-sm d-flex align-items-center justify-content-center"
                             style="height: 30px; width: 30px;" title="{{ __('home.show') }}">
                             <i class="fas fa-paperclip"></i>
                         </a>
+                        @endforeach
                         @else
                         <span
                             class="badge badge-light text-muted border d-flex align-items-center justify-content-center px-2"

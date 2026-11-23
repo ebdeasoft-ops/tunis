@@ -107,7 +107,7 @@ public function budgetsheet(Request $request)
      * دالة موحدة لعكس حركات السند وتصفير تأثيرها على الأرصدة قبل الحذف أو التعديل
      * (تتعامل مع سندات القبض والصرف بناءً على نوع الحقل الممرر)
      */
-    private function reverseVoucherBalances($columnName, $countValue)
+    private function reverseVoucherBalances($columnName, $countValue, $deleteFiles = true)
     {
         if (empty($countValue) || $countValue == 0 || $countValue === '0') {
             return;
@@ -130,8 +130,8 @@ public function budgetsheet(Request $request)
                 $this->syncExternalBalances($account);
             }
 
-            // حذف الملفات والمرفقات إن وجدت قبل حذف السجل
-            if (!empty($old_tx->attachments)) {
+            // حذف الملفات والمرفقات إن وجدت قبل حذف السجل (لا تُحذف عند التعديل)
+            if ($deleteFiles && !empty($old_tx->attachments)) {
                 $file_path = public_path('assets/attachments/' . $old_tx->attachments);
                 if (file_exists($file_path)) {
                     @unlink($file_path);
@@ -148,19 +148,23 @@ public function budgetsheet(Request $request)
         $payment_name = $request->pay_method_type;
         $user_id = auth()->id();
 
-        $request->validate([
+        $request->validate(array_merge([
             'receipt_id' => 'required',
             'main_account_id' => 'required',
             'items' => 'required|array|min:1',
-        ]);
+        ], $this->voucherAttachmentRules()));
 
         DB::beginTransaction();
         try {
             $sent_count = $request->sent_abd_count;
+            $old_attachments = []; // مرفقات السند الحالية: يُحتفظ بها ما لم يُرفع ملف جديد للسطر
 
             if (!empty($sent_count) && $sent_count != 0) {
-                // 1. تصفير وعكس الأرصدة القديمة بأمان
-                $this->reverseVoucherBalances('sent_abd_count', $sent_count);
+                $old_attachments = DB::table('credittransactions')->where('sent_abd_count', $sent_count)
+                    ->pluck('attachments')->filter()->unique()->values()->all();
+
+                // 1. تصفير وعكس الأرصدة القديمة بأمان (بدون حذف ملفات المرفقات)
+                $this->reverseVoucherBalances('sent_abd_count', $sent_count, false);
 
                 // 2. حذف الحركات القديمة بعد عكس أرصدتها
                 DB::table('credittransactions')->where('sent_abd_count', $sent_count)->delete();
@@ -176,6 +180,7 @@ public function budgetsheet(Request $request)
                     if ($related->isEmpty()) {
                         $related = collect([$oldRow]);
                     }
+                    $old_attachments = $related->pluck('attachments')->filter()->unique()->values()->all();
                     foreach ($related as $rel) {
                         $account = financial_accounts::find($rel->customer_id);
                         if ($account) {
@@ -199,11 +204,17 @@ public function budgetsheet(Request $request)
             $createdAt = !empty($request->date) ? date('Y-m-d H:i:s', strtotime($request->date . ' ' . date('H:i:s'))) : now();
 
             $lastTxId = 0;
+            $first_attachment = '';
             // الطرف الدائن (الحسابات الفرعية)
-            foreach ($request->items as $item) {
+            foreach ($request->items as $index => $item) {
                 $amount = $item['amount'];
                 if ($amount <= 0)
                     continue;
+
+                $line_attachment = $this->resolveVoucherLineAttachment($request, $index, $item, $old_attachments);
+                if ($first_attachment === '' && $line_attachment !== '') {
+                    $first_attachment = $line_attachment;
+                }
 
                 $total_receipt_amount += $amount;
                 $sub_account = financial_accounts::find($item['account_id']);
@@ -223,7 +234,8 @@ public function budgetsheet(Request $request)
                         'date_export' => $exportDate,
                         'pay_method' => $request->pay_method_type,
                         'Pay_Method_Name' => $payment_name,
-                        'note' => ($item['note'] ?? '') . ' | تعديل سند قبض رقم: ' . $sent_count,
+                        'note' => $this->stripVoucherNoteSuffix($item['note'] ?? '') . ' | تعديل سند قبض رقم: ' . $sent_count,
+                        'attachments' => $line_attachment,
                         'currentblance' => $sub_account->current_balance,
                         'type_decument' => 1,
                         'created_at' => $createdAt,
@@ -255,6 +267,7 @@ public function budgetsheet(Request $request)
                     'pay_method' => $request->pay_method_type,
                     'Pay_Method_Name' => $payment_name,
                     'note' => 'إجمالي تعديل سند قبض رقم: ' . $sent_count,
+                    'attachments' => $first_attachment,
                     'currentblance' => $main_account->current_balance,
                     'type_decument' => 1,
                     'created_at' => $createdAt,
@@ -282,13 +295,13 @@ public function budgetsheet(Request $request)
     {
         $payment_name = $request->payment_method;
 
-        $request->validate([
+        $request->validate(array_merge([
             'main_account_id' => 'required',
             'date' => 'required|date',
             'items' => 'required|array|min:1',
             'items.*.account_id' => 'required',
             'items.*.amount' => 'required|numeric|min:0',
-        ]);
+        ], $this->voucherAttachmentRules()));
         // [إصلاح الميزان] منع الترحيل على حساب رئيسي في سند القبض
         $parentNames = $this->parentAccountsAmong(
             collect($request->items)->pluck('account_id')->push($request->main_account_id)
@@ -299,13 +312,9 @@ public function budgetsheet(Request $request)
 
         DB::beginTransaction();
         try {
-            $the_file_path = '';
-            if ($request->hasFile('attachments')) {
-                $folder = 'assets/attachments';
-                $image = $request->file('attachments');
-                $the_file_path = time() . rand(100, 999) . '.' . $image->extension();
-                $image->move(public_path($folder), $the_file_path);
-            }
+            // مرفق عام (إن وُجد) + مرفق لكل سطر items[i][attachment]
+            $the_file_path = $request->hasFile('attachments') ? $this->saveVoucherAttachment($request->file('attachments')) : '';
+            $first_attachment = $the_file_path;
 
             $recent_record = credittransactions::where('note', 'LIKE', '%سند قبض%')
                 ->orderBy('sent_abd_count', 'desc')
@@ -317,9 +326,16 @@ public function budgetsheet(Request $request)
             $exportDate = !empty($request->date) ? date('Y-m-d', strtotime($request->date)) : date('Y-m-d');
             $createdAt = !empty($request->date) ? date('Y-m-d H:i:s', strtotime($request->date . ' ' . date('H:i:s'))) : now();
 
-            foreach ($request->items as $item) {
+            foreach ($request->items as $index => $item) {
                 $amount = $item['amount'];
                 if ($amount <= 0) continue;
+
+                $line_attachment = $request->hasFile("items.$index.attachment")
+                    ? $this->saveVoucherAttachment($request->file("items.$index.attachment"))
+                    : $the_file_path;
+                if ($first_attachment === '' && $line_attachment !== '') {
+                    $first_attachment = $line_attachment;
+                }
 
                 $total_receipt_amount += $amount;
                 $sub_account = financial_accounts::find($item['account_id']);
@@ -331,7 +347,7 @@ public function budgetsheet(Request $request)
                     ]);
 
                     $tx = credittransactions::create([
-                        'attachments' => $the_file_path,
+                        'attachments' => $line_attachment,
                         'user_id' => auth()->id(),
                         'customer_id' => $sub_account->id,
                         'recive_amount' => $amount,
@@ -363,7 +379,7 @@ public function budgetsheet(Request $request)
                 ]);
 
                 credittransactions::create([
-                    'attachments' => $the_file_path,
+                    'attachments' => $first_attachment,
                     'user_id' => auth()->id(),
                     'customer_id' => $main_account->id,
                     'recive_amount' => $total_receipt_amount,
@@ -482,6 +498,9 @@ public function budgetsheet(Request $request)
             $mainItem = credittransactions::findOrFail($id);
             $serfCount = $mainItem->sent_serf_count;
 
+            // [إصلاح] حذف سجلات المصروفات المرتبطة بالسند حتى لا تبقى في تقارير المصروفات
+            $this->deleteSerfVoucherExpenses($serfCount, credittransactions::where('sent_serf_count', $serfCount)->get());
+
             // إصلاح محاسبي: عكس الأرصدة بناءً على رقم سند الصرف قبل الحذف
             $this->reverseVoucherBalances('sent_serf_count', $serfCount);
             credittransactions::where('sent_serf_count', $serfCount)->delete();
@@ -526,8 +545,43 @@ public function budgetsheet(Request $request)
 
     public function getReceiptDetails($serf_count)
     {
-        $details = credittransactions::where('sent_serf_count', $serf_count)->get();
-        return response()->json($details);
+        $details = credittransactions::where('sent_serf_count', $serf_count)->orderBy('id')->get();
+
+        // [إصلاح] سطر الضريبة (حساب ضريبة المدخلات - أبناء 102) يُدمج مع سطر المصروف الذي قبله
+        // فيظهر في التعديل سطر واحد بالمبلغ الشامل ونسبة الضريبة الصحيحة بدلاً من سطرين بضريبة 0%
+        $vatAccountIds = financial_accounts::where('parent_account_number', 102)->pluck('id')->map(fn ($v) => (int) $v)->all();
+
+        $rows = $details->map(function ($row) {
+            $data = $row->toArray();
+            $data['notes_clean'] = $this->stripVoucherNoteSuffix($row->note);
+            $data['is_tax_line'] = false;
+            $data['amount_inclusive'] = (float) $row->recive_amount;
+            $data['tax_rate'] = '0';
+            return $data;
+        })->values()->all();
+
+        $lastLine = null;
+        foreach ($rows as $k => $row) {
+            if ((float) $row['debtor'] <= 0) {
+                continue;
+            }
+            if (in_array((int) $row['customer_id'], $vatAccountIds, true) && $lastLine !== null) {
+                $net = (float) $rows[$lastLine]['debtor'];
+                $tax = (float) $row['debtor'];
+                $rate = $net > 0 ? $tax / $net : 0;
+                $std = abs($rate - 0.15) < 0.01 ? '0.15' : (abs($rate - 0.05) < 0.01 ? '0.05' : null);
+                if ($std !== null && $rows[$lastLine]['tax_rate'] === '0') {
+                    $rows[$k]['is_tax_line'] = true;
+                    $rows[$lastLine]['tax_rate'] = $std;
+                    $rows[$lastLine]['amount_inclusive'] = round($net + $tax, 2);
+                    continue;
+                }
+            }
+            $rows[$k]['amount_inclusive'] = round((float) $row['debtor'], 2);
+            $lastLine = $k;
+        }
+
+        return response()->json($rows);
     }
 
 
@@ -540,6 +594,8 @@ public function budgetsheet(Request $request)
     public function update_Serf_Decument(Request $request, $id)
     {
         
+    $request->validate($this->voucherAttachmentRules());
+
     // 1. العثور على السجل الأساسي لجلب رقم السند المشترك
         $main_entry = credittransactions::findOrFail($id);
         $serf_count = $main_entry->sent_serf_count;
@@ -549,6 +605,10 @@ public function budgetsheet(Request $request)
 
             // 2. عكس الأرصدة السابقة قبل الحذف
             $old_entries = credittransactions::where('sent_serf_count', $serf_count)->get();
+
+            // مرفقات السند الحالية: يُحتفظ بها عند التعديل ما لم يُرفع ملف جديد للسطر
+            $old_attachments = $old_entries->pluck('attachments')->filter()->unique()->values()->all();
+            $first_attachment = '';
             foreach ($old_entries as $old) {
                 $acc = financial_accounts::find($old->customer_id);
                 if ($acc) {
@@ -562,6 +622,9 @@ public function budgetsheet(Request $request)
                 }
             }
 
+            // [إصلاح] حذف سجلات المصروفات القديمة للسند قبل إعادة إنشائها (كانت تتكرر مع كل تعديل)
+            $this->deleteSerfVoucherExpenses($serf_count, $old_entries);
+
             // 3. حذف كافة سجلات السند القديمة
             credittransactions::where('sent_serf_count', $serf_count)->delete();
 
@@ -571,7 +634,18 @@ public function budgetsheet(Request $request)
             $total_amount = 0; // سيحمل إجمالي المبلغ الشامل للضريبة
 
             // 5. إنشاء القيود الجديدة لكل سطر في الجدول
-            foreach ($request->items as $item) {
+            foreach ($request->items as $index => $item) {
+                $line_attachment = '';
+                if ($request->hasFile("items.$index.attachment")) {
+                    $line_attachment = $this->saveVoucherAttachment($request->file("items.$index.attachment"));
+                } elseif (!empty($item['existing_attachment']) && in_array($item['existing_attachment'], $old_attachments, true)) {
+                    $line_attachment = $item['existing_attachment'];
+                }
+                if ($first_attachment === '' && $line_attachment !== '') {
+                    $first_attachment = $line_attachment;
+                }
+
+                $line_notes = $this->stripVoucherNoteSuffix($item['notes'] ?? '');
                 $amount_inclusive = $item['amount']; // المبلغ الشامل
                 $total_amount += $amount_inclusive;
                 
@@ -586,14 +660,15 @@ public function budgetsheet(Request $request)
                 $target_acc->increment('debtor_current', $amount_exclusive);
                 $target_acc->increment('current_balance', $amount_exclusive);
 
-                credittransactions::create([
+                $transaction = credittransactions::create([
+                    'attachments' => $line_attachment,
                     'user_id' => auth()->id(),
                     'customer_id' => $item['client_account_id'],
                     'recive_amount' => $amount_exclusive,
                     'branchs_id' => $main_payment_acc->branchs_id,
                     'pay_method' => $main_payment_acc->name,
                     'Pay_Method_Name' => $payment_name,
-                    'note' => $item['notes'] . ' | سند صرف رقم: '  . $serf_count,
+                    'note' => $line_notes . ' | سند صرف رقم: '  . $serf_count,
                     'date_export' => $request->date,
                     'created_at' => $request->date . ' ' . now()->format('H:i:s'),
                     'debtor' => $amount_exclusive,
@@ -610,12 +685,14 @@ public function budgetsheet(Request $request)
                     $reason_data = Expenses_reasons::find($target_acc->orginal_id);
 
                     $expense = expenses::create([
+                        'Transaction_id' => $transaction->id,
+                        'attachments' => $line_attachment,
                         'user_id' => Auth()->user()->id,
                         'Pay_Method_Name' => $request->pay_method_type,
                         'branchs_id' => $main_payment_acc->branchs_id,
                         'Reasonforspendingmoney' => $reason_data->expenses_reason,
                         'reasonId_id' => $target_acc->orginal_id,
-                        'notes' => $item['notes'] . ' | تعديل سند رقم: ' . $serf_count,
+                        'notes' => $line_notes . ' | سند صرف رقم: ' . $serf_count,
                         'expensesAvt' => $reason_data->expensesAvt,
                         'created_at' => $request->date . ' ' . now()->format('H:i:s'),
                         'date_export' => $request->date,
@@ -647,7 +724,7 @@ public function budgetsheet(Request $request)
                         'Pay_Method_Name' => $payment_name,
                         'pay_method' => $main_payment_acc->name,
                         'vat' => 1,
-                        'note' => $item['notes'] . '| سند صرف | : ' . (string)$serf_count,
+                        'note' => $line_notes . '| ضريبة سند صرف | : ' . (string)$serf_count,
                         'sent_serf_count' => $serf_count,
                         'orginal_id' => $tax_account->orginal_id ?? 0,
                     ]);
@@ -666,6 +743,7 @@ public function budgetsheet(Request $request)
                 'pay_method' => $main_payment_acc->name,
                 'Pay_Method_Name' => $payment_name,
                 'note' => '| سند صرف | : ' . $serf_count,
+                'attachments' => $first_attachment,
                 'date_export' => $request->date,
                 'debtor' => 0,
                 'creditor' => $total_amount,
@@ -679,18 +757,94 @@ public function budgetsheet(Request $request)
         
         
         }
+    /**
+     * مرفق سطر عند التعديل: ملف جديد إن رُفع، وإلا المرفق الحالي للسطر (بشرط أن يكون من مرفقات نفس السند)
+     */
+    private function resolveVoucherLineAttachment(Request $request, $index, array $item, array $oldAttachments): string
+    {
+        if ($request->hasFile("items.$index.attachment")) {
+            return $this->saveVoucherAttachment($request->file("items.$index.attachment"));
+        }
+        $existing = $item['existing_attachment'] ?? '';
+
+        return ($existing !== '' && in_array($existing, $oldAttachments, true)) ? $existing : '';
+    }
+
+    /**
+     * إزالة اللواحق التي يضيفها النظام لبيان السند (رقم السند/التعديل/الضريبة) حتى لا تتكرر مع كل تعديل
+     */
+    private function stripVoucherNoteSuffix($note): string
+    {
+        $patterns = [
+            '/\s*\|\s*(?:سند صرف رقم|تعديل سند رقم|تعديل سند قبض رقم)\s*:\s*\d+/u',
+            '/\s*\|\s*(?:ضريبة\s+)?سند صرف\s*\|\s*:\s*\d+/u',
+            '/\s*\|\s*سند قبض\s*\|\s*رقم\s*:\s*\d+/u',
+        ];
+
+        return trim(preg_replace($patterns, '', (string) $note));
+    }
+
+    /**
+     * حذف سجلات جدول المصروفات المرتبطة بسند صرف (عند تعديله أو حذفه)
+     * الربط: Transaction_id للسجلات الجديدة، أو (للقديمة) بند المصروف + رقم السند في الملاحظات
+     */
+    private function deleteSerfVoucherExpenses($serfCount, $oldEntries): void
+    {
+        $serfCount = (int) $serfCount;
+        if ($serfCount <= 0) {
+            return;
+        }
+        $ids = collect($oldEntries)->pluck('id')->filter()->values()->all();
+        $reasonIds = collect($oldEntries)->where('orginal_type', 3)->pluck('orginal_id')->filter()->unique()->values()->all();
+
+        expenses::where('type', 2)
+            ->where(function ($q) use ($ids, $reasonIds, $serfCount) {
+                $q->whereIn('Transaction_id', $ids ?: [0]);
+                if (!empty($reasonIds)) {
+                    $q->orWhere(function ($legacy) use ($reasonIds, $serfCount) {
+                        $legacy->whereIn('reasonId_id', $reasonIds)
+                            ->where(function ($n) use ($serfCount) {
+                                $n->where('notes', 'like', '%سند صرف رقم: ' . $serfCount)
+                                    ->orWhere('notes', 'like', '%سند صرف رقم: ' . $serfCount . ' |%')
+                                    ->orWhere('notes', 'like', '%تعديل سند رقم: ' . $serfCount);
+                            });
+                    });
+                }
+            })
+            ->delete();
+    }
+
+    /**
+     * قواعد المرفقات في سند الصرف (مرفق عام + مرفق لكل سطر)
+     */
+    private function voucherAttachmentRules(): array
+    {
+        $rule = 'nullable|file|max:10240|mimes:jpg,jpeg,png,gif,webp,bmp,pdf,doc,docx,xls,xlsx,txt';
+
+        return ['attachments' => $rule, 'items.*.attachment' => $rule];
+    }
+
+    /**
+     * حفظ مرفق سند في public/assets/attachments وإرجاع اسم الملف
+     */
+    private function saveVoucherAttachment(\Illuminate\Http\UploadedFile $file): string
+    {
+        $extension = strtolower($file->getClientOriginalExtension() ?: $file->extension());
+        $name = time() . rand(100, 999) . '.' . $extension;
+        $file->move(public_path('assets/attachments'), $name);
+
+        return $name;
+    }
+
     public function store_Serf_Decument(Request $request)
     {
         app()->setLocale(LaravelLocalization::getCurrentLocale());
-        // 1. معالجة المرفق العام
-        $the_file_path = '';
-        if ($request->has('attachments')) {
-            $folder = 'assets/attachments';
-            $image = $request->attachments;
-            $extension = $image->extension();
-            $the_file_path = time() . rand(100, 999) . '.' . $extension;
-            $image->move($folder, $the_file_path);
-        }
+        $request->validate($this->voucherAttachmentRules());
+
+        // 1. المرفقات: مرفق عام (إن وُجد) + مرفق لكل سطر items[i][attachment]
+        // [إصلاح] الصفحة ترسل المرفق باسم items[i][attachment] بينما كان الكود يقرأ attachments فقط، فلم يُحفظ أي مرفق
+        $the_file_path = $request->hasFile('attachments') ? $this->saveVoucherAttachment($request->file('attachments')) : '';
+        $first_attachment = $the_file_path;
 
         // 2. بيانات حساب الدفع
         $payment_id = $request->payment_account_id;
@@ -718,7 +872,13 @@ public function budgetsheet(Request $request)
         $total_document_amount = 0; // متغيّر لتجميع إجمالي السند
 
         // 4. الدوران على أسطر السندات (الجانب المدين)
-        foreach ($request->items as $item) {$clientId = $item['client_account_id'];
+        foreach ($request->items as $index => $item) {$clientId = $item['client_account_id'];
+        $line_attachment = $request->hasFile("items.$index.attachment")
+            ? $this->saveVoucherAttachment($request->file("items.$index.attachment"))
+            : $the_file_path;
+        if ($first_attachment === '' && $line_attachment !== '') {
+            $first_attachment = $line_attachment;
+        }
         $amount_inclusive = $item['amount']; // 115000
         $tax_rate = $item['tax_rate']; // e.g. 0.15
         $notes = $item['notes'];
@@ -745,7 +905,7 @@ public function budgetsheet(Request $request)
 
         // --- تسسجيل الحركة الأساسية للمصروف (بالقيمة الصافية بدون ضريبة) ---
         $transaction = credittransactions::create([
-            'attachments' => $the_file_path,
+            'attachments' => $line_attachment,
             'user_id' => auth()->id(),
             'customer_id' => $clientId,
             'recive_amount' => $amount_exclusive, // تم تعديلها لتكون الصافي المحاسبي
@@ -770,7 +930,8 @@ public function budgetsheet(Request $request)
             $reason_data = Expenses_reasons::find($target_acc->orginal_id);
 
             $expense = expenses::create([
-                'attachments' => $the_file_path,
+                'Transaction_id' => $transaction->id,
+                'attachments' => $line_attachment,
                 'user_id' => Auth()->user()->id,
                 'Pay_Method_Name' => $pay_method_type,
                 'branchs_id' => $branch_id,
@@ -827,6 +988,7 @@ public function budgetsheet(Request $request)
                 'branchs_id' => $branch_id,
                 'pay_method' => $payment_name,
                 'note' => 'إجمالي صرف سند رقم: ' . $sent_serf_count,
+                'attachments' => $first_attachment,
                 'currentblance' => $main_payment_acc->current_balance,
                 'date_export' => $request->date,
                 'debtor' => 0,

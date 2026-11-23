@@ -52,7 +52,7 @@
                 </h4>
             </div>
 
-            <form action="{{ route('vocher.store') }}" method="POST" id="voucherForm">
+            <form action="{{ route('vocher.store') }}" method="POST" id="voucherForm" enctype="multipart/form-data">
                 @csrf
                 <input type="hidden" name="id_create" value="1">
                 <input type="hidden" name="receipt_id" id="receipt_id">
@@ -92,7 +92,8 @@
                                     <th style="width: 30%;">{{ __('home.Receive from account') }}</th>
                                     <th style="width: 20%;">{{ __('home.Cost Center') }}</th>
                                     <th style="width: 15%;">{{ __('home.Total') }}</th>
-                                    <th style="width: 30%;">{{ __('home.Statement') }}</th>
+                                    <th style="width: 25%;">{{ __('home.Statement') }}</th>
+                                    <th style="width: 15%;">{{ __('home.Attachment') }}</th>
                                     <th style="width: 50px;"></th>
                                 </tr>
                             </thead>
@@ -203,6 +204,9 @@
                     <td>
                         <input type="text" name="items[${rowIdx}][note]" class="form-control" placeholder="{{ __('home.Statement') }}">
                     </td>
+                    <td>
+                        <input type="file" name="items[${rowIdx}][attachment]" class="form-control-file">
+                    </td>
                     <td class="align-middle">
                         <button type="button" class="btn btn-sm btn-outline-danger" onclick="removeRow(${rowIdx})"><i class="fas fa-trash"></i></button>
                     </td>
@@ -305,6 +309,17 @@
             }
         }
 
+        // تهريب النص داخل value="..." + إزالة لواحق النظام من البيان
+        function escAttr(v) {
+            return String(v ?? '').replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        }
+        function stripVoucherNote(n) {
+            return String(n ?? '')
+                .replace(/\s*\|\s*(?:سند صرف رقم|تعديل سند رقم|تعديل سند قبض رقم)\s*:\s*\d+/g, '')
+                .replace(/\s*\|\s*(?:ضريبة\s+)?سند صرف\s*\|\s*:\s*\d+/g, '')
+                .replace(/\s*\|\s*سند قبض\s*\|\s*رقم\s*:\s*\d+/g, '')
+                .trim();
+        }
         function fillFormForEdit(data, serf_count, id) {
             $('#receipt_tbody').empty();
             let i = 0;
@@ -368,7 +383,12 @@
                                 <input type="number" step="0.01" name="items[${i}][amount]" value="${item.creditor}" class="form-control amount-input" oninput="updateGrandTotal()" required />
                             </td>
                             <td>
-                                <input type="text" name="items[${i}][note]" value="${item.note || ''}" class="form-control" />
+                                <input type="text" name="items[${i}][note]" value="${escAttr(stripVoucherNote(item.note))}" class="form-control" />
+                            </td>
+                            <td>
+                                <input type="file" name="items[${i}][attachment]" class="form-control-file">
+                                ${item.attachments ? `<input type="hidden" name="items[${i}][existing_attachment]" value="${escAttr(item.attachments)}">
+                                <a href="{{ url('openfile') }}/${encodeURIComponent(item.attachments)}" target="_blank" class="d-inline-block mt-1"><i class="fas fa-paperclip"></i> {{ __('home.show') }}</a>` : ''}
                             </td>
                             <td>
                                 <button type="button" class="btn btn-danger btn-sm" onclick="removeRow(${i})"><i class="fas fa-times"></i></button>

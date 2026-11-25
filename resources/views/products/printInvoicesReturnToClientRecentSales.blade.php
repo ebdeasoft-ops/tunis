@@ -12,9 +12,9 @@
         body { margin: 0; padding: 0; }
         @page { size: A4; margin: 10mm; }
         .invoice-container { border: none !important; width: 100% !important; }
-        .gray-bg, .table-bordered thead th {
-            -webkit-print-color-adjust: exact;
-            print-color-adjust: exact;
+        .gray-bg, .table-bordered thead th, .returned-row, .returned-row td, .returned-badge {
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
         }
     }
 
@@ -134,6 +134,38 @@
         unicode-bidi: plaintext;         /* ترتيب صحيح للعربي والإنجليزي */
         line-height: 1.5;
         white-space: normal;
+    }
+
+    /* تمييز الأصناف المرتجعة كلياً أو جزئياً باللون الأحمر في العرض والطباعة */
+    .returned-row,
+    .returned-row td,
+    .returned-row td span {
+        color: #dc2626 !important;
+        font-weight: bold !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+
+    .returned-badge {
+        display: inline-block;
+        color: #dc2626 !important;
+        font-weight: bold !important;
+        font-size: 13px;
+        margin-right: 5px;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+
+    @media print {
+        .returned-row,
+        .returned-row td,
+        .returned-row td span,
+        .returned-badge {
+            color: #dc2626 !important;
+            font-weight: bold !important;
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+        }
     }
 </style>
 @endsection
@@ -269,29 +301,45 @@
                 @php
                     $i = 0;
                     $avt = App\Models\Avt::find(1);
+                    $salesItems = $data['salesData'] ?? App\Models\sales::where('invoice_id', $data['invoiceData']->id)->with('productData')->get();
                 @endphp
 
-                @foreach (App\Models\sales::where('invoice_id', $data['invoiceData']->id)->get() as $product)
-                    @if($product->quantity != 0)
-                        @php $i++ @endphp
-                        <tr>
-                            <td>{{ $i }}</td>
-                            @if($data['invoiceData']->display_number)
-                                <td dir="ltr">{{ $product->productData->Product_Code }}</td>
+                @foreach ($salesItems as $product)
+                    @php
+                        $i++;
+                        $returnedQty = (float)($product->returned_qty ?? $product->quantityreturn ?? 0);
+                        $currentQty = (float)($product->quantity ?? 0);
+                        $returnStatus = $product->return_status ?? ($currentQty == 0 ? 'full' : ($returnedQty > 0 ? 'partial' : 'none'));
+                        $isReturned = ($returnStatus === 'full' || $returnStatus === 'partial');
+
+                        $total_row_befor_tax = round(($product->Unit_Price * $currentQty) - $product->Discount_Value, 2);
+                        if ($total_row_befor_tax < 0) {
+                            $total_row_befor_tax = 0;
+                        }
+                    @endphp
+                    <tr class="{{ $isReturned ? 'returned-row' : '' }}" style="{{ $isReturned ? 'color: #dc2626 !important; font-weight: bold !important;' : '' }}">
+                        <td>{{ $i }}</td>
+                        @if($data['invoiceData']->display_number)
+                            <td dir="ltr">{{ $product->productData->Product_Code ?? '-' }}</td>
+                        @endif
+                        <td class="item-name">
+                            {{ $product->productData->product_name ?? $product->product_name ?? '-' }}
+                            @if($returnStatus === 'full')
+                                <span class="returned-badge">(مرتجع بالكامل)</span>
+                            @elseif($returnStatus === 'partial')
+                                <span class="returned-badge">(مرتجع جزئي{{ $returnedQty > 0 ? ': تم إرجاع ' . $returnedQty : '' }})</span>
                             @endif
-                            <td class="item-name">{{ $product->productData->product_name }}</td>
-                            <td>{{ number_format($product->Unit_Price, 2) }}</td>
-                            <td>{{ $product->quantity }}</td>
-                            <td>{{ number_format($product->Discount_Value, 2) }}</td>
-
-                            @php
-                                $total_row_befor_tax = round(($product->Unit_Price * $product->quantity) - $product->Discount_Value, 2);
-                                $added_value_row = round($total_row_befor_tax, 2);
-                            @endphp
-
-                            <td>{{ number_format($total_row_befor_tax, 2) }}</td>
-                        </tr>
-                    @endif
+                        </td>
+                        <td>{{ number_format($product->Unit_Price, 2) }}</td>
+                        <td>
+                            {{ $product->quantity }}
+                            @if($returnStatus === 'full' && $returnedQty > 0)
+                                <br><small style="font-size: 11px;">(مرتجع: {{ $returnedQty }})</small>
+                            @endif
+                        </td>
+                        <td>{{ number_format($product->Discount_Value, 2) }}</td>
+                        <td>{{ number_format($total_row_befor_tax, 2) }}</td>
+                    </tr>
                 @endforeach
             </tbody>
         </table>

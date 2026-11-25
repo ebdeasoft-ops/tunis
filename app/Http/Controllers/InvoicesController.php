@@ -4859,7 +4859,31 @@ public function showInvoiceRecent($request)
         abort(404, 'Invoice not found');
     }
 
-    $saleData =sales::where("invoice_id", $request)->where('quantity', '!=', 0)->get();
+    // جلب كافة بنود الفاتورة دون استبعاد الأصناف المرتجعة بالكامل (التي كميتها المتبقية 0)
+    $saleData = sales::where("invoice_id", $request)->with('productData')->get();
+
+    // جلب كميات المرتجع لكل صنف من جدول return_sales للفاتورة
+    $returnsByProduct = return_sales::where('invoice_id', $request)
+        ->groupBy('product_id')
+        ->selectRaw('product_id, SUM(return_quantity) as total_returned')
+        ->pluck('total_returned', 'product_id');
+
+    // حساب كمية وحالة المرتجع لكل بند
+    foreach ($saleData as $sale) {
+        $dbReturned = (float) ($returnsByProduct[$sale->product_id] ?? 0);
+        $saleReturned = (float) ($sale->quantityreturn ?? 0);
+        $sale->returned_qty = max($dbReturned, $saleReturned);
+
+        $currentQty = (float) ($sale->quantity ?? 0);
+
+        if ($currentQty == 0) {
+            $sale->return_status = 'full'; // مرتجع بالكامل
+        } elseif ($sale->returned_qty > 0 && $currentQty > 0) {
+            $sale->return_status = 'partial'; // مرتجع جزئي
+        } else {
+            $sale->return_status = 'none'; // لم يُرجع
+        }
+    }
     $setting = system_setting::find(1);
 
     // 2. حساب إجمالي الفاتورة الفعلي المدفوع (شامل الضريبة والخصومات)
